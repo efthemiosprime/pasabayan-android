@@ -13,12 +13,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.efthemiosprime.pasabayan.data.model.DeliveryRequest
 import com.efthemiosprime.pasabayan.data.model.DeliveryStatus
 import com.efthemiosprime.pasabayan.data.model.User
 import com.efthemiosprime.pasabayan.ui.viewmodel.DeliveryViewModel
+import com.efthemiosprime.pasabayan.ui.components.StatusChip
+import com.efthemiosprime.pasabayan.ui.components.DeliveryRequestCard
+import com.efthemiosprime.pasabayan.ui.components.StatCard
+import com.efthemiosprime.pasabayan.ui.components.QuickActionCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,157 +36,109 @@ fun DashboardScreen(
 ) {
     val uiState by deliveryViewModel.uiState.collectAsState()
 
+    DashboardContent(
+        currentUser = currentUser,
+        isLoading = uiState.isLoading,
+        deliveryRequests = uiState.deliveryRequests,
+        onCreateDelivery = onCreateDelivery,
+        onViewDeliveries = onViewDeliveries,
+        onViewProfile = onViewProfile,
+        onAccept = { deliveryViewModel.acceptDeliveryRequest(it) },
+        onUpdateStatus = { id, status -> deliveryViewModel.updateDeliveryStatus(id, status) }
+    )
+}
+
+@Composable
+fun DashboardContent(
+    currentUser: User,
+    isLoading: Boolean,
+    deliveryRequests: List<DeliveryRequest>,
+    onCreateDelivery: () -> Unit,
+    onViewDeliveries: () -> Unit,
+    onViewProfile: () -> Unit,
+    onAccept: (Int) -> Unit,
+    onUpdateStatus: (Int, DeliveryStatus) -> Unit
+) {
+    val myRequests = deliveryRequests.filter { it.userId == currentUser.id }
+    val pendingRequests = deliveryRequests.filter { it.status == DeliveryStatus.PENDING }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Welcome Header
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer
             )
         ) {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
-                Text(
-                    text = "Welcome back,",
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Text(
-                    text = currentUser.name,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+            Column(modifier = Modifier.padding(20.dp)) {
+                Text("Welcome back,", fontSize = 16.sp)
+                Text(currentUser.name, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Quick Actions
-        Text(
-            text = "Quick Actions",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Text("Quick Actions", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            QuickActionCard(
-                title = "Create Delivery",
-                icon = Icons.Default.Add,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.weight(1f),
-                onClick = onCreateDelivery
-            )
-
-            QuickActionCard(
-                title = "View Deliveries",
-                icon = Icons.Default.List,
-                color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.weight(1f),
-                onClick = onViewDeliveries
-            )
+            QuickActionCard("Create Delivery", Icons.Default.Add, MaterialTheme.colorScheme.primary, Modifier.weight(1f), onCreateDelivery)
+            QuickActionCard("View Deliveries", Icons.Default.List, MaterialTheme.colorScheme.secondary, Modifier.weight(1f), onViewDeliveries)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Statistics
-        Text(
-            text = "Overview",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        val myRequests = deliveryViewModel.getMyRequests(currentUser.id)
-        val pendingRequests = deliveryViewModel.getPendingRequests()
+        Text("Overview", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            StatCard(
-                title = "My Requests",
-                value = myRequests.size.toString(),
-                icon = Icons.Default.Person,
-                modifier = Modifier.weight(1f)
-            )
-
-            StatCard(
-                title = "Available",
-                value = pendingRequests.size.toString(),
-                icon = Icons.Default.Star,
-                modifier = Modifier.weight(1f)
-            )
+            StatCard("My Requests", myRequests.size.toString(), Icons.Default.Person, Modifier.weight(1f))
+            StatCard("Available", pendingRequests.size.toString(), Icons.Default.Star, Modifier.weight(1f))
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Recent Activity
-        Text(
-            text = "Recent Activity",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Text("Recent Activity", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
 
-        if (uiState.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                val recentRequests = uiState.deliveryRequests
-                    .sortedByDescending { it.createdAt }
-                    .take(5)
-
-                if (recentRequests.isEmpty()) {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val recent = deliveryRequests.sortedByDescending { it.createdAt }.take(5)
+                if (recent.isEmpty()) {
                     item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
+                        Card(modifier = Modifier.fillMaxWidth()) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(20.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Email,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(48.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Icon(Icons.Default.Email, contentDescription = null, modifier = Modifier.size(48.dp))
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "No recent activity",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Text("No recent activity")
                             }
                         }
                     }
                 } else {
-                    items(recentRequests) { request ->
+                    items(recent) { request ->
                         DeliveryRequestCard(
                             request = request,
                             currentUserId = currentUser.id,
-                            onAccept = { deliveryViewModel.acceptDeliveryRequest(it) },
-                            onUpdateStatus = { id, status -> 
-                                deliveryViewModel.updateDeliveryStatus(id, status) 
-                            }
+                            onAccept = onAccept,
+                            onUpdateStatus = onUpdateStatus
                         )
                     }
                 }
@@ -190,199 +147,80 @@ fun DashboardScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true)
 @Composable
-fun QuickActionCard(
-    title: String,
-    icon: ImageVector,
-    color: Color,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier,
-        onClick = onClick,
-        colors = CardDefaults.cardColors(
-            containerColor = color.copy(alpha = 0.1f)
+fun DashboardScreenPreview() {
+    val mockUser = User(id = 1, name = "Alex Cruz", createdAt = "", updatedAt ="", email = "alex@example.com")
+
+    val mockRequests = listOf(
+        DeliveryRequest(
+            id = 101,
+            userId = 1,
+            driverId = null,
+            itemDescription = "Documents",
+            itemWeight = 1.5,
+            itemDimensions = "30x20x10cm",
+            pickupAddress = "Makati",
+            pickupLatitude = 14.5547,
+            pickupLongitude = 121.0244,
+            deliveryAddress = "Quezon City",
+            deliveryLatitude = 14.6760,
+            deliveryLongitude = 121.0437,
+            pickupContactName = "Juan Dela Cruz",
+            pickupContactPhone = "09171234567",
+            deliveryContactName = "Maria Clara",
+            deliveryContactPhone = "09179876543",
+            requestedPickupTime = "2025-05-01T10:00:00Z",
+            requestedDeliveryTime = "2025-05-01T11:30:00Z",
+            specialInstructions = "Handle with care",
+            deliveryFee = 100.0,
+            status = DeliveryStatus.PENDING,
+            createdAt = "2025-05-01T09:50:00Z",
+            updatedAt = "2025-05-01T10:05:00Z",
+            acceptedAt = null,
+            pickedUpAt = null,
+            deliveredAt = null
+        ),
+        DeliveryRequest(
+            id = 102,
+            userId = 2,
+            driverId = 1,
+            itemDescription = "Package",
+            itemWeight = 2.0,
+            itemDimensions = "40x25x15cm",
+            pickupAddress = "BGC",
+            pickupLatitude = 14.5548,
+            pickupLongitude = 121.0439,
+            deliveryAddress = "Pasig",
+            deliveryLatitude = 14.5764,
+            deliveryLongitude = 121.0851,
+            pickupContactName = "Mark Reyes",
+            pickupContactPhone = "09170000000",
+            deliveryContactName = "Ana Santos",
+            deliveryContactPhone = "09178889999",
+            requestedPickupTime = "2025-05-02T08:45:00Z",
+            requestedDeliveryTime = "2025-05-02T10:15:00Z",
+            specialInstructions = null,
+            deliveryFee = 150.0,
+            status = DeliveryStatus.ACCEPTED,
+            createdAt = "2025-05-02T08:00:00Z",
+            updatedAt = "2025-05-02T09:00:00Z",
+            acceptedAt = "2025-05-02T08:30:00Z",
+            pickedUpAt = null,
+            deliveredAt = null
         )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp),
-                tint = color
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = color
-            )
-        }
-    }
-}
+    )
 
-@Composable
-fun StatCard(
-    title: String,
-    value: String,
-    icon: ImageVector,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = value,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = title,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-fun DeliveryRequestCard(
-    request: DeliveryRequest,
-    currentUserId: Int,
-    onAccept: (Int) -> Unit,
-    onUpdateStatus: (Int, DeliveryStatus) -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = request.itemDescription,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "From: ${request.pickupAddress}",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "To: ${request.deliveryAddress}",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                
-                StatusChip(status = request.status)
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "₱${request.deliveryFee}",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                // Show action buttons based on user role and request status
-                when {
-                    request.status == DeliveryStatus.PENDING && request.userId != currentUserId -> {
-                        Button(
-                            onClick = { onAccept(request.id) },
-                            modifier = Modifier.height(32.dp)
-                        ) {
-                            Text("Accept", fontSize = 12.sp)
-                        }
-                    }
-                    request.driverId == currentUserId && request.status == DeliveryStatus.ACCEPTED -> {
-                        Button(
-                            onClick = { onUpdateStatus(request.id, DeliveryStatus.PICKED_UP) },
-                            modifier = Modifier.height(32.dp)
-                        ) {
-                            Text("Pick Up", fontSize = 12.sp)
-                        }
-                    }
-                    request.driverId == currentUserId && request.status == DeliveryStatus.PICKED_UP -> {
-                        Button(
-                            onClick = { onUpdateStatus(request.id, DeliveryStatus.DELIVERED) },
-                            modifier = Modifier.height(32.dp)
-                        ) {
-                            Text("Deliver", fontSize = 12.sp)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun StatusChip(status: DeliveryStatus) {
-    val backgroundColor = when (status) {
-        DeliveryStatus.PENDING -> MaterialTheme.colorScheme.surfaceVariant
-        DeliveryStatus.ACCEPTED -> Color(0xFFE3F2FD)
-        DeliveryStatus.PICKED_UP -> Color(0xFFFFF3E0)
-        DeliveryStatus.IN_TRANSIT -> Color(0xFFFFF3E0)
-        DeliveryStatus.DELIVERED -> Color(0xFFE8F5E8)
-        DeliveryStatus.CANCELLED -> Color(0xFFFFEBEE)
-    }
-
-    val textColor = when (status) {
-        DeliveryStatus.PENDING -> MaterialTheme.colorScheme.onSurfaceVariant
-        DeliveryStatus.ACCEPTED -> Color(0xFF1976D2)
-        DeliveryStatus.PICKED_UP -> Color(0xFFE65100)
-        DeliveryStatus.IN_TRANSIT -> Color(0xFFE65100)
-        DeliveryStatus.DELIVERED -> Color(0xFF2E7D32)
-        DeliveryStatus.CANCELLED -> Color(0xFFC62828)
-    }
-
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = backgroundColor
-    ) {
-        Text(
-            text = status.displayName,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            color = textColor
+    MaterialTheme {
+        DashboardContent(
+            currentUser = mockUser,
+            isLoading = false,
+            deliveryRequests = mockRequests,
+            onCreateDelivery = {},
+            onViewDeliveries = {},
+            onViewProfile = {},
+            onAccept = {},
+            onUpdateStatus = { _, _ -> }
         )
     }
-} 
+}
