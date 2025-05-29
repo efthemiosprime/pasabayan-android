@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "249733420573",
+    "project_id": "pasabayan-436810",
+    "storage_bucket": "pasabayan-436810.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:249733420573:android:f1b8c3e5d6a7e9f2c4d5e6",
+        "android_client_info": {
+          "package_name": "com.efthemiosprime.pasabayan"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "249733420573-9dhgrdrq2ieiuveltjh36tn5r6o2mpjr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.efthemiosprime.pasabayan",
+            "certificate_hash": "22:8F:4E:3B:E4:85:C8:CE:C0:CC:2B:C0:15:EE:3D:83:99:27:D6:1F"
+          }
+        },
+        {
+          "client_id": "249733420573-2rfuqsub2eipc6m1ci8ht5mfpq5hsg7n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJcAHZKGxbnNcmoLkce4D6p6a5sTewKIY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "249733420573-2rfuqsub2eipc6m1ci8ht5mfpq5hsg7n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+} 
