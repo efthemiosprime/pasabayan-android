@@ -1,110 +1,112 @@
 package com.efthemiosprime.pasabayan.presentation.viewmodel
 
+import android.app.Activity
+import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.tasks.Task
 import com.efthemiosprime.pasabayan.data.model.User
 import com.efthemiosprime.pasabayan.domain.repository.AuthRepository
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
  * AuthViewModel manages authentication state and operations
- * Mirrors iOS AuthViewModel structure
+ * Mirrors iOS AuthViewModel structure with StateFlow integration
+ * Handles real Google Sign-In authentication with One Tap and regular fallback
  */
 class AuthViewModel(
     private val authRepository: AuthRepository
 ) : ViewModel() {
     
-    private val _authState = MutableStateFlow(AuthState())
-    val authState: StateFlow<AuthState> = _authState.asStateFlow()
-    
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-    
-    init {
-        checkAuthenticationStatus()
-    }
+    // Use repository's StateFlow directly
+    val isAuthenticated: StateFlow<Boolean> = authRepository.isAuthenticated
+    val currentUser: StateFlow<User?> = authRepository.currentUser
+    val isLoading: StateFlow<Boolean> = authRepository.isLoading
+    val error: StateFlow<String?> = authRepository.error
     
     /**
-     * Check if user is already authenticated
+     * Sign in with Google using activity result launchers
+     * Initiates Google Sign-In flow with One Tap and regular fallback
      */
-    private fun checkAuthenticationStatus() {
+    fun signInWithGoogle(
+        activity: Activity,
+        oneTapLauncher: ActivityResultLauncher<IntentSenderRequest>,
+        regularLauncher: ActivityResultLauncher<Intent>
+    ) {
         viewModelScope.launch {
-            _isLoading.value = true
-            try {
-                val currentUser = authRepository.getCurrentUser()
-                _authState.value = AuthState(
-                    isAuthenticated = currentUser != null,
-                    user = currentUser
-                )
-            } catch (e: Exception) {
-                _authState.value = AuthState(
-                    isAuthenticated = false,
-                    user = null,
-                    error = e.message
-                )
-            } finally {
-                _isLoading.value = false
+            authRepository.signInWithGoogle(activity, oneTapLauncher, regularLauncher).collect { result ->
+                result.onSuccess { authResponse ->
+                    // Success is handled by the StateFlow in AuthService
+                    println("🚀 AuthViewModel: Google Sign-In initiated successfully")
+                }.onFailure { exception ->
+                    // Error handling is managed by the repository's StateFlow
+                    println("❌ AuthViewModel: Google Sign-In initiation failed: ${exception.message}")
+                }
             }
         }
     }
     
     /**
-     * Sign in with Google
+     * Handle Google Sign-In result from activity
+     * This is called from MainActivity when the Google Sign-In activity returns
      */
-    fun signInWithGoogle() {
+    fun handleGoogleSignInResult(task: Task<GoogleSignInAccount>) {
         viewModelScope.launch {
-            _isLoading.value = true
-            try {
-                val user = authRepository.signInWithGoogle()
-                _authState.value = AuthState(
-                    isAuthenticated = true,
-                    user = user
-                )
-            } catch (e: Exception) {
-                _authState.value = _authState.value.copy(
-                    error = e.message ?: "Authentication failed"
-                )
-            } finally {
-                _isLoading.value = false
+            authRepository.handleGoogleSignInResult(task).collect { result ->
+                result.onSuccess { authResponse ->
+                    println("✅ AuthViewModel: Authentication successful - User: ${authResponse.data.user.name}")
+                }.onFailure { exception ->
+                    println("❌ AuthViewModel: Authentication failed: ${exception.message}")
+                }
             }
         }
     }
     
     /**
-     * Sign out
+     * Sign out current user
      */
     fun signOut() {
         viewModelScope.launch {
-            try {
-                authRepository.signOut()
-                _authState.value = AuthState(
-                    isAuthenticated = false,
-                    user = null
-                )
-            } catch (e: Exception) {
-                _authState.value = _authState.value.copy(
-                    error = e.message ?: "Sign out failed"
-                )
+            authRepository.signOut().collect { result ->
+                result.onSuccess {
+                    println("🔐 AuthViewModel: User signed out successfully")
+                }.onFailure { exception ->
+                    println("❌ AuthViewModel: Sign out failed: ${exception.message}")
+                }
             }
         }
     }
     
     /**
-     * Clear error
+     * Mock login for development/testing
      */
-    fun clearError() {
-        _authState.value = _authState.value.copy(error = null)
+    fun mockLogin() {
+        viewModelScope.launch {
+            authRepository.mockLogin().collect { result ->
+                result.onSuccess { authResponse ->
+                    println("🧪 AuthViewModel: Mock login successful - User: ${authResponse.data.user.name}")
+                }.onFailure { exception ->
+                    println("❌ AuthViewModel: Mock login failed: ${exception.message}")
+                }
+            }
+        }
     }
-}
-
-/**
- * Authentication state data class
- */
-data class AuthState(
-    val isAuthenticated: Boolean = false,
-    val user: User? = null,
-    val error: String? = null
-) 
+    
+    /**
+     * Get current user (suspend function)
+     */
+    suspend fun getCurrentUser(): User? {
+        return authRepository.getCurrentUser()
+    }
+    
+    /**
+     * Get current authentication token
+     */
+    suspend fun getToken(): String? {
+        return authRepository.getToken()
+    }
+} 

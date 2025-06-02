@@ -271,8 +271,7 @@ private fun ShipperHomeTab(
     packageViewModel: PackageViewModel,
     roleViewModel: RoleViewModel
 ) {
-    val authState by authViewModel.authState.collectAsState()
-    val user = authState.user
+    val currentUser by authViewModel.currentUser.collectAsState()
     val myPackages by packageViewModel.myPackageRequests.collectAsState()
     val scope = rememberCoroutineScope()
     
@@ -301,7 +300,7 @@ private fun ShipperHomeTab(
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             AsyncImage(
-                                model = user?.avatar,
+                                model = currentUser?.avatar,
                                 contentDescription = "Profile Picture",
                                 modifier = Modifier
                                     .size(50.dp)
@@ -323,7 +322,7 @@ private fun ShipperHomeTab(
                             )
                             
                             Text(
-                                text = user?.name ?: "User",
+                                text = currentUser?.name ?: "User",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -429,8 +428,7 @@ private fun CarrierHomeTab(
     carrierViewModel: CarrierViewModel,
     roleViewModel: RoleViewModel
 ) {
-    val authState by authViewModel.authState.collectAsState()
-    val user = authState.user
+    val currentUser by authViewModel.currentUser.collectAsState()
     val trips by carrierViewModel.trips.collectAsState()
     val totalEarnings by carrierViewModel.totalEarnings.collectAsState()
     val activeBookings by carrierViewModel.activeBookings.collectAsState()
@@ -471,7 +469,7 @@ private fun CarrierHomeTab(
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             AsyncImage(
-                                model = user?.avatar,
+                                model = currentUser?.avatar,
                                 contentDescription = "Profile Picture",
                                 modifier = Modifier
                                     .size(50.dp)
@@ -493,7 +491,7 @@ private fun CarrierHomeTab(
                             )
                             
                             Text(
-                                text = user?.name ?: "User",
+                                text = currentUser?.name ?: "User",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.SemiBold
                             )

@@ -1,61 +1,61 @@
 package com.efthemiosprime.pasabayan.data.repository
 
-import com.efthemiosprime.pasabayan.data.model.User
-import com.efthemiosprime.pasabayan.data.model.UserRole
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.tasks.Task
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
 import com.efthemiosprime.pasabayan.domain.repository.AuthRepository
-import kotlinx.coroutines.delay
+import com.efthemiosprime.pasabayan.data.model.AuthResponse
+import com.efthemiosprime.pasabayan.data.model.User
+import com.efthemiosprime.pasabayan.data.service.AuthService
 
 /**
- * Mock implementation of AuthRepository
- * Provides sample data for development and testing
- * Mirrors iOS mock authentication structure
+ * Authentication repository implementation
+ * Acts as a bridge between domain layer and data layer
+ * Integrates with the comprehensive AuthService for Google Sign-In with One Tap and regular fallback
  */
-class AuthRepositoryImpl : AuthRepository {
+class AuthRepositoryImpl(context: Context) : AuthRepository {
     
-    private var currentUser: User? = null
+    private val authService = AuthService.getInstance(context)
     
-    // Mock user data similar to iOS
-    private val mockUser = User(
-        id = 1,
-        name = "John Doe",
-        email = "john.doe@example.com",
-        avatar = "https://i.pravatar.cc/150?img=1",
-        phone = "+1234567890",
-        phoneVerified = true,
-        profileCompleted = true,
-        provider = "google",
-        providerId = "google_123456",
-        emailVerifiedAt = "2024-01-01T00:00:00Z",
-        createdAt = "2024-01-01T00:00:00Z",
-        updatedAt = "2024-01-01T00:00:00Z",
-        userTypes = listOf("shipper", "carrier"),
-        isActiveCarrier = true,
-        isActiveShipper = true,
-        rating = 4.8,
-        totalRatings = 142,
-        verificationLevel = "verified"
-    )
+    override val isAuthenticated: StateFlow<Boolean> = authService.isAuthenticated
+    override val currentUser: StateFlow<User?> = authService.currentUser
+    override val isLoading: StateFlow<Boolean> = authService.isLoading
+    override val error: StateFlow<String?> = authService.error
+    
+    override suspend fun signInWithGoogle(
+        activity: Activity,
+        oneTapLauncher: ActivityResultLauncher<IntentSenderRequest>,
+        regularLauncher: ActivityResultLauncher<Intent>
+    ): Flow<Result<AuthResponse>> = flow {
+        emit(authService.signInWithGoogle(activity, oneTapLauncher, regularLauncher))
+    }
+    
+    override suspend fun handleGoogleSignInResult(
+        task: Task<GoogleSignInAccount>
+    ): Flow<Result<AuthResponse>> = flow {
+        emit(authService.handleGoogleSignInResult(task))
+    }
+    
+    override suspend fun signOut(): Flow<Result<Unit>> = flow {
+        emit(authService.signOut())
+    }
     
     override suspend fun getCurrentUser(): User? {
-        // Simulate network delay
-        delay(500)
-        return currentUser
+        return authService.getCurrentUser()
     }
     
-    override suspend fun signInWithGoogle(): User {
-        // Simulate authentication process
-        delay(1000)
-        currentUser = mockUser
-        return mockUser
+    override suspend fun getToken(): String? {
+        return authService.getToken()
     }
     
-    override suspend fun signOut() {
-        // Simulate sign out process
-        delay(300)
-        currentUser = null
-    }
-    
-    override suspend fun isAuthenticated(): Boolean {
-        return currentUser != null
+    override suspend fun mockLogin(): Flow<Result<AuthResponse>> = flow {
+        emit(authService.mockLogin())
     }
 } 

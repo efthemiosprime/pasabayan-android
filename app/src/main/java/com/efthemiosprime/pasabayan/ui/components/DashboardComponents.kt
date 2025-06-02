@@ -498,8 +498,7 @@ fun ProfileView(
     roleViewModel: RoleViewModel,
     modifier: Modifier = Modifier
 ) {
-    val authState by authViewModel.authState.collectAsState()
-    val user = authState.user
+    val currentUser by authViewModel.currentUser.collectAsState()
     val currentRole by roleViewModel.currentRole.collectAsState()
     var showingLogoutAlert by remember { mutableStateOf(false) }
     
@@ -551,7 +550,7 @@ fun ProfileView(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         AsyncImage(
-                            model = user?.avatar,
+                            model = currentUser?.avatar,
                             contentDescription = "Profile Picture",
                             modifier = Modifier
                                 .size(100.dp)
@@ -570,19 +569,19 @@ fun ProfileView(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = user?.name ?: "User",
+                            text = currentUser?.name ?: "User",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.primary
                         )
                         
                         Text(
-                            text = user?.email ?: "",
+                            text = currentUser?.email ?: "",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         
-                        user?.phone?.let { phone ->
+                        currentUser?.phone?.let { phone ->
                             Text(
                                 text = phone,
                                 style = MaterialTheme.typography.bodyMedium,

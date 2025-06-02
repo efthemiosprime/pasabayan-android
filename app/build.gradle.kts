@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -69,6 +70,10 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     
+    // Coroutines
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+    
     // Networking
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlinx.serialization)
@@ -84,6 +89,10 @@ dependencies {
     
     // System UI
     implementation(libs.accompanist.systemuicontroller)
+    
+    // Authentication
+    implementation(libs.googleSignIn)
+    implementation(libs.play.services.identity)
     
     // Testing
     testImplementation(libs.junit)

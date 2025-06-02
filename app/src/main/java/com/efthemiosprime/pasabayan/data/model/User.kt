@@ -24,9 +24,9 @@ data class User(
     @SerialName("email_verified_at")
     val emailVerifiedAt: String? = null,
     @SerialName("created_at")
-    val createdAt: String,
+    val createdAt: String? = null,
     @SerialName("updated_at")
-    val updatedAt: String,
+    val updatedAt: String? = null,
     @SerialName("user_types")
     val userTypes: List<String> = emptyList(),
     @SerialName("is_active_carrier")
