@@ -1,0 +1,197 @@
+# Pasabayan Android Project - Cursor AI Rules
+
+## Project Overview
+- **Project Name**: Pasabayan
+- **Package**: com.efthemiosprime.pasabayan
+- **Type**: Android Kotlin/Compose Application
+- **Build System**: Gradle with Kotlin DSL (.kts)
+
+## Version Specifications (Always Follow These)
+
+### Android Configuration
+- **Compile SDK**: 35
+- **Target SDK**: 35
+- **Min SDK**: 33
+- **Application ID**: com.efthemiosprime.pasabayan
+- **Version Code**: 1
+- **Version Name**: 1.0
+
+### Java/Kotlin Versions
+- **Java Compatibility**: VERSION_11 (source & target)
+- **Kotlin JVM Target**: "11"
+- **Kotlin Version**: 2.0.0
+- **Kotlin Code Style**: official
+
+### Plugin Versions (from libs.versions.toml)
+- **Android Gradle Plugin (AGP)**: 8.8.1
+- **Kotlin Android Plugin**: 2.0.0
+- **Kotlin Compose Plugin**: 2.0.0
+
+### Library Versions (from libs.versions.toml)
+- **AndroidX Core KTX**: 1.16.0
+- **AndroidX Lifecycle Runtime KTX**: 2.9.0
+- **AndroidX Activity Compose**: 1.10.1
+- **Compose BOM**: 2024.04.01
+- **JUnit**: 4.13.2
+- **AndroidX JUnit**: 1.2.1
+- **Espresso Core**: 3.6.1
+
+### Gradle Configuration
+- **JVM Args**: -Xmx2048m -Dfile.encoding=UTF-8
+- **AndroidX**: true
+- **Non-Transitive R Class**: true
+- **Repositories**: Google, Maven Central
+
+## Code Generation Rules (CRITICAL)
+
+### Java 11 Compatibility Requirements:
+- **NEVER use Java 17+ features** (records, sealed classes, pattern matching, text blocks in switch)
+- **Use Java 11 compatible syntax only**:
+  - Traditional switch statements (not switch expressions)
+  - Standard try-with-resources
+  - var keyword is available (Java 10+)
+  - String.isBlank(), String.lines() methods available
+- **Avoid newer API calls** that require Java 17+
+- **Always verify compatibility** with Java 11 before suggesting code
+
+### Kotlin 2.0.0 Specific Guidelines:
+- **Use Kotlin 2.0.0 features appropriately**:
+  - Smart casts improvements
+  - Enhanced type inference
+  - Stable data classes
+  - Improved coroutines support
+- **Compose Compiler compatibility**: Use @Stable, @Immutable annotations correctly
+- **Avoid experimental features** unless explicitly requested
+- **Use modern Kotlin idioms**: scope functions, extension functions, data classes
+- **Coroutines**: Use structured concurrency patterns with current Kotlin version
+
+### Library Version Constraints:
+- **AndroidX Core KTX 1.16.0**: Use compatible extension functions only
+- **Compose BOM 2024.04.01**: Stick to stable Compose APIs from this BOM version
+- **Lifecycle Runtime KTX 2.9.0**: Use appropriate lifecycle-aware components
+- **Activity Compose 1.10.1**: Use setContent and ComponentActivity patterns
+- **Material 3**: Use Material 3 components, avoid Material 2 imports
+
+### Dependency Usage Rules:
+- **Always import from correct package versions**
+- **Check BOM coverage**: Use BOM-managed versions for Compose libraries
+- **Avoid version conflicts**: Don't suggest dependencies that conflict with existing versions
+- **Use latest stable APIs** within the specified version constraints
+
+## Build Configuration Rules
+
+### When modifying build files:
+1. **Always use version catalog references** from `gradle/libs.versions.toml`
+2. Use `alias(libs.plugins.*)` for plugins
+3. Use `libs.*` for dependencies
+4. **Never hardcode versions** in build.gradle.kts files
+5. Update `libs.versions.toml` when adding new dependencies
+
+### Project Structure:
+- **Root**: Project-level build.gradle.kts (plugins only)
+- **Module**: app/build.gradle.kts (android config + dependencies)
+- **Settings**: settings.gradle.kts (repository management)
+- **Versions**: gradle/libs.versions.toml (central version management)
+
+## Coding Guidelines
+
+### Kotlin/Android:
+- Use **Jetpack Compose** for UI
+- Follow **Material 3** design guidelines
+- Use **AndroidX** libraries exclusively
+- Implement **lifecycle-aware** components
+- Use **Kotlin coroutines** for async operations
+
+### File Structure:
+- Main source: `app/src/main/java/com/efthemiosprime/pasabayan/`
+- Resources: `app/src/main/res/`
+- Tests: `app/src/test/` and `app/src/androidTest/`
+
+### Dependencies Management:
+- **Always check libs.versions.toml first** before adding dependencies
+- Use BOM (Bill of Materials) for Compose dependencies
+- Group related dependencies in version catalog
+- Use consistent naming in version catalog (kebab-case)
+
+## AI Assistant Instructions
+
+### Code Generation MUST Follow:
+1. **Java 11 Target Compliance**: All generated code must compile and run on Java 11
+2. **Kotlin 2.0.0 Syntax**: Use current Kotlin version features appropriately
+3. **Library Version Awareness**: Only use APIs available in the specified library versions
+4. **Compose BOM Adherence**: Respect the Compose BOM version (2024.04.01) constraints
+5. **Package Structure**: Follow the established package: `com.efthemiosprime.pasabayan`
+
+### When adding dependencies:
+1. First check if already defined in `gradle/libs.versions.toml`
+2. If new, add to `[versions]` and `[libraries]` sections
+3. Use semantic versioning and latest stable versions
+4. Reference using `libs.*` in build.gradle.kts
+5. **Verify Java 11 and Kotlin 2.0.0 compatibility**
+
+### When updating versions:
+1. **Always update libs.versions.toml first**
+2. Check compatibility between versions
+3. **Ensure Java 11 compatibility is maintained**
+4. **Verify Kotlin 2.0.0 compatibility**
+5. Test build after version updates
+6. Update related dependencies together (e.g., all Compose libraries)
+
+### Code suggestions should:
+- Use Jetpack Compose modern UI patterns (compatible with BOM 2024.04.01)
+- Follow Material 3 design system
+- Implement proper lifecycle management (Lifecycle Runtime KTX 2.9.0)
+- Use type-safe navigation if needed
+- Follow Android Architecture Guidelines (MVVM/MVI)
+- **Target API 33+ features** (minSdk = 33)
+- **Avoid deprecated APIs** for target SDK 35
+
+### Build script modifications:
+- Maintain Kotlin DSL syntax (.kts)
+- Use type-safe accessors
+- Keep build files clean and organized
+- Follow Gradle best practices
+- **Ensure Java 11 toolchain compatibility**
+
+## Version Compatibility Matrix
+
+### APPROVED Combinations:
+- ✅ Java 11 + Kotlin 2.0.0 + AGP 8.8.1
+- ✅ Compose BOM 2024.04.01 + Kotlin 2.0.0
+- ✅ AndroidX Core KTX 1.16.0 + API 33+
+- ✅ Material 3 + Compose BOM 2024.04.01
+
+### FORBIDDEN Combinations:
+- ❌ Java 17+ language features
+- ❌ Compose versions outside BOM scope
+- ❌ Legacy support libraries (pre-AndroidX)
+- ❌ Kotlin versions != 2.0.0
+- ❌ API levels < 33 for new features
+
+## Important Notes
+- **This project uses Gradle Version Catalog** - always reference versions from libs.versions.toml
+- **Compose is enabled** - use Compose UI components
+- **Java 11 compatibility** - ensure all code works with Java 11
+- **Kotlin 2.0.0 specific** - use appropriate language features for this version
+- **Target modern Android** - Min SDK 33, use latest APIs where appropriate
+- **Follow AndroidX migration** - no legacy support libraries
+
+## File Watching Priority
+When analyzing or modifying the project, always check these files first:
+1. `gradle/libs.versions.toml` - for all version information
+2. `app/build.gradle.kts` - for module configuration
+3. `build.gradle.kts` - for project-wide settings
+4. `gradle.properties` - for build configuration
+5. `settings.gradle.kts` - for project structure
+
+## Compatibility Validation Checklist
+Before suggesting any code or dependency changes:
+- [ ] ✅ Compatible with Java 11 (no Java 17+ features)
+- [ ] ✅ Uses Kotlin 2.0.0 appropriate syntax
+- [ ] ✅ Respects library version constraints from libs.versions.toml
+- [ ] ✅ Works with Compose BOM 2024.04.01
+- [ ] ✅ Targets API 33+ appropriately
+- [ ] ✅ Uses AndroidX libraries only
+- [ ] ✅ Follows established package structure
+
+Remember: This configuration represents the current state. Always verify compatibility when suggesting updates or changes. 
