@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.ui.screens.dashboard
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.ui.graphics.painter.Painter
@@ -455,7 +456,10 @@ private fun CarrierHomeTab(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White) // Set your desired background color here
+
+
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -626,7 +630,9 @@ private fun MoreTabView(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp)),
                     onClick = { onMoreItemSelected(index) },
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White) // Set your desired background color here
+
                 ) {
                     Row(
                         modifier = Modifier
@@ -756,12 +762,16 @@ private fun ShipperHomeTabContent(
     onSignOut: () -> Unit
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+                .fillMaxSize()
+            .background(Color.White),
         contentAlignment = Alignment.Center
     ) {
         Column(
+            modifier = Modifier.background(Color.White),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
+
         ) {
             Text(
                 text = "Shipper Dashboard",
@@ -787,7 +797,9 @@ private fun CarrierHomeTabContent(
     onSignOut: () -> Unit
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+                .fillMaxSize()
+            .background(Color.White),
         contentAlignment = Alignment.Center
     ) {
         Column(

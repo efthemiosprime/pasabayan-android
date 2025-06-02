@@ -6,6 +6,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,10 +41,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.presentation.viewmodel.AuthViewModel
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
 
@@ -101,20 +104,9 @@ private fun AuthScreenContent(
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
+            .background(Color.White)
     ) {
         // Background gradient - matching iOS colors
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            Color.Blue.copy(alpha = 0.7f),
-                            Color.Magenta.copy(alpha = 0.8f)
-                        )
-                    )
-                )
-        )
         
         Column(
             modifier = Modifier
@@ -132,10 +124,10 @@ private fun AuthScreenContent(
             ) {
                 // App Icon
                 Icon(
-                    imageVector = Icons.Default.LocalShipping,
+                    painter = painterResource(id = R.drawable.intl_delivery),
                     contentDescription = "Pasabayan Logo",
                     modifier = Modifier.size(80.dp),
-                    tint = Color.White
+                    tint = Color.Black
                 )
                 
                 // Title and Subtitle
@@ -147,13 +139,13 @@ private fun AuthScreenContent(
                         text = "Pasabayan",
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = Color.Black
                     )
                     
                     Text(
                         text = "Your Trusted Delivery Partner",
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color.White.copy(alpha = 0.9f)
+                        color = Color.Black.copy(alpha = 0.9f)
                     )
                 }
             }
@@ -192,7 +184,8 @@ private fun AuthScreenContent(
                     onClick = onSignInWithApple,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .height(50.dp)
+                        .border(1.dp, Color.Black.copy(alpha = 0.5f),  shape = RoundedCornerShape(12.dp)),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
                         contentColor = Color.Black
@@ -221,11 +214,13 @@ private fun AuthScreenContent(
                     onClick = onSignInWithGoogle,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .height(50.dp)
+                        .border(1.dp, Color.Black.copy(alpha = 0.5f),  shape = RoundedCornerShape(12.dp)),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
                         contentColor = Color.Black
                     ),
+
                     shape = RoundedCornerShape(8.dp),
                     enabled = !isLoading
                 ) {
@@ -386,7 +381,7 @@ private fun FeatureRow(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
-                tint = Color.White
+                tint = Color.Black
             )
             
             Column {
@@ -394,13 +389,13 @@ private fun FeatureRow(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.White
+                    color = Color.Black
                 )
                 
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.8f)
+                    color = Color.Black.copy(alpha = 0.8f)
                 )
             }
         }

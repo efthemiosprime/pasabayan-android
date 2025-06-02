@@ -43,7 +43,9 @@ fun StatCard(
             .fillMaxWidth()
             .wrapContentHeight(),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White) // Set your desired background color here
+
     ) {
         Column(
             modifier = Modifier
@@ -176,7 +178,9 @@ fun CarrierStatusCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp) ,
+        colors = CardDefaults.cardColors(containerColor = Color.White) // Set your desired background color here
+
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -233,7 +237,9 @@ fun EmptyStateView(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White) // Set your desired background color here
+
     ) {
         Column(
             modifier = Modifier
@@ -313,7 +319,9 @@ fun PackageRequestCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White) // Set your desired background color here
+
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -536,7 +544,9 @@ fun ProfileView(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White) // Set your desired background color here
+
             ) {
                 Row(
                     modifier = Modifier
@@ -624,7 +634,9 @@ fun ProfileView(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -711,16 +723,24 @@ fun ProfileView(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+
             ) {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White)
+                )
+                {
+
                     if (currentRole == UserRole.CARRIER) {
                         // Carrier-specific menu items
                         ProfileMenuItem(
                             icon = Icons.Default.DirectionsCar,
                             title = "Vehicle Information",
                             subtitle = "Manage your delivery vehicle details",
-                            onClick = { showingVehicleInfo = true }
+                            onClick = { showingVehicleInfo = true },
                         )
                         
                         HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
@@ -1037,7 +1057,9 @@ fun StatItem(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+
     ) {
         Column(
             modifier = Modifier
