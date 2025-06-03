@@ -3,7 +3,6 @@ package com.efthemiosprime.pasabayan.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import com.efthemiosprime.pasabayan.data.model.Trip
 import com.efthemiosprime.pasabayan.data.model.TripStatus
-import com.efthemiosprime.pasabayan.data.model.VehicleType
 import com.efthemiosprime.pasabayan.data.model.Booking
 import com.efthemiosprime.pasabayan.data.model.BookingStatus
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +12,7 @@ import kotlinx.coroutines.delay
 
 /**
  * CarrierViewModel manages carrier operations, trips, and bookings
- * Mirrors iOS CarrierViewModel structure
+ * Mirrors iOS CarrierViewModel structure with exact Trip model
  */
 class CarrierViewModel : ViewModel() {
     
@@ -49,47 +48,10 @@ class CarrierViewModel : ViewModel() {
         get() = String.format("%.1f", _averageRating.value)
     
     private fun loadMockData() {
-        // Mock trips data
-        val mockTrips = listOf(
-            Trip(
-                id = 1,
-                carrierId = 1,
-                title = "Manila to Quezon City Route",
-                description = "Regular delivery route",
-                originLocation = "Manila",
-                destinationLocation = "Quezon City",
-                departureDate = "2024-01-15",
-                departureTime = "08:00:00",
-                arrivalDate = "2024-01-15",
-                arrivalTime = "10:00:00",
-                vehicleType = VehicleType.MOTORCYCLE,
-                maxWeight = 20.0,
-                pricePerKg = 50.0,
-                status = TripStatus.PLANNED,
-                createdAt = "2024-01-14T10:00:00Z",
-                updatedAt = "2024-01-14T10:00:00Z"
-            ),
-            Trip(
-                id = 2,
-                carrierId = 1,
-                title = "BGC to Makati Express",
-                description = "Fast delivery for urgent packages",
-                originLocation = "BGC Taguig",
-                destinationLocation = "Makati CBD",
-                departureDate = "2024-01-16",
-                departureTime = "14:00:00",
-                arrivalDate = "2024-01-16",
-                arrivalTime = "15:30:00",
-                vehicleType = VehicleType.CAR,
-                maxWeight = 50.0,
-                pricePerKg = 75.0,
-                status = TripStatus.COMPLETED,
-                createdAt = "2024-01-15T09:00:00Z",
-                updatedAt = "2024-01-16T15:30:00Z"
-            )
-        )
+        // Use the exact mock trips from iOS Trip.swift
+        _trips.value = Trip.mockTrips
         
-        // Mock bookings data
+        // Mock bookings data (keeping existing structure)
         val mockBookings = listOf(
             Booking(
                 id = 1,
@@ -115,7 +77,6 @@ class CarrierViewModel : ViewModel() {
             )
         )
         
-        _trips.value = mockTrips
         _activeBookings.value = mockBookings
     }
     
@@ -151,13 +112,21 @@ class CarrierViewModel : ViewModel() {
     }
     
     /**
-     * Load trips data
+     * Load trips data (matching iOS implementation)
      */
     suspend fun loadTrips() {
         _isLoading.value = true
         delay(500)
-        loadMockData()
+        // Reload mock data to simulate API call
+        _trips.value = Trip.mockTrips
         _isLoading.value = false
+    }
+    
+    /**
+     * Refresh trips data (for pull-to-refresh)
+     */
+    fun refreshTrips() {
+        _trips.value = Trip.mockTrips
     }
     
     /**
@@ -166,10 +135,25 @@ class CarrierViewModel : ViewModel() {
     suspend fun loadActiveBookings() {
         _isLoading.value = true
         delay(500)
-        // Filter active bookings
-        _activeBookings.value = _activeBookings.value.filter { 
-            it.status in listOf(BookingStatus.PENDING, BookingStatus.CONFIRMED)
-        }
+        // Simulate loading active bookings
         _isLoading.value = false
+    }
+    
+    /**
+     * Get trips filtered by status
+     */
+    fun getTripsFilteredBy(status: TripStatus?): List<Trip> {
+        return if (status == null) {
+            _trips.value
+        } else {
+            _trips.value.filter { it.tripStatus == status }
+        }
+    }
+    
+    /**
+     * Get trip count by status
+     */
+    fun getTripCountBy(status: TripStatus): Int {
+        return _trips.value.count { it.tripStatus == status }
     }
 } 

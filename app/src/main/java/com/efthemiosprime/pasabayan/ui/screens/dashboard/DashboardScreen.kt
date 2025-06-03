@@ -246,7 +246,10 @@ private fun CarrierDashboard(
                 roleViewModel = roleViewModel
             )
             1 -> AnalyticsView(modifier = Modifier.padding(innerPadding))
-            2 -> CarrierTripsView(modifier = Modifier.padding(innerPadding))
+            2 -> CarrierTripsView(
+                modifier = Modifier.padding(innerPadding),
+                carrierViewModel = carrierViewModel
+            )
             3 -> CarrierBookingsView(modifier = Modifier.padding(innerPadding))
             4 -> MoreTabView(
                 modifier = Modifier.padding(innerPadding),
@@ -526,7 +529,7 @@ private fun CarrierHomeTab(
                 ) {
                     StatCard(
                         title = "Active Trips",
-                        value = "${trips.filter { it.status == TripStatus.PLANNED }.size}",
+                        value = "${trips.filter { it.tripStatus == TripStatus.ACTIVE }.size}",
                         icon = Icons.Default.DriveEta,
                         color = Color.Green,
                         modifier = Modifier.weight(1f)
@@ -560,6 +563,37 @@ private fun CarrierHomeTab(
                         color = Color(0xFFFFD54F),
                         modifier = Modifier.weight(1f)
                     )
+                }
+            }
+        }
+        
+        item {
+            // Recent Trips Section
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Recent Trips",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+                
+                if (trips.isEmpty()) {
+                    EmptyStateView(
+                        icon = Icons.Default.DirectionsCar,
+                        title = "No trips yet",
+                        description = "Create your first trip to start accepting package delivery requests."
+                    )
+                } else {
+                    trips.take(3).forEach { trip ->
+                        TripCard(
+                            trip = trip,
+                            onTap = {
+                                // Handle trip tap - could navigate to trip details
+                                println("Tapped trip: ${trip.route}")
+                            }
+                        )
+                    }
                 }
             }
         }
