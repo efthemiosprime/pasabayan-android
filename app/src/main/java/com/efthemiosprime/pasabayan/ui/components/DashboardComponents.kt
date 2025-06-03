@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -93,7 +94,8 @@ fun StatCard(
 }
 
 /**
- * Role Switcher component matching iOS RoleSwitcherView
+ * Role Switcher View component matching iOS role switching behavior
+ * Only switches to carrier when API confirms is_active_carrier: true
  */
 @Composable
 fun RoleSwitcherView(
@@ -101,40 +103,138 @@ fun RoleSwitcherView(
     modifier: Modifier = Modifier
 ) {
     val currentRole by roleViewModel.currentRole.collectAsState()
+    val isLoading by roleViewModel.isLoading.collectAsState()
+    val errorMessage by roleViewModel.errorMessage.collectAsState()
+    val context = LocalContext.current
     
-    Row(
+    // Initialize RoleViewModel with context if not already done
+    LaunchedEffect(Unit) {
+        roleViewModel.initialize(context)
+    }
+    
+    Column(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        FilterChip(
-            onClick = { roleViewModel.switchRole(UserRole.SHIPPER) },
-            label = { Text("Shipper") },
-            selected = currentRole == UserRole.SHIPPER,
-            leadingIcon = if (currentRole == UserRole.SHIPPER) {
-                {
-                    Icon(
-                        Icons.Default.CheckCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            } else null
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            FilterChip(
+                onClick = { 
+                    if (!isLoading) {
+                        roleViewModel.switchRole(UserRole.SHIPPER)
+                    }
+                },
+                label = { 
+                    if (isLoading && currentRole == UserRole.SHIPPER) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(12.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Text("Shipper")
+                        }
+                    } else {
+                        Text("Shipper")
+                    }
+                },
+                selected = currentRole == UserRole.SHIPPER,
+                enabled = !isLoading,
+                leadingIcon = if (currentRole == UserRole.SHIPPER && !isLoading) {
+                    {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                } else null
+            )
+            
+            FilterChip(
+                onClick = { 
+                    if (!isLoading) {
+                        roleViewModel.clearError() // Clear any previous errors
+                        roleViewModel.switchRole(UserRole.CARRIER)
+                    }
+                },
+                label = { 
+                    if (isLoading && currentRole != UserRole.CARRIER) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(12.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Text("Carrier")
+                        }
+                    } else {
+                        Text("Carrier")
+                    }
+                },
+                selected = currentRole == UserRole.CARRIER,
+                enabled = !isLoading,
+                leadingIcon = if (currentRole == UserRole.CARRIER && !isLoading) {
+                    {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                } else null
+            )
+        }
         
-        FilterChip(
-            onClick = { roleViewModel.switchRole(UserRole.CARRIER) },
-            label = { Text("Carrier") },
-            selected = currentRole == UserRole.CARRIER,
-            leadingIcon = if (currentRole == UserRole.CARRIER) {
-                {
+        // Show error message if any
+        errorMessage?.let { error ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Icon(
-                        Icons.Default.CheckCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        Icons.Default.Warning,
+                        contentDescription = "Error",
+                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.size(16.dp)
                     )
+                    
+                    Text(
+                        text = error,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.weight(1f)
+                    )
+                    
+                    IconButton(
+                        onClick = { roleViewModel.clearError() },
+                        modifier = Modifier.size(20.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Dismiss",
+                            tint = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
-            } else null
-        )
+            }
+        }
     }
 }
 

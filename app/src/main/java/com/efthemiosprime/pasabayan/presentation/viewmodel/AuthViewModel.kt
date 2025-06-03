@@ -93,10 +93,10 @@ class AuthViewModel(
                     println("❌ AuthViewModel: Mock login failed: ${exception.message}")
                 }
             }
-        }
     }
-    
-    /**
+}
+
+/**
      * Get current user (suspend function)
      */
     suspend fun getCurrentUser(): User? {

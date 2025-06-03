@@ -184,7 +184,7 @@ data class PhoneVerificationResponse(
 )
 
 /**
- * Phone verification data
+ * OTP verification data
  */
 @Serializable
 data class PhoneVerificationData(
@@ -224,4 +224,23 @@ data class PhoneVerificationStatus(
 enum class UserRole {
     SHIPPER,
     CARRIER
-} 
+}
+
+/**
+ * User data response for getCurrentUser API
+ * This API only returns user data, no token
+ */
+@Serializable
+data class UserDataResponse(
+    val success: Boolean = true,
+    val message: String? = null,
+    val data: UserData
+)
+
+/**
+ * User data wrapper for getCurrentUser response
+ */
+@Serializable
+data class UserData(
+    val user: User
+) 

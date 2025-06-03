@@ -180,7 +180,7 @@ fun ProfileTabContent(
             Text("Sign Out")
         }
     }
-}
+} 
 
 // ===== PREVIEW FUNCTIONS =====
 

@@ -32,6 +32,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import okhttp3.MediaType.Companion.toMediaType
@@ -161,21 +163,30 @@ class AuthService(private val context: Context) {
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .addInterceptor { chain ->
-                val request = chain.request().newBuilder()
+                val originalRequest = chain.request()
+                val requestBuilder = originalRequest.newBuilder()
                 
-                // Add auth token if available
-                CoroutineScope(Dispatchers.IO).launch {
-                    getToken()?.let { token ->
-                        request.addHeader("Authorization", "Bearer $token")
+                // Get auth token synchronously using runBlocking
+                try {
+                    val token = kotlinx.coroutines.runBlocking { getToken() }
+                    if (token != null) {
+                        requestBuilder.addHeader("Authorization", "Bearer $token")
+                        Log.d(TAG, "🔐 Added Authorization header to request")
+                        Log.d(TAG, "   Token length: ${token.length}")
+                        Log.d(TAG, "   Token preview: ${token.take(20)}...")
+                    } else {
+                        Log.w(TAG, "⚠️ No auth token available for request")
                     }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to get token for request: ${e.message}")
                 }
                 
-                chain.proceed(request.build())
+                chain.proceed(requestBuilder.build())
             }
             .build()
         
         return Retrofit.Builder()
-            .baseUrl(APIService.BASE_URL)
+            .baseUrl("${APIService.BASE_URL}/")
             .client(client)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
@@ -343,7 +354,7 @@ class AuthService(private val context: Context) {
      */
     private suspend fun saveUser(user: User) {
         try {
-            val userJson = json.encodeToString(User.serializer(), user)
+            val userJson = json.encodeToString(user)
             context.dataStore.edit { preferences ->
                 preferences[USER_PREFERENCE_KEY] = userJson
             }
@@ -363,7 +374,7 @@ class AuthService(private val context: Context) {
                 preferences[USER_PREFERENCE_KEY]
             }.first()
             
-            userJson?.let { json.decodeFromString(User.serializer(), it) }
+            userJson?.let { json.decodeFromString<User>(it) }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get user data: ${e.message}", e)
             null
@@ -382,6 +393,66 @@ class AuthService(private val context: Context) {
         _currentUser.value = user
         
         Log.d(TAG, "Authentication status checked - Authenticated: ${_isAuthenticated.value}")
+    }
+    
+    /**
+     * Refresh current user data from API
+     * Mirrors iOS refreshUserData method
+     */
+    suspend fun refreshCurrentUser(): Result<User> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            Log.d(TAG, "🔄 Refreshing current user data from API")
+            val response = apiService.getCurrentUser()
+            
+            if (response.success) {
+                val user = response.data.user
+                saveUser(user)
+                _currentUser.value = user
+                Log.d(TAG, "✅ User data refreshed successfully")
+                Result.success(user)
+            } else {
+                Log.e(TAG, "❌ Failed to refresh user data: ${response.message}")
+                Result.failure(Exception(response.message))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Exception while refreshing user data", e)
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Toggle carrier status with API call
+     * Mirrors iOS toggleCarrierStatus method
+     * Uses authenticated API service with proper headers
+     */
+    suspend fun toggleCarrierStatus(): CarrierStatusResponse = withContext(Dispatchers.IO) {
+        Log.d(TAG, "🚛 Making authenticated toggleCarrierStatus API call")
+        return@withContext apiService.toggleCarrierStatus()
+    }
+    
+    /**
+     * Check carrier profile to see if user is already a carrier
+     * Returns Result with success/failure for caching
+     */
+    suspend fun checkCarrierProfile(): Result<Boolean> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            Log.d(TAG, "🔍 Checking carrier profile status")
+            val response = apiService.getCarrierProfile()
+            Log.d(TAG, "✅ Carrier profile check successful - user IS a carrier")
+            Result.success(true)
+        } catch (e: Exception) {
+            when {
+                e.message?.contains("403") == true || 
+                e.message?.contains("forbidden", ignoreCase = true) == true -> {
+                    Log.d(TAG, "🚫 Carrier profile check returned 403 - user is NOT a carrier")
+                    Result.success(false)
+                }
+                else -> {
+                    Log.e(TAG, "❌ Carrier profile check failed with error: ${e.message}")
+                    Result.failure(e)
+                }
+            }
+        }
     }
     
     /**
