@@ -41,6 +41,11 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 import com.efthemiosprime.pasabayan.data.model.*
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
 
 // DataStore extension
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "auth_preferences")
@@ -88,6 +93,10 @@ class AuthService(private val context: Context) {
     private lateinit var oneTapClient: SignInClient
     private lateinit var signInRequest: BeginSignInRequest
     
+    // Facebook Sign-In clients
+    private lateinit var facebookCallbackManager: CallbackManager
+    private lateinit var facebookLoginManager: LoginManager
+    
     // API Service
     private val apiService: APIService
     
@@ -99,6 +108,7 @@ class AuthService(private val context: Context) {
     
     init {
         setupGoogleSignIn()
+        setupFacebookSignIn()
         apiService = createApiService()
         
         // Check authentication status on initialization
@@ -137,6 +147,22 @@ class AuthService(private val context: Context) {
             Log.d(TAG, "Google Sign-In configured successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to setup Google Sign-In: ${e.message}", e)
+        }
+    }
+    
+    /**
+     * Setup Facebook Sign-In configuration
+     * Mirrors iOS setupFacebookSignIn method
+     */
+    private fun setupFacebookSignIn() {
+        try {
+            // Initialize Facebook callback manager and login manager
+            facebookCallbackManager = CallbackManager.Factory.create()
+            facebookLoginManager = LoginManager.getInstance()
+            
+            Log.d(TAG, "Facebook Sign-In configured successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to setup Facebook Sign-In: ${e.message}", e)
         }
     }
     
@@ -277,6 +303,73 @@ class AuthService(private val context: Context) {
                 Result.failure(e)
             }
         }
+    
+    /**
+     * Sign in with Facebook using LoginManager
+     * Mirrors iOS signInWithFacebook method
+     * Uses Facebook SDK LoginManager to get access token and exchange with backend
+     */
+    suspend fun signInWithFacebook(activity: Activity): Result<AuthResponse> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            _isLoading.value = true
+            _error.value = null
+            
+            Log.d(TAG, "🚀 Starting Facebook Sign-In process")
+            Log.d(TAG, "   - Activity: ${activity.javaClass.simpleName}")
+            
+            // Register Facebook callback
+            facebookLoginManager.registerCallback(facebookCallbackManager, object : FacebookCallback<LoginResult> {
+                override fun onSuccess(result: LoginResult) {
+                    Log.d(TAG, "✅ Facebook Sign-In successful, got access token")
+                    
+                    val accessToken = result.accessToken.token
+                    Log.d(TAG, "🔍 Access Token: ${accessToken.take(20)}...")
+                    
+                    // Exchange Facebook token with backend
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val authResult = authenticateWithBackend("facebook", accessToken)
+                            authResult.onSuccess { response ->
+                                Log.d(TAG, "✅ Facebook authentication successful - User: ${response.data.user.name}")
+                            }.onFailure { exception ->
+                                Log.e(TAG, "❌ Facebook backend authentication failed: ${exception.message}")
+                                _isLoading.value = false
+                                _error.value = "Facebook authentication failed: ${exception.message}"
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "❌ Facebook authentication error: ${e.message}", e)
+                            _isLoading.value = false
+                            _error.value = "Facebook authentication failed: ${e.message}"
+                        }
+                    }
+                }
+                
+                override fun onCancel() {
+                    Log.d(TAG, "🚫 Facebook Sign-In cancelled by user")
+                    _isLoading.value = false
+                    _error.value = "Facebook Sign-In cancelled"
+                }
+                
+                override fun onError(error: FacebookException) {
+                    Log.e(TAG, "❌ Facebook Sign-In error: ${error.message}", error)
+                    _isLoading.value = false
+                    _error.value = "Facebook Sign-In failed: ${error.message}"
+                }
+            })
+            
+            // Start Facebook login with required permissions
+            facebookLoginManager.logInWithReadPermissions(activity, listOf("public_profile", "email"))
+            
+            Log.d(TAG, "📱 Facebook Sign-In intent launched, waiting for result...")
+            Result.failure(Exception("Facebook Sign-in in progress"))
+            
+        } catch (e: Exception) {
+            _isLoading.value = false
+            _error.value = e.message
+            Log.e(TAG, "❌ Facebook Sign-In failed: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
     
     /**
      * Authenticate with backend API
@@ -585,5 +678,13 @@ class AuthService(private val context: Context) {
             Log.e(TAG, "Mock login failed: ${e.message}", e)
             Result.failure(e)
         }
+    }
+    
+    /**
+     * Get Facebook callback manager for activity result handling
+     * Mirrors iOS callback handling pattern
+     */
+    fun getFacebookCallbackManager(): CallbackManager {
+        return facebookCallbackManager
     }
 } 

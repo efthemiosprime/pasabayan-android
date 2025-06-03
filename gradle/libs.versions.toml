@@ -26,6 +26,7 @@ googleSignIn = "21.2.0"
 playServicesAuth = "21.2.0"
 playServicesIdentity = "18.1.0"
 googleServices = "4.4.2"
+facebookLogin = "17.0.2"
 # Coroutines
 kotlinxCoroutines = "1.8.0"
 
@@ -62,6 +63,7 @@ androidx-material-icons-extended = { group = "androidx.compose.material", name =
 # Authentication libraries
 googleSignIn = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 play-services-identity = { group = "com.google.android.gms", name = "play-services-identity", version.ref = "playServicesIdentity" }
+facebook-login = { group = "com.facebook.android", name = "facebook-login", version.ref = "facebookLogin" }
 # Coroutines
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }

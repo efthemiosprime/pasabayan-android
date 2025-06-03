@@ -93,6 +93,7 @@ dependencies {
     // Authentication
     implementation(libs.googleSignIn)
     implementation(libs.play.services.identity)
+    implementation(libs.facebook.login)
     
     // Testing
     testImplementation(libs.junit)

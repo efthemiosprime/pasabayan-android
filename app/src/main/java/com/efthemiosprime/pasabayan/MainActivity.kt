@@ -136,6 +136,17 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    
+    /**
+     * Handle activity results for Facebook login
+     * Required by Facebook SDK to process login callbacks
+     */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        
+        // Handle Facebook login callback
+        authService.getFacebookCallbackManager().onActivityResult(requestCode, resultCode, data)
+    }
 }
 
 @Preview(showBackground = true)

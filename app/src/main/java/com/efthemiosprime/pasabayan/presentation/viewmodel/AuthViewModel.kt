@@ -30,7 +30,7 @@ class AuthViewModel(
     
     /**
      * Sign in with Google using activity result launchers
-     * Initiates Google Sign-In flow with One Tap and regular fallback
+     * Supports both One Tap and regular Google Sign-In fallback
      */
     fun signInWithGoogle(
         activity: Activity,
@@ -38,15 +38,31 @@ class AuthViewModel(
         regularLauncher: ActivityResultLauncher<Intent>
     ) {
         viewModelScope.launch {
-            authRepository.signInWithGoogle(activity, oneTapLauncher, regularLauncher).collect { result ->
-                result.onSuccess { authResponse ->
-                    // Success is handled by the StateFlow in AuthService
-                    println("🚀 AuthViewModel: Google Sign-In initiated successfully")
-                }.onFailure { exception ->
-                    // Error handling is managed by the repository's StateFlow
-                    println("❌ AuthViewModel: Google Sign-In initiation failed: ${exception.message}")
+            authRepository.signInWithGoogle(activity, oneTapLauncher, regularLauncher)
+                .collect { result ->
+                    result.onSuccess { response ->
+                        // Authentication successful - state is managed by AuthService
+                    }.onFailure { exception ->
+                        // Error handling is managed by AuthService
+                    }
                 }
-            }
+        }
+    }
+    
+    /**
+     * Sign in with Facebook using LoginManager
+     * Mirrors iOS AuthViewModel signInWithFacebook method
+     */
+    fun signInWithFacebook(activity: Activity) {
+        viewModelScope.launch {
+            authRepository.signInWithFacebook(activity)
+                .collect { result ->
+                    result.onSuccess { response ->
+                        // Authentication successful - state is managed by AuthService
+                    }.onFailure { exception ->
+                        // Error handling is managed by AuthService
+                    }
+                }
         }
     }
     
@@ -93,10 +109,10 @@ class AuthViewModel(
                     println("❌ AuthViewModel: Mock login failed: ${exception.message}")
                 }
             }
+        }
     }
-}
 
-/**
+    /**
      * Get current user (suspend function)
      */
     suspend fun getCurrentUser(): User? {

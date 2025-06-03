@@ -34,7 +34,8 @@ class AuthRepositoryImpl(context: Context) : AuthRepository {
         oneTapLauncher: ActivityResultLauncher<IntentSenderRequest>,
         regularLauncher: ActivityResultLauncher<Intent>
     ): Flow<Result<AuthResponse>> = flow {
-        emit(authService.signInWithGoogle(activity, oneTapLauncher, regularLauncher))
+        val result = authService.signInWithGoogle(activity, oneTapLauncher, regularLauncher)
+        emit(result)
     }
     
     override suspend fun handleGoogleSignInResult(
@@ -57,5 +58,12 @@ class AuthRepositoryImpl(context: Context) : AuthRepository {
     
     override suspend fun mockLogin(): Flow<Result<AuthResponse>> = flow {
         emit(authService.mockLogin())
+    }
+    
+    override suspend fun signInWithFacebook(
+        activity: Activity
+    ): Flow<Result<AuthResponse>> = flow {
+        val result = authService.signInWithFacebook(activity)
+        emit(result)
     }
 } 

@@ -1,3 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Pasabayan</string>
+    
+    <!-- Facebook Configuration -->
+    <string name="facebook_app_id">630484743358736</string>
+    <string name="facebook_client_token">125ecbf0bd9869a2483292dc92ec78e8</string>
+    <string name="facebook_login_protocol_scheme">fb630484743358736</string>
 </resources>

@@ -69,11 +69,6 @@ fun AuthScreen(
     AuthScreenContent(
         isLoading = isLoading,
         error = error,
-        onSignInWithApple = { 
-            // TODO: Implement Apple Sign-In for Android
-            // For now, use mock login
-            authViewModel.mockLogin()
-        },
         onSignInWithGoogle = { 
             // Use real Google Sign-In if available, otherwise mock
             if (activity != null && googleOneTapLauncher != null && googleRegularSignInLauncher != null) {
@@ -84,11 +79,13 @@ fun AuthScreen(
             }
         },
         onSignInWithFacebook = {
-            // TODO: Implement Facebook Sign-In
-            authViewModel.mockLogin()
-        },
-        onMockLogin = {
-            authViewModel.mockLogin()
+            // Use real Facebook Sign-In if available, otherwise mock
+            if (activity != null) {
+                authViewModel.signInWithFacebook(activity)
+            } else {
+                // Fallback to mock for preview/testing
+                authViewModel.mockLogin()
+            }
         }
     )
 }
@@ -97,10 +94,8 @@ fun AuthScreen(
 private fun AuthScreenContent(
     isLoading: Boolean,
     error: String?,
-    onSignInWithApple: () -> Unit,
     onSignInWithGoogle: () -> Unit,
-    onSignInWithFacebook: () -> Unit,
-    onMockLogin: () -> Unit
+    onSignInWithFacebook: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -179,36 +174,6 @@ private fun AuthScreenContent(
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Sign in with Apple
-                Button(
-                    onClick = onSignInWithApple,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .border(1.dp, Color.Black.copy(alpha = 0.5f),  shape = RoundedCornerShape(12.dp)),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    enabled = !isLoading
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "🍎", // Apple emoji as placeholder
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = "Continue with Apple",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-                
                 // Sign in with Google
                 Button(
                     onClick = onSignInWithGoogle,
@@ -220,7 +185,6 @@ private fun AuthScreenContent(
                         containerColor = Color.White,
                         contentColor = Color.Black
                     ),
-
                     shape = RoundedCornerShape(8.dp),
                     enabled = !isLoading
                 ) {
@@ -266,35 +230,6 @@ private fun AuthScreenContent(
                         )
                         Text(
                             text = "Continue with Facebook",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-                
-                // Demo Login Button
-                Button(
-                    onClick = onMockLogin,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Green,
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    enabled = !isLoading
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "👤",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = "Demo Login",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Medium
                         )
@@ -409,10 +344,8 @@ fun AuthScreenPreview() {
         AuthScreenContent(
             isLoading = false,
             error = null,
-            onSignInWithApple = { },
             onSignInWithGoogle = { },
-            onSignInWithFacebook = { },
-            onMockLogin = { }
+            onSignInWithFacebook = { }
         )
     }
 }
@@ -424,10 +357,8 @@ fun AuthScreenLoadingPreview() {
         AuthScreenContent(
             isLoading = true,
             error = null,
-            onSignInWithApple = { },
             onSignInWithGoogle = { },
-            onSignInWithFacebook = { },
-            onMockLogin = { }
+            onSignInWithFacebook = { }
         )
     }
 }
@@ -439,10 +370,8 @@ fun AuthScreenErrorPreview() {
         AuthScreenContent(
             isLoading = false,
             error = "Authentication failed. Please try again.",
-            onSignInWithApple = { },
             onSignInWithGoogle = { },
-            onSignInWithFacebook = { },
-            onMockLogin = { }
+            onSignInWithFacebook = { }
         )
     }
 }
@@ -454,10 +383,8 @@ fun AuthScreenDarkPreview() {
         AuthScreenContent(
             isLoading = false,
             error = null,
-            onSignInWithApple = { },
             onSignInWithGoogle = { },
-            onSignInWithFacebook = { },
-            onMockLogin = { }
+            onSignInWithFacebook = { }
         )
     }
 } 

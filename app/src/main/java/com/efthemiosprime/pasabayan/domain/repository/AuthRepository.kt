@@ -35,6 +35,14 @@ interface AuthRepository {
     ): Flow<Result<AuthResponse>>
     
     /**
+     * Sign in with Facebook using LoginManager
+     * Mirrors iOS signInWithFacebook method
+     */
+    suspend fun signInWithFacebook(
+        activity: Activity
+    ): Flow<Result<AuthResponse>>
+    
+    /**
      * Handle Google Sign-In result from activity
      */
     suspend fun handleGoogleSignInResult(
