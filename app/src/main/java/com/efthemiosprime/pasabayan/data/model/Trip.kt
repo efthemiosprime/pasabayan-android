@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
+import com.efthemiosprime.pasabayan.data.common.ValidationResult
+import com.efthemiosprime.pasabayan.data.common.Validation
+import com.efthemiosprime.pasabayan.data.common.validate
 
 /**
  * Trip model exactly matching iOS Trip.swift structure
@@ -109,6 +112,109 @@ data class Trip(
     
     val formattedCapacity: String
         get() = String.format("%.1fkg, %.1fL", availableWeightKg, availableSpaceLiters)
+    
+    // MARK: - Additional Computed Properties
+    
+    val hasCapacity: Boolean
+        get() = availableWeightKg > 0 && availableSpaceLiters > 0
+    
+    val isActive: Boolean
+        get() = tripStatus == TripStatus.ACTIVE
+    
+    val isCompleted: Boolean
+        get() = tripStatus == TripStatus.COMPLETED
+    
+    val isCancelled: Boolean
+        get() = tripStatus == TripStatus.CANCELLED
+    
+    val isScheduled: Boolean
+        get() = tripStatus == TripStatus.SCHEDULED
+    
+    // MARK: - Functional Update Methods (Immutable)
+    
+    /**
+     * Update trip status functionally
+     */
+    fun updateStatus(newStatus: TripStatus): Trip = copy(tripStatus = newStatus)
+    
+    /**
+     * Update available capacity functionally
+     */
+    fun updateCapacity(weightKg: Double, spaceLiters: Double): Trip = 
+        copy(availableWeightKg = weightKg, availableSpaceLiters = spaceLiters)
+    
+    /**
+     * Reduce capacity after booking (immutable)
+     */
+    fun reduceCapacity(weightKg: Double, spaceLiters: Double): Trip = copy(
+        availableWeightKg = (availableWeightKg - weightKg).coerceAtLeast(0.0),
+        availableSpaceLiters = (availableSpaceLiters - spaceLiters).coerceAtLeast(0.0)
+    )
+    
+    /**
+     * Update price functionally
+     */
+    fun updatePrice(newPrice: Double): Trip = copy(pricePerKg = newPrice)
+    
+    /**
+     * Update special notes functionally
+     */
+    fun updateNotes(newNotes: String?): Trip = copy(specialNotes = newNotes)
+    
+    /**
+     * Update departure date functionally
+     */
+    fun updateDepartureDate(newDate: String): Trip = copy(departureDate = newDate)
+    
+    /**
+     * Update arrival date functionally
+     */
+    fun updateArrivalDate(newDate: String): Trip = copy(arrivalDate = newDate)
+    
+    /**
+     * Mark trip as active functionally
+     */
+    fun markAsActive(): Trip = copy(tripStatus = TripStatus.ACTIVE)
+    
+    /**
+     * Mark trip as completed functionally
+     */
+    fun markAsCompleted(): Trip = copy(tripStatus = TripStatus.COMPLETED)
+    
+    /**
+     * Cancel trip functionally
+     */
+    fun cancel(): Trip = copy(tripStatus = TripStatus.CANCELLED)
+    
+    // MARK: - Validation Methods (Pure Functions)
+    
+    /**
+     * Validate trip data
+     */
+    fun validate(): ValidationResult = validate {
+        validate(Validation.validateRequired(originCity, "Origin city"))
+        validate(Validation.validateRequired(destinationCity, "Destination city"))
+        validate(Validation.validateISODate(departureDate, "Departure date"))
+        validate(Validation.validateISODate(arrivalDate, "Arrival date"))
+        validate(Validation.validateWeight(availableWeightKg))
+        validate(Validation.validatePositiveNumber(availableSpaceLiters, "Available space"))
+        validate(Validation.validatePrice(pricePerKg))
+    }
+    
+    /**
+     * Validate if trip can accept booking
+     */
+    fun canAcceptBooking(requiredWeight: Double, requiredSpace: Double): ValidationResult {
+        val errors = mutableListOf<String>()
+        
+        when {
+            !isActive && !isScheduled -> errors.add("Trip is not accepting bookings")
+            availableWeightKg < requiredWeight -> errors.add("Insufficient weight capacity")
+            availableSpaceLiters < requiredSpace -> errors.add("Insufficient space capacity")
+        }
+        
+        return if (errors.isEmpty()) ValidationResult.Valid else ValidationResult.Invalid(errors)
+    }
     
     companion object {
         // MARK: - Static Mock Data (exactly matching iOS)

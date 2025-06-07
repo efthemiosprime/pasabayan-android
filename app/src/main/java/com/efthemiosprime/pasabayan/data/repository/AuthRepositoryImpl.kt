@@ -10,10 +10,15 @@ import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.catch
 import com.efthemiosprime.pasabayan.domain.repository.AuthRepository
 import com.efthemiosprime.pasabayan.data.model.AuthResponse
 import com.efthemiosprime.pasabayan.data.model.User
 import com.efthemiosprime.pasabayan.data.service.AuthService
+import com.efthemiosprime.pasabayan.data.common.Result
+import com.efthemiosprime.pasabayan.data.common.AppError
+import com.efthemiosprime.pasabayan.data.common.resultOf
 
 /**
  * Authentication repository implementation
@@ -34,36 +39,56 @@ class AuthRepositoryImpl(context: Context) : AuthRepository {
         oneTapLauncher: ActivityResultLauncher<IntentSenderRequest>,
         regularLauncher: ActivityResultLauncher<Intent>
     ): Flow<Result<AuthResponse>> = flow {
-        val result = authService.signInWithGoogle(activity, oneTapLauncher, regularLauncher)
-        emit(result)
+        emit(resultOf {
+            val serviceResult = authService.signInWithGoogle(activity, oneTapLauncher, regularLauncher)
+            // Convert Kotlin Result to our functional Result type
+            serviceResult.getOrThrow()
+        })
+    }.catch { exception ->
+        emit(Result.Failure(AppError.AuthenticationError(exception.message ?: "Authentication failed")))
     }
     
     override suspend fun handleGoogleSignInResult(
         task: Task<GoogleSignInAccount>
     ): Flow<Result<AuthResponse>> = flow {
-        emit(authService.handleGoogleSignInResult(task))
+        emit(resultOf {
+            authService.handleGoogleSignInResult(task).getOrThrow()
+        })
+    }.catch { exception ->
+        emit(Result.Failure(AppError.AuthenticationError(exception.message ?: "Google sign-in failed")))
     }
     
     override suspend fun signOut(): Flow<Result<Unit>> = flow {
-        emit(authService.signOut())
+        emit(resultOf {
+            authService.signOut().getOrThrow()
+        })
+    }.catch { exception ->
+        emit(Result.Failure(AppError.UnknownError(exception.message ?: "Sign out failed", exception)))
     }
     
-    override suspend fun getCurrentUser(): User? {
-        return authService.getCurrentUser()
-    }
+    override suspend fun getCurrentUser(): User? = resultOf {
+        authService.getCurrentUser()
+    }.getOrNull()
     
-    override suspend fun getToken(): String? {
-        return authService.getToken()
-    }
+    override suspend fun getToken(): String? = resultOf {
+        authService.getToken()
+    }.getOrNull()
     
     override suspend fun mockLogin(): Flow<Result<AuthResponse>> = flow {
-        emit(authService.mockLogin())
+        emit(resultOf {
+            authService.mockLogin().getOrThrow()
+        })
+    }.catch { exception ->
+        emit(Result.Failure(AppError.AuthenticationError(exception.message ?: "Mock login failed")))
     }
     
     override suspend fun signInWithFacebook(
         activity: Activity
     ): Flow<Result<AuthResponse>> = flow {
-        val result = authService.signInWithFacebook(activity)
-        emit(result)
+        emit(resultOf {
+            authService.signInWithFacebook(activity).getOrThrow()
+        })
+    }.catch { exception ->
+        emit(Result.Failure(AppError.AuthenticationError(exception.message ?: "Facebook sign-in failed")))
     }
 } 

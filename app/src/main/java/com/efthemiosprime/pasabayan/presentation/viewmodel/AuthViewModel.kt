@@ -10,6 +10,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
 import com.efthemiosprime.pasabayan.data.model.User
 import com.efthemiosprime.pasabayan.domain.repository.AuthRepository
+import com.efthemiosprime.pasabayan.data.common.Result
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
@@ -40,10 +41,13 @@ class AuthViewModel(
         viewModelScope.launch {
             authRepository.signInWithGoogle(activity, oneTapLauncher, regularLauncher)
                 .collect { result ->
-                    result.onSuccess { response ->
-                        // Authentication successful - state is managed by AuthService
-                    }.onFailure { exception ->
-                        // Error handling is managed by AuthService
+                    when (result) {
+                        is Result.Success -> {
+                            // Authentication successful - state is managed by AuthService
+                        }
+                        is Result.Failure -> {
+                            // Error handling is managed by AuthService
+                        }
                     }
                 }
         }
@@ -57,10 +61,13 @@ class AuthViewModel(
         viewModelScope.launch {
             authRepository.signInWithFacebook(activity)
                 .collect { result ->
-                    result.onSuccess { response ->
-                        // Authentication successful - state is managed by AuthService
-                    }.onFailure { exception ->
-                        // Error handling is managed by AuthService
+                    when (result) {
+                        is Result.Success -> {
+                            // Authentication successful - state is managed by AuthService
+                        }
+                        is Result.Failure -> {
+                            // Error handling is managed by AuthService
+                        }
                     }
                 }
         }
@@ -73,10 +80,13 @@ class AuthViewModel(
     fun handleGoogleSignInResult(task: Task<GoogleSignInAccount>) {
         viewModelScope.launch {
             authRepository.handleGoogleSignInResult(task).collect { result ->
-                result.onSuccess { authResponse ->
-                    println("✅ AuthViewModel: Authentication successful - User: ${authResponse.data.user.name}")
-                }.onFailure { exception ->
-                    println("❌ AuthViewModel: Authentication failed: ${exception.message}")
+                when (result) {
+                    is Result.Success -> {
+                        println("✅ AuthViewModel: Authentication successful - User: ${result.data.data.user.name}")
+                    }
+                    is Result.Failure -> {
+                        println("❌ AuthViewModel: Authentication failed: ${result.error.message}")
+                    }
                 }
             }
         }
@@ -88,10 +98,13 @@ class AuthViewModel(
     fun signOut() {
         viewModelScope.launch {
             authRepository.signOut().collect { result ->
-                result.onSuccess {
-                    println("🔐 AuthViewModel: User signed out successfully")
-                }.onFailure { exception ->
-                    println("❌ AuthViewModel: Sign out failed: ${exception.message}")
+                when (result) {
+                    is Result.Success -> {
+                        println("🔐 AuthViewModel: User signed out successfully")
+                    }
+                    is Result.Failure -> {
+                        println("❌ AuthViewModel: Sign out failed: ${result.error.message}")
+                    }
                 }
             }
         }
@@ -103,10 +116,13 @@ class AuthViewModel(
     fun mockLogin() {
         viewModelScope.launch {
             authRepository.mockLogin().collect { result ->
-                result.onSuccess { authResponse ->
-                    println("🧪 AuthViewModel: Mock login successful - User: ${authResponse.data.user.name}")
-                }.onFailure { exception ->
-                    println("❌ AuthViewModel: Mock login failed: ${exception.message}")
+                when (result) {
+                    is Result.Success -> {
+                        println("🧪 AuthViewModel: Mock login successful - User: ${result.data.data.user.name}")
+                    }
+                    is Result.Failure -> {
+                        println("❌ AuthViewModel: Mock login failed: ${result.error.message}")
+                    }
                 }
             }
         }

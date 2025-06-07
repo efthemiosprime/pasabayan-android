@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import com.efthemiosprime.pasabayan.data.model.AuthResponse
 import com.efthemiosprime.pasabayan.data.model.User
+import com.efthemiosprime.pasabayan.data.common.Result
 
 /**
  * Authentication repository interface
