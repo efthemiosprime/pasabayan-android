@@ -1,74 +1,182 @@
 package com.efthemiosprime.pasabayan.ui.screens.analytics
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.efthemiosprime.pasabayan.presentation.viewmodel.AnalyticsViewModel
+import com.efthemiosprime.pasabayan.presentation.viewmodel.AnalyticsState
+import com.efthemiosprime.pasabayan.ui.components.analytics.*
+import com.efthemiosprime.pasabayan.ui.common.ErrorMessage
 
 /**
- * Analytics Screen that mirrors iOS AnalyticsView
- * Mirrors iOS AnalyticsView.swift structure with placeholder content
- * Will be expanded with actual analytics functionality
+ * Main analytics screen displaying carrier and shipper analytics
  */
 @Composable
 fun AnalyticsScreen(
+    viewModel: AnalyticsViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    val state by viewModel.state.collectAsState()
+    
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Icon(
-                Icons.Default.Analytics,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+        when {
+            state.isLoading && state.carrierStats.data == null && state.shipperStats.data == null -> {
+                // Initial loading state
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
             
-            Text(
-                text = "Analytics",
-                style = MaterialTheme.typography.headlineMedium
-            )
+            state.error != null && state.carrierStats.data == null && state.shipperStats.data == null -> {
+                // Error state with no data
+                ErrorMessage(
+                    message = state.error?.message ?: "Unknown error occurred",
+                    onRetry = { viewModel.refreshData() }
+                )
+            }
             
-            Text(
-                text = "Analytics dashboard coming soon",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            else -> {
+                // Success state or loading with existing data
+                AnalyticsContent(
+                    state = state,
+                    onRefresh = { viewModel.refreshData() }
+                )
+            }
         }
     }
 }
 
-// MARK: - Previews
-
-@Preview(showBackground = true, name = "Analytics Screen")
+/**
+ * Analytics content display
+ */
 @Composable
-fun AnalyticsScreenPreview() {
-    PasabayanTheme {
-        AnalyticsScreen()
+private fun AnalyticsContent(
+    state: AnalyticsState,
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Carrier Analytics Section
+        state.carrierStats.data?.let { stats ->
+            item {
+                Text(
+                    text = "Carrier Performance",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            
+            item {
+                CarrierMetricsCard(stats = stats)
+            }
+            
+            item {
+                RouteAnalyticsCard(routes = stats.routeAnalytics)
+            }
+            
+            item {
+                PerformanceInsightsCard(insights = stats.performanceInsights)
+            }
+        }
+        
+        // Shipper Analytics Section
+        state.shipperStats.data?.let { stats ->
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            
+            item {
+                Text(
+                    text = "Shipper Analytics",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            
+            item {
+                BudgetOverviewCard(budgetTracking = stats.budgetTracking)
+            }
+            
+            item {
+                PreferredCarriersCard(carriers = stats.preferredCarriers)
+            }
+            
+            item {
+                CostOptimizationCard(optimization = stats.costOptimization)
+            }
+        }
+        
+        // Loading indicator for refresh
+        if (state.isRefreshing) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                }
+            }
+        }
+        
+        // Error message for refresh errors
+        state.error?.let { error ->
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Error loading data",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(
+                            text = error.message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Button(
+                            onClick = onRefresh,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text("Retry")
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
-@Preview(showBackground = true, name = "Analytics Screen - Dark Theme")
-@Composable
-fun AnalyticsScreenDarkPreview() {
-    PasabayanTheme(darkTheme = true) {
-        AnalyticsScreen()
-    }
-} 
+ 
