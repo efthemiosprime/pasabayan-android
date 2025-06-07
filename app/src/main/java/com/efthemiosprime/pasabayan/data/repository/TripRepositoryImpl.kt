@@ -18,7 +18,7 @@ import com.efthemiosprime.pasabayan.data.common.resultOf
 class TripRepositoryImpl : TripRepository {
     
     // Mock data source - in real app this would be API service
-    private val mockTrips = Trip.mockTrips.toMutableList()
+    private val mockTrips = Trip.getMockTrips().toMutableList()
     
     override suspend fun getTripsForCarrier(carrierId: Int): Flow<Result<List<Trip>>> = flow {
         emit(resultOf {

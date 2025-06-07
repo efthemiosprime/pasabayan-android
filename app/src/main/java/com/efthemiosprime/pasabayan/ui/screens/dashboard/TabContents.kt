@@ -123,7 +123,7 @@ fun BrowseTabContent(
         when (currentRole) {
             UserRole.SHIPPER -> {
                 // Show available trips for shippers
-                items(Trip.mockTrips.filter { it.tripStatus == TripStatus.ACTIVE || it.tripStatus == TripStatus.SCHEDULED }) { trip ->
+                items(Trip.getMockTrips().filter { it.tripStatus == TripStatus.ACTIVE || it.tripStatus == TripStatus.SCHEDULED }) { trip ->
                     TripCard(
                         trip = trip,
                         onTap = { /* Handle trip selection */ }
@@ -143,7 +143,7 @@ fun BrowseTabContent(
                         preferredPickupDate = "2024-01-15",
                         packageSize = PackageSize.MEDIUM,
                         packageWeight = 2.5,
-                        packageValue = 45000.0,
+                        packageValue = 1080.0,
                         isFragile = true,
                         status = PackageRequestStatus.PENDING,
                         createdAt = "2024-01-14T10:00:00Z",
@@ -159,7 +159,7 @@ fun BrowseTabContent(
                         preferredPickupDate = "2024-01-16",
                         packageSize = PackageSize.SMALL,
                         packageWeight = 0.5,
-                        packageValue = 1000.0,
+                        packageValue = 24.0,
                         status = PackageRequestStatus.PENDING,
                         createdAt = "2024-01-14T11:00:00Z",
                         updatedAt = "2024-01-14T11:00:00Z"
@@ -226,7 +226,7 @@ fun PackagesOrTripsTabContent(
                     }
                 }
                 
-                items(Trip.mockTrips) { trip ->
+                items(Trip.getMockTrips()) { trip ->
                     TripCard(
                         trip = trip,
                         onTap = { /* Handle trip tap */ }
@@ -246,7 +246,7 @@ fun PackagesOrTripsTabContent(
                         preferredPickupDate = "2024-01-15",
                         packageSize = PackageSize.MEDIUM,
                         packageWeight = 2.5,
-                        packageValue = 45000.0,
+                        packageValue = 1080.0,
                         isFragile = true,
                         status = PackageRequestStatus.MATCHED,
                         createdAt = "2024-01-14T10:00:00Z",
@@ -262,7 +262,7 @@ fun PackagesOrTripsTabContent(
                         preferredPickupDate = "2024-01-17",
                         packageSize = PackageSize.LARGE,
                         packageWeight = 5.0,
-                        packageValue = 8000.0,
+                        packageValue = 192.0,
                         status = PackageRequestStatus.DELIVERED,
                         createdAt = "2024-01-13T15:00:00Z",
                         updatedAt = "2024-01-17T18:30:00Z"
@@ -277,7 +277,7 @@ fun PackagesOrTripsTabContent(
                         preferredPickupDate = "2024-01-16",
                         packageSize = PackageSize.SMALL,
                         packageWeight = 0.5,
-                        packageValue = 1000.0,
+                        packageValue = 24.0,
                         status = PackageRequestStatus.PENDING,
                         createdAt = "2024-01-14T11:00:00Z",
                         updatedAt = "2024-01-14T11:00:00Z"
@@ -356,7 +356,7 @@ private fun CreatePackageForm() {
             style = MaterialTheme.typography.bodyMedium
         )
         Text(
-            text = "• Value: ₱45,000",
+            text = "• Value: $1,080",
             style = MaterialTheme.typography.bodyMedium
         )
         
@@ -403,7 +403,7 @@ private fun CreateTripForm() {
             style = MaterialTheme.typography.bodyMedium
         )
         Text(
-            text = "• Price: ₱25.00/kg",
+            text = "• Price: $0.60/kg",
             style = MaterialTheme.typography.bodyMedium
         )
         

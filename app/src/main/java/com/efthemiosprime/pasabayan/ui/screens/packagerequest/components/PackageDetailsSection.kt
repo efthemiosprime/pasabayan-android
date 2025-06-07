@@ -147,7 +147,7 @@ private fun PackageValueField(
         onValueChange = onValueChange,
         label = { Text("Package value") },
         placeholder = { Text("0.00") },
-        leadingIcon = { Text("₱", style = MaterialTheme.typography.bodyLarge) },
+        leadingIcon = { Text("$", style = MaterialTheme.typography.bodyLarge) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = modifier
     )
@@ -164,7 +164,7 @@ private fun MaxBudgetField(
         onValueChange = onValueChange,
         label = { Text("Max budget") },
         placeholder = { Text("0.00") },
-        leadingIcon = { Text("₱", style = MaterialTheme.typography.bodyLarge) },
+        leadingIcon = { Text("$", style = MaterialTheme.typography.bodyLarge) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = modifier
     )
@@ -275,7 +275,7 @@ private fun PackageDetailsSectionPreview() {
             onPackageDescriptionChange = { },
             weight = "2.5",
             onWeightChange = { },
-            packageValue = "45000",
+            packageValue = "1080", // Converted from ₱45,000 at 0.024 CAD/PHP
             onPackageValueChange = { },
             maxBudget = "500",
             onMaxBudgetChange = { },

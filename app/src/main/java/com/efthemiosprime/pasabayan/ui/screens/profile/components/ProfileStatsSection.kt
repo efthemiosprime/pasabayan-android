@@ -113,12 +113,12 @@ private data class StatItemData(
 
 private val carrierStats = listOf(
     StatItemData("Deliveries", "147", Icons.Default.LocalShipping, Color.Blue),
-    StatItemData("Rating", "4.9", Icons.Default.Star, Color(0xFFFFC107)),
-    StatItemData("Earnings", "₱12,450", Icons.Default.AttachMoney, Color(0xFF4CAF50))
+    StatItemData("Rating", "4.9", Icons.Default.Star, Color(0xFFFFD700)),
+    StatItemData("Earnings", "$298.80", Icons.Default.AttachMoney, Color(0xFF4CAF50))
 )
 
 private val shipperStats = listOf(
     StatItemData("Packages", "28", Icons.Default.Inventory, Color(0xFFE91E63)),
     StatItemData("Rating", "4.7", Icons.Default.Star, Color(0xFFFFC107)),
-    StatItemData("Monthly Spent", "₱3,200", Icons.Default.CreditCard, Color.Blue)
+    StatItemData("Monthly Spent", "$76.80", Icons.Default.CreditCard, Color.Blue)
 ) 

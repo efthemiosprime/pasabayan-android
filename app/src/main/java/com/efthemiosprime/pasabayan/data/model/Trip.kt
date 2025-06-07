@@ -108,7 +108,7 @@ data class Trip(
         }
     
     val formattedPrice: String
-        get() = String.format("₱%.2f/kg", pricePerKg)
+        get() = String.format("$%.2f/kg", pricePerKg)
     
     val formattedCapacity: String
         get() = String.format("%.1fkg, %.1fL", availableWeightKg, availableSpaceLiters)
@@ -217,8 +217,10 @@ data class Trip(
     }
     
     companion object {
-        // MARK: - Static Mock Data (exactly matching iOS)
-        val mockTrips: List<Trip> = listOf(
+        /**
+         * Mock trip data with realistic values
+         */
+        fun getMockTrips(): List<Trip> = listOf(
             Trip(
                 id = 1,
                 carrierId = 1,
@@ -231,13 +233,13 @@ data class Trip(
                 destinationLat = 10.3157,
                 destinationLng = 123.8854,
                 departureDate = getDateString(2), // 2 days from now
-                arrivalDate = getDateString(2, 9000), // 2 days + 2.5 hours
-                availableWeightKg = 15.0,
-                availableSpaceLiters = 50.0,
-                pricePerKg = 25.00,
+                arrivalDate = getDateString(2, 5400), // 2 days + 1.5 hours  
+                availableWeightKg = 30.0,
+                availableSpaceLiters = 100.0,
+                pricePerKg = 0.60, // Converted from ₱25.00 at 0.024 CAD/PHP
                 tripStatus = TripStatus.ACTIVE,
                 transportationMethod = TransportationMethod.FLIGHT,
-                specialNotes = "Regular PAL flight, reliable schedule. Can handle fragile items with care."
+                specialNotes = "Direct flight, excellent for time-sensitive deliveries. Premium service available."
             ),
             Trip(
                 id = 2,
@@ -254,7 +256,7 @@ data class Trip(
                 arrivalDate = getDateString(5, 7200), // 5 days + 2 hours
                 availableWeightKg = 25.0,
                 availableSpaceLiters = 80.0,
-                pricePerKg = 30.00,
+                pricePerKg = 0.72, // Converted from ₱30.00 at 0.024 CAD/PHP
                 tripStatus = TripStatus.SCHEDULED,
                 transportationMethod = TransportationMethod.FLIGHT,
                 specialNotes = "Morning flight with layover in Cebu. Extra space available."
@@ -274,7 +276,7 @@ data class Trip(
                 arrivalDate = getDateString(-3, 18000), // 3 days ago + 5 hours
                 availableWeightKg = 0.0,
                 availableSpaceLiters = 0.0,
-                pricePerKg = 20.00,
+                pricePerKg = 0.48, // Converted from ₱20.00 at 0.024 CAD/PHP
                 tripStatus = TripStatus.COMPLETED,
                 transportationMethod = TransportationMethod.BUS,
                 specialNotes = "Comfortable bus ride through scenic mountain routes. Full capacity reached."
@@ -294,7 +296,7 @@ data class Trip(
                 arrivalDate = getDateString(1, 5400), // 1 day + 1.5 hours
                 availableWeightKg = 12.0,
                 availableSpaceLiters = 35.0,
-                pricePerKg = 28.00,
+                pricePerKg = 0.67, // Converted from ₱28.00 at 0.024 CAD/PHP
                 tripStatus = TripStatus.SCHEDULED,
                 transportationMethod = TransportationMethod.FLIGHT,
                 specialNotes = "Quick domestic flight. Limited space for packages."
@@ -314,7 +316,7 @@ data class Trip(
                 arrivalDate = getDateString(-1, 3600), // 1 day ago + 1 hour
                 availableWeightKg = 0.0,
                 availableSpaceLiters = 0.0,
-                pricePerKg = 35.00,
+                pricePerKg = 0.84, // Converted from ₱35.00 at 0.024 CAD/PHP
                 tripStatus = TripStatus.CANCELLED,
                 transportationMethod = TransportationMethod.FLIGHT,
                 specialNotes = "Flight cancelled due to weather conditions. Refunds processed."
@@ -334,7 +336,7 @@ data class Trip(
                 arrivalDate = getDateString(7, 6300), // 7 days + 1.75 hours
                 availableWeightKg = 20.0,
                 availableSpaceLiters = 65.0,
-                pricePerKg = 27.50,
+                pricePerKg = 0.66, // Converted from ₱27.50 at 0.024 CAD/PHP
                 tripStatus = TripStatus.SCHEDULED,
                 transportationMethod = TransportationMethod.FLIGHT,
                 specialNotes = "Evening flight with good capacity. Accepting bookings now."

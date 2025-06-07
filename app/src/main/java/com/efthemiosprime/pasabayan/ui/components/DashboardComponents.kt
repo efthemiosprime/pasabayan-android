@@ -664,7 +664,7 @@ fun ProfileView(
                     item {
                         StatItem(
                             title = "Earnings",
-                            value = "₱12,450",
+                            value = "$298.80",
                             icon = Icons.Default.AttachMoney,
                             color = Color.Green
                         )
@@ -690,7 +690,7 @@ fun ProfileView(
                     item {
                         StatItem(
                             title = "Monthly Spent",
-                            value = "₱3,200",
+                            value = "$76.80",
                             icon = Icons.Default.CreditCard,
                             color = Color.Blue
                         )
@@ -1229,7 +1229,7 @@ fun StatCardEarningsPreview() {
     com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme {
         StatCard(
             title = "Total Earnings",
-            value = "₱15,750",
+            value = "$378",
             icon = Icons.Default.AttachMoney,
             color = Color(0xFF4CAF50),
             modifier = Modifier.padding(16.dp)
@@ -1440,7 +1440,7 @@ private val samplePackageRequestPending = PackageRequest(
     preferredPickupDate = "2024-01-02",
     packageSize = PackageSize.SMALL,
     packageWeight = 0.5,
-    packageValue = 1000.0,
+    packageValue = 24.0, // Converted from ₱1,000 at 0.024 CAD/PHP
     isFragile = false,
     specialInstructions = "Handle with care",
     status = PackageRequestStatus.PENDING,
@@ -1458,7 +1458,7 @@ private val samplePackageRequestInTransit = PackageRequest(
     preferredPickupDate = "2024-01-03",
     packageSize = PackageSize.MEDIUM,
     packageWeight = 2.5,
-    packageValue = 5000.0,
+    packageValue = 120.0, // Converted from ₱5,000 at 0.024 CAD/PHP
     isFragile = false,
     specialInstructions = "Call recipient before delivery",
     status = PackageRequestStatus.IN_TRANSIT,

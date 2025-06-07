@@ -45,7 +45,7 @@ fun StatCardEarningsPreview() {
     PasabayanTheme {
         StatCard(
             title = "Total Earnings",
-            value = "₱15,750",
+            value = "$378",
             icon = Icons.Default.AttachMoney,
             color = Color(0xFF4CAF50),
             modifier = Modifier.padding(16.dp)
@@ -91,7 +91,7 @@ fun StatCardsGridPreview() {
             item {
                 StatCard(
                     title = "Earnings",
-                    value = "₱15,750",
+                    value = "$378", // Converted from ₱15,750 at 0.024 CAD/PHP
                     icon = Icons.Default.AttachMoney,
                     color = Color(0xFF4CAF50)
                 )
@@ -134,7 +134,7 @@ fun PackageCardPendingPreview() {
                 preferredPickupDate = "2024-01-02",
                 packageSize = PackageSize.SMALL,
                 packageWeight = 0.5,
-                packageValue = 1000.0,
+                packageValue = 24.0, // Converted from ₱1,000 at 0.024 CAD/PHP
                 isFragile = false,
                 specialInstructions = "Handle with care",
                 status = PackageRequestStatus.PENDING,
@@ -161,7 +161,7 @@ fun PackageCardInTransitPreview() {
                 preferredPickupDate = "2024-01-03",
                 packageSize = PackageSize.MEDIUM,
                 packageWeight = 2.5,
-                packageValue = 5000.0,
+                packageValue = 120.0, // Converted from ₱5,000 at 0.024 CAD/PHP
                 isFragile = false,
                 specialInstructions = "Call recipient before delivery",
                 status = PackageRequestStatus.IN_TRANSIT,
@@ -188,7 +188,7 @@ fun PackageCardDeliveredPreview() {
                 preferredPickupDate = "2024-01-01",
                 packageSize = PackageSize.SMALL,
                 packageWeight = 1.5,
-                packageValue = 800.0,
+                packageValue = 19.2, // Converted from ₱800 at 0.024 CAD/PHP
                 isFragile = true,
                 specialInstructions = "Keep refrigerated",
                 status = PackageRequestStatus.DELIVERED,

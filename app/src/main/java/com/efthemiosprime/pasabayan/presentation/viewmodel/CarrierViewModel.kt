@@ -53,7 +53,7 @@ data class CarrierState(
 data class CarrierProfile(
     val isSetup: Boolean = true,
     val isActive: Boolean = false,
-    val totalEarnings: String = "₱12,450",
+    val totalEarnings: String = "$298.80",
     val averageRating: Double = 4.8
 )
 
@@ -324,7 +324,7 @@ class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, Carrie
     private val _isCarrierActive = MutableStateFlow(false)
     val isCarrierActive: StateFlow<Boolean> = _isCarrierActive.asStateFlow()
     
-    private val _totalEarnings = MutableStateFlow("₱12,450")
+    private val _totalEarnings = MutableStateFlow("$298.80")
     val totalEarnings: StateFlow<String> = _totalEarnings.asStateFlow()
     
     private val _averageRating = MutableStateFlow(4.8)
@@ -345,10 +345,10 @@ class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, Carrie
         try {
             delay(500)
             // Use the exact mock trips from iOS Trip.swift
-            dispatch(CarrierAction.TripsLoaded(Trip.mockTrips))
+            dispatch(CarrierAction.TripsLoaded(Trip.getMockTrips()))
             
             // Update legacy StateFlow
-            _trips.value = Trip.mockTrips
+            _trips.value = Trip.getMockTrips()
         } catch (e: Exception) {
             dispatch(CarrierAction.LoadingError(AppError.NetworkError(e.message ?: "Failed to load trips")))
         }
@@ -401,7 +401,7 @@ class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, Carrie
         try {
             delay(500)
             // Simulate loading stats
-            val earnings = "₱${(10000..50000).random()}"
+            val earnings = "$${((240..1200).random())}"
             val rating = (40..50).random() / 10.0
             dispatch(CarrierAction.StatsLoaded(earnings, rating))
             

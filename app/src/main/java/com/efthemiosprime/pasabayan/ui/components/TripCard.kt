@@ -205,7 +205,7 @@ fun TripCardActivePreview() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             TripCard(
-                trip = Trip.mockTrips[0], // Active trip
+                trip = Trip.getMockTrips()[0], // Active trip
                 onTap = { println("Tapped active trip") }
             )
         }
@@ -223,7 +223,7 @@ fun TripCardScheduledPreview() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             TripCard(
-                trip = Trip.mockTrips[1], // Scheduled trip
+                trip = Trip.getMockTrips()[1], // Scheduled trip
                 onTap = { println("Tapped scheduled trip") }
             )
         }
@@ -241,7 +241,7 @@ fun TripCardCompletedPreview() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             TripCard(
-                trip = Trip.mockTrips[2], // Completed trip
+                trip = Trip.getMockTrips()[2], // Completed trip
                 onTap = { println("Tapped completed trip") }
             )
         }
@@ -258,7 +258,7 @@ fun TripCardsAllTypesPreview() {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Trip.mockTrips.take(4).forEach { trip ->
+            Trip.getMockTrips().take(4).forEach { trip ->
                 TripCard(
                     trip = trip,
                     onTap = { println("Tapped trip: ${trip.route}") }

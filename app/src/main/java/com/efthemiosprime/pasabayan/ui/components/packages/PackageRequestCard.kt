@@ -76,7 +76,7 @@ fun PackageRequestCard(
                 ) {
                     packageRequest.packageValue?.let { value ->
                         Text(
-                            text = "₱${String.format("%.2f", value)}",
+                            text = "$${String.format("%.2f", value)}",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary

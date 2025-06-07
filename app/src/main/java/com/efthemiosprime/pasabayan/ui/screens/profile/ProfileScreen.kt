@@ -232,7 +232,7 @@ fun ProfileScreen(
                             )
                             StatItem(
                                 title = "Earnings",
-                                value = "₱12,450",
+                                value = "$298.80",
                                 icon = Icons.Default.AttachMoney,
                                 color = Color.Green,
                                 modifier = Modifier.weight(1f)
@@ -255,7 +255,7 @@ fun ProfileScreen(
                             )
                             StatItem(
                                 title = "Monthly Spent",
-                                value = "₱3,200",
+                                value = "$76.80",
                                 icon = Icons.Default.CreditCard,
                                 color = Color.Blue,
                                 modifier = Modifier.weight(1f)

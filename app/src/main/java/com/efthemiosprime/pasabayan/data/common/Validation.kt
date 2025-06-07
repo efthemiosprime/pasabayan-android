@@ -115,13 +115,13 @@ object Validation {
         return if (errors.isEmpty()) ValidationResult.Valid else ValidationResult.Invalid(errors)
     }
     
-    // Price validation (Philippine peso)
+    // Price validation (Canadian dollar)
     fun validatePrice(price: Double): ValidationResult {
         val errors = mutableListOf<String>()
         
         when {
             price < 0 -> errors.add("Price cannot be negative")
-            price > 10000 -> errors.add("Price cannot exceed ₱10,000")
+            price > 240 -> errors.add("Price cannot exceed $240") // Converted from ₱10,000 at 0.024 CAD/PHP
         }
         
         return if (errors.isEmpty()) ValidationResult.Valid else ValidationResult.Invalid(errors)
