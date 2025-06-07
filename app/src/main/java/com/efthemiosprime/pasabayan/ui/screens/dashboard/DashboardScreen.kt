@@ -1,10 +1,13 @@
 package com.efthemiosprime.pasabayan.ui.screens.dashboard
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -15,18 +18,35 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.data.model.*
 import com.efthemiosprime.pasabayan.presentation.viewmodel.*
+import com.efthemiosprime.pasabayan.ui.components.VerificationBadgeIcon
+import com.efthemiosprime.pasabayan.ui.components.CarrierStatusCard
+import com.efthemiosprime.pasabayan.ui.components.StatItem
+import com.efthemiosprime.pasabayan.ui.components.ProfileMenuItem
+import com.efthemiosprime.pasabayan.ui.components.CreatePackageView
+import com.efthemiosprime.pasabayan.ui.components.CarrierEarningsView
+import com.efthemiosprime.pasabayan.ui.components.ProfileView
+import com.efthemiosprime.pasabayan.ui.components.CarrierBookingsView
+import com.efthemiosprime.pasabayan.ui.components.TripCard
+import com.efthemiosprime.pasabayan.ui.components.cards.StatCard
+import com.efthemiosprime.pasabayan.ui.components.packages.PackageListView
+import com.efthemiosprime.pasabayan.ui.components.packages.PackageRequestCard
+import com.efthemiosprime.pasabayan.ui.components.role.RoleSwitcherView
+import com.efthemiosprime.pasabayan.ui.screens.analytics.AnalyticsScreen
+import com.efthemiosprime.pasabayan.ui.screens.carrier.CarrierTripsScreen
+import com.efthemiosprime.pasabayan.ui.shared.EmptyStateView
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
-import com.efthemiosprime.pasabayan.ui.components.*
-import kotlinx.coroutines.launch
 
 /**
  * Main dashboard screen that exactly mirrors iOS DashboardView
@@ -139,7 +159,7 @@ private fun ShipperDashboard(
                 packageViewModel = packageViewModel,
                 roleViewModel = roleViewModel
             )
-            1 -> AnalyticsView(modifier = Modifier.padding(innerPadding))
+            1 -> AnalyticsScreen(modifier = Modifier.padding(innerPadding))
             2 -> PackageListView(
                 modifier = Modifier.padding(innerPadding),
                 title = "Available Packages",
@@ -245,8 +265,8 @@ private fun CarrierDashboard(
                 carrierViewModel = carrierViewModel,
                 roleViewModel = roleViewModel
             )
-            1 -> AnalyticsView(modifier = Modifier.padding(innerPadding))
-            2 -> CarrierTripsView(
+            1 -> AnalyticsScreen(modifier = Modifier.padding(innerPadding))
+            2 -> CarrierTripsScreen(
                 modifier = Modifier.padding(innerPadding),
                 carrierViewModel = carrierViewModel
             )

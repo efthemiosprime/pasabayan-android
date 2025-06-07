@@ -14,8 +14,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.data.model.*
-import com.efthemiosprime.pasabayan.ui.components.*
-import com.efthemiosprime.pasabayan.ui.screens.dashboard.*
+import com.efthemiosprime.pasabayan.ui.components.CreatePackageView
+import com.efthemiosprime.pasabayan.ui.components.packages.PackageListView
+import com.efthemiosprime.pasabayan.ui.screens.analytics.AnalyticsScreen
+import com.efthemiosprime.pasabayan.ui.screens.dashboard.tabs.HomeTabScreen
+import com.efthemiosprime.pasabayan.ui.screens.dashboard.BrowseTabContent
+import com.efthemiosprime.pasabayan.ui.screens.dashboard.ProfileTabContent
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
 
 /**
@@ -25,7 +29,7 @@ import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
 @Composable
 fun ShipperHomeTabPreview() {
     PasabayanTheme {
-        HomeTabContent(
+        HomeTabScreen(
             user = sampleUser,
             currentRole = UserRole.SHIPPER,
             onSignOut = { }
@@ -40,7 +44,7 @@ fun ShipperHomeTabPreview() {
 @Composable
 fun CarrierHomeTabPreview() {
     PasabayanTheme {
-        HomeTabContent(
+        HomeTabScreen(
             user = sampleUser,
             currentRole = UserRole.CARRIER,
             onSignOut = { }
@@ -55,7 +59,7 @@ fun CarrierHomeTabPreview() {
 @Composable
 fun AnalyticsTabPreview() {
     PasabayanTheme {
-        AnalyticsView()
+        AnalyticsScreen()
     }
 }
 
@@ -141,7 +145,7 @@ fun ProfileTabPreview() {
 @Composable
 fun DashboardDarkThemePreview() {
     PasabayanTheme(darkTheme = true) {
-        HomeTabContent(
+        HomeTabScreen(
             user = sampleUser,
             currentRole = UserRole.SHIPPER,
             onSignOut = { }
