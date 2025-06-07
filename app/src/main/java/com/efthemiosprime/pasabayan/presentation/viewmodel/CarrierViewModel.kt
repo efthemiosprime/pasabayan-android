@@ -1,21 +1,277 @@
 package com.efthemiosprime.pasabayan.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.data.model.Trip
 import com.efthemiosprime.pasabayan.data.model.TripStatus
 import com.efthemiosprime.pasabayan.data.model.Booking
 import com.efthemiosprime.pasabayan.data.model.BookingStatus
+import com.efthemiosprime.pasabayan.presentation.common.FunctionalViewModel
+import com.efthemiosprime.pasabayan.presentation.common.UiState
+import com.efthemiosprime.pasabayan.data.common.AppError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
- * CarrierViewModel manages carrier operations, trips, and bookings
+ * Functional state for carrier operations
+ */
+data class CarrierState(
+    val trips: UiState<List<Trip>> = UiState.idle(),
+    val bookings: UiState<List<Booking>> = UiState.idle(),
+    val profile: CarrierProfile = CarrierProfile(),
+    val selectedFilter: TripStatus? = null,
+    val isRefreshing: Boolean = false
+) {
+    val isLoading: Boolean get() = trips.isLoading || bookings.isLoading
+    val error: AppError? get() = trips.error ?: bookings.error
+    
+    val carrierStatusText: String
+        get() = if (profile.isActive) "Online" else "Offline"
+    
+    val averageRatingText: String
+        get() = String.format("%.1f", profile.averageRating)
+    
+    val filteredTrips: List<Trip>
+        get() = trips.data?.let { tripList ->
+            selectedFilter?.let { filter ->
+                tripList.filter { it.tripStatus == filter }
+            } ?: tripList
+        } ?: emptyList()
+}
+
+/**
+ * Carrier profile data
+ */
+data class CarrierProfile(
+    val isSetup: Boolean = true,
+    val isActive: Boolean = false,
+    val totalEarnings: String = "₱12,450",
+    val averageRating: Double = 4.8
+)
+
+/**
+ * Carrier actions following functional patterns
+ */
+sealed class CarrierAction {
+    object LoadTrips : CarrierAction()
+    object LoadBookings : CarrierAction()
+    object LoadProfile : CarrierAction()
+    object LoadStats : CarrierAction()
+    object RefreshData : CarrierAction()
+    object ToggleCarrierStatus : CarrierAction()
+    data class FilterTrips(val status: TripStatus?) : CarrierAction()
+    data class TripsLoaded(val trips: List<Trip>) : CarrierAction()
+    data class BookingsLoaded(val bookings: List<Booking>) : CarrierAction()
+    data class StatsLoaded(val earnings: String, val rating: Double) : CarrierAction()
+    data class LoadingError(val error: AppError) : CarrierAction()
+    object ClearError : CarrierAction()
+}
+
+/**
+ * Carrier side effects
+ */
+sealed class CarrierEffect {
+    data class ShowToast(val message: String) : CarrierEffect()
+    object RefreshComplete : CarrierEffect()
+    data class NavigateToTrip(val tripId: Int) : CarrierEffect()
+}
+
+/**
+ * CarrierViewModel manages carrier operations, trips, and bookings using functional patterns
  * Mirrors iOS CarrierViewModel structure with exact Trip model
  */
-class CarrierViewModel : ViewModel() {
+class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, CarrierEffect>(
+    initialState = CarrierState()
+) {
     
+    // MARK: - Pure Reducer Function
+    
+    override fun reduce(currentState: CarrierState, action: CarrierAction): CarrierState = when (action) {
+        is CarrierAction.LoadTrips -> currentState.copy(
+            trips = UiState.loading(currentState.trips.data)
+        )
+        
+        is CarrierAction.LoadBookings -> currentState.copy(
+            bookings = UiState.loading(currentState.bookings.data)
+        )
+        
+        is CarrierAction.LoadProfile -> currentState.copy(
+            trips = UiState.loading(currentState.trips.data),
+            bookings = UiState.loading(currentState.bookings.data)
+        )
+        
+        is CarrierAction.LoadStats -> currentState.copy(
+            trips = UiState.loading(currentState.trips.data)
+        )
+        
+        is CarrierAction.RefreshData -> currentState.copy(
+            isRefreshing = true,
+            trips = UiState.loading(currentState.trips.data),
+            bookings = UiState.loading(currentState.bookings.data)
+        )
+        
+        is CarrierAction.ToggleCarrierStatus -> currentState.copy(
+            profile = currentState.profile.copy(
+                isActive = !currentState.profile.isActive
+            )
+        )
+        
+        is CarrierAction.FilterTrips -> currentState.copy(
+            selectedFilter = action.status
+        )
+        
+        is CarrierAction.TripsLoaded -> currentState.copy(
+            trips = UiState.success(action.trips),
+            isRefreshing = false
+        )
+        
+        is CarrierAction.BookingsLoaded -> currentState.copy(
+            bookings = UiState.success(action.bookings),
+            isRefreshing = false
+        )
+        
+        is CarrierAction.StatsLoaded -> currentState.copy(
+            profile = currentState.profile.copy(
+                totalEarnings = action.earnings,
+                averageRating = action.rating
+            ),
+            isRefreshing = false
+        )
+        
+        is CarrierAction.LoadingError -> currentState.copy(
+            trips = if (currentState.trips.isLoading) 
+                UiState.error(action.error, currentState.trips.data) 
+            else currentState.trips,
+            bookings = if (currentState.bookings.isLoading) 
+                UiState.error(action.error, currentState.bookings.data) 
+            else currentState.bookings,
+            isRefreshing = false
+        )
+        
+        is CarrierAction.ClearError -> currentState.copy(
+            trips = currentState.trips.copy(error = null),
+            bookings = currentState.bookings.copy(error = null)
+        )
+    }
+    
+    // MARK: - Side Effects Handler
+    
+    override suspend fun handleSideEffect(action: CarrierAction, currentState: CarrierState): CarrierEffect? = when (action) {
+        is CarrierAction.LoadTrips -> {
+            loadTripsInternal()
+            null
+        }
+        is CarrierAction.LoadBookings -> {
+            loadBookingsInternal()
+            null
+        }
+        is CarrierAction.LoadProfile -> {
+            loadProfileInternal()
+            null
+        }
+        is CarrierAction.LoadStats -> {
+            loadStatsInternal()
+            null
+        }
+        is CarrierAction.RefreshData -> {
+            refreshDataInternal()
+            CarrierEffect.RefreshComplete
+        }
+        is CarrierAction.ToggleCarrierStatus -> {
+            val statusText = if (currentState.profile.isActive) "Going Offline" else "Going Online"
+            CarrierEffect.ShowToast(statusText)
+        }
+        else -> null
+    }
+    
+    init {
+        loadMockData()
+    }
+    
+    private fun loadMockData() {
+        dispatch(CarrierAction.LoadTrips)
+        dispatch(CarrierAction.LoadBookings)
+    }
+    
+    // MARK: - Public API Methods (Functional Dispatch)
+    
+    /**
+     * Toggle carrier online/offline status
+     */
+    fun toggleCarrierStatus() {
+        if (state.value.profile.isSetup) {
+            dispatch(CarrierAction.ToggleCarrierStatus)
+        }
+    }
+    
+    /**
+     * Load carrier profile data
+     */
+    fun loadCarrierProfile() {
+        dispatch(CarrierAction.LoadProfile)
+    }
+    
+    /**
+     * Load carrier statistics
+     */
+    fun loadCarrierStats() {
+        dispatch(CarrierAction.LoadStats)
+    }
+    
+    /**
+     * Load trips data (matching iOS implementation)
+     */
+    fun loadTrips() {
+        dispatch(CarrierAction.LoadTrips)
+    }
+    
+    /**
+     * Refresh trips data (for pull-to-refresh)
+     */
+    fun refreshTrips() {
+        dispatch(CarrierAction.RefreshData)
+    }
+    
+    /**
+     * Load active bookings
+     */
+    fun loadActiveBookings() {
+        dispatch(CarrierAction.LoadBookings)
+    }
+    
+    /**
+     * Filter trips by status
+     */
+    fun filterTrips(status: TripStatus?) {
+        dispatch(CarrierAction.FilterTrips(status))
+    }
+    
+    /**
+     * Clear errors
+     */
+    fun clearError() {
+        dispatch(CarrierAction.ClearError)
+    }
+    
+    // MARK: - Legacy API (for backward compatibility)
+    
+    /**
+     * Get trips filtered by status
+     */
+    fun getTripsFilteredBy(status: TripStatus?): List<Trip> {
+        return state.value.filteredTrips
+    }
+    
+    /**
+     * Get trip count by status
+     */
+    fun getTripCountBy(status: TripStatus): Int {
+        return state.value.trips.data?.count { it.tripStatus == status } ?: 0
+    }
+    
+    // Legacy StateFlow properties for backward compatibility
     private val _trips = MutableStateFlow<List<Trip>>(emptyList())
     val trips: StateFlow<List<Trip>> = _trips.asStateFlow()
     
@@ -37,123 +293,101 @@ class CarrierViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
     
-    init {
-        loadMockData()
-    }
-    
     val carrierStatusText: String
-        get() = if (_isCarrierActive.value) "Online" else "Offline"
+        get() = state.value.carrierStatusText
     
     val averageRatingText: String
-        get() = String.format("%.1f", _averageRating.value)
+        get() = state.value.averageRatingText
     
-    private fun loadMockData() {
-        // Use the exact mock trips from iOS Trip.swift
-        _trips.value = Trip.mockTrips
-        
-        // Mock bookings data (keeping existing structure)
-        val mockBookings = listOf(
-            Booking(
-                id = 1,
-                packageRequestId = 1,
-                tripId = 1,
-                shipperId = 1,
-                carrierId = 1,
-                status = BookingStatus.CONFIRMED,
-                agreedPrice = 125.0,
-                createdAt = "2024-01-14T11:00:00Z",
-                updatedAt = "2024-01-14T11:00:00Z"
-            ),
-            Booking(
-                id = 2,
-                packageRequestId = 2,
-                tripId = 2,
-                shipperId = 2,
-                carrierId = 1,
-                status = BookingStatus.PENDING,
-                agreedPrice = 37.5,
-                createdAt = "2024-01-15T10:00:00Z",
-                updatedAt = "2024-01-15T10:00:00Z"
+    // MARK: - Private Implementation Methods
+    
+    private suspend fun loadTripsInternal() {
+        try {
+            delay(500)
+            // Use the exact mock trips from iOS Trip.swift
+            dispatch(CarrierAction.TripsLoaded(Trip.mockTrips))
+            
+            // Update legacy StateFlow
+            _trips.value = Trip.mockTrips
+        } catch (e: Exception) {
+            dispatch(CarrierAction.LoadingError(AppError.NetworkError(e.message ?: "Failed to load trips")))
+        }
+    }
+    
+    private suspend fun loadBookingsInternal() {
+        try {
+            delay(500)
+            // Mock bookings data (keeping existing structure)
+            val mockBookings = listOf(
+                Booking(
+                    id = 1,
+                    packageRequestId = 1,
+                    tripId = 1,
+                    shipperId = 1,
+                    carrierId = 1,
+                    status = BookingStatus.CONFIRMED,
+                    agreedPrice = 125.0,
+                    createdAt = "2024-01-14T11:00:00Z",
+                    updatedAt = "2024-01-14T11:00:00Z"
+                ),
+                Booking(
+                    id = 2,
+                    packageRequestId = 2,
+                    tripId = 2,
+                    shipperId = 2,
+                    carrierId = 1,
+                    status = BookingStatus.PENDING,
+                    agreedPrice = 37.5,
+                    createdAt = "2024-01-15T10:00:00Z",
+                    updatedAt = "2024-01-15T10:00:00Z"
+                )
             )
-        )
-        
-        _activeBookings.value = mockBookings
-    }
-    
-    /**
-     * Toggle carrier online/offline status
-     */
-    fun toggleCarrierStatus() {
-        if (_isCarrierProfileSetup.value) {
-            _isCarrierActive.value = !_isCarrierActive.value
+            
+            dispatch(CarrierAction.BookingsLoaded(mockBookings))
+            
+            // Update legacy StateFlow
+            _activeBookings.value = mockBookings
+        } catch (e: Exception) {
+            dispatch(CarrierAction.LoadingError(AppError.NetworkError(e.message ?: "Failed to load bookings")))
         }
     }
     
-    /**
-     * Load carrier profile data
-     */
-    suspend fun loadCarrierProfile() {
-        _isLoading.value = true
-        delay(500)
-        // Simulate loading carrier profile
-        _isLoading.value = false
+    private suspend fun loadProfileInternal() {
+        loadTripsInternal()
+        loadBookingsInternal()
     }
     
-    /**
-     * Load carrier statistics
-     */
-    suspend fun loadCarrierStats() {
-        _isLoading.value = true
-        delay(500)
-        // Simulate loading stats
-        _totalEarnings.value = "₱${(10000..50000).random()}"
-        _averageRating.value = (40..50).random() / 10.0
-        _isLoading.value = false
-    }
-    
-    /**
-     * Load trips data (matching iOS implementation)
-     */
-    suspend fun loadTrips() {
-        _isLoading.value = true
-        delay(500)
-        // Reload mock data to simulate API call
-        _trips.value = Trip.mockTrips
-        _isLoading.value = false
-    }
-    
-    /**
-     * Refresh trips data (for pull-to-refresh)
-     */
-    fun refreshTrips() {
-        _trips.value = Trip.mockTrips
-    }
-    
-    /**
-     * Load active bookings
-     */
-    suspend fun loadActiveBookings() {
-        _isLoading.value = true
-        delay(500)
-        // Simulate loading active bookings
-        _isLoading.value = false
-    }
-    
-    /**
-     * Get trips filtered by status
-     */
-    fun getTripsFilteredBy(status: TripStatus?): List<Trip> {
-        return if (status == null) {
-            _trips.value
-        } else {
-            _trips.value.filter { it.tripStatus == status }
+    private suspend fun loadStatsInternal() {
+        try {
+            delay(500)
+            // Simulate loading stats
+            val earnings = "₱${(10000..50000).random()}"
+            val rating = (40..50).random() / 10.0
+            dispatch(CarrierAction.StatsLoaded(earnings, rating))
+            
+            // Update legacy StateFlows
+            _totalEarnings.value = earnings
+            _averageRating.value = rating
+        } catch (e: Exception) {
+            dispatch(CarrierAction.LoadingError(AppError.NetworkError(e.message ?: "Failed to load stats")))
         }
     }
     
-    /**
-     * Get trip count by status
-     */
-    fun getTripCountBy(status: TripStatus): Int {
-        return _trips.value.count { it.tripStatus == status }
+    private suspend fun refreshDataInternal() {
+        loadTripsInternal()
+        loadBookingsInternal()
+    }
+    
+    // Sync legacy StateFlows with functional state
+    init {
+        viewModelScope.launch {
+            state.collect { currentState ->
+                _isLoading.value = currentState.isLoading
+                _isCarrierActive.value = currentState.profile.isActive
+                _isCarrierProfileSetup.value = currentState.profile.isSetup
+                _totalEarnings.value = currentState.profile.totalEarnings
+                _averageRating.value = currentState.profile.averageRating
+            }
+        }
     }
 } 
