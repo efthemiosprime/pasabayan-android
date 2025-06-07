@@ -184,27 +184,76 @@ fun RoleSwitcherView(
 }
 
 /**
- * Verification Badge Icon component
+ * Verification Badge Icon component that shows different styles based on verification level
  */
 @Composable
 fun VerificationBadgeIcon(
+    verificationLevel: String = "verified",
     modifier: Modifier = Modifier
 ) {
+    val (backgroundColor, iconColor, icon) = when (verificationLevel.lowercase()) {
+        "verified" -> Triple(Color.Blue, Color.White, Icons.Default.Verified)
+        "basic" -> Triple(Color(0xFFFFA726), Color.White, Icons.Default.VerifiedUser) // Orange
+        "unverified" -> Triple(Color(0xFFE0E0E0), Color(0xFF757575), Icons.Default.Cancel) // Gray
+        else -> Triple(Color(0xFFE0E0E0), Color(0xFF757575), Icons.Default.HelpOutline) // Gray with question
+    }
+    
     Box(
         modifier = modifier
             .size(16.dp)
             .background(
-                color = Color.Blue,
+                color = backgroundColor,
                 shape = CircleShape
             ),
         contentAlignment = Alignment.Center
     ) {
         Icon(
-            Icons.Default.Verified,
-            contentDescription = "Verified",
-            tint = Color.White,
+            imageVector = icon,
+            contentDescription = "Verification: $verificationLevel",
+            tint = iconColor,
             modifier = Modifier.size(12.dp)
         )
+    }
+}
+
+/**
+ * Complete verification status display with badge and text
+ */
+@Composable
+fun VerificationStatusDisplay(
+    verificationLevel: String = "verified",
+    showText: Boolean = true,
+    modifier: Modifier = Modifier
+) {
+    val statusText = when (verificationLevel.lowercase()) {
+        "verified" -> "Verified Account"
+        "basic" -> "Basic Verification"
+        "unverified" -> "Unverified Account"
+        else -> "Unknown Status"
+    }
+    
+    val textColor = when (verificationLevel.lowercase()) {
+        "verified" -> Color.Blue
+        "basic" -> Color(0xFFFFA726)
+        "unverified" -> Color(0xFF757575)
+        else -> Color(0xFF757575)
+    }
+    
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        VerificationBadgeIcon(verificationLevel = verificationLevel)
+        
+        if (showText) {
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.bodySmall,
+                color = textColor,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 

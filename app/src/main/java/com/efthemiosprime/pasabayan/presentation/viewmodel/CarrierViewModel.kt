@@ -5,12 +5,18 @@ import com.efthemiosprime.pasabayan.data.model.Trip
 import com.efthemiosprime.pasabayan.data.model.TripStatus
 import com.efthemiosprime.pasabayan.data.model.Booking
 import com.efthemiosprime.pasabayan.data.model.BookingStatus
+import com.efthemiosprime.pasabayan.data.model.User
 import com.efthemiosprime.pasabayan.presentation.common.FunctionalViewModel
 import com.efthemiosprime.pasabayan.presentation.common.UiState
 import com.efthemiosprime.pasabayan.data.common.AppError
+import com.efthemiosprime.pasabayan.ui.screens.dashboard.state.DashboardUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -85,6 +91,33 @@ sealed class CarrierEffect {
 class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, CarrierEffect>(
     initialState = CarrierState()
 ) {
+    
+    // Internal state for user data
+    private val _user = MutableStateFlow<User?>(null)
+    
+    // Computed UI state following functional patterns
+    private val _uiState = combine(
+        _user,
+        state
+    ) { user, carrierState ->
+        DashboardUiState(
+            user = user,
+            isLoading = carrierState.isLoading,
+            errorMessage = carrierState.error?.message,
+            activeTripsCount = carrierState.trips.data?.count { it.tripStatus == TripStatus.ACTIVE } ?: 0,
+            activeBookingsCount = carrierState.bookings.data?.size ?: 0,
+            totalEarnings = carrierState.profile.totalEarnings,
+            averageRatingText = carrierState.averageRatingText,
+            recentTrips = carrierState.trips.data?.take(3) ?: emptyList(),
+            recentPackages = emptyList() // Carriers don't have packages
+        )
+    }
+    
+    val uiState: StateFlow<DashboardUiState> = _uiState.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = DashboardUiState()
+    )
     
     // MARK: - Pure Reducer Function
     
@@ -187,6 +220,13 @@ class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, Carrie
     }
     
     init {
+        // Initialize with mock user data
+        _user.value = User(
+            id = 1,
+            name = "Jane Carrier",
+            email = "jane@example.com",
+            avatar = null
+        )
         loadMockData()
     }
     

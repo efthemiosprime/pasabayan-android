@@ -36,7 +36,9 @@ fun PasabayanNavigation(
     val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
     
     if (isAuthenticated) {
-        DashboardScreen(authViewModel = authViewModel)
+        DashboardScreen(
+            authViewModel = authViewModel
+        )
     } else {
         AuthScreen(
             authViewModel = authViewModel,

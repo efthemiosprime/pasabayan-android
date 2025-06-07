@@ -28,6 +28,7 @@ import com.efthemiosprime.pasabayan.ui.components.StatItem
 import com.efthemiosprime.pasabayan.ui.components.ProfileMenuItem
 import com.efthemiosprime.pasabayan.ui.components.PlaceholderSheet
 import com.efthemiosprime.pasabayan.ui.components.VerificationBadgeIcon
+import com.efthemiosprime.pasabayan.ui.components.VerificationStatusDisplay
 
 /**
  * Profile Screen - Exact iOS ProfileView implementation
@@ -103,7 +104,10 @@ fun ProfileScreen(
                             fallback = androidx.compose.ui.res.painterResource(android.R.drawable.ic_menu_gallery)
                         )
                         
-                        VerificationBadgeIcon()
+                        VerificationStatusDisplay(
+                            verificationLevel = currentUser?.verificationLevel ?: "unverified",
+                            showText = false
+                        )
                     }
                     
                     // Right Column - User Information
@@ -188,63 +192,75 @@ fun ProfileScreen(
         
         item {
             // Role-Specific Stats Section
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.height(120.dp)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                if (currentRole == UserRole.CARRIER) {
-                    // Carrier Stats
-                    item {
-                        StatItem(
-                            title = "Deliveries",
-                            value = "147",
-                            icon = Icons.Default.LocalShipping,
-                            color = Color.Blue
-                        )
-                    }
-                    item {
-                        StatItem(
-                            title = "Rating",
-                            value = "4.9",
-                            icon = Icons.Default.Star,
-                            color = Color(0xFFFFD700)
-                        )
-                    }
-                    item {
-                        StatItem(
-                            title = "Earnings",
-                            value = "₱12,450",
-                            icon = Icons.Default.AttachMoney,
-                            color = Color.Green
-                        )
-                    }
-                } else {
-                    // Shipper Stats
-                    item {
-                        StatItem(
-                            title = "Packages",
-                            value = "28",
-                            icon = Icons.Default.Inventory,
-                            color = Color(0xFF9C27B0)
-                        )
-                    }
-                    item {
-                        StatItem(
-                            title = "Rating",
-                            value = "4.8",
-                            icon = Icons.Default.Star,
-                            color = Color(0xFFFFD700)
-                        )
-                    }
-                    item {
-                        StatItem(
-                            title = "Monthly Spent",
-                            value = "₱3,200",
-                            icon = Icons.Default.CreditCard,
-                            color = Color.Blue
-                        )
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Statistics",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    
+                    // 3-column grid using Row and Column
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        if (currentRole == UserRole.CARRIER) {
+                            // Carrier Stats
+                            StatItem(
+                                title = "Deliveries",
+                                value = "147",
+                                icon = Icons.Default.LocalShipping,
+                                color = Color.Blue,
+                                modifier = Modifier.weight(1f)
+                            )
+                            StatItem(
+                                title = "Rating",
+                                value = "4.9",
+                                icon = Icons.Default.Star,
+                                color = Color(0xFFFFD700),
+                                modifier = Modifier.weight(1f)
+                            )
+                            StatItem(
+                                title = "Earnings",
+                                value = "₱12,450",
+                                icon = Icons.Default.AttachMoney,
+                                color = Color.Green,
+                                modifier = Modifier.weight(1f)
+                            )
+                        } else {
+                            // Shipper Stats
+                            StatItem(
+                                title = "Packages",
+                                value = "28",
+                                icon = Icons.Default.Inventory,
+                                color = Color(0xFF9C27B0),
+                                modifier = Modifier.weight(1f)
+                            )
+                            StatItem(
+                                title = "Rating",
+                                value = "4.8",
+                                icon = Icons.Default.Star,
+                                color = Color(0xFFFFD700),
+                                modifier = Modifier.weight(1f)
+                            )
+                            StatItem(
+                                title = "Monthly Spent",
+                                value = "₱3,200",
+                                icon = Icons.Default.CreditCard,
+                                color = Color.Blue,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
             }
