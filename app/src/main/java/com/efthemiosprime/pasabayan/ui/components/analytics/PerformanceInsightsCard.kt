@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCard
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCardCompact
 
 /**
  * Card displaying performance insights and recommendations
@@ -19,33 +21,28 @@ fun PerformanceInsightsCard(
     insights: List<String>,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    PCard(
+        modifier = modifier
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Text(
+            text = "Performance Insights",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.SemiBold
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        if (insights.isEmpty()) {
             Text(
-                text = "Performance Insights",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold
+                text = "No insights available",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
             )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            if (insights.isEmpty()) {
-                Text(
-                    text = "No insights available",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                )
-            } else {
-                insights.forEach { insight ->
-                    InsightItem(insight = insight)
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+        } else {
+            insights.forEach { insight ->
+                InsightItem(insight = insight)
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
@@ -59,17 +56,13 @@ private fun InsightItem(
     insight: String,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+    PCardCompact(
+        modifier = modifier,
+        elevation = 2
     ) {
         Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.Lightbulb,
@@ -77,8 +70,6 @@ private fun InsightItem(
                 tint = Color(0xFFFF9800), // Orange
                 modifier = Modifier.size(20.dp)
             )
-            
-            Spacer(modifier = Modifier.width(8.dp))
             
             Text(
                 text = insight,

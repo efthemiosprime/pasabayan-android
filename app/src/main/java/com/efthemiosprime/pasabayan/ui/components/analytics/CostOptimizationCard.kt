@@ -14,6 +14,9 @@ import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.data.model.analytics.CostOptimization
 import com.efthemiosprime.pasabayan.data.model.analytics.OptimizationRecommendation
 import com.efthemiosprime.pasabayan.data.model.analytics.BudgetAlert
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCard
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCardCompact
+import com.efthemiosprime.pasabayan.ui.shared.PButtonSmall
 
 /**
  * Card displaying cost optimization recommendations and budget alerts
@@ -23,63 +26,58 @@ fun CostOptimizationCard(
     optimization: CostOptimization,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    PCard(
+        modifier = modifier
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Text(
+            text = "Cost Optimization",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.SemiBold
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Recommendations Section
+        if (optimization.recommendations.isNotEmpty()) {
             Text(
-                text = "Cost Optimization",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold
+                text = "Recommendations",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             
-            // Recommendations Section
-            if (optimization.recommendations.isNotEmpty()) {
-                Text(
-                    text = "Recommendations",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
-                )
-                
+            optimization.recommendations.forEach { recommendation ->
+                RecommendationItem(recommendation = recommendation)
                 Spacer(modifier = Modifier.height(8.dp))
-                
-                optimization.recommendations.forEach { recommendation ->
-                    RecommendationItem(recommendation = recommendation)
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
             }
+        }
+        
+        // Budget Alerts Section
+        if (optimization.budgetAlerts.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
             
-            // Budget Alerts Section
-            if (optimization.budgetAlerts.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Text(
-                    text = "Budget Alerts",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                optimization.budgetAlerts.forEach { alert ->
-                    BudgetAlertItem(alert = alert)
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-            }
+            Text(
+                text = "Budget Alerts",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium
+            )
             
-            if (optimization.recommendations.isEmpty() && optimization.budgetAlerts.isEmpty()) {
-                Text(
-                    text = "No optimization data available",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                )
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            optimization.budgetAlerts.forEach { alert ->
+                BudgetAlertItem(alert = alert)
+                Spacer(modifier = Modifier.height(8.dp))
             }
+        }
+        
+        if (optimization.recommendations.isEmpty() && optimization.budgetAlerts.isEmpty()) {
+            Text(
+                text = "No optimization data available",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+            )
         }
     }
 }
@@ -92,17 +90,13 @@ private fun RecommendationItem(
     recommendation: OptimizationRecommendation,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+    PCardCompact(
+        modifier = modifier,
+        elevation = 2
     ) {
         Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.TrendingUp,
@@ -111,10 +105,9 @@ private fun RecommendationItem(
                 modifier = Modifier.size(20.dp)
             )
             
-            Spacer(modifier = Modifier.width(8.dp))
-            
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -127,25 +120,17 @@ private fun RecommendationItem(
                         modifier = Modifier.weight(1f)
                     )
                     
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = when (recommendation.priority) {
-                                "high" -> Color(0xFFF44336) // Red
-                                "medium" -> Color(0xFFFF9800) // Orange
-                                else -> Color(0xFF4CAF50) // Green
-                            }
-                        )
-                    ) {
-                        Text(
-                            text = recommendation.priority.uppercase(),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.White,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
+                    PButtonSmall(
+                        text = recommendation.priority.uppercase(),
+                        onClick = { /* Handle priority action */ },
+                        backgroundColor = when (recommendation.priority) {
+                            "high" -> Color(0xFFF44336) // Red
+                            "medium" -> Color(0xFFFF9800) // Orange
+                            else -> Color(0xFF4CAF50) // Green
+                        },
+                        textColor = Color.White
+                    )
                 }
-                
-                Spacer(modifier = Modifier.height(4.dp))
                 
                 Text(
                     text = "Potential savings: ${recommendation.potentialSavings}",
@@ -166,21 +151,20 @@ private fun BudgetAlertItem(
     alert: BudgetAlert,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = when (alert.severity) {
-                "high" -> Color(0xFFFFEBEE) // Light red
-                "medium" -> Color(0xFFFFF3E0) // Light orange
-                else -> Color(0xFFE8F5E8) // Light green
-            }
-        )
+    val backgroundColor = when (alert.severity) {
+        "high" -> Color(0xFFFFEBEE) // Light red
+        "medium" -> Color(0xFFFFF3E0) // Light orange
+        else -> Color(0xFFE8F5E8) // Light green
+    }
+    
+    PCard(
+        modifier = modifier,
+        backgroundColor = backgroundColor,
+        elevation = 2
     ) {
         Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.Warning,
@@ -193,10 +177,9 @@ private fun BudgetAlertItem(
                 modifier = Modifier.size(20.dp)
             )
             
-            Spacer(modifier = Modifier.width(8.dp))
-            
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -209,22 +192,16 @@ private fun BudgetAlertItem(
                         modifier = Modifier.weight(1f)
                     )
                     
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = when (alert.severity) {
-                                "high" -> Color(0xFFF44336) // Red
-                                "medium" -> Color(0xFFFF9800) // Orange
-                                else -> Color(0xFF4CAF50) // Green
-                            }
-                        )
-                    ) {
-                        Text(
-                            text = alert.severity.uppercase(),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.White,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
+                    PButtonSmall(
+                        text = alert.severity.uppercase(),
+                        onClick = { /* Handle alert action */ },
+                        backgroundColor = when (alert.severity) {
+                            "high" -> Color(0xFFF44336) // Red
+                            "medium" -> Color(0xFFFF9800) // Orange
+                            else -> Color(0xFF4CAF50) // Green
+                        },
+                        textColor = Color.White
+                    )
                 }
             }
         }

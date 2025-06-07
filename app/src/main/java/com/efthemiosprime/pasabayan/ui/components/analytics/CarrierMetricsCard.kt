@@ -8,7 +8,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.data.model.analytics.CarrierHistoricalStats
-import com.efthemiosprime.pasabayan.ui.shared.MetricCard
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCard
+import com.efthemiosprime.pasabayan.ui.shared.cards.MetricDisplayCard
 
 /**
  * Card displaying key carrier performance metrics
@@ -22,46 +23,41 @@ fun CarrierMetricsCard(
     val totalDeliveries = stats.monthlyPerformance.sumOf { it.deliveriesCompleted }
     val averageSuccessRate = stats.monthlyPerformance.map { it.successRate }.average()
     
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    PCard(
+        modifier = modifier
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Text(
+            text = "Key Metrics",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.SemiBold
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Text(
-                text = "Key Metrics",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold
+            MetricDisplayCard(
+                title = "Total Earnings",
+                value = "$${String.format("%.2f", totalEarnings)}",
+                valueColor = Color(0xFF4CAF50), // Green
+                modifier = Modifier.weight(1f)
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            MetricDisplayCard(
+                title = "Deliveries",
+                value = totalDeliveries.toString(),
+                valueColor = Color(0xFF2196F3), // Blue
+                modifier = Modifier.weight(1f)
+            )
             
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                MetricCard(
-                    title = "Total Earnings",
-                    value = "$${String.format("%.2f", totalEarnings)}",
-                    color = Color(0xFF4CAF50), // Green
-                    modifier = Modifier.weight(1f)
-                )
-                
-                MetricCard(
-                    title = "Deliveries",
-                    value = totalDeliveries.toString(),
-                    color = Color(0xFF2196F3), // Blue
-                    modifier = Modifier.weight(1f)
-                )
-                
-                MetricCard(
-                    title = "Avg Success Rate",
-                    value = "${String.format("%.1f", averageSuccessRate)}%",
-                    color = Color(0xFFFF9800), // Orange
-                    modifier = Modifier.weight(1f)
-                )
-            }
+            MetricDisplayCard(
+                title = "Avg Success Rate",
+                value = "${String.format("%.1f", averageSuccessRate)}%",
+                valueColor = Color(0xFFFF9800), // Orange
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 } 

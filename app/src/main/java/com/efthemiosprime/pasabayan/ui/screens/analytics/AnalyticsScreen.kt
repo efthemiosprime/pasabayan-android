@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -13,6 +14,8 @@ import com.efthemiosprime.pasabayan.presentation.viewmodel.AnalyticsViewModel
 import com.efthemiosprime.pasabayan.presentation.viewmodel.AnalyticsState
 import com.efthemiosprime.pasabayan.ui.components.analytics.*
 import com.efthemiosprime.pasabayan.ui.common.ErrorMessage
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCard
+import com.efthemiosprime.pasabayan.ui.shared.PButton
 
 /**
  * Main analytics screen displaying carrier and shipper analytics
@@ -139,40 +142,31 @@ private fun AnalyticsContent(
         // Error message for refresh errors
         state.error?.let { error ->
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
+                PCard(
+                    backgroundColor = MaterialTheme.colorScheme.errorContainer
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = "Error loading data",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                        
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        Text(
-                            text = error.message,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                        
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        Button(
-                            onClick = onRefresh,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error
-                            )
-                        ) {
-                            Text("Retry")
-                        }
-                    }
+                    Text(
+                        text = "Error loading data",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = error.message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    PButton(
+                        text = "Retry",
+                        onClick = onRefresh,
+                        backgroundColor = MaterialTheme.colorScheme.error,
+                        textColor = MaterialTheme.colorScheme.onError
+                    )
                 }
             }
         }

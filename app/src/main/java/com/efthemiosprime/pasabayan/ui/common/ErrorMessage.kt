@@ -7,9 +7,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCard
+import com.efthemiosprime.pasabayan.ui.shared.PButton
 
 /**
  * Reusable error message component with retry functionality
@@ -20,16 +23,12 @@ fun ErrorMessage(
     onRetry: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer
-        )
+    PCard(
+        modifier = modifier,
+        backgroundColor = MaterialTheme.colorScheme.errorContainer
     ) {
         Column(
-            modifier = Modifier
-                .padding(24.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -56,17 +55,12 @@ fun ErrorMessage(
             )
             
             onRetry?.let { retry ->
-                Button(
+                PButton(
+                    text = "Try Again",
                     onClick = retry,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text(
-                        text = "Try Again",
-                        color = MaterialTheme.colorScheme.onError
-                    )
-                }
+                    backgroundColor = MaterialTheme.colorScheme.error,
+                    textColor = MaterialTheme.colorScheme.onError
+                )
             }
         }
     }
