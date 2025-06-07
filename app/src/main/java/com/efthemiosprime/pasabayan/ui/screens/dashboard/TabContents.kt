@@ -3,11 +3,17 @@ package com.efthemiosprime.pasabayan.ui.screens.dashboard
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.FilterChip
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,6 +21,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.data.model.User
 import com.efthemiosprime.pasabayan.data.model.UserRole
+import com.efthemiosprime.pasabayan.data.model.Trip
+import com.efthemiosprime.pasabayan.data.model.TripStatus
+import com.efthemiosprime.pasabayan.data.model.PackageRequest
+import com.efthemiosprime.pasabayan.data.model.PackageRequestStatus
+import com.efthemiosprime.pasabayan.data.model.PackageSize
+import com.efthemiosprime.pasabayan.ui.components.TripCard
+import com.efthemiosprime.pasabayan.ui.components.packages.PackageRequestCard
 
 /**
  * Home tab content that mirrors iOS ShipperHomeTab/CarrierHomeTab
@@ -90,17 +103,76 @@ fun BrowseTabContent(
     modifier: Modifier = Modifier,
     currentRole: UserRole
 ) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = when (currentRole) {
-                UserRole.SHIPPER -> "Browse Available Trips"
-                UserRole.CARRIER -> "Browse Package Requests"
-            },
-            style = MaterialTheme.typography.headlineSmall
-        )
+        item {
+            Text(
+                text = when (currentRole) {
+                    UserRole.SHIPPER -> "Available Trips"
+                    UserRole.CARRIER -> "Available Package Requests"
+                },
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        
+        when (currentRole) {
+            UserRole.SHIPPER -> {
+                // Show available trips for shippers
+                items(Trip.mockTrips.filter { it.tripStatus == TripStatus.ACTIVE || it.tripStatus == TripStatus.SCHEDULED }) { trip ->
+                    TripCard(
+                        trip = trip,
+                        onTap = { /* Handle trip selection */ }
+                    )
+                }
+            }
+            UserRole.CARRIER -> {
+                // Show available package requests for carriers
+                val mockPackages = listOf(
+                    PackageRequest(
+                        id = 1,
+                        shipperId = 1,
+                        title = "Electronics Package",
+                        description = "Laptop and accessories",
+                        pickupLocation = "SM Mall of Asia",
+                        deliveryLocation = "Makati CBD",
+                        preferredPickupDate = "2024-01-15",
+                        packageSize = PackageSize.MEDIUM,
+                        packageWeight = 2.5,
+                        packageValue = 45000.0,
+                        isFragile = true,
+                        status = PackageRequestStatus.PENDING,
+                        createdAt = "2024-01-14T10:00:00Z",
+                        updatedAt = "2024-01-14T10:00:00Z"
+                    ),
+                    PackageRequest(
+                        id = 2,
+                        shipperId = 2,
+                        title = "Documents",
+                        description = "Important business documents",
+                        pickupLocation = "BGC Taguig",
+                        deliveryLocation = "Ortigas Center",
+                        preferredPickupDate = "2024-01-16",
+                        packageSize = PackageSize.SMALL,
+                        packageWeight = 0.5,
+                        packageValue = 1000.0,
+                        status = PackageRequestStatus.PENDING,
+                        createdAt = "2024-01-14T11:00:00Z",
+                        updatedAt = "2024-01-14T11:00:00Z"
+                    )
+                )
+                
+                items(mockPackages) { packageRequest ->
+                    PackageRequestCard(
+                        packageRequest = packageRequest
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -112,17 +184,113 @@ fun PackagesOrTripsTabContent(
     modifier: Modifier = Modifier,
     currentRole: UserRole
 ) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = when (currentRole) {
-                UserRole.SHIPPER -> "Packages"
-                UserRole.CARRIER -> "Trips"
-            },
-            style = MaterialTheme.typography.headlineSmall
-        )
+        item {
+            Text(
+                text = when (currentRole) {
+                    UserRole.SHIPPER -> "My Package Requests"
+                    UserRole.CARRIER -> "My Trips"
+                },
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        
+        when (currentRole) {
+            UserRole.CARRIER -> {
+                // Show carrier's trips with filter chips
+                item {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(vertical = 8.dp)
+                    ) {
+                        item {
+                            FilterChip(
+                                onClick = { },
+                                label = { Text("All") },
+                                selected = true
+                            )
+                        }
+                        items(TripStatus.allCases) { status ->
+                            FilterChip(
+                                onClick = { },
+                                label = { Text(status.displayName) },
+                                selected = false
+                            )
+                        }
+                    }
+                }
+                
+                items(Trip.mockTrips) { trip ->
+                    TripCard(
+                        trip = trip,
+                        onTap = { /* Handle trip tap */ }
+                    )
+                }
+            }
+            UserRole.SHIPPER -> {
+                // Show shipper's package requests
+                val mockPackages = listOf(
+                    PackageRequest(
+                        id = 1,
+                        shipperId = 1,
+                        title = "Electronics Package",
+                        description = "Laptop and accessories",
+                        pickupLocation = "SM Mall of Asia",
+                        deliveryLocation = "Makati CBD",
+                        preferredPickupDate = "2024-01-15",
+                        packageSize = PackageSize.MEDIUM,
+                        packageWeight = 2.5,
+                        packageValue = 45000.0,
+                        isFragile = true,
+                        status = PackageRequestStatus.MATCHED,
+                        createdAt = "2024-01-14T10:00:00Z",
+                        updatedAt = "2024-01-14T11:00:00Z"
+                    ),
+                    PackageRequest(
+                        id = 2,
+                        shipperId = 1,
+                        title = "Gift Package",
+                        description = "Birthday gift for family",
+                        pickupLocation = "Quezon City",
+                        deliveryLocation = "Manila",
+                        preferredPickupDate = "2024-01-17",
+                        packageSize = PackageSize.LARGE,
+                        packageWeight = 5.0,
+                        packageValue = 8000.0,
+                        status = PackageRequestStatus.DELIVERED,
+                        createdAt = "2024-01-13T15:00:00Z",
+                        updatedAt = "2024-01-17T18:30:00Z"
+                    ),
+                    PackageRequest(
+                        id = 3,
+                        shipperId = 1,
+                        title = "Documents",
+                        description = "Important business documents",
+                        pickupLocation = "BGC Taguig",
+                        deliveryLocation = "Ortigas Center",
+                        preferredPickupDate = "2024-01-16",
+                        packageSize = PackageSize.SMALL,
+                        packageWeight = 0.5,
+                        packageValue = 1000.0,
+                        status = PackageRequestStatus.PENDING,
+                        createdAt = "2024-01-14T11:00:00Z",
+                        updatedAt = "2024-01-14T11:00:00Z"
+                    )
+                )
+                
+                items(mockPackages) { packageRequest ->
+                    PackageRequestCard(
+                        packageRequest = packageRequest
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -134,16 +302,122 @@ fun CreateTabContent(
     modifier: Modifier = Modifier,
     currentRole: UserRole
 ) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text(
             text = when (currentRole) {
                 UserRole.SHIPPER -> "Create Package Request"
                 UserRole.CARRIER -> "Create Trip"
             },
-            style = MaterialTheme.typography.headlineSmall
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        
+        when (currentRole) {
+            UserRole.SHIPPER -> {
+                CreatePackageForm()
+            }
+            UserRole.CARRIER -> {
+                CreateTripForm()
+            }
+        }
+    }
+}
+
+@Composable
+private fun CreatePackageForm() {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Quick Package Request",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Medium
+        )
+        
+        Text(
+            text = "• Package Title: Electronics Package",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            text = "• Pickup: SM Mall of Asia",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            text = "• Delivery: Makati CBD",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            text = "• Size: Medium (2.5kg)",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            text = "• Value: ₱45,000",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        
+        Button(
+            onClick = { /* Create package request */ },
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Text("Create Package Request")
+        }
+        
+        Text(
+            text = "Full create form coming soon!",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun CreateTripForm() {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Quick Trip Creation",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Medium
+        )
+        
+        Text(
+            text = "• Route: Manila → Cebu",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            text = "• Method: Flight ✈️",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            text = "• Departure: Tomorrow 10:00 AM",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            text = "• Capacity: 15kg, 50L",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            text = "• Price: ₱25.00/kg",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        
+        Button(
+            onClick = { /* Create trip */ },
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Text("Create Trip")
+        }
+        
+        Text(
+            text = "Full create form coming soon!",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -180,7 +454,7 @@ fun ProfileTabContent(
             Text("Sign Out")
         }
     }
-} 
+}
 
 // ===== PREVIEW FUNCTIONS =====
 
