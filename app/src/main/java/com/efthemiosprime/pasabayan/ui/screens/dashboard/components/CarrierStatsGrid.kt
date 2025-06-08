@@ -14,12 +14,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 import com.efthemiosprime.pasabayan.presentation.viewmodel.CarrierViewModel
-import com.efthemiosprime.pasabayan.ui.components.cards.StatCard
+import com.efthemiosprime.pasabayan.ui.components.cards.StatItem
 import com.efthemiosprime.pasabayan.data.model.TripStatus
 
 /**
- * Carrier Stats Grid - Mirrors iOS CarrierStatsGrid (34 lines)
- * Pure stats display for carrier metrics
+ * Carrier Stats Grid - Following Global Card Standards
+ * Pure stats display for carrier metrics using flat StatItem components
+ * Uses StatItem to prevent nested shadows when used inside parent containers
  */
 @Composable
 fun CarrierStatsGrid(
@@ -38,7 +39,7 @@ fun CarrierStatsGrid(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            StatCard(
+            StatItem( // Using StatItem (flat) for consistent card standards
                 title = "Active Trips",
                 value = (carrierState.trips.data?.count { it.tripStatus == TripStatus.ACTIVE } ?: 0).toString(),
                 icon = Icons.Default.DirectionsCar,
@@ -46,7 +47,7 @@ fun CarrierStatsGrid(
                 modifier = Modifier.weight(1f)
             )
             
-            StatCard(
+            StatItem( // Using StatItem (flat) for consistent card standards
                 title = "Total Earnings",
                 value = carrierState.profile.totalEarnings,
                 icon = Icons.Default.AttachMoney,
@@ -60,7 +61,7 @@ fun CarrierStatsGrid(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            StatCard(
+            StatItem( // Using StatItem (flat) for consistent card standards
                 title = "Active Matches",
                 value = (carrierState.bookings.data?.size ?: 0).toString(),
                 icon = Icons.Default.Assignment,
@@ -68,7 +69,7 @@ fun CarrierStatsGrid(
                 modifier = Modifier.weight(1f)
             )
             
-            StatCard(
+            StatItem( // Using StatItem (flat) for consistent card standards
                 title = "Rating",
                 value = carrierState.averageRatingText,
                 icon = Icons.Default.Star,

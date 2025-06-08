@@ -34,6 +34,8 @@ import com.efthemiosprime.pasabayan.ui.components.role.RoleSwitcherView
 import com.efthemiosprime.pasabayan.ui.components.status.StatusChip
 import com.efthemiosprime.pasabayan.ui.shared.EmptyStateView
 import com.efthemiosprime.pasabayan.ui.components.packages.PackageRequestCard
+import com.efthemiosprime.pasabayan.ui.theme.PasabayanDesignSystem
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCardStandard
 import kotlinx.coroutines.launch
 
 // StatCard extracted to ui/components/cards/StatCard.kt
@@ -271,10 +273,9 @@ fun CarrierStatusCard(
     
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp) ,
-        colors = CardDefaults.cardColors(containerColor = Color.White) // Set your desired background color here
-
+        shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.card),
+        elevation = CardDefaults.cardElevation(defaultElevation = PasabayanDesignSystem.CardStandards.elevation),
+        colors = CardDefaults.cardColors(containerColor = PasabayanDesignSystem.CardStandards.backgroundColor)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -1083,47 +1084,45 @@ fun ProfileMenuItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    PCardStandard(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = title,
-                tint = Color.Blue,
+                tint = Color.Black,
                 modifier = Modifier.size(24.dp)
             )
             
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary
+                    color = Color.Black
                 )
                 
                 Text(
                     text = subtitle,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Black.copy(alpha = 0.7f)
                 )
             }
             
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = "Navigate",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp)
+                tint = Color.Black.copy(alpha = 0.5f),
+                modifier = Modifier.size(20.dp)
             )
         }
     }

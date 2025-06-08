@@ -14,11 +14,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 import com.efthemiosprime.pasabayan.presentation.viewmodel.PackageViewModel
-import com.efthemiosprime.pasabayan.ui.components.cards.StatCard
+import com.efthemiosprime.pasabayan.ui.components.cards.StatItem
 
 /**
- * Shipper Stats Grid - Mirrors iOS ShipperStatsGrid (37 lines)
- * Pure stats display with immutable data structures
+ * Shipper Stats Grid - Following Global Card Standards
+ * Pure stats display for shipper metrics using flat StatItem components
+ * Uses StatItem to prevent nested shadows when used inside parent containers
  */
 @Composable
 fun ShipperStatsGrid(
@@ -37,7 +38,7 @@ fun ShipperStatsGrid(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            StatCard(
+            StatItem( // Using StatItem (flat) for consistent card standards
                 title = "Active Packages",
                 value = packages.count { it.status.name in listOf("MATCHED", "BOOKED", "IN_TRANSIT") }.toString(),
                 icon = Icons.Default.LocalShipping,
@@ -45,7 +46,7 @@ fun ShipperStatsGrid(
                 modifier = Modifier.weight(1f)
             )
             
-            StatCard(
+            StatItem( // Using StatItem (flat) for consistent card standards
                 title = "Delivered", 
                 value = packages.count { it.status.name == "DELIVERED" }.toString(),
                 icon = Icons.Default.CheckCircle,
@@ -59,7 +60,7 @@ fun ShipperStatsGrid(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            StatCard(
+            StatItem( // Using StatItem (flat) for consistent card standards
                 title = "Pending",
                 value = packages.count { it.status.name == "PENDING" }.toString(), 
                 icon = Icons.Default.Schedule,
@@ -67,7 +68,7 @@ fun ShipperStatsGrid(
                 modifier = Modifier.weight(1f)
             )
             
-            StatCard(
+            StatItem( // Using StatItem (flat) for consistent card standards
                 title = "Total Requests",
                 value = packages.size.toString(),
                 icon = Icons.Default.Inventory,
@@ -82,9 +83,9 @@ fun ShipperStatsGrid(
  * Immutable stat card configuration
  */
 @androidx.compose.runtime.Immutable
-data class StatCardData(
+private data class StatItemConfig(
     val title: String,
-    val value: String,
+    val valueProvider: (List<com.efthemiosprime.pasabayan.data.model.PackageRequest>) -> String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
     val color: androidx.compose.ui.graphics.Color
 ) 

@@ -26,11 +26,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
+import com.efthemiosprime.pasabayan.ui.theme.PasabayanDesignSystem
 
 /**
- * Stat Card component matching iOS StatCard
+ * StatCard component following Global Card Standards
  * Displays statistics with icon, value, and title
  * Used across dashboard for various metrics display
+ * 
+ * Note: When used inside other cards (like ProfileStatsSection),
+ * it automatically removes elevation to prevent nested shadows
  */
 @Composable
 fun StatCard(
@@ -38,21 +42,30 @@ fun StatCard(
     value: String,
     icon: ImageVector,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isChildCard: Boolean = false // When true, removes elevation for nested usage
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight(),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.card),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isChildCard) {
+                PasabayanDesignSystem.CardStandards.childElevation
+            } else {
+                PasabayanDesignSystem.CardStandards.elevation
+            }
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = PasabayanDesignSystem.CardStandards.backgroundColor
+        )
     ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(PasabayanDesignSystem.CardStandards.padding)
                 .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.sm)
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -69,7 +82,73 @@ fun StatCard(
             }
             
             Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.xs)
+            ) {
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+/**
+ * StatItem - Completely flat version for use inside cards (NO elevation/shadows)
+ * Uses Surface instead of Card to ensure no elevation at all
+ */
+@Composable
+fun StatItem(
+    title: String,
+    value: String,
+    icon: ImageVector,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    androidx.compose.material3.Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.card),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+        shadowElevation = 0.dp, // Explicitly no elevation
+        tonalElevation = 0.dp   // Explicitly no tonal elevation
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(PasabayanDesignSystem.Spacing.lg)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.sm)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = color,
+                    modifier = Modifier.size(30.dp)
+                )
+                
+                Spacer(modifier = Modifier.weight(1f))
+            }
+            
+            Column(
+                verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.xs)
             ) {
                 Text(
                     text = value,
@@ -94,15 +173,30 @@ fun StatCard(
 }
 
 // MARK: - Previews
-@Preview("Default Stat Card")
+@Preview("Default Stat Card - Standalone")
 @Composable
-fun StatCardPreview() {
+fun StatCardStandalonePreview() {
     PasabayanTheme {
         StatCard(
             title = "Total Earnings",
-            value = "$2,450",
+            value = "$248.20",
             icon = Icons.Default.Star,
-            color = Color.Blue
+            color = Color(0xFF4CAF50),
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+
+@Preview("Stat Card - Child (No Elevation)")
+@Composable
+fun StatCardChildPreview() {
+    PasabayanTheme {
+        StatItem(
+            title = "Total Earnings",
+            value = "$248.20",
+            icon = Icons.Default.Star,
+            color = Color(0xFF4CAF50),
+            modifier = Modifier.padding(16.dp)
         )
     }
 } 

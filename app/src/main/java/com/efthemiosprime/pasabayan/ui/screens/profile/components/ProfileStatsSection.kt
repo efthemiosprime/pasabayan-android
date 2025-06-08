@@ -13,12 +13,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.data.model.UserRole
-import com.efthemiosprime.pasabayan.ui.components.cards.StatCard
+import com.efthemiosprime.pasabayan.ui.components.cards.StatItem
+import com.efthemiosprime.pasabayan.ui.theme.PasabayanDesignSystem
 
 /**
- * Profile Stats Section Component
- * Displays role-specific statistics in a grid
- * Configuration-based with immutable data
+ * Profile Stats Section Component - Following Global Card Standards
+ * Displays role-specific statistics using consistent elevation and styling
+ * Uses StatItem (no elevation) inside parent card to prevent nested shadows
  */
 @Composable
 fun ProfileStatsSection(
@@ -27,13 +28,17 @@ fun ProfileStatsSection(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.card),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = PasabayanDesignSystem.CardStandards.elevation
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = PasabayanDesignSystem.CardStandards.backgroundColor
+        )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.padding(PasabayanDesignSystem.CardStandards.padding),
+            verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.lg)
         ) {
             Text(
                 text = "Statistics",
@@ -63,14 +68,14 @@ private fun ProfileStatsGrid(
     // Use Row-Column layout instead of LazyVerticalGrid to avoid nested scrolling
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.lg)
     ) {
         // First row
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.lg)
         ) {
-            StatCard(
+            StatItem( // Using StatItem (no elevation) instead of StatCard
                 title = stats[0].title,
                 value = stats[0].value,
                 icon = stats[0].icon,
@@ -78,7 +83,7 @@ private fun ProfileStatsGrid(
                 modifier = Modifier.weight(1f)
             )
             
-            StatCard(
+            StatItem( // Using StatItem (no elevation) instead of StatCard
                 title = stats[1].title,
                 value = stats[1].value,
                 icon = stats[1].icon,
@@ -92,7 +97,7 @@ private fun ProfileStatsGrid(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            StatCard(
+            StatItem( // Using StatItem (no elevation) instead of StatCard
                 title = stats[2].title,
                 value = stats[2].value,
                 icon = stats[2].icon,

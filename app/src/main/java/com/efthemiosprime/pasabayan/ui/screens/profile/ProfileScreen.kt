@@ -29,6 +29,8 @@ import com.efthemiosprime.pasabayan.ui.components.ProfileMenuItem
 import com.efthemiosprime.pasabayan.ui.components.PlaceholderSheet
 import com.efthemiosprime.pasabayan.ui.components.VerificationBadgeIcon
 import com.efthemiosprime.pasabayan.ui.components.VerificationStatusDisplay
+import com.efthemiosprime.pasabayan.ui.theme.PasabayanDesignSystem
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCardStandard
 
 /**
  * Profile Screen - Exact iOS ProfileView implementation
@@ -72,15 +74,12 @@ fun ProfileScreen(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(1.dp)
     ) {
         item {
             // Profile Header
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+            PCardStandard(
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier
@@ -168,11 +167,8 @@ fun ProfileScreen(
         
         item {
             // Role Switcher Section
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+            PCardStandard(
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -192,11 +188,8 @@ fun ProfileScreen(
         
         item {
             // Role-Specific Stats Section
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+            PCardStandard(
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -234,7 +227,7 @@ fun ProfileScreen(
                                 title = "Earnings",
                                 value = "$298.80",
                                 icon = Icons.Default.AttachMoney,
-                                color = Color.Green,
+                                color = Color(0xFF4CAF50),
                                 modifier = Modifier.weight(1f)
                             )
                         } else {
@@ -266,183 +259,164 @@ fun ProfileScreen(
             }
         }
         
-        item {
-            // Role-Specific Menu Items
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.White)
-                ) {
-                    if (currentRole == UserRole.CARRIER) {
-                        // Carrier-specific menu items
-                        ProfileMenuItem(
-                            icon = Icons.Default.DirectionsCar,
-                            title = "Vehicle Information",
-                            subtitle = "Manage your delivery vehicle details",
-                            onClick = { showingVehicleInfo = true },
-                        )
-                        
-                        HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                        
-                        ProfileMenuItem(
-                            icon = Icons.Default.History,
-                            title = "Delivery History",
-                            subtitle = "View your completed deliveries",
-                            onClick = { showingDeliveryHistory = true }
-                        )
-                        
-                        HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                        
-                        ProfileMenuItem(
-                            icon = Icons.Default.CreditCard,
-                            title = "Payment Methods",
-                            subtitle = "Manage accounts for receiving earnings",
-                            onClick = { showingCarrierPaymentMethods = true }
-                        )
-                        
-                        HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                        
-                        ProfileMenuItem(
-                            icon = Icons.Default.Schedule,
-                            title = "Availability Settings",
-                            subtitle = "Set your working hours and availability",
-                            onClick = { showingAvailabilitySettings = true }
-                        )
-                        
-                        HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                        
-                        ProfileMenuItem(
-                            icon = Icons.Default.Map,
-                            title = "Route Preferences",
-                            subtitle = "Configure preferred delivery routes",
-                            onClick = { showingRoutePreferences = true }
-                        )
-                        
-                        HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                        
-                        ProfileMenuItem(
-                            icon = Icons.Default.Description,
-                            title = "Driver Documents",
-                            subtitle = "Manage license and vehicle documents",
-                            onClick = { showingDriverDocuments = true }
-                        )
-                        
-                    } else {
-                        // Shipper-specific menu items
-                        ProfileMenuItem(
-                            icon = Icons.Default.LocationOn,
-                            title = "Shipping Addresses",
-                            subtitle = "Manage pickup and delivery addresses",
-                            onClick = { showingShippingAddresses = true }
-                        )
-                        
-                        HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                        
-                        ProfileMenuItem(
-                            icon = Icons.Default.History,
-                            title = "Order History",
-                            subtitle = "View your shipping history",
-                            onClick = { showingOrderHistory = true }
-                        )
-                        
-                        HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                        
-                        ProfileMenuItem(
-                            icon = Icons.Default.CreditCard,
-                            title = "Payment Methods",
-                            subtitle = "Manage cards for paying shipping costs",
-                            onClick = { showingShipperPaymentMethods = true }
-                        )
-                        
-                        HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                        
-                        ProfileMenuItem(
-                            icon = Icons.Default.Inventory,
-                            title = "Active Shipments",
-                            subtitle = "Track your current packages",
-                            onClick = { showingActiveShipments = true }
-                        )
-                        
-                        HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                        
-                        ProfileMenuItem(
-                            icon = Icons.Default.Notifications,
-                            title = "Notifications",
-                            subtitle = "Configure shipping notifications",
-                            onClick = { showingNotifications = true }
-                        )
-                        
-                        HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                        
-                        ProfileMenuItem(
-                            icon = Icons.Default.Settings,
-                            title = "Shipping Preferences",
-                            subtitle = "Set default shipping options",
-                            onClick = { showingShippingPreferences = true }
-                        )
-                        
-                        HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                        
-                        ProfileMenuItem(
-                            icon = Icons.Default.Receipt,
-                            title = "Billing History",
-                            subtitle = "View detailed billing information",
-                            onClick = { showingBillingHistory = true }
-                        )
-                        
-                        HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                        
-                        ProfileMenuItem(
-                            icon = Icons.Default.Layers,
-                            title = "Bulk Shipping Tools",
-                            subtitle = "Tools for multiple shipments",
-                            onClick = { showingBulkShippingTools = true }
-                        )
-                    }
-                }
+        // Role-Specific Menu Items
+        if (currentRole == UserRole.CARRIER) {
+            // Carrier-specific menu items
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.DirectionsCar,
+                    title = "Vehicle Information",
+                    subtitle = "Manage your delivery vehicle details",
+                    onClick = { showingVehicleInfo = true },
+                )
+            }
+            
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.History,
+                    title = "Delivery History",
+                    subtitle = "View your completed deliveries",
+                    onClick = { showingDeliveryHistory = true }
+                )
+            }
+            
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.CreditCard,
+                    title = "Payment Methods",
+                    subtitle = "Manage accounts for receiving earnings",
+                    onClick = { showingCarrierPaymentMethods = true }
+                )
+            }
+            
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.Schedule,
+                    title = "Availability Settings",
+                    subtitle = "Set your working hours and availability",
+                    onClick = { showingAvailabilitySettings = true }
+                )
+            }
+            
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.Map,
+                    title = "Route Preferences",
+                    subtitle = "Configure preferred delivery routes",
+                    onClick = { showingRoutePreferences = true }
+                )
+            }
+            
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.Description,
+                    title = "Driver Documents",
+                    subtitle = "Manage license and vehicle documents",
+                    onClick = { showingDriverDocuments = true }
+                )
+            }
+            
+        } else {
+            // Shipper-specific menu items
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.LocationOn,
+                    title = "Shipping Addresses",
+                    subtitle = "Manage pickup and delivery addresses",
+                    onClick = { showingShippingAddresses = true }
+                )
+            }
+            
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.History,
+                    title = "Order History",
+                    subtitle = "View your shipping history",
+                    onClick = { showingOrderHistory = true }
+                )
+            }
+            
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.CreditCard,
+                    title = "Payment Methods",
+                    subtitle = "Manage cards for paying shipping costs",
+                    onClick = { showingShipperPaymentMethods = true }
+                )
+            }
+            
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.Inventory,
+                    title = "Active Shipments",
+                    subtitle = "Track your current packages",
+                    onClick = { showingActiveShipments = true }
+                )
+            }
+            
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.Notifications,
+                    title = "Notifications",
+                    subtitle = "Configure shipping notifications",
+                    onClick = { showingNotifications = true }
+                )
+            }
+            
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.Settings,
+                    title = "Shipping Preferences",
+                    subtitle = "Set default shipping options",
+                    onClick = { showingShippingPreferences = true }
+                )
+            }
+            
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.Receipt,
+                    title = "Billing History",
+                    subtitle = "View detailed billing information",
+                    onClick = { showingBillingHistory = true }
+                )
+            }
+            
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.Layers,
+                    title = "Bulk Shipping Tools",
+                    subtitle = "Tools for multiple shipments",
+                    onClick = { showingBulkShippingTools = true }
+                )
             }
         }
         
+        // Common Items
         item {
-            // Common Items
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
-            ) {
-                Column {
-                    ProfileMenuItem(
-                        icon = Icons.Default.Person,
-                        title = "Edit Profile",
-                        subtitle = "Update your personal information",
-                        onClick = { showingEditProfile = true }
-                    )
-                    
-                    HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                    
-                    ProfileMenuItem(
-                        icon = Icons.Default.HelpOutline,
-                        title = "Help & Support",
-                        subtitle = "Get help and contact support",
-                        onClick = { showingHelpSupport = true }
-                    )
-                    
-                    HorizontalDivider(modifier = Modifier.padding(start = 50.dp))
-                    
-                    ProfileMenuItem(
-                        icon = Icons.Default.Description,
-                        title = "Terms & Privacy",
-                        subtitle = "Read our terms and privacy policy",
-                        onClick = { showingTermsPrivacy = true }
-                    )
-                }
-            }
+            ProfileMenuItem(
+                icon = Icons.Default.Person,
+                title = "Edit Profile",
+                subtitle = "Update your personal information",
+                onClick = { showingEditProfile = true }
+            )
+        }
+        
+        item {
+            ProfileMenuItem(
+                icon = Icons.Default.HelpOutline,
+                title = "Help & Support",
+                subtitle = "Get help and contact support",
+                onClick = { showingHelpSupport = true }
+            )
+        }
+        
+        item {
+            ProfileMenuItem(
+                icon = Icons.Default.Description,
+                title = "Terms & Privacy",
+                subtitle = "Read our terms and privacy policy",
+                onClick = { showingTermsPrivacy = true }
+            )
         }
         
         item {

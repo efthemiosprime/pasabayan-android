@@ -11,6 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.data.model.PackageRequest
 import com.efthemiosprime.pasabayan.ui.components.status.StatusChip
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCardStandard
 
 /**
  * Package Request Card component 
@@ -22,14 +23,10 @@ fun PackageRequestCard(
     packageRequest: PackageRequest,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+    PCardStandard(
+        modifier = modifier
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(

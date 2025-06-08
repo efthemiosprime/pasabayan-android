@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.ui.components.analytics
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.*
@@ -49,18 +50,22 @@ fun PerformanceInsightsCard(
 }
 
 /**
- * Individual insight item display
+ * Individual insight item display - Flat version (no elevation)
  */
 @Composable
 private fun InsightItem(
     insight: String,
     modifier: Modifier = Modifier
 ) {
-    PCardCompact(
-        modifier = modifier,
-        elevation = 2
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
     ) {
         Row(
+            modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {

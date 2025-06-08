@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.ui.components.analytics
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -50,82 +51,89 @@ fun PreferredCarriersCard(
 }
 
 /**
- * Individual carrier item display
+ * Individual carrier item display - Flat version (no elevation)
  */
 @Composable
 private fun CarrierItem(
     carrier: PreferredCarrier,
     modifier: Modifier = Modifier
 ) {
-    PCardCompact(
-        modifier = modifier,
-        elevation = 2
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(12.dp)
         ) {
-            Text(
-                text = carrier.carrierName,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium
-            )
-            
             Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = "Rating",
-                    tint = Color(0xFFFF9800), // Orange
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = String.format("%.1f", carrier.carrierRating),
+                    text = carrier.carrierName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Rating",
+                        tint = Color(0xFFFF9800), // Orange
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = String.format("%.1f", carrier.carrierRating),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "${carrier.totalDeliveries} deliveries",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Text(
+                    text = "$${String.format("%.2f", carrier.averagePrice)} avg",
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium
                 )
             }
-        }
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "${carrier.totalDeliveries} deliveries",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
             
-            Text(
-                text = "$${String.format("%.2f", carrier.averagePrice)} avg",
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Medium
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(4.dp))
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "${String.format("%.1f", carrier.successRate)}% success",
-                style = MaterialTheme.typography.bodySmall,
-                color = if (carrier.successRate >= 90) Color(0xFF4CAF50) else Color(0xFFFF9800)
-            )
+            Spacer(modifier = Modifier.height(4.dp))
             
-            Text(
-                text = "${String.format("%.1f", carrier.reliabilityScore)} reliability",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "${String.format("%.1f", carrier.successRate)}% success rate",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Text(
+                    text = "Reliability: ${String.format("%.1f", carrier.reliabilityScore)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
     }
 } 

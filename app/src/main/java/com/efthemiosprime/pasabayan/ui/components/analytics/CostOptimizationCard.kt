@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.ui.components.analytics
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Warning
@@ -16,6 +17,7 @@ import com.efthemiosprime.pasabayan.data.model.analytics.OptimizationRecommendat
 import com.efthemiosprime.pasabayan.data.model.analytics.BudgetAlert
 import com.efthemiosprime.pasabayan.ui.shared.cards.PCard
 import com.efthemiosprime.pasabayan.ui.shared.cards.PCardCompact
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCardElevation
 import com.efthemiosprime.pasabayan.ui.shared.PButtonSmall
 
 /**
@@ -83,18 +85,22 @@ fun CostOptimizationCard(
 }
 
 /**
- * Individual recommendation item display
+ * Individual recommendation item display - Flat version (no elevation)
  */
 @Composable
 private fun RecommendationItem(
     recommendation: OptimizationRecommendation,
     modifier: Modifier = Modifier
 ) {
-    PCardCompact(
-        modifier = modifier,
-        elevation = 2
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
     ) {
         Row(
+            modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -144,7 +150,7 @@ private fun RecommendationItem(
 }
 
 /**
- * Individual budget alert item display
+ * Individual budget alert item display - Flat version (no elevation)
  */
 @Composable
 private fun BudgetAlertItem(
@@ -157,12 +163,15 @@ private fun BudgetAlertItem(
         else -> Color(0xFFE8F5E8) // Light green
     }
     
-    PCard(
-        modifier = modifier,
-        backgroundColor = backgroundColor,
-        elevation = 2
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(8.dp),
+        color = backgroundColor
     ) {
         Row(
+            modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
