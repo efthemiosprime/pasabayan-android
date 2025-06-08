@@ -17,22 +17,31 @@ The Pasabayan Android app follows a **unidirectional data flow** pattern based o
 
 ## Visual Architecture Overview
 
-```
-📱 UI Layer (Compose)
-    ↕️ StateFlow/Compose State
-🧠 Presentation Layer (ViewModels)
-    ↕️ Repository Interfaces
-🔧 Domain Layer (Business Logic)
-    ↕️ Repository Implementations
-💾 Data Layer (Repositories)
-    ↕️ API/Local Storage
-🌐 Services Layer (Data Sources)
-    ↕️ External APIs/Database
-📊 Models Layer (Data Classes)
+```mermaid
+graph TD
+    A[📱 UI Layer - Jetpack Compose] -->|User Actions| B[🎭 Presentation Layer - ViewModels]
+    B -->|Repository Calls| C[🔧 Domain Layer - Repository Interfaces]
+    C -->|Implementation Calls| D[💾 Data Layer - Repository Implementations]
+    D -->|Network/Storage| E[🌐 Services Layer - API/Local Storage]
+    
+    E -->|Data Response| D
+    D -->|Domain Models| C
+    C -->|UI State| B
+    B -->|StateFlow| A
+    
+    F[📦 Models Layer] -.->|Data Classes| D
+    F -.->|UI Models| B
+    
+    style A fill:#e3f2fd
+    style B fill:#f3e5f5
+    style C fill:#fff3e0
+    style D fill:#e8f5e8
+    style E fill:#ffebee
+    style F fill:#fce4ec
 ```
 
 **Data Flow Direction:**
-- **Actions UP**: UI → ViewModel → Repository → Service
+- **Actions UP**: UI → ViewModel → Repository → Service  
 - **State DOWN**: Service → Repository → ViewModel → UI
 
 ## Core Principles
