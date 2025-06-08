@@ -8,9 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.ui.shared.cards.PCard
 import com.efthemiosprime.pasabayan.ui.shared.PButton
 
@@ -48,7 +50,7 @@ fun ErrorMessage(
             )
             
             Text(
-                text = message,
+                text = message ?: stringResource(R.string.something_went_wrong),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onErrorContainer,
                 textAlign = TextAlign.Center
@@ -56,7 +58,7 @@ fun ErrorMessage(
             
             onRetry?.let { retry ->
                 PButton(
-                    text = "Try Again",
+                    text = stringResource(R.string.try_again),
                     onClick = retry,
                     backgroundColor = MaterialTheme.colorScheme.error,
                     textColor = MaterialTheme.colorScheme.onError

@@ -10,6 +10,8 @@ import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.data.model.analytics.CarrierHistoricalStats
 import com.efthemiosprime.pasabayan.ui.shared.cards.PCard
 import com.efthemiosprime.pasabayan.ui.shared.cards.MetricDisplayCard
+import androidx.compose.ui.res.stringResource
+import com.efthemiosprime.pasabayan.R
 
 /**
  * Card displaying key carrier performance metrics
@@ -27,7 +29,7 @@ fun CarrierMetricsCard(
         modifier = modifier
     ) {
         Text(
-            text = "Key Metrics",
+            text = stringResource(R.string.key_metrics),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.SemiBold
         )
@@ -39,7 +41,7 @@ fun CarrierMetricsCard(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             MetricDisplayCard(
-                title = "Total Earnings",
+                title = stringResource(R.string.total_earnings),
                 value = "$${String.format("%.2f", totalEarnings)}",
                 valueColor = Color(0xFF4CAF50), // Green
                 modifier = Modifier.weight(1f)

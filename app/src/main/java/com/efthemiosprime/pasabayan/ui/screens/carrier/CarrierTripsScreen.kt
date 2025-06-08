@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
@@ -19,6 +20,7 @@ import com.efthemiosprime.pasabayan.data.model.TripStatus
 import com.efthemiosprime.pasabayan.presentation.viewmodel.CarrierViewModel
 import com.efthemiosprime.pasabayan.ui.shared.EmptyStateView
 import com.efthemiosprime.pasabayan.ui.components.TripCard
+import com.efthemiosprime.pasabayan.R
 
 /**
  * Carrier Trips Screen - Exactly matching iOS CarrierTripsView implementation
@@ -31,8 +33,9 @@ fun CarrierTripsScreen(
     modifier: Modifier = Modifier,
     carrierViewModel: CarrierViewModel = viewModel()
 ) {
-    val trips by carrierViewModel.trips.collectAsState()
-    val isLoading by carrierViewModel.isLoading.collectAsState()
+    val carrierState by carrierViewModel.state.collectAsState()
+    val trips = carrierState.trips.data ?: emptyList()
+    val isLoading = carrierState.isLoading
     var selectedFilter by remember { mutableStateOf<TripStatus?>(null) }
     val scope = rememberCoroutineScope()
     
@@ -67,7 +70,7 @@ fun CarrierTripsScreen(
             item {
                 FilterChip(
                     onClick = { selectedFilter = null },
-                    label = { Text("All") },
+                    label = { Text(stringResource(R.string.trip_status_all)) },
                     selected = selectedFilter == null,
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = Color.Blue,
@@ -78,7 +81,7 @@ fun CarrierTripsScreen(
             
             // Status filter buttons
             items(TripStatus.allCases) { status ->
-                val count = carrierViewModel.getTripCountBy(status)
+                val count = trips.count { it.tripStatus == status }
                 FilterChip(
                     onClick = { selectedFilter = status },
                     label = { 
@@ -118,7 +121,7 @@ fun CarrierTripsScreen(
                 ) {
                     CircularProgressIndicator()
                     Text(
-                        text = "Loading trips...",
+                        text = stringResource(R.string.loading_trips),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -131,11 +134,11 @@ fun CarrierTripsScreen(
             ) {
                 EmptyStateView(
                     icon = Icons.Default.DirectionsCar,
-                    title = if (selectedFilter == null) "No trips yet" else "No ${selectedFilter?.displayName?.lowercase()} trips",
+                    title = if (selectedFilter == null) stringResource(R.string.no_trips_yet) else stringResource(R.string.no_trips_status, selectedFilter?.displayName?.lowercase() ?: ""),
                     description = if (selectedFilter == null) {
-                        "Create your first trip to start accepting package delivery requests."
+                        stringResource(R.string.create_first_trip)
                     } else {
-                        "No trips found with ${selectedFilter?.displayName?.lowercase()} status."
+                        stringResource(R.string.no_trips_found, selectedFilter?.displayName?.lowercase() ?: "")
                     }
                 )
             }

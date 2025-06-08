@@ -7,9 +7,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.presentation.viewmodel.AnalyticsViewModel
 import com.efthemiosprime.pasabayan.presentation.viewmodel.AnalyticsState
 import com.efthemiosprime.pasabayan.ui.components.analytics.*
@@ -46,7 +48,7 @@ fun AnalyticsScreen(
             state.error != null && state.carrierStats.data == null && state.shipperStats.data == null -> {
                 // Error state with no data
                 ErrorMessage(
-                    message = state.error?.message ?: "Unknown error occurred",
+                    message = stringResource(R.string.error_loading_data),
                     onRetry = { viewModel.refreshData() }
                 )
             }
@@ -79,7 +81,7 @@ private fun AnalyticsContent(
         state.carrierStats.data?.let { stats ->
             item {
                 Text(
-                    text = "Carrier Performance",
+                    text = stringResource(R.string.carrier_performance),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -106,7 +108,7 @@ private fun AnalyticsContent(
             
             item {
                 Text(
-                    text = "Shipper Analytics",
+                    text = stringResource(R.string.shipper_analytics),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )

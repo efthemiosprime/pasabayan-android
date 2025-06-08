@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +16,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.FilterChip
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -184,6 +189,17 @@ fun PackagesOrTripsTabContent(
     modifier: Modifier = Modifier,
     currentRole: UserRole
 ) {
+    // State management at function level for proper Compose context
+    var selectedFilter by remember { mutableStateOf<TripStatus?>(null) }
+    val allTrips = Trip.getMockTrips()
+    val filteredTrips = remember(allTrips, selectedFilter) {
+        if (selectedFilter == null) {
+            allTrips
+        } else {
+            allTrips.filter { it.tripStatus == selectedFilter }
+        }
+    }
+    
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -203,7 +219,8 @@ fun PackagesOrTripsTabContent(
         
         when (currentRole) {
             UserRole.CARRIER -> {
-                // Show carrier's trips with filter chips
+                // Show carrier's trips with working filter chips
+                
                 item {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -211,22 +228,36 @@ fun PackagesOrTripsTabContent(
                     ) {
                         item {
                             FilterChip(
-                                onClick = { },
+                                onClick = { selectedFilter = null },
                                 label = { Text("All") },
-                                selected = true
+                                selected = selectedFilter == null
                             )
                         }
                         items(TripStatus.allCases) { status ->
+                            val count = allTrips.count { it.tripStatus == status }
                             FilterChip(
-                                onClick = { },
-                                label = { Text(status.displayName) },
-                                selected = false
+                                onClick = { selectedFilter = status },
+                                label = { 
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(status.displayName)
+                                        if (count > 0) {
+                                            Text(
+                                                text = "($count)",
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        }
+                                    }
+                                },
+                                selected = selectedFilter == status
                             )
                         }
                     }
                 }
                 
-                items(Trip.getMockTrips()) { trip ->
+                items(filteredTrips) { trip ->
                     TripCard(
                         trip = trip,
                         onTap = { /* Handle trip tap */ }

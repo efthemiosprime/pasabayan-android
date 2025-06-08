@@ -6,4 +6,168 @@
     <string name="facebook_app_id">630484743358736</string>
     <string name="facebook_client_token">125ecbf0bd9869a2483292dc92ec78e8</string>
     <string name="facebook_login_protocol_scheme">fb630484743358736</string>
+    
+    <!-- App Branding -->
+    <string name="app_tagline">Your Trusted Delivery Partner</string>
+    <string name="app_version">Version 0.9.0</string>
+    
+    <!-- Authentication -->
+    <string name="signing_in">Signing you in…</string>
+    <string name="welcome_back">Welcome back!</string>
+    <string name="current_role">Current role: %s</string>
+    
+    <!-- Common Actions -->
+    <string name="loading">Loading…</string>
+    <string name="error">Error</string>
+    <string name="retry">Retry</string>
+    <string name="try_again">Try Again</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="log_out">Log Out</string>
+    <string name="switch_role">Switch Role</string>
+    <string name="coming_soon">Coming Soon</string>
+    <string name="no_data_available">No data available</string>
+    <string name="something_went_wrong">Something went wrong</string>
+    
+    <!-- Navigation Tabs -->
+    <string name="tab_home">Home</string>
+    <string name="tab_analytics">Analytics</string>
+    <string name="tab_trips">Trips</string>
+    <string name="tab_packages">Packages</string>
+    <string name="tab_matches">Matches</string>
+    <string name="tab_browse">Browse</string>
+    <string name="tab_create">Create</string>
+    <string name="tab_profile">Profile</string>
+    
+    <!-- Trip Status -->
+    <string name="trip_status_scheduled">Scheduled</string>
+    <string name="trip_status_active">Active</string>
+    <string name="trip_status_completed">Completed</string>
+    <string name="trip_status_cancelled">Cancelled</string>
+    <string name="trip_status_all">All</string>
+    
+    <!-- Trip Details -->
+    <string name="trip_departure">Departure</string>
+    <string name="trip_duration">Duration</string>
+    <string name="trip_available_capacity">Available Capacity</string>
+    <string name="trip_price">Price</string>
+    <string name="loading_trips">Loading trips…</string>
+    <string name="no_trips_yet">No trips yet</string>
+    <string name="no_trips_status">No %s trips</string>
+    <string name="no_trips_found">No trips found with %s status.</string>
+    <string name="create_first_trip">Create your first trip to start accepting package delivery requests.</string>
+    
+    <!-- Package Request -->
+    <string name="create_package_request">Create Package Request</string>
+    <string name="package_title">Package Title</string>
+    <string name="pickup_information">Pickup Information</string>
+    <string name="delivery_information">Delivery Information</string>
+    <string name="flexible_pickup_date">Flexible pickup date</string>
+    <string name="review_submit">Review &amp; Submit</string>
+    <string name="fill_required_fields">Please fill in all required fields (*) to continue</string>
+    <string name="package_from">From: %s</string>
+    <string name="package_to">To: %s</string>
+    
+    <!-- Package Status -->
+    <string name="package_status_pending">Pending</string>
+    <string name="package_status_matched">Matched</string>
+    <string name="package_status_booked">Booked</string>
+    <string name="package_status_in_transit">In Transit</string>
+    <string name="package_status_delivered">Delivered</string>
+    <string name="package_status_cancelled">Cancelled</string>
+    
+    <!-- Package Size -->
+    <string name="package_size_small">Small</string>
+    <string name="package_size_medium">Medium</string>
+    <string name="package_size_large">Large</string>
+    <string name="package_size_extra_large">Extra Large</string>
+    
+    <!-- Analytics -->
+    <string name="analytics_dashboard">Analytics</string>
+    <string name="analytics_coming_soon">Analytics dashboard coming soon</string>
+    <string name="carrier_performance">Carrier Performance</string>
+    <string name="shipper_analytics">Shipper Analytics</string>
+    <string name="key_metrics">Key Metrics</string>
+    <string name="budget_summary">Budget Summary</string>
+    <string name="cost_optimization">Cost Optimization</string>
+    <string name="performance_insights">Performance Insights</string>
+    <string name="preferred_carriers">Preferred Carriers</string>
+    <string name="top_routes">Top Routes</string>
+    <string name="recommendations">Recommendations</string>
+    <string name="budget_alerts">Budget Alerts</string>
+    <string name="overall_efficiency">Overall Efficiency:</string>
+    <string name="potential_savings">Potential savings: %s</string>
+    <string name="no_insights_available">No insights available</string>
+    <string name="no_carrier_data_available">No carrier data available</string>
+    <string name="no_route_data_available">No route data available</string>
+    <string name="no_optimization_data_available">No optimization data available</string>
+    <string name="error_loading_data">Error loading data</string>
+    
+    <!-- Carrier -->
+    <string name="carrier_status">Carrier Status</string>
+    <string name="carrier_matches">Carrier Matches</string>
+    <string name="carrier_earnings">Carrier Earnings</string>
+    <string name="carrier_trips">My Trips</string>
+    <string name="available_trips">Available Trips</string>
+    <string name="available_package_requests">Available Package Requests</string>
+    <string name="complete_carrier_profile">Complete your carrier profile to start accepting deliveries</string>
+    <string name="active_trips">Active Trips</string>
+    <string name="total_earnings">Total Earnings</string>
+    <string name="active_matches">Active Matches</string>
+    <string name="rating">Rating</string>
+    <string name="deliveries_count">%d deliveries</string>
+    <string name="average_price">$%.2f avg</string>
+    <string name="success_rate">%.1f%% success</string>
+    <string name="reliability_score">%.1f reliability</string>
+    <string name="trips_count">%d trips</string>
+    <string name="price_per_kg">$%.2f/kg avg</string>
+    
+    <!-- Shipper -->
+    <string name="my_package_requests">My Package Requests</string>
+    <string name="quick_stats_coming_soon">Quick Stats Coming Soon…</string>
+    
+    <!-- Values and Formats -->
+    <string name="value_format">$%.2f</string>
+    <string name="weight_format">%.1f kg</string>
+    <string name="percentage_format">%.1f%%</string>
+    <string name="count_format">(%d)</string>
+    
+    <!-- Statistics -->
+    <string name="statistics">Statistics</string>
+    
+    <!-- Profile -->
+    <string name="profile">Profile</string>
+    
+    <!-- Feature Development -->
+    <string name="feature_under_development">This feature is under development and will be available soon.</string>
+    
+    <!-- Mock Data Examples (for development) -->
+    <string name="mock_package_electronics">Electronics Package</string>
+    <string name="mock_package_electronics_desc">Laptop and accessories</string>
+    <string name="mock_location_sm_moa">SM Mall of Asia</string>
+    <string name="mock_location_makati_cbd">Makati CBD</string>
+    <string name="mock_package_quick_request">Quick Package Request</string>
+    <string name="mock_package_pickup">• Pickup: SM Mall of Asia</string>
+    <string name="mock_package_delivery">• Delivery: Makati CBD</string>
+    <string name="mock_package_size">• Size: Medium (2.5kg)</string>
+    <string name="mock_package_value">• Value: $1,080</string>
+    <string name="mock_package_title_prefix">• Package Title: Electronics Package</string>
+    
+    <!-- Error Messages -->
+    <string name="error_role_not_available">Role not available for this user</string>
+    <string name="error_login_required">Please log in to activate carrier mode</string>
+    <string name="error_unknown">Unknown error</string>
+    <string name="error_failed_to_load_trips">Failed to load trips</string>
+    <string name="error_failed_to_load_bookings">Failed to load bookings</string>
+    <string name="error_failed_to_load_stats">Failed to load stats</string>
+    <string name="error_failed_update_carrier_status">Failed to update carrier status</string>
+    
+    <!-- User Types -->
+    <string name="user_type_shipper">Shipper</string>
+    <string name="user_type_carrier">Carrier</string>
+    
+    <!-- Status Messages -->
+    <string name="status_online">Online</string>
+    <string name="status_offline">Offline</string>
+    <string name="status_going_online">Going Online</string>
+    <string name="status_going_offline">Going Offline</string>
 </resources>
