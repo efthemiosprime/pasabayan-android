@@ -212,7 +212,7 @@ class AuthService(private val context: Context) {
             .build()
         
         return Retrofit.Builder()
-            .baseUrl("${APIService.BASE_URL}/")
+                            .baseUrl("${APIService.BASE_URL}/")
             .client(client)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
@@ -383,7 +383,7 @@ class AuthService(private val context: Context) {
             Log.d(TAG, "🔍 Authenticating with backend...")
             Log.d(TAG, "   - Provider: $provider")
             Log.d(TAG, "   - Token length: ${accessToken.length}")
-            Log.d(TAG, "   - API endpoint: ${APIService.BASE_URL}/auth/$provider/login")
+                            Log.d(TAG, "   - API endpoint: ${APIService.BASE_URL}/auth/$provider/login")
             
             val deviceInfo = DeviceInfo(
                 platform = "android",

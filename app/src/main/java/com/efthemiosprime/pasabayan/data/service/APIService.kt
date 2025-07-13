@@ -160,8 +160,8 @@ interface APIService {
     ): TripsResponse
     
     companion object {
-        // Base URL should be https://api.pasabayan.com since endpoints already include /api
-        const val BASE_URL = "https://api.pasabayan.com"
-        const val BASE_URL_LOCAL = "http://10.0.2.2:8000"
+        // Base URL for testing - using localhost:8001
+        // const val BASE_URL = "http://10.0.2.2:8001"
+        const val BASE_URL = "https://api.pasabayan.com" // Production URL
     }
 } 
