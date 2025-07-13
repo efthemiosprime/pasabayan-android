@@ -23,17 +23,17 @@ data class Trip(
     @SerialName("origin_country")
     val originCountry: String,
     @SerialName("origin_lat")
-    val originLat: Double,
+    val originLat: Double?,
     @SerialName("origin_lng")
-    val originLng: Double,
+    val originLng: Double?,
     @SerialName("destination_city")
     val destinationCity: String,
     @SerialName("destination_country")
     val destinationCountry: String,
     @SerialName("destination_lat")
-    val destinationLat: Double,
+    val destinationLat: Double?,
     @SerialName("destination_lng")
-    val destinationLng: Double,
+    val destinationLng: Double?,
     @SerialName("departure_date")
     val departureDate: String, // ISO date string
     @SerialName("arrival_date")
@@ -118,6 +118,9 @@ data class Trip(
     val hasCapacity: Boolean
         get() = availableWeightKg > 0 && availableSpaceLiters > 0
     
+    val isPlanning: Boolean
+        get() = tripStatus == TripStatus.PLANNING
+    
     val isActive: Boolean
         get() = tripStatus == TripStatus.ACTIVE
     
@@ -197,7 +200,7 @@ data class Trip(
         validate(Validation.validateISODate(departureDate, "Departure date"))
         validate(Validation.validateISODate(arrivalDate, "Arrival date"))
         validate(Validation.validateWeight(availableWeightKg))
-        validate(Validation.validatePositiveNumber(availableSpaceLiters, "Available space"))
+        validate(Validation.validateNonNegativeNumber(availableSpaceLiters, "Available space"))
         validate(Validation.validatePrice(pricePerKg))
     }
     
@@ -358,6 +361,8 @@ data class Trip(
  */
 @Serializable
 enum class TripStatus {
+    @SerialName("planning")
+    PLANNING,
     @SerialName("scheduled")
     SCHEDULED,
     @SerialName("active")
@@ -369,6 +374,7 @@ enum class TripStatus {
     
     val displayName: String
         get() = when (this) {
+            PLANNING -> "Planning"
             SCHEDULED -> "Scheduled"
             ACTIVE -> "Active"
             COMPLETED -> "Completed"
@@ -377,6 +383,7 @@ enum class TripStatus {
     
     val color: String
         get() = when (this) {
+            PLANNING -> "orange"
             SCHEDULED -> "blue"
             ACTIVE -> "green"
             COMPLETED -> "gray"
@@ -385,6 +392,7 @@ enum class TripStatus {
     
     val icon: String
         get() = when (this) {
+            PLANNING -> "📝"
             SCHEDULED -> "📅"
             ACTIVE -> "🚛"
             COMPLETED -> "✅"
@@ -480,6 +488,35 @@ data class TripSearchRequest(
 )
 
 /**
+ * Create Trip Request for API (matching backend requirements)
+ */
+@Serializable
+data class CreateTripRequestApi(
+    @SerialName("origin_city")
+    val originCity: String,
+    @SerialName("origin_country")
+    val originCountry: String,
+    @SerialName("destination_city")
+    val destinationCity: String,
+    @SerialName("destination_country")
+    val destinationCountry: String,
+    @SerialName("departure_date")
+    val departureDate: String, // ISO datetime format: "2025-12-25T10:00:00Z"
+    @SerialName("arrival_date")
+    val arrivalDate: String, // ISO datetime format: "2025-12-25T14:00:00Z"
+    @SerialName("available_weight_kg")
+    val availableWeightKg: Double,
+    @SerialName("available_space_liters")
+    val availableSpaceLiters: Double,
+    @SerialName("price_per_kg")
+    val pricePerKg: Double,
+    @SerialName("transportation_method")
+    val transportationMethod: String,
+    @SerialName("special_notes")
+    val specialNotes: String? = null
+)
+
+/**
  * API Response Models (matching iOS)
  */
 @Serializable
@@ -489,7 +526,31 @@ data class TripResponse(
 )
 
 @Serializable
+data class PaginatedTripsData(
+    @SerialName("current_page")
+    val currentPage: Int,
+    val data: List<Trip>,
+    @SerialName("first_page_url")
+    val firstPageUrl: String? = null,
+    val from: Int? = null,
+    @SerialName("last_page")
+    val lastPage: Int,
+    @SerialName("last_page_url")
+    val lastPageUrl: String? = null,
+    val links: List<PaginationLink>? = null,
+    @SerialName("next_page_url")
+    val nextPageUrl: String? = null,
+    val path: String? = null,
+    @SerialName("per_page")
+    val perPage: Int,
+    @SerialName("prev_page_url")
+    val prevPageUrl: String? = null,
+    val to: Int? = null,
+    val total: Int
+)
+
+@Serializable
 data class TripsResponse(
     val message: String,
-    val data: List<Trip>
+    val data: PaginatedTripsData
 ) 

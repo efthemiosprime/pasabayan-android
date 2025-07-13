@@ -88,6 +88,7 @@ enum class BadgeVariant {
 @Composable
 private fun getBackgroundColor(status: TripStatus): Color {
     return when (status) {
+        TripStatus.PLANNING -> Color(0xFFFF9800).copy(alpha = 0.1f) // Orange
         TripStatus.SCHEDULED -> Color(0xFF2196F3).copy(alpha = 0.1f) // Blue
         TripStatus.ACTIVE -> Color(0xFF4CAF50).copy(alpha = 0.1f) // Green
         TripStatus.COMPLETED -> Color(0xFF9E9E9E).copy(alpha = 0.1f) // Gray
@@ -101,6 +102,7 @@ private fun getBackgroundColor(status: TripStatus): Color {
 @Composable
 private fun getTextColor(status: TripStatus): Color {
     return when (status) {
+        TripStatus.PLANNING -> Color(0xFFFF9800) // Orange
         TripStatus.SCHEDULED -> Color(0xFF2196F3) // Blue
         TripStatus.ACTIVE -> Color(0xFF4CAF50) // Green
         TripStatus.COMPLETED -> Color(0xFF9E9E9E) // Gray

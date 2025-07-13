@@ -6,6 +6,8 @@ import com.efthemiosprime.pasabayan.data.model.TripStatus
 import com.efthemiosprime.pasabayan.data.model.Booking
 import com.efthemiosprime.pasabayan.data.model.BookingStatus
 import com.efthemiosprime.pasabayan.data.model.User
+import com.efthemiosprime.pasabayan.data.model.CarrierStatsData
+import com.efthemiosprime.pasabayan.data.service.APIService
 import com.efthemiosprime.pasabayan.presentation.common.FunctionalViewModel
 import com.efthemiosprime.pasabayan.presentation.common.UiState
 import com.efthemiosprime.pasabayan.data.common.AppError
@@ -45,6 +47,9 @@ data class CarrierState(
                 tripList.filter { it.tripStatus == filter }
             } ?: tripList
         } ?: emptyList()
+    
+    // Helper to create profile with current trips data
+    fun profileWithTripsData(): CarrierProfile = profile.copy(tripsData = trips.data)
 }
 
 /**
@@ -53,9 +58,35 @@ data class CarrierState(
 data class CarrierProfile(
     val isSetup: Boolean = true,
     val isActive: Boolean = false,
-    val totalEarnings: String = "$298.80",
-    val averageRating: Double = 4.8
-)
+    val statsData: CarrierStatsData? = null,
+    val tripsData: List<Trip>? = null
+) {
+    val totalEarnings: String
+        get() = statsData?.earnings?.totalEarnings?.let { "CAD ${String.format("%.2f", it)}" } ?: "CAD 0.00"
+    
+    val averageRating: Double
+        get() = statsData?.ratings?.averageRating ?: 0.0
+    
+    val totalTrips: Int
+        get() = statsData?.deliveries?.totalTrips ?: 0
+    
+    val activeTrips: Int
+        get() {
+            // If we have actual trips data, count PLANNING + ACTIVE trips
+            return if (tripsData != null) {
+                tripsData.count { it.tripStatus == TripStatus.ACTIVE || it.tripStatus == TripStatus.PLANNING }
+            } else {
+                // Fall back to API stats (which might not include PLANNING)
+                statsData?.deliveries?.activeTrips ?: 0
+            }
+        }
+    
+    val totalMatches: Int
+        get() = statsData?.deliveries?.totalMatches ?: 0
+    
+    val successRate: Double
+        get() = statsData?.deliveries?.successRate ?: 0.0
+}
 
 /**
  * Carrier actions following functional patterns
@@ -70,7 +101,7 @@ sealed class CarrierAction {
     data class FilterTrips(val status: TripStatus?) : CarrierAction()
     data class TripsLoaded(val trips: List<Trip>) : CarrierAction()
     data class BookingsLoaded(val bookings: List<Booking>) : CarrierAction()
-    data class StatsLoaded(val earnings: String, val rating: Double) : CarrierAction()
+    data class StatsLoaded(val statsData: CarrierStatsData) : CarrierAction()
     data class LoadingError(val error: AppError) : CarrierAction()
     object ClearError : CarrierAction()
 }
@@ -88,7 +119,9 @@ sealed class CarrierEffect {
  * CarrierViewModel manages carrier operations, trips, and bookings using functional patterns
  * Mirrors iOS CarrierViewModel structure with exact Trip model
  */
-class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, CarrierEffect>(
+class CarrierViewModel(
+    private val apiService: APIService
+) : FunctionalViewModel<CarrierState, CarrierAction, CarrierEffect>(
     initialState = CarrierState()
 ) {
     
@@ -104,7 +137,9 @@ class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, Carrie
             user = user,
             isLoading = carrierState.isLoading,
             errorMessage = carrierState.error?.message,
-            activeTripsCount = carrierState.trips.data?.count { it.tripStatus == TripStatus.ACTIVE } ?: 0,
+            activeTripsCount = carrierState.trips.data?.count { 
+                it.tripStatus == TripStatus.ACTIVE || it.tripStatus == TripStatus.PLANNING 
+            } ?: 0,
             activeBookingsCount = carrierState.bookings.data?.size ?: 0,
             totalEarnings = carrierState.profile.totalEarnings,
             averageRatingText = carrierState.averageRatingText,
@@ -147,7 +182,8 @@ class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, Carrie
         
         is CarrierAction.ToggleCarrierStatus -> currentState.copy(
             profile = currentState.profile.copy(
-                isActive = !currentState.profile.isActive
+                isActive = !currentState.profile.isActive,
+                tripsData = currentState.trips.data // Preserve existing trips data
             )
         )
         
@@ -158,7 +194,10 @@ class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, Carrie
         is CarrierAction.TripsLoaded -> currentState.copy(
             trips = UiState.success(action.trips),
             isRefreshing = false
-        )
+        ).let { newState ->
+            // Update profile with new trips data
+            newState.copy(profile = newState.profile.copy(tripsData = action.trips))
+        }
         
         is CarrierAction.BookingsLoaded -> currentState.copy(
             bookings = UiState.success(action.bookings),
@@ -167,8 +206,9 @@ class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, Carrie
         
         is CarrierAction.StatsLoaded -> currentState.copy(
             profile = currentState.profile.copy(
-                totalEarnings = action.earnings,
-                averageRating = action.rating
+                statsData = action.statsData,
+                isSetup = action.statsData.profileComplete,
+                tripsData = currentState.trips.data // Preserve existing trips data
             ),
             isRefreshing = false
         )
@@ -227,12 +267,13 @@ class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, Carrie
             email = "jane@example.com",
             avatar = null
         )
-        loadMockData()
+        loadCarrierData()
     }
     
-    private fun loadMockData() {
+    private fun loadCarrierData() {
         dispatch(CarrierAction.LoadTrips)
         dispatch(CarrierAction.LoadBookings)
+        dispatch(CarrierAction.LoadStats)
     }
     
     // MARK: - Public API Methods (Functional Dispatch)
@@ -343,12 +384,18 @@ class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, Carrie
     
     private suspend fun loadTripsInternal() {
         try {
-            delay(500)
-            // Use the exact mock trips from iOS Trip.swift
-            dispatch(CarrierAction.TripsLoaded(Trip.getMockTrips()))
+            // Fetch real trips from API
+            val response = apiService.getTrips()
             
-            // Update legacy StateFlow
-            _trips.value = Trip.getMockTrips()
+            if (response.message == "Trips retrieved successfully") {
+                val trips = response.data.data // Extract trips from pagination wrapper
+                dispatch(CarrierAction.TripsLoaded(trips))
+                
+                // Update legacy StateFlow
+                _trips.value = trips
+            } else {
+                dispatch(CarrierAction.LoadingError(AppError.NetworkError("Failed to load trips: ${response.message}")))
+            }
         } catch (e: Exception) {
             dispatch(CarrierAction.LoadingError(AppError.NetworkError(e.message ?: "Failed to load trips")))
         }
@@ -399,15 +446,19 @@ class CarrierViewModel : FunctionalViewModel<CarrierState, CarrierAction, Carrie
     
     private suspend fun loadStatsInternal() {
         try {
-            delay(500)
-            // Simulate loading stats
-            val earnings = "$${((240..1200).random())}"
-            val rating = (40..50).random() / 10.0
-            dispatch(CarrierAction.StatsLoaded(earnings, rating))
+            // Fetch real carrier stats from API
+            val response = apiService.getCarrierStats()
             
-            // Update legacy StateFlows
-            _totalEarnings.value = earnings
-            _averageRating.value = rating
+            if (response.success) {
+                dispatch(CarrierAction.StatsLoaded(response.data))
+                
+                // Update legacy StateFlows for backward compatibility
+                _totalEarnings.value = response.data.earnings.totalEarnings.let { "CAD ${String.format("%.2f", it)}" }
+                _averageRating.value = response.data.ratings.averageRating
+                _isCarrierProfileSetup.value = response.data.profileComplete
+            } else {
+                dispatch(CarrierAction.LoadingError(AppError.NetworkError("Failed to load stats: ${response.message}")))
+            }
         } catch (e: Exception) {
             dispatch(CarrierAction.LoadingError(AppError.NetworkError(e.message ?: "Failed to load stats")))
         }

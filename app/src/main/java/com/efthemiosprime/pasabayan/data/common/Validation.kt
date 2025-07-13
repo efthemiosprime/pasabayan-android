@@ -83,6 +83,15 @@ object Validation {
         }
     }
     
+    // Non-negative number validation (allows 0)
+    fun validateNonNegativeNumber(value: Double, fieldName: String): ValidationResult {
+        return if (value < 0) {
+            ValidationResult.Invalid(listOf("$fieldName must be a non-negative number"))
+        } else {
+            ValidationResult.Valid
+        }
+    }
+    
     // Date validation (ISO format)
     fun validateISODate(dateString: String, fieldName: String): ValidationResult {
         val errors = mutableListOf<String>()

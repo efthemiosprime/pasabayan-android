@@ -164,6 +164,7 @@ fun createTripStatusBadgeData(
     variant: BadgeVariant = BadgeVariant.STANDARD
 ): BadgeData {
     val (backgroundColor, textColor) = when (status) {
+        TripStatus.PLANNING -> Color(0xFFFF9800) to Color.White
         TripStatus.SCHEDULED -> Color(0xFF2196F3) to Color.White
         TripStatus.ACTIVE -> Color(0xFF4CAF50) to Color.White
         TripStatus.COMPLETED -> Color(0xFF9E9E9E) to Color.White

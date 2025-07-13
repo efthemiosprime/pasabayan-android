@@ -44,7 +44,7 @@ fun CarrierDashboardContent(
             TabItem("Home", painterResource(id = R.drawable.home_24)) { CarrierHomeContent(viewModel, authViewModel, roleViewModel) },
             TabItem("Analytics", painterResource(id = R.drawable.analysis)) { AnalyticsScreen() },
             TabItem("Trips", painterResource(id = R.drawable.traveling_24)) { PackagesOrTripsTabContent(currentRole = UserRole.CARRIER) },
-            TabItem("Matches", painterResource(id = R.drawable.browse)) { BrowseTabContent(currentRole = UserRole.CARRIER) }
+            TabItem("Matches", painterResource(id = R.drawable.browse)) { BrowseTabContent(currentRole = UserRole.CARRIER, authViewModel = authViewModel) }
         ),
         moreTabs = listOf(
             TabItem("Earnings", painterResource(id = R.drawable.revenue)) { EarningsTabContent() },

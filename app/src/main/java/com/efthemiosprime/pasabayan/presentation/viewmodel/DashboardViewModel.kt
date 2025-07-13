@@ -4,6 +4,15 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.StateFlow
 import com.efthemiosprime.pasabayan.data.model.UserRole
+import com.efthemiosprime.pasabayan.data.service.APIService
+import com.efthemiosprime.pasabayan.data.service.AuthService
+import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import kotlinx.serialization.json.Json
+import java.util.concurrent.TimeUnit
 
 /**
  * DashboardViewModel - Functional composition of role-specific ViewModels
@@ -11,10 +20,15 @@ import com.efthemiosprime.pasabayan.data.model.UserRole
  */
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
     
+    // Create APIService for dependency injection
+    private val apiService: APIService by lazy {
+        createApiService()
+    }
+    
     // Composition of specialized ViewModels
     private val _roleViewModel = RoleViewModel()
     private val _shipperViewModel = ShipperViewModel(application)
-    private val _carrierViewModel = CarrierViewModel()
+    private val _carrierViewModel = CarrierViewModel(apiService)
     
     // Public access to role state
     val currentRole: StateFlow<UserRole> = _roleViewModel.currentRole
@@ -23,4 +37,49 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     val shipperViewModel: ShipperViewModel = _shipperViewModel
     val carrierViewModel: CarrierViewModel = _carrierViewModel
     val roleViewModel: RoleViewModel = _roleViewModel
+    
+    /**
+     * Create APIService with authentication headers
+     */
+    private fun createApiService(): APIService {
+        val json = Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+        }
+        
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+        
+        val client = OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor { chain ->
+                val originalRequest = chain.request()
+                val requestBuilder = originalRequest.newBuilder()
+                
+                // Get auth token from AuthService
+                try {
+                    val authService = AuthService.getInstance(getApplication())
+                    val token = kotlinx.coroutines.runBlocking { authService.getToken() }
+                    if (token != null) {
+                        requestBuilder.addHeader("Authorization", "Bearer $token")
+                    }
+                } catch (e: Exception) {
+                    // Log error but continue without auth header
+                }
+                
+                chain.proceed(requestBuilder.build())
+            }
+            .build()
+        
+        return Retrofit.Builder()
+            .baseUrl("${APIService.BASE_URL}/")
+            .client(client)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(APIService::class.java)
+    }
 } 

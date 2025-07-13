@@ -73,7 +73,7 @@ fun ShipperDashboardContent(
                     AnalyticsScreen() 
                 },
                 TabItem("Browse", painterResource(id = R.drawable.browse)) { 
-                    BrowseTabContent(currentRole = UserRole.SHIPPER) 
+                    BrowseTabContent(currentRole = UserRole.SHIPPER, authViewModel = authViewModel) 
                 },
                 TabItem("Packages", painterResource(id = R.drawable.traveling_24)) { 
                     ShipperPackagesScreen(

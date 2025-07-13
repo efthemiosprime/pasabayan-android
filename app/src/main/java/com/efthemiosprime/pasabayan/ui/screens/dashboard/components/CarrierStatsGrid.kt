@@ -41,7 +41,7 @@ fun CarrierStatsGrid(
         ) {
             StatItem( // Using StatItem (flat) for consistent card standards
                 title = "Active Trips",
-                value = (carrierState.trips.data?.count { it.tripStatus == TripStatus.ACTIVE } ?: 0).toString(),
+                value = carrierState.profile.activeTrips.toString(),
                 icon = Icons.Default.DirectionsCar,
                 color = Color(0xFF4CAF50),
                 modifier = Modifier.weight(1f)
@@ -63,7 +63,7 @@ fun CarrierStatsGrid(
         ) {
             StatItem( // Using StatItem (flat) for consistent card standards
                 title = "Active Matches",
-                value = (carrierState.bookings.data?.size ?: 0).toString(),
+                value = carrierState.profile.totalMatches.toString(),
                 icon = Icons.Default.Assignment,
                 color = Color(0xFFFF9800),
                 modifier = Modifier.weight(1f)
