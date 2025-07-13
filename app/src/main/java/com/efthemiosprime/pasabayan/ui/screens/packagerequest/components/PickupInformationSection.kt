@@ -2,6 +2,10 @@ package com.efthemiosprime.pasabayan.ui.screens.packagerequest.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -10,10 +14,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 /**
  * Pickup Information Section - Focused component for pickup details
  * Following functional programming patterns with pure event handlers
+ * Updated to use smart country detection (no manual country input)
  */
 @Composable
 fun PickupInformationSection(
@@ -58,13 +67,13 @@ fun PickupInformationSection(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                PickupDateField(
+                PickupDatePicker(
                     value = preferredPickupDate,
                     onValueChange = onPreferredPickupDateChange,
                     modifier = Modifier.weight(1f)
                 )
                 
-                PickupTimeField(
+                PickupTimePicker(
                     value = preferredPickupTime,
                     onValueChange = onPreferredPickupTimeChange,
                     modifier = Modifier.weight(1f)
@@ -110,32 +119,169 @@ private fun PickupCityField(
 }
 
 @Composable
-private fun PickupDateField(
+private fun PickupDatePicker(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    
+    // Format the display text
+    val displayText = if (value.isNotEmpty()) {
+        try {
+            val date = LocalDate.parse(value)
+            date.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
+        } catch (e: Exception) {
+            value
+        }
+    } else {
+        "Select date"
+    }
+    
     OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
+        value = displayText,
+        onValueChange = { }, // Read-only
         label = { Text("Pickup date") },
-        placeholder = { Text("YYYY-MM-DD") },
-        modifier = modifier
+        placeholder = { Text("Select pickup date") },
+        readOnly = true,
+        trailingIcon = {
+            IconButton(onClick = { showDatePicker = true }) {
+                Icon(
+                    imageVector = Icons.Default.CalendarToday,
+                    contentDescription = "Select date"
+                )
+            }
+        },
+        modifier = modifier.clickable { showDatePicker = true }
     )
+    
+    if (showDatePicker) {
+        DatePickerModal(
+            onDateSelected = { selectedDate ->
+                onValueChange(selectedDate)
+                showDatePicker = false
+            },
+            onDismiss = { showDatePicker = false }
+        )
+    }
 }
 
 @Composable
-private fun PickupTimeField(
+private fun PickupTimePicker(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showTimePicker by remember { mutableStateOf(false) }
+    
+    // Format the display text
+    val displayText = if (value.isNotEmpty()) {
+        try {
+            val time = LocalTime.parse(value)
+            time.format(DateTimeFormatter.ofPattern("h:mm a"))
+        } catch (e: Exception) {
+            value
+        }
+    } else {
+        "Select time"
+    }
+    
     OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
+        value = displayText,
+        onValueChange = { }, // Read-only
         label = { Text("Pickup time") },
-        placeholder = { Text("HH:MM") },
-        modifier = modifier
+        placeholder = { Text("Select pickup time") },
+        readOnly = true,
+        trailingIcon = {
+            IconButton(onClick = { showTimePicker = true }) {
+                Icon(
+                    imageVector = Icons.Default.AccessTime,
+                    contentDescription = "Select time"
+                )
+            }
+        },
+        modifier = modifier.clickable { showTimePicker = true }
+    )
+    
+    if (showTimePicker) {
+        TimePickerModal(
+            onTimeSelected = { selectedTime ->
+                onValueChange(selectedTime)
+                showTimePicker = false
+            },
+            onDismiss = { showTimePicker = false }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DatePickerModal(
+    onDateSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = System.currentTimeMillis()
+    )
+    
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val date = java.time.Instant.ofEpochMilli(millis)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate()
+                        onDateSelected(date.toString())
+                    }
+                }
+            ) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    ) {
+        DatePicker(state = datePickerState)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimePickerModal(
+    onTimeSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val timePickerState = rememberTimePickerState(
+        initialHour = 9,
+        initialMinute = 0
+    )
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Select Time") },
+        text = {
+            TimePicker(state = timePickerState)
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val selectedTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
+                    onTimeSelected(selectedTime.toString())
+                }
+            ) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
     )
 }
 
@@ -175,7 +321,7 @@ private fun PickupInformationSectionPreview() {
         PickupInformationSection(
             pickupAddress = "123 Main Street, Barangay San Antonio",
             onPickupAddressChange = { },
-            pickupCity = "Makati",
+            pickupCity = "Montreal",
             onPickupCityChange = { },
             preferredPickupDate = "2024-01-15",
             onPreferredPickupDateChange = { },

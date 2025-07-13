@@ -6,23 +6,24 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.data.model.UserRole
+import com.efthemiosprime.pasabayan.data.repository.PackageRepositoryImpl
 import com.efthemiosprime.pasabayan.presentation.viewmodel.AuthViewModel
 import com.efthemiosprime.pasabayan.presentation.viewmodel.RoleViewModel
 import com.efthemiosprime.pasabayan.presentation.viewmodel.ShipperViewModel
 import com.efthemiosprime.pasabayan.ui.screens.analytics.AnalyticsScreen
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.BrowseTabContent
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.CreateTabContent
-import com.efthemiosprime.pasabayan.ui.screens.dashboard.PackagesOrTripsTabContent
+import com.efthemiosprime.pasabayan.ui.screens.dashboard.ShipperPackagesScreen
+import com.efthemiosprime.pasabayan.ui.screens.packagerequest.DeliveryRequestScreen
+import com.efthemiosprime.pasabayan.ui.screens.packagerequest.PackageRequestViewModel
 import com.efthemiosprime.pasabayan.ui.screens.profile.ProfileScreen
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.TabNavigationLayout
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.TabNavigationConfig
@@ -41,23 +42,66 @@ fun ShipperDashboardContent(
     authViewModel: AuthViewModel,
     roleViewModel: RoleViewModel
 ) {
-    val config = TabNavigationConfig(
-        visibleTabs = listOf(
-            TabItem("Home", painterResource(id = R.drawable.home_24)) { ShipperHomeContent(viewModel, authViewModel, roleViewModel) },
-            TabItem("Analytics", painterResource(id = R.drawable.analysis)) { AnalyticsScreen() },
-            TabItem("Browse", painterResource(id = R.drawable.browse)) { BrowseTabContent(currentRole = UserRole.SHIPPER) },
-            TabItem("Packages", painterResource(id = R.drawable.traveling_24)) { PackagesOrTripsTabContent(currentRole = UserRole.SHIPPER) }
-        ),
-        moreTabs = listOf(
-            TabItem("Create", Icons.Default.Add) { CreateTabContent(currentRole = UserRole.SHIPPER) },
-            TabItem("Profile", painterResource(id = R.drawable.user)) { ProfileScreen(authViewModel, roleViewModel) }
-        )
-    )
+    val context = LocalContext.current
     
-    TabNavigationLayout(
-        config = config,
-        accentColor = MaterialTheme.colorScheme.primary
-    )
+    // State for navigation to create package screen
+    var showCreatePackageScreen by remember { mutableStateOf(false) }
+    
+    if (showCreatePackageScreen) {
+        // Create PackageRequestViewModel with Application parameter
+        val packageRequestViewModel: PackageRequestViewModel = viewModel { 
+            PackageRequestViewModel(context.applicationContext as android.app.Application) 
+        }
+        
+        // Show full-screen package creation
+        DeliveryRequestScreen(
+            viewModel = packageRequestViewModel,
+            onNavigateBack = { 
+                showCreatePackageScreen = false
+                // Refresh packages list after coming back from creation
+                viewModel.packageViewModel.loadPackageRequests()
+            }
+        )
+    } else {
+        // Show normal dashboard tabs
+        val config = TabNavigationConfig(
+            visibleTabs = listOf(
+                TabItem("Home", painterResource(id = R.drawable.home_24)) { 
+                    ShipperHomeContent(viewModel, authViewModel, roleViewModel) 
+                },
+                TabItem("Analytics", painterResource(id = R.drawable.analysis)) { 
+                    AnalyticsScreen() 
+                },
+                TabItem("Browse", painterResource(id = R.drawable.browse)) { 
+                    BrowseTabContent(currentRole = UserRole.SHIPPER) 
+                },
+                TabItem("Packages", painterResource(id = R.drawable.traveling_24)) { 
+                    ShipperPackagesScreen(
+                        packageViewModel = viewModel.packageViewModel,
+                        onNavigateToCreate = { 
+                            showCreatePackageScreen = true 
+                        },
+                        onNavigateToDetails = { packageRequest ->
+                            // TODO: Navigate to package details
+                        }
+                    ) 
+                }
+            ),
+            moreTabs = listOf(
+                TabItem("Create", Icons.Default.Add) { 
+                    CreateTabContent(currentRole = UserRole.SHIPPER) 
+                },
+                TabItem("Profile", painterResource(id = R.drawable.user)) { 
+                    ProfileScreen(authViewModel, roleViewModel) 
+                }
+            )
+        )
+        
+        TabNavigationLayout(
+            config = config,
+            accentColor = MaterialTheme.colorScheme.primary
+        )
+    }
 }
 
  

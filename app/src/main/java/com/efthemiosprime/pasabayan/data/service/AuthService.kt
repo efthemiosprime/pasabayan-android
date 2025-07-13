@@ -383,7 +383,7 @@ class AuthService(private val context: Context) {
             Log.d(TAG, "🔍 Authenticating with backend...")
             Log.d(TAG, "   - Provider: $provider")
             Log.d(TAG, "   - Token length: ${accessToken.length}")
-            Log.d(TAG, "   - API endpoint: ${APIService.BASE_URL}auth/$provider/login")
+            Log.d(TAG, "   - API endpoint: ${APIService.BASE_URL}/auth/$provider/login")
             
             val deviceInfo = DeviceInfo(
                 platform = "android",
@@ -686,5 +686,79 @@ class AuthService(private val context: Context) {
      */
     fun getFacebookCallbackManager(): CallbackManager {
         return facebookCallbackManager
+    }
+
+    /**
+     * Debug authentication state
+     * Comprehensive method to check what's happening with authentication
+     */
+    suspend fun debugAuthenticationState(): String = withContext(Dispatchers.IO) {
+        val debugInfo = StringBuilder()
+        
+        try {
+            debugInfo.appendLine("🔍 === AUTHENTICATION DEBUG INFO ===")
+            debugInfo.appendLine("📱 Platform: Android")
+            debugInfo.appendLine("🌐 Base URL: ${APIService.BASE_URL}")
+            debugInfo.appendLine("")
+            
+            // Check token
+            val token = getToken()
+            debugInfo.appendLine("🎫 Token Status:")
+            if (token != null) {
+                debugInfo.appendLine("   ✅ Token exists")
+                debugInfo.appendLine("   📏 Length: ${token.length}")
+                debugInfo.appendLine("   🔤 First 20 chars: ${token.take(20)}...")
+                debugInfo.appendLine("   🔤 Last 20 chars: ...${token.takeLast(20)}")
+            } else {
+                debugInfo.appendLine("   ❌ No token found")
+            }
+            debugInfo.appendLine("")
+            
+            // Check user
+            val user = getCurrentUser()
+            debugInfo.appendLine("👤 User Status:")
+            if (user != null) {
+                debugInfo.appendLine("   ✅ User data exists")
+                debugInfo.appendLine("   👤 Name: ${user.name}")
+                debugInfo.appendLine("   📧 Email: ${user.email}")
+                debugInfo.appendLine("   🆔 ID: ${user.id}")
+                debugInfo.appendLine("   🔐 Provider: ${user.provider}")
+            } else {
+                debugInfo.appendLine("   ❌ No user data found")
+            }
+            debugInfo.appendLine("")
+            
+            // Check authentication state
+            debugInfo.appendLine("🔐 Authentication State:")
+            debugInfo.appendLine("   📊 isAuthenticated: ${_isAuthenticated.value}")
+            debugInfo.appendLine("   ⏳ isLoading: ${_isLoading.value}")
+            debugInfo.appendLine("   ❌ error: ${_error.value}")
+            debugInfo.appendLine("")
+            
+            // Test API connectivity
+            debugInfo.appendLine("🌐 API Test:")
+            try {
+                // Test a simple endpoint to check connectivity
+                debugInfo.appendLine("   📡 Testing connectivity to: ${APIService.BASE_URL}")
+                debugInfo.appendLine("   ⏱️ Testing basic endpoint access...")
+                
+                if (token != null) {
+                    debugInfo.appendLine("   🔐 Will test with authentication")
+                } else {
+                    debugInfo.appendLine("   🔓 No token available for authenticated test")
+                }
+            } catch (e: Exception) {
+                debugInfo.appendLine("   ❌ API test failed: ${e.message}")
+            }
+            
+            debugInfo.appendLine("=== END DEBUG INFO ===")
+            
+        } catch (e: Exception) {
+            debugInfo.appendLine("❌ Debug failed: ${e.message}")
+        }
+        
+        val result = debugInfo.toString()
+        Log.d(TAG, result)
+        return@withContext result
     }
 } 

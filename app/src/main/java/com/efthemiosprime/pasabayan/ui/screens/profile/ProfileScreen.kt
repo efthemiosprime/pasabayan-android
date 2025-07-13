@@ -31,6 +31,7 @@ import com.efthemiosprime.pasabayan.ui.components.VerificationBadgeIcon
 import com.efthemiosprime.pasabayan.ui.components.VerificationStatusDisplay
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanDesignSystem
 import com.efthemiosprime.pasabayan.ui.shared.cards.PCardStandard
+import com.efthemiosprime.pasabayan.ui.shared.ScreenContainer
 
 /**
  * Profile Screen - Exact iOS ProfileView implementation
@@ -70,16 +71,19 @@ fun ProfileScreen(
     var showingBillingHistory by remember { mutableStateOf(false) }
     var showingBulkShippingTools by remember { mutableStateOf(false) }
     
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(1.dp)
-    ) {
+    ScreenContainer {
+        LazyColumn(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
         item {
             // Profile Header
             PCardStandard(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 14.dp) // Extra 14dp + 2dp = 16dp total
             ) {
                 Row(
                     modifier = Modifier
@@ -168,7 +172,9 @@ fun ProfileScreen(
         item {
             // Role Switcher Section
             PCardStandard(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 14.dp) // Extra 14dp + 2dp = 16dp total
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -189,7 +195,9 @@ fun ProfileScreen(
         item {
             // Role-Specific Stats Section
             PCardStandard(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 14.dp) // Extra 14dp + 2dp = 16dp total
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -312,7 +320,8 @@ fun ProfileScreen(
                     icon = Icons.Default.Description,
                     title = "Driver Documents",
                     subtitle = "Manage license and vehicle documents",
-                    onClick = { showingDriverDocuments = true }
+                    onClick = { showingDriverDocuments = true },
+                    modifier = Modifier.padding(bottom = 14.dp) // Extra 14dp + 2dp = 16dp total
                 )
             }
             
@@ -386,7 +395,8 @@ fun ProfileScreen(
                     icon = Icons.Default.Layers,
                     title = "Bulk Shipping Tools",
                     subtitle = "Tools for multiple shipments",
-                    onClick = { showingBulkShippingTools = true }
+                    onClick = { showingBulkShippingTools = true },
+                    modifier = Modifier.padding(bottom = 14.dp) // Extra 14dp + 2dp = 16dp total
                 )
             }
         }
@@ -425,7 +435,8 @@ fun ProfileScreen(
                 onClick = { showingLogoutAlert = true },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
+                    .height(48.dp)
+                    .padding(top = 14.dp), // Extra 14dp + 2dp = 16dp total spacing from menu items
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.error
                 ),
@@ -448,6 +459,7 @@ fun ProfileScreen(
                 }
             }
         }
+    }
     }
     
     // Sheet Presentations

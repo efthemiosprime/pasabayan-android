@@ -7,14 +7,21 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.efthemiosprime.pasabayan.ui.screens.packagerequest.components.*
+import androidx.compose.runtime.collectAsState
+import com.efthemiosprime.pasabayan.data.model.PackageSize
+import com.efthemiosprime.pasabayan.data.model.PackageType
+import com.efthemiosprime.pasabayan.data.model.UrgencyLevel
+import com.efthemiosprime.pasabayan.ui.screens.packagerequest.components.DeliveryInformationSection
+import com.efthemiosprime.pasabayan.ui.screens.packagerequest.components.PackageDetailsSection
+import com.efthemiosprime.pasabayan.ui.screens.packagerequest.components.PackageRequestFormActions
+import com.efthemiosprime.pasabayan.ui.screens.packagerequest.components.PickupInformationSection
 import com.efthemiosprime.pasabayan.ui.screens.packagerequest.models.PackageRequestEvent
 import com.efthemiosprime.pasabayan.ui.screens.packagerequest.models.PackageRequestUiState
-import com.efthemiosprime.pasabayan.data.model.PackageSize
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
 
 /**
@@ -33,15 +40,20 @@ import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeliveryRequestScreen(
-    viewModel: PackageRequestViewModel = viewModel(),
+    viewModel: PackageRequestViewModel? = null,
     onNavigateBack: () -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val actualViewModel: PackageRequestViewModel = viewModel ?: viewModel { 
+        PackageRequestViewModel(context.applicationContext as android.app.Application) 
+    }
+    
+    val uiState by actualViewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     
     // Handle events
     LaunchedEffect(Unit) {
-        viewModel.uiEvent.collect { event ->
+        actualViewModel.uiEvent.collect { event ->
             when (event) {
                 is PackageRequestEvent.ShowError -> {
                     snackbarHostState.showSnackbar(
@@ -90,29 +102,37 @@ fun DeliveryRequestScreen(
     ) { paddingValues ->
         PackageRequestContent(
             uiState = uiState,
-            onPackageDescriptionChange = viewModel::updatePackageDescription,
-            onWeightChange = viewModel::updateWeight,
-            onPackageValueChange = viewModel::updatePackageValue,
-            onMaxBudgetChange = viewModel::updateMaxBudget,
-            onPackageSizeChange = viewModel::updatePackageSize,
-            onFragileChange = viewModel::updateFragile,
-            onSpecialInstructionsChange = viewModel::updateSpecialInstructions,
-            onPickupAddressChange = viewModel::updatePickupAddress,
-            onPickupCityChange = viewModel::updatePickupCity,
-            onPreferredPickupDateChange = viewModel::updatePreferredPickupDate,
-            onPreferredPickupTimeChange = viewModel::updatePreferredPickupTime,
-            onPickupDateFlexibleChange = viewModel::updatePickupDateFlexible,
-            onDeliveryAddressChange = viewModel::updateDeliveryAddress,
-            onDeliveryCityChange = viewModel::updateDeliveryCity,
-            onPreferredDeliveryDateChange = viewModel::updatePreferredDeliveryDate,
-            onPreferredDeliveryTimeChange = viewModel::updatePreferredDeliveryTime,
-            onSubmit = viewModel::createPackageRequest,
-            onClearForm = viewModel::clearForm,
-            isFormValid = viewModel.isFormValid,
+            onPackageDescriptionChange = actualViewModel::updatePackageDescription,
+            onWeightChange = actualViewModel::updateWeight,
+            onPackageValueChange = actualViewModel::updatePackageValue,
+            onMaxBudgetChange = actualViewModel::updateMaxBudget,
+            onPackageSizeChange = actualViewModel::updatePackageSize,
+            onPackageTypeChange = actualViewModel::updatePackageType,
+            onUrgencyLevelChange = actualViewModel::updateUrgencyLevel,
+            onPackageLengthChange = actualViewModel::updatePackageLength,
+            onPackageWidthChange = actualViewModel::updatePackageWidth,
+            onPackageHeightChange = actualViewModel::updatePackageHeight,
+            onFragileChange = actualViewModel::updateFragile,
+            onSpecialInstructionsChange = actualViewModel::updateSpecialInstructions,
+            onPickupAddressChange = actualViewModel::updatePickupAddress,
+            onPickupCityChange = actualViewModel::updatePickupCity,
+            onPreferredPickupDateChange = actualViewModel::updatePreferredPickupDate,
+            onPreferredPickupTimeChange = actualViewModel::updatePreferredPickupTime,
+            onPickupDateFlexibleChange = actualViewModel::updatePickupDateFlexible,
+            onDeliveryAddressChange = actualViewModel::updateDeliveryAddress,
+            onDeliveryCityChange = actualViewModel::updateDeliveryCity,
+            onPreferredDeliveryDateChange = actualViewModel::updatePreferredDeliveryDate,
+            onPreferredDeliveryTimeChange = actualViewModel::updatePreferredDeliveryTime,
+            onSubmit = actualViewModel::createPackageRequest,
+            onClearForm = actualViewModel::clearForm,
+            isFormValid = actualViewModel.isFormValid,
             modifier = Modifier.padding(paddingValues)
         )
     }
 }
+
+// Note: Bottom sheet modal version was removed due to Material 3 BottomSheetScaffold compatibility issues
+// The full-screen DeliveryRequestScreen above serves as the modal/activity for package creation
 
 @Composable
 private fun PackageRequestContent(
@@ -122,6 +142,11 @@ private fun PackageRequestContent(
     onPackageValueChange: (String) -> Unit,
     onMaxBudgetChange: (String) -> Unit,
     onPackageSizeChange: (PackageSize) -> Unit,
+    onPackageTypeChange: (PackageType) -> Unit,
+    onUrgencyLevelChange: (UrgencyLevel) -> Unit,
+    onPackageLengthChange: (String) -> Unit,
+    onPackageWidthChange: (String) -> Unit,
+    onPackageHeightChange: (String) -> Unit,
     onFragileChange: (Boolean) -> Unit,
     onSpecialInstructionsChange: (String) -> Unit,
     onPickupAddressChange: (String) -> Unit,
@@ -156,6 +181,16 @@ private fun PackageRequestContent(
                 onMaxBudgetChange = onMaxBudgetChange,
                 packageSize = uiState.packageSize,
                 onPackageSizeChange = onPackageSizeChange,
+                packageType = uiState.packageType,
+                onPackageTypeChange = onPackageTypeChange,
+                urgencyLevel = uiState.urgencyLevel,
+                onUrgencyLevelChange = onUrgencyLevelChange,
+                packageLength = uiState.packageLength,
+                onPackageLengthChange = onPackageLengthChange,
+                packageWidth = uiState.packageWidth,
+                onPackageWidthChange = onPackageWidthChange,
+                packageHeight = uiState.packageHeight,
+                onPackageHeightChange = onPackageHeightChange,
                 isFragile = uiState.isFragile,
                 onFragileChange = onFragileChange,
                 specialInstructions = uiState.specialInstructions,

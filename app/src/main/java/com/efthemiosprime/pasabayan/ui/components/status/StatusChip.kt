@@ -28,6 +28,7 @@ fun StatusChip(
 ) {
     val (backgroundColor, textColor) = when (status) {
         PackageRequestStatus.PENDING -> Color(0xFFFFF3E0) to Color(0xFFE65100)
+        PackageRequestStatus.OPEN -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
         PackageRequestStatus.MATCHED -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
         PackageRequestStatus.BOOKED -> Color(0xFFE8F5E8) to Color(0xFF2E7D32)
         PackageRequestStatus.IN_TRANSIT -> Color(0xFFE1F5FE) to Color(0xFF0288D1)

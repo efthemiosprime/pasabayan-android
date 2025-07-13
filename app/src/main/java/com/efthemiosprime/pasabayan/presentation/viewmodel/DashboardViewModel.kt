@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.StateFlow
 import com.efthemiosprime.pasabayan.data.model.UserRole
 
@@ -8,11 +9,11 @@ import com.efthemiosprime.pasabayan.data.model.UserRole
  * DashboardViewModel - Functional composition of role-specific ViewModels
  * Following functional programming patterns with pure composition
  */
-class DashboardViewModel : ViewModel() {
+class DashboardViewModel(application: Application) : AndroidViewModel(application) {
     
     // Composition of specialized ViewModels
     private val _roleViewModel = RoleViewModel()
-    private val _shipperViewModel = ShipperViewModel()
+    private val _shipperViewModel = ShipperViewModel(application)
     private val _carrierViewModel = CarrierViewModel()
     
     // Public access to role state

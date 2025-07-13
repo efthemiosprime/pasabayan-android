@@ -1,22 +1,30 @@
 package com.efthemiosprime.pasabayan.ui.screens.packagerequest
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import com.efthemiosprime.pasabayan.data.model.PackageSize
 import com.efthemiosprime.pasabayan.data.model.CreatePackageRequest
+import com.efthemiosprime.pasabayan.data.repository.PackageRepositoryImpl
 import com.efthemiosprime.pasabayan.ui.screens.packagerequest.models.PackageRequestUiState
 import com.efthemiosprime.pasabayan.ui.screens.packagerequest.models.PackageRequestEvent
 import com.efthemiosprime.pasabayan.ui.screens.packagerequest.utils.PackageRequestValidator
+import com.efthemiosprime.pasabayan.data.model.PackageDimensions
+import com.efthemiosprime.pasabayan.data.model.PackageType
+import com.efthemiosprime.pasabayan.data.model.UrgencyLevel
 
 /**
  * PackageRequestViewModel - Functional state management for package requests
  * Following functional programming patterns with immutable state and pure functions
+ * Now uses actual PackageRepository for real API calls
  */
-class PackageRequestViewModel : ViewModel() {
+class PackageRequestViewModel(application: Application) : AndroidViewModel(application) {
+    
+    // Repository for API calls
+    private val packageRepository = PackageRepositoryImpl.create(getApplication())
     
     private val _uiState = MutableStateFlow(PackageRequestUiState())
     val uiState: StateFlow<PackageRequestUiState> = _uiState.asStateFlow()
@@ -51,6 +59,26 @@ class PackageRequestViewModel : ViewModel() {
     
     fun updatePackageSize(size: PackageSize) {
         _uiState.update { it.copy(packageSize = size) }
+    }
+    
+    fun updatePackageType(type: PackageType) {
+        _uiState.update { it.copy(packageType = type) }
+    }
+    
+    fun updateUrgencyLevel(level: UrgencyLevel) {
+        _uiState.update { it.copy(urgencyLevel = level) }
+    }
+    
+    fun updatePackageLength(value: String) {
+        _uiState.update { it.copy(packageLength = value) }
+    }
+    
+    fun updatePackageWidth(value: String) {
+        _uiState.update { it.copy(packageWidth = value) }
+    }
+    
+    fun updatePackageHeight(value: String) {
+        _uiState.update { it.copy(packageHeight = value) }
     }
     
     fun updateFragile(isFragile: Boolean) {
@@ -120,19 +148,37 @@ class PackageRequestViewModel : ViewModel() {
         
         viewModelScope.launch {
             try {
-                // Simulate API call
-                delay(2000)
-                
                 val request = buildCreatePackageRequest(currentState, weightValue)
                 
-                // TODO: Replace with actual repository call
-                // packageRepository.createPackageRequest(request)
+                println("🚀 Creating package with real API: ${request.title}")
+                println("📦 Package details: ${request.pickupAddress}, ${request.pickupCity} → ${request.deliveryAddress}, ${request.deliveryCity}")
                 
-                clearForm()
-                sendEvent(PackageRequestEvent.ShowSuccess("Package request created successfully!"))
-                sendEvent(PackageRequestEvent.NavigateBack)
+                // Use actual repository to create package
+                packageRepository.createPackageRequest(request)
+                    .onSuccess { createdPackage ->
+                        println("🎉 Package created successfully!")
+                        println("   📦 Package ID: ${createdPackage.id}")
+                        println("   📦 Package Title: ${createdPackage.title}")
+                        println("   📦 Package Status: ${createdPackage.status}")
+                        
+                        _uiState.update { it.copy(isLoading = false) }
+                        clearForm()
+                        sendEvent(PackageRequestEvent.ShowSuccess("Package request created successfully!"))
+                        sendEvent(PackageRequestEvent.NavigateBack)
+                    }
+                    .onFailure { exception ->
+                        println("❌ Package creation failed: ${exception.message}")
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false, 
+                                errorMessage = exception.message ?: "Unknown error occurred"
+                            ) 
+                        }
+                        sendEvent(PackageRequestEvent.ShowError(exception.message ?: "Failed to create package. Please try again."))
+                    }
                 
             } catch (e: Exception) {
+                println("❌ Exception during package creation: ${e.message}")
                 _uiState.update { 
                     it.copy(
                         isLoading = false, 
@@ -161,11 +207,33 @@ class PackageRequestViewModel : ViewModel() {
         state: PackageRequestUiState,
         weightValue: Double
     ): CreatePackageRequest {
+        // Provide default dimensions like iOS (30x20x15 cm) if not specified
+        val dimensions = if (state.packageLength.isNotBlank() && 
+                            state.packageWidth.isNotBlank() && 
+                            state.packageHeight.isNotBlank()) {
+            PackageDimensions(
+                length = state.packageLength.toIntOrNull() ?: 30,
+                width = state.packageWidth.toIntOrNull() ?: 20,
+                height = state.packageHeight.toIntOrNull() ?: 15
+            )
+        } else {
+            // Default dimensions matching iOS implementation
+            PackageDimensions(
+                length = 30,  // 30 cm default length
+                width = 20,   // 20 cm default width  
+                height = 15   // 15 cm default height
+            )
+        }
+        
         return CreatePackageRequest(
             title = state.packageDescription,
             description = state.specialInstructions.takeIf { it.isNotBlank() },
-            pickupLocation = "${state.pickupAddress}, ${state.pickupCity}",
-            deliveryLocation = "${state.deliveryAddress}, ${state.deliveryCity}",
+            pickupAddress = state.pickupAddress,
+            pickupCity = state.pickupCity,
+            pickupCountry = detectCountry(state.pickupCity),
+            deliveryAddress = state.deliveryAddress,
+            deliveryCity = state.deliveryCity,
+            deliveryCountry = detectCountry(state.deliveryCity),
             pickupCoordinates = null, // TODO: Add coordinate lookup
             deliveryCoordinates = null, // TODO: Add coordinate lookup
             preferredPickupDate = state.preferredPickupDate,
@@ -173,10 +241,40 @@ class PackageRequestViewModel : ViewModel() {
             preferredDeliveryDate = state.preferredDeliveryDate.takeIf { it.isNotBlank() },
             packageSize = state.packageSize,
             packageWeight = weightValue,
+            packageDimensions = dimensions,
+            packageType = state.packageType.value,
             packageValue = PackageRequestValidator.validateAmount(state.packageValue),
             isFragile = state.isFragile,
+            urgencyLevel = state.urgencyLevel.value,
             specialInstructions = state.specialInstructions.takeIf { it.isNotBlank() },
-            maxBudget = PackageRequestValidator.validateAmount(state.maxBudget)
+            maxBudget = PackageRequestValidator.validateAmount(state.maxBudget),
+            pickupDateFlexible = state.pickupDateFlexible
         )
+    }
+    
+    /**
+     * Smart country detection based on city names - matching iOS implementation
+     */
+    private fun detectCountry(city: String): String {
+        val cityLower = city.lowercase()
+        
+        // Canadian cities
+        val canadianCities = setOf("montreal", "toronto", "vancouver", "ottawa", "calgary", 
+                                  "edmonton", "winnipeg", "quebec city", "hamilton", "kitchener")
+        if (canadianCities.any { cityLower.contains(it) }) {
+            return "Canada"
+        }
+        
+        // Philippine cities  
+        val philippineCities = setOf("manila", "makati", "quezon city", "cebu", "davao", "pasig", 
+                                   "taguig", "paranaque", "las pinas", "muntinlupa", "marikina", 
+                                   "antipolo", "pasay", "caloocan", "mandaluyong", "san juan")
+        if (philippineCities.any { cityLower.contains(it) } || 
+            cityLower.contains("makati") || cityLower.contains("manila")) {
+            return "Philippines"
+        }
+        
+        // Default to Philippines for now (matching iOS behavior)
+        return "Philippines"
     }
 } 

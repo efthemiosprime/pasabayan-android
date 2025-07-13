@@ -12,6 +12,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.data.model.PackageSize
+import com.efthemiosprime.pasabayan.data.model.PackageType
+import com.efthemiosprime.pasabayan.data.model.UrgencyLevel
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
 
 /**
@@ -30,6 +32,16 @@ fun PackageDetailsSection(
     onMaxBudgetChange: (String) -> Unit,
     packageSize: PackageSize,
     onPackageSizeChange: (PackageSize) -> Unit,
+    packageType: PackageType,
+    onPackageTypeChange: (PackageType) -> Unit,
+    urgencyLevel: UrgencyLevel,
+    onUrgencyLevelChange: (UrgencyLevel) -> Unit,
+    packageLength: String,
+    onPackageLengthChange: (String) -> Unit,
+    packageWidth: String,
+    onPackageWidthChange: (String) -> Unit,
+    packageHeight: String,
+    onPackageHeightChange: (String) -> Unit,
     isFragile: Boolean,
     onFragileChange: (Boolean) -> Unit,
     specialInstructions: String,
@@ -60,6 +72,23 @@ fun PackageDetailsSection(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                PackageTypePicker(
+                    selectedType = packageType,
+                    onTypeSelected = onPackageTypeChange,
+                    modifier = Modifier.weight(1f)
+                )
+                
+                UrgencyLevelPicker(
+                    selectedLevel = urgencyLevel,
+                    onLevelSelected = onUrgencyLevelChange,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 WeightInputField(
                     value = weight,
                     onValueChange = onWeightChange,
@@ -69,6 +98,45 @@ fun PackageDetailsSection(
                 PackageSizePicker(
                     selectedSize = packageSize,
                     onSizeSelected = onPackageSizeChange,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            
+            // Package Dimensions Section
+            Text(
+                text = "Package Dimensions (cm) - Optional",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium
+            )
+            
+            Text(
+                text = "Leave empty for smart defaults (30×20×15 cm)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                DimensionInputField(
+                    value = packageLength,
+                    onValueChange = onPackageLengthChange,
+                    label = "Length",
+                    modifier = Modifier.weight(1f)
+                )
+                
+                DimensionInputField(
+                    value = packageWidth,
+                    onValueChange = onPackageWidthChange,
+                    label = "Width",
+                    modifier = Modifier.weight(1f)
+                )
+                
+                DimensionInputField(
+                    value = packageHeight,
+                    onValueChange = onPackageHeightChange,
+                    label = "Height",
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -266,6 +334,112 @@ private fun SpecialInstructionsField(
     )
 }
 
+@Composable
+private fun DimensionInputField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        placeholder = { Text("0") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        trailingIcon = { Text("cm", style = MaterialTheme.typography.bodyMedium) },
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PackageTypePicker(
+    selectedType: PackageType,
+    onTypeSelected: (PackageType) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            value = selectedType.displayName,
+            onValueChange = { },
+            readOnly = true,
+            label = { Text("Package Type *") },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+        )
+        
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            PackageType.values().forEach { type ->
+                DropdownMenuItem(
+                    text = { Text(type.displayName) },
+                    onClick = {
+                        onTypeSelected(type)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun UrgencyLevelPicker(
+    selectedLevel: UrgencyLevel,
+    onLevelSelected: (UrgencyLevel) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            value = selectedLevel.displayName,
+            onValueChange = { },
+            readOnly = true,
+            label = { Text("Urgency Level *") },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+        )
+        
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            UrgencyLevel.values().forEach { level ->
+                DropdownMenuItem(
+                    text = { Text(level.displayName) },
+                    onClick = {
+                        onLevelSelected(level)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun PackageDetailsSectionPreview() {
@@ -275,12 +449,22 @@ private fun PackageDetailsSectionPreview() {
             onPackageDescriptionChange = { },
             weight = "2.5",
             onWeightChange = { },
-            packageValue = "1080", // Converted from ₱45,000 at 0.024 CAD/PHP
+            packageValue = "1080",
             onPackageValueChange = { },
             maxBudget = "500",
             onMaxBudgetChange = { },
             packageSize = PackageSize.MEDIUM,
             onPackageSizeChange = { },
+            packageType = PackageType.ELECTRONICS,
+            onPackageTypeChange = { },
+            urgencyLevel = UrgencyLevel.NORMAL,
+            onUrgencyLevelChange = { },
+            packageLength = "30",
+            onPackageLengthChange = { },
+            packageWidth = "20",
+            onPackageWidthChange = { },
+            packageHeight = "15",
+            onPackageHeightChange = { },
             isFragile = true,
             onFragileChange = { },
             specialInstructions = "Handle with care",

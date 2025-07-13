@@ -83,6 +83,9 @@ object PasabayanDesignSystem {
         val onSurface = Color(0xFF000000)         // Black text
         val onSurfaceVariant = Color(0xFF757575)  // Gray text
         
+        // Background colors
+        val screenBackground = Color(0xFFFAF8FE) // Global screen background #faf8fe
+        
         // Status-specific colors
         val tripScheduled = Color(0xFF2196F3)     // Blue
         val tripActive = Color(0xFF3F51B5)        // Indigo
@@ -206,7 +209,7 @@ private val LightColorScheme = lightColorScheme(
     surfaceVariant = PasabayanDesignSystem.Colors.surfaceVariant,
     onSurfaceVariant = PasabayanDesignSystem.Colors.onSurfaceVariant,
     error = PasabayanDesignSystem.Colors.error,
-    background = Color.White,
+    background = PasabayanDesignSystem.Colors.screenBackground,
     onBackground = PasabayanDesignSystem.Colors.onSurface
 )
 

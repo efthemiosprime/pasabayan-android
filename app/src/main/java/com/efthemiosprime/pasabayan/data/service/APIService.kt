@@ -6,6 +6,13 @@ import com.efthemiosprime.pasabayan.data.model.LoginRequest
 import com.efthemiosprime.pasabayan.data.model.CarrierStatusResponse
 import com.efthemiosprime.pasabayan.data.model.UserDataResponse
 import com.efthemiosprime.pasabayan.data.model.CarrierProfileResponse
+import com.efthemiosprime.pasabayan.data.model.PackageRequest
+import com.efthemiosprime.pasabayan.data.model.CreatePackageRequest
+import com.efthemiosprime.pasabayan.data.model.CompatibleTrip
+import com.efthemiosprime.pasabayan.data.model.PackageRequestResponse
+import com.efthemiosprime.pasabayan.data.model.PackageRequestsResponse
+import com.efthemiosprime.pasabayan.data.model.CompatibleTripsResponse
+import com.efthemiosprime.pasabayan.data.model.CreatePackageRequestApi
 
 /**
  * API Service interface for authentication endpoints
@@ -70,8 +77,41 @@ interface APIService {
     @GET("carrier/profile")
     suspend fun getCarrierProfile(): CarrierProfileResponse
     
+    /**
+     * Package Request Management - matching iOS endpoints
+     */
+    @GET("packages")
+    suspend fun getPackageRequests(): PackageRequestsResponse
+    
+    @POST("packages")
+    suspend fun createPackageRequest(
+        @Body request: CreatePackageRequestApi
+    ): PackageRequestResponse
+    
+    @GET("packages/{id}")
+    suspend fun getPackageRequest(
+        @Path("id") packageId: Int
+    ): PackageRequestResponse
+    
+    @PUT("packages/{id}")
+    suspend fun updatePackageRequest(
+        @Path("id") packageId: Int,
+        @Body request: CreatePackageRequestApi
+    ): PackageRequestResponse
+    
+    @DELETE("packages/{id}")
+    suspend fun deletePackageRequest(
+        @Path("id") packageId: Int
+    ): Map<String, String>
+    
+    @GET("packages/{id}/compatible-trips")
+    suspend fun getCompatibleTrips(
+        @Path("id") packageId: Int
+    ): CompatibleTripsResponse
+    
     companion object {
         // Same base URL as iOS: https://api.pasabayan.com/api (no trailing slash)
         const val BASE_URL = "https://api.pasabayan.com/api"
+        const val BASE_URL_LOCAL = "http://10.0.2.2:8000/api"
     }
 } 

@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,10 +16,10 @@ import com.efthemiosprime.pasabayan.ui.screens.dashboard.state.DashboardUiState
  * ShipperViewModel - Functional state management for shipper operations
  * Following functional programming patterns with immutable state
  */
-class ShipperViewModel : ViewModel() {
+class ShipperViewModel(application: Application) : AndroidViewModel(application) {
     
     // Composition of PackageViewModel for package operations
-    val packageViewModel = PackageViewModel()
+    val packageViewModel = PackageViewModel(application)
     
     // Internal state for user data
     private val _user = MutableStateFlow<User?>(null)

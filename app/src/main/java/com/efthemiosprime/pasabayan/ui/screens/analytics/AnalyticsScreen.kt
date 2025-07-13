@@ -18,6 +18,7 @@ import com.efthemiosprime.pasabayan.ui.components.analytics.*
 import com.efthemiosprime.pasabayan.ui.common.ErrorMessage
 import com.efthemiosprime.pasabayan.ui.shared.cards.PCard
 import com.efthemiosprime.pasabayan.ui.shared.PButton
+import com.efthemiosprime.pasabayan.ui.shared.ScreenContainer
 
 /**
  * Main analytics screen displaying carrier and shipper analytics
@@ -29,11 +30,12 @@ fun AnalyticsScreen(
 ) {
     val state by viewModel.state.collectAsState()
     
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
+    ScreenContainer {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
         when {
             state.isLoading && state.carrierStats.data == null && state.shipperStats.data == null -> {
                 // Initial loading state
@@ -61,6 +63,7 @@ fun AnalyticsScreen(
                 )
             }
         }
+    }
     }
 }
 
