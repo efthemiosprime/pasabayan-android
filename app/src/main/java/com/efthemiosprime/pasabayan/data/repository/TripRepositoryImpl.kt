@@ -363,7 +363,7 @@ private fun Trip.toApiRequest(): CreateTripRequestApi {
         // Handle empty dates - use defaults if not provided
         val finalDepartureDate = if (departureDate.isEmpty()) {
             val tomorrow = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 1) }
-            val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+            val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
             isoFormat.format(tomorrow.time)
         } else {
             departureDate // Already in ISO format from ViewModel
@@ -371,7 +371,7 @@ private fun Trip.toApiRequest(): CreateTripRequestApi {
         
         val finalArrivalDate = if (arrivalDate.isEmpty()) {
             val dayAfter = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 2) }
-            val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+            val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
             isoFormat.format(dayAfter.time)
         } else {
             arrivalDate // Already in ISO format from ViewModel
@@ -385,6 +385,36 @@ private fun Trip.toApiRequest(): CreateTripRequestApi {
         println("   - Transportation Method: ${transportationMethod.name} → ${transportationMethod.name.lowercase()}")
         println("   - Weight: ${availableWeightKg}kg, Space: ${availableSpaceLiters}L, Price: $${pricePerKg}/kg")
         println("   - Special Notes: ${specialNotes ?: "None"}")
+        
+        // Debug current time vs departure time
+        val now = Calendar.getInstance()
+        val currentTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(now.time)
+        println("🕐 Time Debug:")
+        println("   - Current time: $currentTime")
+        println("   - Departure time: $finalDepartureDate")
+        println("   - Arrival time: $finalArrivalDate")
+        
+        // Parse and compare times
+        try {
+            val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val departureTime = isoFormat.parse(finalDepartureDate)
+            val currentTimeDate = now.time
+            
+            if (departureTime != null) {
+                val isInFuture = departureTime.after(currentTimeDate)
+                val timeDiff = departureTime.time - currentTimeDate.time
+                val hoursDiff = timeDiff / (1000 * 60 * 60)
+                
+                println("   - Is departure in future: $isInFuture")
+                println("   - Hours difference: $hoursDiff")
+                
+                if (!isInFuture) {
+                    println("   ⚠️ WARNING: Departure time is in the past!")
+                }
+            }
+        } catch (e: Exception) {
+            println("   ❌ Failed to parse departure time: ${e.message}")
+        }
         
         return CreateTripRequestApi(
             originCity = originCity,

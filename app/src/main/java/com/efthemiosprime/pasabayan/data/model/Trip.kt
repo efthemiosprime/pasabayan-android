@@ -23,17 +23,17 @@ data class Trip(
     @SerialName("origin_country")
     val originCountry: String,
     @SerialName("origin_lat")
-    val originLat: Double?,
+    val originLat: Double? = null,
     @SerialName("origin_lng")
-    val originLng: Double?,
+    val originLng: Double? = null,
     @SerialName("destination_city")
     val destinationCity: String,
     @SerialName("destination_country")
     val destinationCountry: String,
     @SerialName("destination_lat")
-    val destinationLat: Double?,
+    val destinationLat: Double? = null,
     @SerialName("destination_lng")
-    val destinationLng: Double?,
+    val destinationLng: Double? = null,
     @SerialName("departure_date")
     val departureDate: String, // ISO date string
     @SerialName("arrival_date")

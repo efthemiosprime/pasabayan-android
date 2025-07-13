@@ -819,7 +819,7 @@ private fun CreateTripForm() {
                             destinationLat = 10.3157,
                             destinationLng = 123.8854,
                                             departureDate = "", // Let server set the date (matching iOS)
-                arrivalDate = "", // Let server set the date (matching iOS)
+                            arrivalDate = "", // Let server set the date (matching iOS)
                             availableWeightKg = 15.0,
                             availableSpaceLiters = 50.0,
                             pricePerKg = 0.60,
@@ -953,12 +953,12 @@ private fun convertToISODateTime(dateStr: String, timeStr: String): String {
             else -> "10:00" // Default time
         }
         
-        "${standardDate}T${standardTime}:00Z"
+        "${standardDate}T${standardTime}:00"
     } catch (e: Exception) {
         // Return a default ISO datetime if parsing fails
         val calendar = Calendar.getInstance()
         calendar.add(Calendar.DAY_OF_YEAR, 1) // Default to tomorrow
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()).format(calendar.time)
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(calendar.time)
     }
 }
 

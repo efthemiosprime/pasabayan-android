@@ -152,6 +152,20 @@ class TripCreationViewModel(application: Application) : AndroidViewModel(applica
                 val departureDateTimeISO = convertToISODateTime(currentState.departureDate, currentState.departureTime)
                 val arrivalDateTimeISO = convertToISODateTime(currentState.arrivalDate, currentState.arrivalTime)
                 
+                // Validate that departure is in the future
+                if (!isDepartureInFuture(departureDateTimeISO)) {
+                    _uiState.update { it.copy(isLoading = false) }
+                    sendEvent(TripCreationEvent.ShowError("Departure must be in the future. If selecting today's date, choose a time after the current time."))
+                    return@launch
+                }
+                
+                // Validate that arrival is after departure
+                if (!validateDateTimeOrder(departureDateTimeISO, arrivalDateTimeISO)) {
+                    _uiState.update { it.copy(isLoading = false) }
+                    sendEvent(TripCreationEvent.ShowError("Arrival date/time must be after departure date/time"))
+                    return@launch
+                }
+                
                 // Create trip from form data
                 val newTrip = Trip(
                     id = 0,
@@ -251,6 +265,81 @@ class TripCreationViewModel(application: Application) : AndroidViewModel(applica
         }
     }
     
+    private fun isDepartureInFuture(departureDateTime: String): Boolean {
+        return try {
+            val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val departureTime = isoFormat.parse(departureDateTime)
+            val currentTime = Date()
+            
+            if (departureTime != null) {
+                // More intelligent validation: allow any time on future dates
+                val currentCalendar = Calendar.getInstance().apply { time = currentTime }
+                val departureCalendar = Calendar.getInstance().apply { time = departureTime }
+                
+                // Check if departure is on a future date
+                val currentDate = currentCalendar.get(Calendar.YEAR) * 10000 + 
+                                currentCalendar.get(Calendar.MONTH) * 100 + 
+                                currentCalendar.get(Calendar.DAY_OF_MONTH)
+                val departureDate = departureCalendar.get(Calendar.YEAR) * 10000 + 
+                                  departureCalendar.get(Calendar.MONTH) * 100 + 
+                                  departureCalendar.get(Calendar.DAY_OF_MONTH)
+                
+                val isInFuture = if (departureDate > currentDate) {
+                    // Future date - any time is valid
+                    true
+                } else if (departureDate == currentDate) {
+                    // Same date - time must be in future
+                    departureTime.after(currentTime)
+                } else {
+                    // Past date - invalid
+                    false
+                }
+                
+                val timeDiff = departureTime.time - currentTime.time
+                val hoursDiff = timeDiff / (1000 * 60 * 60)
+                
+                println("🕐 Smart Future validation:")
+                println("   Current: $currentTime (date: $currentDate)")
+                println("   Departure: $departureTime (date: $departureDate)")
+                println("   Is future date: ${departureDate > currentDate}")
+                println("   Is same date: ${departureDate == currentDate}")
+                println("   Is in future: $isInFuture")
+                println("   Hours difference: $hoursDiff")
+                
+                isInFuture
+            } else {
+                println("❌ Date parsing failed during future validation")
+                false
+            }
+        } catch (e: Exception) {
+            println("❌ Future validation exception: ${e.message}")
+            false
+        }
+    }
+    
+    private fun validateDateTimeOrder(departureDateTime: String, arrivalDateTime: String): Boolean {
+        return try {
+            val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val departureTime = isoFormat.parse(departureDateTime)
+            val arrivalTime = isoFormat.parse(arrivalDateTime)
+            
+            if (departureTime != null && arrivalTime != null) {
+                val isValid = arrivalTime.after(departureTime)
+                println("📅 Date order validation:")
+                println("   Departure: $departureDateTime ($departureTime)")
+                println("   Arrival: $arrivalDateTime ($arrivalTime)")
+                println("   Is valid: $isValid")
+                isValid
+            } else {
+                println("❌ Date parsing failed during validation")
+                false
+            }
+        } catch (e: Exception) {
+            println("❌ Date validation exception: ${e.message}")
+            false
+        }
+    }
+    
     private fun convertToISODateTime(date: String, time: String): String {
         return try {
             // Parse user input (e.g., "Jul 12, 2025" and "9:30 PM")
@@ -271,19 +360,32 @@ class TripCreationViewModel(application: Application) : AndroidViewModel(applica
                 calendar.set(Calendar.HOUR_OF_DAY, timeCalendar.get(Calendar.HOUR_OF_DAY))
                 calendar.set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE))
                 calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
                 
-                // Format to ISO string with Z suffix for UTC
-                val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
-                isoFormat.format(calendar.time)
+                // Format to ISO string in local timezone (no Z suffix)
+                val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                val formattedDateTime = isoFormat.format(calendar.time)
+                
+                println("🕐 Date conversion debug:")
+                println("   Input: $date $time")
+                println("   Parsed: ${calendar.time}")
+                println("   ISO Format: $formattedDateTime")
+                
+                formattedDateTime
             } else {
                 // Fallback to current time if parsing fails
-                val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
-                isoFormat.format(Date())
+                val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                val fallbackDateTime = isoFormat.format(Date())
+                println("⚠️ Date parsing failed, using fallback: $fallbackDateTime")
+                fallbackDateTime
             }
         } catch (e: Exception) {
             // Fallback to current time if parsing fails
-            val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
-            isoFormat.format(Date())
+            val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val fallbackDateTime = isoFormat.format(Date())
+            println("❌ Date conversion exception: ${e.message}")
+            println("   Using fallback: $fallbackDateTime")
+            fallbackDateTime
         }
     }
 } 
