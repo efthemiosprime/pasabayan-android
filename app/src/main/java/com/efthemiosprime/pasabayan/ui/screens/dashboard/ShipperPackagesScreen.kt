@@ -20,6 +20,7 @@ import com.efthemiosprime.pasabayan.data.model.PackageRequestStatus
 import com.efthemiosprime.pasabayan.presentation.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.ui.shared.ScreenContainer
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.PackageCard
+import com.efthemiosprime.pasabayan.ui.screens.packagedetail.PackageDetailScreen
 
 /**
  * My Packages Screen - matches the carrier "My Trips" design from iOS
@@ -38,6 +39,22 @@ fun ShipperPackagesScreen(
     val isLoading by packageViewModel.isLoading.collectAsState()
     val selectedFilter by packageViewModel.selectedFilter.collectAsState()
     val errorMessage by packageViewModel.errorMessage.collectAsState()
+    
+    // State for navigation to package detail screen
+    var selectedPackageForDetails by remember { mutableStateOf<PackageRequest?>(null) }
+    
+    // Show package detail screen if a package is selected
+    selectedPackageForDetails?.let { packageRequest ->
+        PackageDetailScreen(
+            packageRequest = packageRequest,
+            onNavigateBack = { 
+                selectedPackageForDetails = null
+                // Refresh packages list after coming back from details
+                packageViewModel.loadPackageRequests()
+            }
+        )
+        return
+    }
     
     // Load data when screen appears
     LaunchedEffect(Unit) {
@@ -150,15 +167,17 @@ fun ShipperPackagesScreen(
                                 contentPadding = PaddingValues(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                items(filteredPackages) { packageRequest ->
-                                    PackageCard(
-                                        packageRequest = packageRequest,
-                                        onDetailsClick = { onNavigateToDetails(packageRequest) },
-                                        onFindCarriersClick = { 
-                                            // TODO: Navigate to carrier search
-                                        }
-                                    )
-                                }
+                                                items(filteredPackages) { packageRequest ->
+                    PackageCard(
+                        packageRequest = packageRequest,
+                        onDetailsClick = { 
+                            selectedPackageForDetails = packageRequest
+                        },
+                        onFindCarriersClick = { 
+                            // TODO: Navigate to carrier search
+                        }
+                    )
+                }
                             }
                         }
                     }

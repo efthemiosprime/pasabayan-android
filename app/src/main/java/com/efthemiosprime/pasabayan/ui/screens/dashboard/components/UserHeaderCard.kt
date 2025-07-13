@@ -17,6 +17,8 @@ import coil.compose.AsyncImage
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.presentation.viewmodel.RoleViewModel
 import com.efthemiosprime.pasabayan.ui.components.role.RoleSwitcherView
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCardStandard
+import com.efthemiosprime.pasabayan.ui.theme.PasabayanDesignSystem
 
 /**
  * User Header Card - Mirrors iOS UserHeaderCard (51 lines)
@@ -30,13 +32,11 @@ fun UserHeaderCard(
     roleViewModel: RoleViewModel,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    PCardStandard(
+        modifier = modifier
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.md)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -46,7 +46,7 @@ fun UserHeaderCard(
                     size = 50.dp
                 )
                 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(PasabayanDesignSystem.Spacing.md))
                 
                 Column {
                     Text(

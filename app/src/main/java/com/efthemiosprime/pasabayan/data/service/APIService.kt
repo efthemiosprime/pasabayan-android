@@ -154,6 +154,11 @@ interface APIService {
         @Query("carrier_id") carrierId: Int
     ): TripsResponse
     
+    @GET("api/trips/available")
+    suspend fun getAvailableTrips(
+        @Query("page") page: Int = 1
+    ): TripsResponse
+    
     companion object {
         // Base URL should be https://api.pasabayan.com since endpoints already include /api
         const val BASE_URL = "https://api.pasabayan.com"

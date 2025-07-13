@@ -215,6 +215,27 @@ class TripRepositoryImpl(
         emit(Result.Failure(AppError.NetworkError(exception.message ?: "Failed to fetch trips")))
     }
     
+    /**
+     * Get available trips from the API
+     * Used for shipper browse functionality to show trips available for booking
+     */
+    suspend fun getAvailableTrips(page: Int = 1): Flow<Result<List<Trip>>> = flow {
+        emit(resultOf {
+            println("🌐 Calling API: GET ${APIService.BASE_URL}/api/trips/available?page=$page")
+            try {
+                val response = apiService.getAvailableTrips(page)
+                println("✅ API Success: Retrieved ${response.data.data.size} available trips from page ${response.data.currentPage}")
+                println("📊 Pagination: ${response.data.data.size}/${response.data.total} total available trips")
+                response.data.data
+            } catch (e: Exception) {
+                println("❌ API Error: ${e.message}")
+                throw Exception("API Error: ${e.message ?: "Server is currently unavailable"}")
+            }
+        })
+    }.catch { exception ->
+        emit(Result.Failure(AppError.NetworkError(exception.message ?: "Failed to fetch available trips")))
+    }
+    
     override suspend fun getActiveTrips(): Flow<Result<List<Trip>>> = flow {
         emit(resultOf {
             try {

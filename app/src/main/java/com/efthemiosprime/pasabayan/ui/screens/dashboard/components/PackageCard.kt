@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.data.model.PackageRequest
 import com.efthemiosprime.pasabayan.data.model.PackageRequestStatus
 import com.efthemiosprime.pasabayan.data.model.PackageSize
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCardStandard
+import com.efthemiosprime.pasabayan.ui.theme.PasabayanDesignSystem
 
 @Composable
 fun PackageCard(
@@ -26,13 +28,11 @@ fun PackageCard(
     onFindCarriersClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    PCardStandard(
+        modifier = modifier
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.lg)
         ) {
             // Header Row - Icon + Title + Status Badge
             Row(
@@ -42,7 +42,7 @@ fun PackageCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.sm)
                 ) {
                     Icon(
                         imageVector = getPackageTypeIcon(packageRequest.packageSize),
@@ -74,7 +74,7 @@ fun PackageCard(
                 Icon(
                     imageVector = Icons.Default.ArrowForward,
                     contentDescription = "to",
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier.padding(horizontal = PasabayanDesignSystem.Spacing.sm)
                 )
                 
                 LocationInfo(
@@ -106,7 +106,7 @@ fun PackageCard(
             // Action Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.md)
             ) {
                 OutlinedButton(
                     onClick = onDetailsClick,
@@ -183,12 +183,15 @@ private fun StatusBadge(status: PackageRequestStatus) {
     
     Surface(
         color = backgroundColor,
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.padding(4.dp)
+        shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.card),
+        modifier = Modifier.padding(PasabayanDesignSystem.Spacing.xs)
     ) {
         Text(
             text = "${status.icon} ${status.displayName}",
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier.padding(
+                horizontal = PasabayanDesignSystem.Spacing.sm,
+                vertical = PasabayanDesignSystem.Spacing.xs
+            ),
             color = Color.White,
             style = MaterialTheme.typography.labelSmall
         )

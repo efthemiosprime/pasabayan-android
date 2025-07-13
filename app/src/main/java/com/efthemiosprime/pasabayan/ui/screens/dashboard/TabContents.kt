@@ -171,7 +171,7 @@ fun BrowseTabContent(
                 errorMessage = null
                 try {
                     val tripRepository = TripRepositoryImpl.create(context)
-                    tripRepository.getAllTrips().collect { result ->
+                    tripRepository.getAvailableTrips().collect { result ->
                         result.fold(
                             onSuccess = { tripList ->
                                 // Filter out trips that belong to the current user
@@ -182,13 +182,13 @@ fun BrowseTabContent(
                                 isLoading = false
                             },
                             onFailure = { error ->
-                                errorMessage = error.message ?: "Failed to load trips"
+                                errorMessage = error.message ?: "Failed to load available trips"
                                 isLoading = false
                             }
                         )
                     }
                 } catch (e: Exception) {
-                    errorMessage = e.message ?: "Failed to load trips"
+                    errorMessage = e.message ?: "Failed to load available trips"
                     isLoading = false
                 }
             }

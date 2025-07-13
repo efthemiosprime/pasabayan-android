@@ -271,15 +271,11 @@ fun CarrierStatusCard(
     val isCarrierActive by carrierViewModel.isCarrierActive.collectAsState()
     val carrierStatusText = carrierViewModel.carrierStatusText
     
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.card),
-        elevation = CardDefaults.cardElevation(defaultElevation = PasabayanDesignSystem.CardStandards.elevation),
-        colors = CardDefaults.cardColors(containerColor = PasabayanDesignSystem.CardStandards.backgroundColor)
+    PCardStandard(
+        modifier = modifier
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.md)
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -297,7 +293,7 @@ fun CarrierStatusCard(
                             if (isCarrierActive) Color.Green else Color.Gray
                         } else Color.Gray
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.card)
                 ) {
                     Text(
                         text = carrierStatusText,

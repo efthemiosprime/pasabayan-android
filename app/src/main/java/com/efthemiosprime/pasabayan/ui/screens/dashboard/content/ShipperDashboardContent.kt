@@ -82,7 +82,7 @@ fun ShipperDashboardContent(
                             showCreatePackageScreen = true 
                         },
                         onNavigateToDetails = { packageRequest ->
-                            // TODO: Navigate to package details
+                            // Navigation handled internally by ShipperPackagesScreen
                         }
                     ) 
                 }

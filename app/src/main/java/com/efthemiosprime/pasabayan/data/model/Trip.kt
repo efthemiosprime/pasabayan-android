@@ -49,7 +49,8 @@ data class Trip(
     @SerialName("transportation_method")
     val transportationMethod: TransportationMethod,
     @SerialName("special_notes")
-    val specialNotes: String? = null
+    val specialNotes: String? = null,
+    val carrier: User? = null
 ) {
     // MARK: - Computed Properties (matching iOS exactly)
     
