@@ -7,6 +7,9 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -17,6 +20,7 @@ import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.UserHeaderCa
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.CarrierStatusCard
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.CarrierStatsGrid
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.RecentTripsSection
+import com.efthemiosprime.pasabayan.ui.screens.carrier.CarrierRequestsScreen
 import com.efthemiosprime.pasabayan.ui.common.EmptyStateData
 
 /**
@@ -32,7 +36,13 @@ fun CarrierHomeContent(
     val uiState by viewModel.uiState.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
     
-    LazyColumn(
+    // State for showing booking requests screen
+    var showBookingRequests by remember { mutableStateOf(false) }
+    
+    if (showBookingRequests) {
+        CarrierRequestsScreen(onNavigateBack = { showBookingRequests = false })
+    } else {
+        LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -51,7 +61,10 @@ fun CarrierHomeContent(
         }
         
         item {
-            CarrierStatsGrid(carrierViewModel = viewModel)
+            CarrierStatsGrid(
+                carrierViewModel = viewModel,
+                onBookingRequestsClick = { showBookingRequests = true }
+            )
         }
         
         item {
@@ -64,5 +77,6 @@ fun CarrierHomeContent(
                 )
             )
         }
+    }
     }
 } 

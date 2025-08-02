@@ -404,36 +404,14 @@ class CarrierViewModel(
     private suspend fun loadBookingsInternal() {
         try {
             delay(500)
-            // Mock bookings data (keeping existing structure)
-            val mockBookings = listOf(
-                Booking(
-                    id = 1,
-                    packageRequestId = 1,
-                    tripId = 1,
-                    shipperId = 1,
-                    carrierId = 1,
-                    status = BookingStatus.CONFIRMED,
-                    agreedPrice = 125.0,
-                    createdAt = "2024-01-14T11:00:00Z",
-                    updatedAt = "2024-01-14T11:00:00Z"
-                ),
-                Booking(
-                    id = 2,
-                    packageRequestId = 2,
-                    tripId = 2,
-                    shipperId = 2,
-                    carrierId = 1,
-                    status = BookingStatus.PENDING,
-                    agreedPrice = 37.5,
-                    createdAt = "2024-01-15T10:00:00Z",
-                    updatedAt = "2024-01-15T10:00:00Z"
-                )
-            )
+            // REMOVED: Mock booking data - use real API instead
+            // TODO: Implement real booking API call here
+            val realBookings = emptyList<Booking>() // Replace with actual API call
             
-            dispatch(CarrierAction.BookingsLoaded(mockBookings))
+            dispatch(CarrierAction.BookingsLoaded(realBookings))
             
             // Update legacy StateFlow
-            _activeBookings.value = mockBookings
+            _activeBookings.value = realBookings
         } catch (e: Exception) {
             dispatch(CarrierAction.LoadingError(AppError.NetworkError(e.message ?: "Failed to load bookings")))
         }

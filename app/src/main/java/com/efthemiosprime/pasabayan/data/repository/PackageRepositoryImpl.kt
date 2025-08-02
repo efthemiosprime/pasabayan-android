@@ -15,6 +15,8 @@ import com.efthemiosprime.pasabayan.domain.repository.PackageRepository
 import com.efthemiosprime.pasabayan.data.model.PackageRequest
 import com.efthemiosprime.pasabayan.data.model.CreatePackageRequest
 import com.efthemiosprime.pasabayan.data.model.CompatibleTrip
+import com.efthemiosprime.pasabayan.data.model.DeliveryMatch
+import com.efthemiosprime.pasabayan.data.model.AcceptPackageRequest
 import com.efthemiosprime.pasabayan.data.service.APIService
 import com.efthemiosprime.pasabayan.data.service.AuthService
 
@@ -89,6 +91,68 @@ class PackageRepositoryImpl(
             }
             
             Result.failure(e)
+        }
+    }
+    
+    override suspend fun getAvailablePackages(
+        page: Int,
+        origin: String?,
+        destination: String?,
+        maxWeight: Double?,
+        urgency: String?,
+        minBudget: Double?,
+        maxBudget: Double?,
+        fragile: Boolean?,
+        pickupDateFrom: String?,
+        pickupDateTo: String?
+    ): Result<List<PackageRequest>> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            Log.d(TAG, "🔍 Fetching available packages from API")
+            Log.d(TAG, "   📡 URL: ${APIService.BASE_URL}/packages/available")
+            Log.d(TAG, "   📋 Filters: page=$page, origin=$origin, destination=$destination")
+            Log.d(TAG, "   📋 Filters: maxWeight=$maxWeight, urgency=$urgency, fragile=$fragile")
+            Log.d(TAG, "   📋 Filters: minBudget=$minBudget, maxBudget=$maxBudget")
+            Log.d(TAG, "   📋 Filters: pickupDateFrom=$pickupDateFrom, pickupDateTo=$pickupDateTo")
+            
+            val response = apiService.getAvailablePackages(
+                page = page,
+                origin = origin,
+                destination = destination,
+                maxWeight = maxWeight,
+                urgency = urgency,
+                minBudget = minBudget,
+                maxBudget = maxBudget,
+                fragile = fragile,
+                pickupDateFrom = pickupDateFrom,
+                pickupDateTo = pickupDateTo
+            )
+            
+            Log.d(TAG, "📥 Available packages API Response received")
+            Log.d(TAG, "   ✅ Success: ${response.success}")
+            Log.d(TAG, "   📝 Message: ${response.message}")
+            Log.d(TAG, "   📊 Paginated data - Current page: ${response.data.currentPage}")
+            Log.d(TAG, "   📊 Total available packages: ${response.data.total}")
+            Log.d(TAG, "   📊 Available packages in current page: ${response.data.data.size}")
+            
+            if (response.success) {
+                // Extract the actual packages from the paginated structure and convert to UI models
+                val apiPackages = response.data.data
+                val uiPackages = apiPackages.map { it.toPackageRequest() }
+                Log.d(TAG, "✅ Available packages fetched successfully - Count: ${uiPackages.size}")
+                if (uiPackages.isNotEmpty()) {
+                    Log.d(TAG, "   📦 First available package: ${uiPackages.first().title}")
+                    Log.d(TAG, "   📍 Route: ${uiPackages.first().pickupLocation} → ${uiPackages.first().deliveryLocation}")
+                }
+                Result.success(uiPackages)
+            } else {
+                Log.e(TAG, "❌ Available packages fetch failed: ${response.message}")
+                Result.failure(Exception("API Error: ${response.message}"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Exception while fetching available packages")
+            Log.e(TAG, "   🔥 Exception type: ${e.javaClass.simpleName}")
+            Log.e(TAG, "   📝 Exception message: ${e.message}")
+            Result.failure(Exception("Failed to get available packages: ${e.message ?: "Unknown error"}"))
         }
     }
     
@@ -180,14 +244,36 @@ class PackageRepositoryImpl(
             val response = apiService.getCompatibleTrips(packageId)
             
             if (response.success) {
-                Log.d(TAG, "✅ Compatible trips fetched successfully - Count: ${response.data.size}")
-                Result.success(response.data)
+                Log.d(TAG, "✅ Compatible trips fetched successfully - Count: ${response.data.data.size}")
+                if (response.data.data.isNotEmpty()) {
+                    Log.d(TAG, "🚛 First trip ID: ${response.data.data.first().trip.id}, Score: ${response.data.data.first().matchScore}")
+                }
+                Result.success(response.data.data)
             } else {
                 Log.e(TAG, "❌ Compatible trips fetch failed: ${response.message}")
                 Result.failure(Exception(response.message))
             }
         } catch (e: Exception) {
             Log.e(TAG, "❌ Exception while fetching compatible trips: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+    
+    override suspend fun acceptPackageForTrip(
+        tripId: Int,
+        packageId: Int,
+        agreedPrice: Double
+    ): Result<DeliveryMatch> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            Log.d(TAG, "🤝 Accepting package $packageId for trip $tripId with agreed price: $$agreedPrice")
+            
+            val request = AcceptPackageRequest(agreedPrice)
+            val response = apiService.acceptPackageForTrip(tripId, packageId, request)
+            
+            Log.d(TAG, "✅ Package accepted successfully - Match ID: ${response.data.id}, Status: ${response.data.status}")
+            Result.success(response.data)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Exception while accepting package: ${e.message}", e)
             Result.failure(e)
         }
     }

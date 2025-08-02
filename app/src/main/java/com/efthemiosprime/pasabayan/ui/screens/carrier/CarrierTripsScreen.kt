@@ -16,10 +16,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import com.efthemiosprime.pasabayan.data.model.Trip
 import com.efthemiosprime.pasabayan.data.model.TripStatus
 import com.efthemiosprime.pasabayan.presentation.viewmodel.CarrierViewModel
 import com.efthemiosprime.pasabayan.ui.shared.EmptyStateView
 import com.efthemiosprime.pasabayan.ui.components.TripCard
+import com.efthemiosprime.pasabayan.ui.screens.trip.TripDetailScreen
 import com.efthemiosprime.pasabayan.R
 
 /**
@@ -37,6 +39,7 @@ fun CarrierTripsScreen(
     val trips = carrierState.trips.data ?: emptyList()
     val isLoading = carrierState.isLoading
     var selectedFilter by remember { mutableStateOf<TripStatus?>(null) }
+    var selectedTripForDetails: Trip? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
     
     // Filter trips based on selected status
@@ -52,6 +55,30 @@ fun CarrierTripsScreen(
         scope.launch {
             carrierViewModel.loadTrips()
         }
+    }
+    
+    // Show trip detail screen if a trip is selected
+    selectedTripForDetails?.let { trip ->
+        TripDetailScreen(
+            trip = trip,
+            onNavigateBack = { 
+                selectedTripForDetails = null
+                // Refresh trips list after coming back from details
+                scope.launch {
+                    carrierViewModel.loadTrips()
+                }
+            },
+            onCancelTrip = { tripToCancel ->
+                println("🚫 Starting trip cancellation for ID: ${tripToCancel.id}")
+                selectedTripForDetails = null
+                scope.launch {
+                    // Note: This would need to be implemented with proper repository access
+                    // For now, just refresh the trips list
+                    carrierViewModel.loadTrips()
+                }
+            }
+        )
+        return
     }
     
     Column(
@@ -152,8 +179,8 @@ fun CarrierTripsScreen(
                     TripCard(
                         trip = trip,
                         onTap = {
-                            // Handle trip tap - could navigate to trip details
-                            println("Tapped trip: ${trip.route}")
+                            println("🔧 DEBUG: Trip card clicked - ID: ${trip.id}, Route: ${trip.route}")
+                            selectedTripForDetails = trip
                         }
                     )
                 }

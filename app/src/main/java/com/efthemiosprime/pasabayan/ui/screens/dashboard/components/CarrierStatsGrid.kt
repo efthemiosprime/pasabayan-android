@@ -3,6 +3,7 @@ package com.efthemiosprime.pasabayan.ui.screens.dashboard.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -25,7 +26,8 @@ import com.efthemiosprime.pasabayan.data.model.TripStatus
 @Composable
 fun CarrierStatsGrid(
     carrierViewModel: CarrierViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onBookingRequestsClick: (() -> Unit)? = null
 ) {
     val carrierState by carrierViewModel.state.collectAsState()
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -48,11 +50,12 @@ fun CarrierStatsGrid(
             )
             
             StatItem( // Using StatItem (flat) for consistent card standards
-                title = "Total Earnings",
-                value = carrierState.profile.totalEarnings,
-                icon = Icons.Default.AttachMoney,
-                color = primaryColor,
-                modifier = Modifier.weight(1f)
+                title = "Booking Requests",
+                value = carrierState.bookings.data?.size?.toString() ?: "0",
+                icon = Icons.Default.Assignment,
+                color = Color(0xFF9C27B0), // Purple color matching the image
+                modifier = Modifier.weight(1f),
+                onClick = onBookingRequestsClick
             )
         }
         
@@ -62,13 +65,27 @@ fun CarrierStatsGrid(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             StatItem( // Using StatItem (flat) for consistent card standards
+                title = "Total Earnings",
+                value = carrierState.profile.totalEarnings,
+                icon = Icons.Default.AttachMoney,
+                color = primaryColor,
+                modifier = Modifier.weight(1f)
+            )
+            
+            StatItem( // Using StatItem (flat) for consistent card standards
                 title = "Active Matches",
                 value = carrierState.profile.totalMatches.toString(),
                 icon = Icons.Default.Assignment,
                 color = Color(0xFFFF9800),
                 modifier = Modifier.weight(1f)
             )
-            
+        }
+        
+        // Third row of stats  
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             StatItem( // Using StatItem (flat) for consistent card standards
                 title = "Rating",
                 value = carrierState.averageRatingText,
@@ -76,6 +93,9 @@ fun CarrierStatsGrid(
                 color = Color(0xFFFFC107),
                 modifier = Modifier.weight(1f)
             )
+            
+            // Empty spacer to maintain layout balance
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 } 

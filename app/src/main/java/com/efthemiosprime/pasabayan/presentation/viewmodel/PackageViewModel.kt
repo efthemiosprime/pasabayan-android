@@ -44,6 +44,16 @@ class PackageViewModel(application: Application) : AndroidViewModel(application)
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
     
+    // Available packages state (for shipper browse functionality)
+    private val _availablePackages = MutableStateFlow<List<PackageRequest>>(emptyList())
+    val availablePackages: StateFlow<List<PackageRequest>> = _availablePackages.asStateFlow()
+    
+    private val _isLoadingAvailable = MutableStateFlow(false)
+    val isLoadingAvailable: StateFlow<Boolean> = _isLoadingAvailable.asStateFlow()
+    
+    private val _availableErrorMessage = MutableStateFlow<String?>(null)
+    val availableErrorMessage: StateFlow<String?> = _availableErrorMessage.asStateFlow()
+    
     // 🆕 ADD PackageRepository dependency (manual DI following existing pattern):
     private val packageRepository: PackageRepository by lazy {
         PackageRepositoryImpl.create(getApplication())
@@ -96,6 +106,51 @@ class PackageViewModel(application: Application) : AndroidViewModel(application)
                 }
             
             _isLoading.value = false
+        }
+    }
+    
+    fun loadAvailablePackages(
+        page: Int = 1,
+        origin: String? = null,
+        destination: String? = null,
+        maxWeight: Double? = null,
+        urgency: String? = null,
+        minBudget: Double? = null,
+        maxBudget: Double? = null,
+        fragile: Boolean? = null,
+        pickupDateFrom: String? = null,
+        pickupDateTo: String? = null
+    ) {
+        viewModelScope.launch {
+            _isLoadingAvailable.value = true
+            _availableErrorMessage.value = null
+            
+            packageRepository.getAvailablePackages(
+                page = page,
+                origin = origin,
+                destination = destination,
+                maxWeight = maxWeight,
+                urgency = urgency,
+                minBudget = minBudget,
+                maxBudget = maxBudget,
+                fragile = fragile,
+                pickupDateFrom = pickupDateFrom,
+                pickupDateTo = pickupDateTo
+            )
+                .onSuccess { packages ->
+                    _availablePackages.value = packages
+                    println("✅ Available packages loaded successfully - Count: ${packages.size}")
+                    if (packages.isNotEmpty()) {
+                        println("   📦 First available package: ${packages.first().title}")
+                        println("   📍 Route: ${packages.first().pickupLocation} → ${packages.first().deliveryLocation}")
+                    }
+                }
+                .onFailure { exception ->
+                    println("🔧 Available packages API Error: ${exception.message}")
+                    _availableErrorMessage.value = exception.message
+                }
+            
+            _isLoadingAvailable.value = false
         }
     }
     

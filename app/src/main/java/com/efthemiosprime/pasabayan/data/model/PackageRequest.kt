@@ -4,6 +4,111 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * Limited shipper model for package listings
+ * Used when API returns only basic shipper info without email
+ */
+@Serializable
+data class PackageShipper(
+    val id: Int,
+    val name: String,
+    val rating: String, // API returns rating as string, not Double
+    @SerialName("total_ratings")
+    val totalRatings: Int,
+    @SerialName("verification_level")
+    val verificationLevel: String
+) {
+    /**
+     * Convert to User model for UI compatibility
+     * Fills in required email field with placeholder
+     */
+    fun toUser(): User = User(
+        id = id,
+        name = name,
+        email = "", // Not provided in package listings
+        rating = rating.toDoubleOrNull(),
+        totalRatings = totalRatings,
+        verificationLevel = verificationLevel
+    )
+}
+
+/**
+ * Available package model for /api/packages/available endpoint
+ * This endpoint returns a different structure than regular package requests
+ */
+@Serializable
+data class AvailablePackageApiData(
+    val id: Int,
+    @SerialName("pickup_city")
+    val pickupCity: String,
+    @SerialName("pickup_country")
+    val pickupCountry: String,
+    @SerialName("delivery_city")
+    val deliveryCity: String,
+    @SerialName("delivery_country")
+    val deliveryCountry: String,
+    @SerialName("package_weight_kg")
+    val packageWeightKg: String,
+    @SerialName("package_dimensions")
+    val packageDimensions: PackageDimensions? = null,
+    @SerialName("volume_liters")
+    val volumeLiters: Double? = null,
+    @SerialName("package_type")
+    val packageType: String,
+    @SerialName("package_description")
+    val packageDescription: String,
+    @SerialName("urgency_level")
+    val urgencyLevel: String,
+    @SerialName("max_price_budget")
+    val maxPriceBudget: String,
+    @SerialName("pickup_date_preferred")
+    val pickupDatePreferred: String,
+    @SerialName("pickup_date_flexible")
+    val pickupDateFlexible: Boolean = false,
+    @SerialName("delivery_date_needed")
+    val deliveryDateNeeded: String,
+    val fragile: Boolean = false,
+    @SerialName("special_handling_requirements")
+    val specialHandlingRequirements: String? = null,
+    @SerialName("created_at")
+    val createdAt: String,
+    @SerialName("days_since_posted")
+    val daysSincePosted: Double? = null,
+    @SerialName("urgency_display")
+    val urgencyDisplay: String? = null,
+    val shipper: PackageShipper
+) {
+    /**
+     * Convert available package API data to UI model
+     */
+    fun toPackageRequest(): PackageRequest {
+        return PackageRequest(
+            id = id,
+            shipperId = shipper.id,
+            title = packageDescription,
+            description = specialHandlingRequirements,
+            pickupLocation = "$pickupCity, $pickupCountry",
+            deliveryLocation = "$deliveryCity, $deliveryCountry",
+            pickupCoordinates = null, // Not provided in available packages
+            deliveryCoordinates = null, // Not provided in available packages
+            preferredPickupDate = pickupDatePreferred,
+            preferredPickupTime = null,
+            preferredDeliveryDate = deliveryDateNeeded,
+            packageSize = PackageSize.fromPackageType(packageType),
+            packageWeight = packageWeightKg.toDoubleOrNull(),
+            packageValue = null, // Not provided in available packages
+            isFragile = fragile,
+            specialInstructions = specialHandlingRequirements,
+            maxBudget = maxPriceBudget.toDoubleOrNull(),
+            status = PackageRequestStatus.PENDING, // Available packages are by default pending
+            createdAt = createdAt,
+            updatedAt = createdAt, // Use created_at as fallback since updated_at not provided
+            shipper = shipper.toUser(),
+            compatibleTripsCount = null
+        )
+    }
+}
+
+/**
  * Package request model representing a delivery request
  * Mirrors iOS PackageRequest model structure
  */
@@ -102,13 +207,19 @@ data class PackageRequestApiData(
     val deliveryDateNeeded: String,
     @SerialName("special_handling_requirements")
     val specialHandlingRequirements: String? = null,
+    @SerialName("volume_liters")
+    val volumeLiters: Double? = null,
+    @SerialName("days_since_posted")
+    val daysSincePosted: Double? = null,
+    @SerialName("urgency_display")
+    val urgencyDisplay: String? = null,
     @SerialName("request_status")
     val requestStatus: String,
     @SerialName("created_at")
     val createdAt: String,
     @SerialName("updated_at")
     val updatedAt: String,
-    val shipper: User? = null
+    val shipper: PackageShipper? = null
 ) {
     /**
      * Convert backend API response to UI model
@@ -139,7 +250,7 @@ data class PackageRequestApiData(
             status = PackageRequestStatus.fromString(requestStatus),
             createdAt = createdAt,
             updatedAt = updatedAt,
-            shipper = shipper
+            shipper = shipper?.toUser()
         )
     }
 }
@@ -521,11 +632,21 @@ data class PackageRequestsResponse(
 )
 
 /**
- * Compatible trips response model
+ * Available packages response model for /api/packages/available endpoint
+ */
+@Serializable
+data class AvailablePackagesResponse(
+    val success: Boolean = true,
+    val message: String,
+    val data: PaginatedResponse<AvailablePackageApiData>
+)
+
+/**
+ * Compatible trips response model - uses paginated structure
  */
 @Serializable
 data class CompatibleTripsResponse(
     val success: Boolean = true,
     val message: String,
-    val data: List<CompatibleTrip>
+    val data: PaginatedResponse<CompatibleTrip>
 ) 

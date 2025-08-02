@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.data.repository
 
+import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.catch
@@ -168,6 +169,32 @@ class TripRepositoryImpl(
         emit(Result.Failure(AppError.NotFoundError(exception.message ?: "Failed to update trip status")))
     }
     
+    override suspend fun cancelTrip(tripId: Int): Flow<Result<Trip>> = flow {
+        emit(resultOf {
+            try {
+                Log.d(TAG, "🚫 Cancelling trip with ID: $tripId using DELETE endpoint")
+                
+                // Get trip first to return cancelled version
+                val tripResponse = apiService.getTrip(tripId)
+                val trip = tripResponse.data
+                
+                // Cancel trip using DELETE endpoint
+                apiService.deleteTrip(tripId)
+                
+                // Return the trip with cancelled status for UI updates
+                val cancelledTrip = trip.cancel()
+                Log.d(TAG, "✅ Trip cancelled successfully - ID: $tripId, Status: ${cancelledTrip.tripStatus}")
+                println("✅ Trip cancelled successfully: $tripId")
+                cancelledTrip
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Exception while cancelling trip: ${e.message}", e)
+                throw Exception("Failed to cancel trip: ${e.message}")
+            }
+        })
+    }.catch { exception ->
+        emit(Result.Failure(AppError.NetworkError(exception.message ?: "Failed to cancel trip")))
+    }
+    
     override suspend fun deleteTrip(tripId: Int): Flow<Result<Unit>> = flow {
         emit(resultOf {
             try {
@@ -219,7 +246,7 @@ class TripRepositoryImpl(
      * Get available trips from the API
      * Used for shipper browse functionality to show trips available for booking
      */
-    suspend fun getAvailableTrips(page: Int = 1): Flow<Result<List<Trip>>> = flow {
+    override suspend fun getAvailableTrips(page: Int): Flow<Result<List<Trip>>> = flow {
         emit(resultOf {
             println("🌐 Calling API: GET ${APIService.BASE_URL}/api/trips/available?page=$page")
             try {

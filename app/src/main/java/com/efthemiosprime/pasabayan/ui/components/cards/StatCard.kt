@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.ui.components.cards
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -116,12 +117,14 @@ fun StatItem(
     value: String,
     icon: ImageVector,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     androidx.compose.material3.Surface(
         modifier = modifier
             .fillMaxWidth()
-            .wrapContentHeight(),
+            .wrapContentHeight()
+            .let { if (onClick != null) it.clickable { onClick() } else it },
         shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.card),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
         shadowElevation = 0.dp, // Explicitly no elevation

@@ -18,33 +18,38 @@ import com.efthemiosprime.pasabayan.data.model.UserRole
 import com.efthemiosprime.pasabayan.presentation.viewmodel.AuthViewModel
 import com.efthemiosprime.pasabayan.presentation.viewmodel.CarrierViewModel
 import com.efthemiosprime.pasabayan.presentation.viewmodel.RoleViewModel
-import com.efthemiosprime.pasabayan.ui.screens.analytics.AnalyticsScreen
-import com.efthemiosprime.pasabayan.ui.screens.dashboard.BrowseTabContent
+
+
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.PackagesOrTripsTabContent
 import com.efthemiosprime.pasabayan.ui.screens.profile.ProfileScreen
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.TabNavigationLayout
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.TabNavigationConfig
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.TabItem
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.home.CarrierHomeContent
+import com.efthemiosprime.pasabayan.ui.screens.carrier.CarrierRequestsScreen
+import com.efthemiosprime.pasabayan.ui.screens.carrier.BrowsePackagesView
+import com.efthemiosprime.pasabayan.ui.screens.dashboard.CarrierMatchesScreen
+import com.efthemiosprime.pasabayan.presentation.viewmodel.MatchViewModel
 
 /**
  * Carrier Dashboard Content - Mirrors iOS CarrierDashboard (70 lines)
  * Tab navigation layout for carrier role with "More" tab system
- * Visible: Home, Analytics, Trips, Matches, More
+ * Visible: Home, Trips, Browse, Matches, More
  * Hidden under More: Earnings, Profile
  */
 @Composable
 fun CarrierDashboardContent(
     viewModel: CarrierViewModel,
     authViewModel: AuthViewModel,
-    roleViewModel: RoleViewModel
+    roleViewModel: RoleViewModel,
+    matchViewModel: MatchViewModel = viewModel()
 ) {
     val config = TabNavigationConfig(
         visibleTabs = listOf(
             TabItem("Home", painterResource(id = R.drawable.home_24)) { CarrierHomeContent(viewModel, authViewModel, roleViewModel) },
-            TabItem("Analytics", painterResource(id = R.drawable.analysis)) { AnalyticsScreen() },
             TabItem("Trips", painterResource(id = R.drawable.traveling_24)) { PackagesOrTripsTabContent(currentRole = UserRole.CARRIER) },
-            TabItem("Matches", painterResource(id = R.drawable.browse)) { BrowseTabContent(currentRole = UserRole.CARRIER, authViewModel = authViewModel) }
+            TabItem("Browse", painterResource(id = R.drawable.browse)) { BrowsePackagesView() },
+            TabItem("Matches", painterResource(id = R.drawable.browse)) { CarrierMatchesScreen(matchViewModel = matchViewModel) }
         ),
         moreTabs = listOf(
             TabItem("Earnings", painterResource(id = R.drawable.revenue)) { EarningsTabContent() },

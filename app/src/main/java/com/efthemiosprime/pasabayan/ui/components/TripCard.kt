@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -17,8 +18,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.data.model.Trip
+import com.efthemiosprime.pasabayan.data.model.TripStatus
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
+import com.efthemiosprime.pasabayan.ui.components.TripStatusBadge
+import com.efthemiosprime.pasabayan.ui.components.BadgeVariant
 
 /**
  * TripCard component exactly matching iOS TripCard.swift
@@ -31,11 +35,19 @@ fun TripCard(
     onTap: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    val isCancelled = trip.tripStatus == TripStatus.CANCELLED
+    val cardBackgroundColor = if (isCancelled) {
+        Color(0xFFF5F5F5) // Light gray background for cancelled trips
+    } else {
+        Color.White
+    }
+    val contentAlpha = if (isCancelled) 0.6f else 1.0f
+    
     Card(
         modifier = modifier
             .fillMaxWidth()
             .shadow(
-                elevation = 2.dp,
+                elevation = if (isCancelled) 1.dp else 2.dp, // Reduced elevation for cancelled trips
                 shape = RoundedCornerShape(12.dp),
                 ambientColor = Color.Black.copy(alpha = 0.1f),
                 spotColor = Color.Black.copy(alpha = 0.1f)
@@ -44,14 +56,15 @@ fun TripCard(
             .clickable { onTap?.invoke() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = cardBackgroundColor
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(16.dp)
+                .alpha(contentAlpha), // Apply alpha for cancelled trips
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Header with route and status

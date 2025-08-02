@@ -74,6 +74,7 @@ import com.efthemiosprime.pasabayan.presentation.viewmodel.AuthViewModel
 import com.efthemiosprime.pasabayan.ui.components.TripCard
 import com.efthemiosprime.pasabayan.ui.components.packages.PackageRequestCard
 import com.efthemiosprime.pasabayan.ui.screens.carrier.TripCreationScreen
+import com.efthemiosprime.pasabayan.ui.screens.trip.TripDetailScreen
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -360,6 +361,7 @@ private fun CarrierTripsTabContent(
 ) {
     var selectedFilter by remember { mutableStateOf<TripStatus?>(null) }
     var showCreateTripScreen by remember { mutableStateOf(false) }
+    var selectedTripForDetails: Trip? by remember { mutableStateOf(null) }
     val context = LocalContext.current
     val tripRepository = remember { TripRepositoryImpl.create(context) }
     var trips by remember { mutableStateOf<List<Trip>>(emptyList()) }
@@ -398,6 +400,70 @@ private fun CarrierTripsTabContent(
         return
     }
     
+    // Show trip detail screen if a trip is selected
+    selectedTripForDetails?.let { trip ->
+        TripDetailScreen(
+            trip = trip,
+            onNavigateBack = { 
+                selectedTripForDetails = null
+                // Refresh trips list after coming back from details
+                scope.launch {
+                    isLoading = true
+                    try {
+                        tripRepository.getTripsForCarrier(1).collect { result ->
+                            result.fold(
+                                onSuccess = { tripList ->
+                                    trips = tripList
+                                    isLoading = false
+                                },
+                                onFailure = { error ->
+                                    errorMessage = error.message ?: "Failed to refresh trips"
+                                    isLoading = false
+                                }
+                            )
+                        }
+                    } catch (e: Exception) {
+                        errorMessage = e.message ?: "Failed to refresh trips"
+                        isLoading = false
+                    }
+                }
+            },
+            onCancelTrip = { tripToCancel ->
+                println("🚫 Starting trip cancellation for ID: ${tripToCancel.id}")
+                selectedTripForDetails = null
+                scope.launch {
+                    isLoading = true
+                    errorMessage = null
+                    try {
+                        // Call the actual cancel trip API
+                        tripRepository.cancelTrip(tripToCancel.id).collect { result ->
+                            result.fold(
+                                onSuccess = { cancelledTrip ->
+                                    println("✅ Trip cancelled successfully: ${cancelledTrip.id}")
+                                    // Update the trip in our local list
+                                    trips = trips.map { trip ->
+                                        if (trip.id == cancelledTrip.id) cancelledTrip else trip
+                                    }
+                                    isLoading = false
+                                },
+                                onFailure = { error ->
+                                    println("❌ Trip cancellation failed: ${error.message}")
+                                    errorMessage = "Failed to cancel trip: ${error.message}"
+                                    isLoading = false
+                                }
+                            )
+                        }
+                    } catch (e: Exception) {
+                        println("❌ Exception during trip cancellation: ${e.message}")
+                        errorMessage = "Failed to cancel trip: ${e.message}"
+                        isLoading = false
+                    }
+                }
+            }
+        )
+        return
+    }
+    
     // Load trips from real API
     LaunchedEffect(Unit) {
         scope.launch {
@@ -409,6 +475,11 @@ private fun CarrierTripsTabContent(
                     result.fold(
                         onSuccess = { tripList ->
                             trips = tripList
+                            println("🔧 DEBUG: Loaded ${tripList.size} trips for carrier")
+                            tripList.forEach { trip ->
+                                println("🔧 DEBUG: Trip ID: ${trip.id}, Status: ${trip.tripStatus}, Route: ${trip.route}")
+                                println("🔧 DEBUG: Cancel button would show for trip ${trip.id}: ${trip.tripStatus in listOf(TripStatus.PLANNING, TripStatus.SCHEDULED)}")
+                            }
                             isLoading = false
                         },
                         onFailure = { error ->
@@ -599,7 +670,11 @@ private fun CarrierTripsTabContent(
                 items(filteredTrips) { trip ->
                     TripCard(
                         trip = trip,
-                        onTap = { /* Handle trip tap */ }
+                        onTap = { 
+                            println("🔧 DEBUG: Trip card clicked in CarrierTripsTabContent - ID: ${trip.id}, Route: ${trip.route}, Status: ${trip.tripStatus}")
+                            println("🔧 DEBUG: Trip cancel button should show: ${trip.tripStatus in listOf(TripStatus.PLANNING, TripStatus.SCHEDULED)}")
+                            selectedTripForDetails = trip
+                        }
                     )
                 }
             }

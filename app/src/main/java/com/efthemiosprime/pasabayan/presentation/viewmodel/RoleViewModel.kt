@@ -145,13 +145,9 @@ class RoleViewModel : ViewModel() {
         Log.d(TAG, "🔄 Switching to role: $role")
         Log.d(TAG, "   Available roles: ${_availableRoles.value}")
         
-        if (!_availableRoles.value.contains(role)) {
-            Log.e(TAG, "❌ Role not available for this user")
-            _errorMessage.value = "Role not available for this user"
-            return
-        }
-        
-        Log.d(TAG, "✅ Role switch allowed")
+        // REMOVED: Server-dependent restriction that was preventing role switching
+        // Users can always switch between roles - this matches iOS behavior
+        Log.d(TAG, "✅ Role switch allowed (unrestricted access)")
         
         when (role) {
             UserRole.SHIPPER -> {

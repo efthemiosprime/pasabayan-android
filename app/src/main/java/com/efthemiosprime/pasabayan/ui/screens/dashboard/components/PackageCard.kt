@@ -26,6 +26,7 @@ fun PackageCard(
     packageRequest: PackageRequest,
     onDetailsClick: () -> Unit,
     onFindCarriersClick: () -> Unit,
+    onViewMatchClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     PCardStandard(
@@ -104,23 +105,47 @@ fun PackageCard(
             }
             
             // Action Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.md)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.sm)
             ) {
-                OutlinedButton(
-                    onClick = onDetailsClick,
-                    modifier = Modifier.weight(1f)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.md)
                 ) {
-                    Text("View Details")
-                }
-                
-                if (packageRequest.status in listOf(PackageRequestStatus.PENDING, PackageRequestStatus.OPEN)) {
-                    Button(
-                        onClick = onFindCarriersClick,
+                    OutlinedButton(
+                        onClick = onDetailsClick,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Find Carriers")
+                        Text("View Details")
+                    }
+                    
+                    if (packageRequest.status in listOf(PackageRequestStatus.PENDING, PackageRequestStatus.OPEN)) {
+                        Button(
+                            onClick = {
+                                println("🔧 DEBUG: Find Carriers button clicked! Package ID: ${packageRequest.id}, Status: ${packageRequest.status}")
+                                onFindCarriersClick()
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Find Carriers")
+                        }
+                    } else {
+                        println("🔧 DEBUG: Find Carriers button NOT shown - Package status: ${packageRequest.status}")
+                    }
+                }
+                
+                // View match button when there are compatible trips
+                packageRequest.compatibleTripsCount?.let { count ->
+                    if (count > 0) {
+                        Button(
+                            onClick = onViewMatchClick,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            )
+                        ) {
+                            Text("View $count ${if (count == 1) "Match" else "Matches"}")
+                        }
                     }
                 }
             }

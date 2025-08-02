@@ -12,12 +12,28 @@ import com.efthemiosprime.pasabayan.data.model.CreatePackageRequest
 import com.efthemiosprime.pasabayan.data.model.CompatibleTrip
 import com.efthemiosprime.pasabayan.data.model.PackageRequestResponse
 import com.efthemiosprime.pasabayan.data.model.PackageRequestsResponse
+import com.efthemiosprime.pasabayan.data.model.AvailablePackagesResponse
 import com.efthemiosprime.pasabayan.data.model.CompatibleTripsResponse
 import com.efthemiosprime.pasabayan.data.model.CreatePackageRequestApi
 import com.efthemiosprime.pasabayan.data.model.Trip
 import com.efthemiosprime.pasabayan.data.model.TripResponse
 import com.efthemiosprime.pasabayan.data.model.TripsResponse
 import com.efthemiosprime.pasabayan.data.model.CreateTripRequestApi
+import com.efthemiosprime.pasabayan.data.model.DeliveryMatch
+import com.efthemiosprime.pasabayan.data.model.MatchCreationRequest
+import com.efthemiosprime.pasabayan.data.model.MatchUpdateRequest
+import com.efthemiosprime.pasabayan.data.model.DataResponse
+import com.efthemiosprime.pasabayan.data.model.EmptyResponse
+import com.efthemiosprime.pasabayan.data.model.PackageAcceptRequest
+import com.efthemiosprime.pasabayan.data.model.AcceptPackageRequest
+import com.efthemiosprime.pasabayan.data.model.AcceptPackageResponse
+import com.efthemiosprime.pasabayan.data.model.PackageAcceptResponse
+import com.efthemiosprime.pasabayan.data.model.PackageRejectRequest
+import com.efthemiosprime.pasabayan.data.model.PackageRejectResponse
+import com.efthemiosprime.pasabayan.data.model.RequestToCarryRequest
+import com.efthemiosprime.pasabayan.data.model.DirectBookingRequest
+import com.efthemiosprime.pasabayan.data.model.DirectBookingResponse
+import com.efthemiosprime.pasabayan.data.model.MatchesResponse
 
 /**
  * API Service interface for authentication endpoints
@@ -96,6 +112,20 @@ interface APIService {
     @GET("api/packages")
     suspend fun getPackageRequests(): PackageRequestsResponse
     
+    @GET("api/packages/available")
+    suspend fun getAvailablePackages(
+        @Query("page") page: Int = 1,
+        @Query("origin") origin: String? = null,
+        @Query("destination") destination: String? = null,
+        @Query("max_weight") maxWeight: Double? = null,
+        @Query("urgency") urgency: String? = null,
+        @Query("min_budget") minBudget: Double? = null,
+        @Query("max_budget") maxBudget: Double? = null,
+        @Query("fragile") fragile: Boolean? = null,
+        @Query("pickup_date_from") pickupDateFrom: String? = null,
+        @Query("pickup_date_to") pickupDateTo: String? = null
+    ): AvailablePackagesResponse
+    
     @POST("api/packages")
     suspend fun createPackageRequest(
         @Body request: CreatePackageRequestApi
@@ -159,9 +189,105 @@ interface APIService {
         @Query("page") page: Int = 1
     ): TripsResponse
     
+    /**
+     * Delivery Match Management - matching iOS delivery match functionality
+     */
+    @POST("api/matches")
+    suspend fun createMatch(
+        @Body request: MatchCreationRequest
+    ): DataResponse<DeliveryMatch>
+    
+    @POST("api/matches/{id}/confirm")
+    suspend fun confirmMatch(
+        @Path("id") matchId: Int
+    ): DataResponse<DeliveryMatch>
+    
+    @POST("api/matches/{id}/pickup")
+    suspend fun pickupMatch(
+        @Path("id") matchId: Int,
+        @Body updateRequest: MatchUpdateRequest?
+    ): DataResponse<DeliveryMatch>
+    
+    @POST("api/matches/{id}/transit")
+    suspend fun transitMatch(
+        @Path("id") matchId: Int
+    ): DataResponse<DeliveryMatch>
+    
+    @POST("api/matches/{id}/deliver")
+    suspend fun deliverMatch(
+        @Path("id") matchId: Int,
+        @Body updateRequest: MatchUpdateRequest?
+    ): DataResponse<DeliveryMatch>
+    
+    @POST("api/matches/{id}/cancel")
+    suspend fun cancelMatch(
+        @Path("id") matchId: Int
+    ): EmptyResponse
+    
+    @GET("api/trips/{id}/compatible-packages")
+    suspend fun getCompatiblePackages(
+        @Path("id") tripId: Int
+    ): PackageRequestsResponse
+    
+    @GET("api/matches")
+    suspend fun getCarrierMatches(
+        @Query("role") role: String = "carrier",
+        @Query("status") status: String? = null
+    ): MatchesResponse
+    
+    @GET("api/matches")
+    suspend fun getShipperMatches(
+        @Query("role") role: String = "shipper", 
+        @Query("status") status: String? = null
+    ): MatchesResponse
+    
+    @GET("api/matches")
+    suspend fun getAllMatches(
+        @Query("status") status: String? = null
+    ): MatchesResponse
+    
+    @POST("api/packages/{id}/accept")
+    suspend fun acceptPackageRequest(
+        @Path("id") packageId: Int,
+        @Body request: PackageAcceptRequest
+    ): PackageAcceptResponse
+    
+    @POST("api/packages/{id}/reject")
+    suspend fun rejectPackageRequest(
+        @Path("id") packageId: Int,
+        @Body request: PackageRejectRequest
+    ): PackageRejectResponse
+    
+    // Accept Package Request (Create Match) - New endpoint
+    @POST("api/trips/{trip_id}/packages/{package_id}/accept")
+    suspend fun acceptPackageForTrip(
+        @Path("trip_id") tripId: Int,
+        @Path("package_id") packageId: Int,
+        @Body request: AcceptPackageRequest
+    ): AcceptPackageResponse
+    
+    @POST("api/packages/{id}/request-to-carry")
+    suspend fun requestToCarryPackage(
+        @Path("id") packageId: Int,
+        @Body request: RequestToCarryRequest
+    ): DataResponse<DeliveryMatch>
+    
+    /**
+     * Direct Trip Booking - matching iOS functionality
+     */
+    @POST("api/trips/{id}/book")
+    suspend fun bookTripDirectly(
+        @Path("id") tripId: String,
+        @Body request: DirectBookingRequest
+    ): DirectBookingResponse
+    
     companion object {
-        // Base URL for testing - using localhost:8001
-        // const val BASE_URL = "http://10.0.2.2:8001"
-        const val BASE_URL = "https://api.pasabayan.com" // Production URL
+        // URLs for different environments - mirrors iOS APIService
+        const val PRODUCTION_URL = "https://api.pasabayan.com"
+        const val LOCAL_URL = "http://localhost:8001"
+        const val LOCAL_DEVICE_URL = "http://10.0.2.2:8001" // Android emulator localhost
+        
+        // Current base URL - switch between environments
+        const val BASE_URL = PRODUCTION_URL
     }
 } 

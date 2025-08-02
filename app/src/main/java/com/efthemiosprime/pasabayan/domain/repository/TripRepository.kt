@@ -49,6 +49,11 @@ interface TripRepository {
     suspend fun updateTripStatus(tripId: Int, status: TripStatus): Flow<Result<Trip>>
     
     /**
+     * Cancel trip (convenience method for status update)
+     */
+    suspend fun cancelTrip(tripId: Int): Flow<Result<Trip>>
+    
+    /**
      * Delete trip (functional)
      */
     suspend fun deleteTrip(tripId: Int): Flow<Result<Unit>>
@@ -67,6 +72,11 @@ interface TripRepository {
      * Validate trip data (pure function)
      */
     fun validateTrip(trip: Trip): Result<Trip>
+    
+    /**
+     * Get available trips (pure function)
+     */
+    suspend fun getAvailableTrips(page: Int = 1): Flow<Result<List<Trip>>>
     
     /**
      * Check if trip can accept booking (pure function)

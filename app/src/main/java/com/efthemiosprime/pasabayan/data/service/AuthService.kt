@@ -178,7 +178,7 @@ class AuthService(private val context: Context) {
     /**
      * Create Retrofit API service
      */
-    private fun createApiService(): APIService {
+    fun createApiService(): APIService {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
@@ -607,77 +607,15 @@ class AuthService(private val context: Context) {
     }
     
     /**
-     * Mock login for development/testing
-     * Mirrors iOS mockLogin method
+     * REMOVED: Mock login disabled to enforce real authentication
+     * Use Google OAuth, Facebook login, or phone verification instead
      */
+    @Deprecated("Mock login removed - use real authentication methods only", ReplaceWith(""))
     suspend fun mockLogin(): Result<AuthResponse> = withContext(Dispatchers.IO) {
-        return@withContext try {
-            Log.d(TAG, "🧪 Performing mock login")
-            
-            val mockUser = User(
-                id = 1,
-                name = "Test User Android",
-                email = "android.test@example.com",
-                avatar = null,
-                phone = "+63 123 456 7890",
-                phoneVerified = true,
-                profileCompleted = true,
-                provider = "mock",
-                providerId = "mock_android_123",
-                emailVerifiedAt = null,
-                createdAt = "2024-01-01T00:00:00Z",
-                updatedAt = "2024-01-01T00:00:00Z",
-                userTypes = listOf("shipper"),
-                isActiveCarrier = false,
-                isActiveShipper = true,
-                rating = 4.5,
-                totalRatings = 10,
-                verificationLevel = "basic"
-            )
-            
-            val mockProfile = UserProfile(
-                id = 1,
-                userId = 1,
-                profilePicture = null,
-                address = "123 Test Street, Metro Manila",
-                dateOfBirth = null,
-                gender = null,
-                emergencyContactName = "Emergency Contact",
-                emergencyContactPhone = "+63 987 654 3210",
-                preferredLanguage = "en",
-                notificationSettings = null,
-                createdAt = "2024-01-01T00:00:00Z",
-                updatedAt = "2024-01-01T00:00:00Z"
-            )
-            
-            val authResponse = AuthResponse(
-                success = true,
-                message = "Mock login successful",
-                data = AuthData(
-                    token = "mock_android_token_123",
-                    user = mockUser,
-                    tokenType = "Bearer"
-                )
-            )
-            
-            // Save mock data
-            saveToken(authResponse.data.token)
-            saveUser(authResponse.data.user)
-            
-            _isAuthenticated.value = true
-            _currentUser.value = authResponse.data.user
-            _isLoading.value = false
-            _error.value = null
-            
-            Log.d(TAG, "Mock login successful")
-            Result.success(authResponse)
-            
-        } catch (e: Exception) {
-            _isLoading.value = false
-            _error.value = e.message
-            Log.e(TAG, "Mock login failed: ${e.message}", e)
-            Result.failure(e)
-        }
+        Log.w(TAG, "❌ Mock login disabled - use real authentication")
+        return@withContext Result.failure(
+            UnsupportedOperationException("Mock login disabled - use real authentication methods (Google, Facebook, Phone)")
+        )
     }
     
     /**
@@ -688,6 +626,55 @@ class AuthService(private val context: Context) {
         return facebookCallbackManager
     }
 
+    /**
+     * Debug token status for testing
+     * Returns a map with token information
+     */
+    suspend fun debugTokenStatus(): Map<String, Any> = withContext(Dispatchers.IO) {
+        val results = mutableMapOf<String, Any>()
+        
+        try {
+            val token = getToken()
+            results["hasToken"] = token != null
+            if (token != null) {
+                results["tokenLength"] = token.length
+                results["tokenPrefix"] = token.take(20)
+                results["tokenSuffix"] = token.takeLast(20)
+            }
+            
+            val user = getCurrentUser()
+            results["hasUser"] = user != null
+            if (user != null) {
+                results["userId"] = user.id
+                results["userEmail"] = user.email
+                results["userProvider"] = user.provider ?: "unknown"
+            }
+            
+            results["isAuthenticated"] = _isAuthenticated.value
+            results["isLoading"] = _isLoading.value
+            results["hasError"] = _error.value != null
+            
+        } catch (e: Exception) {
+            results["debugError"] = e.message ?: "Unknown error"
+        }
+        
+        return@withContext results
+    }
+    
+    /**
+     * Test API connectivity
+     * Returns a Result indicating if the API is accessible
+     */
+    suspend fun testApiConnectivity(): Result<String> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            // Test a simple endpoint to check connectivity
+            val response = apiService.getCurrentUser()
+            Result.success("API connectivity successful")
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
     /**
      * Debug authentication state
      * Comprehensive method to check what's happening with authentication

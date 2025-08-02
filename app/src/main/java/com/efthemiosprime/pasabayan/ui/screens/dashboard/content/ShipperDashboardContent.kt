@@ -18,8 +18,7 @@ import com.efthemiosprime.pasabayan.data.repository.PackageRepositoryImpl
 import com.efthemiosprime.pasabayan.presentation.viewmodel.AuthViewModel
 import com.efthemiosprime.pasabayan.presentation.viewmodel.RoleViewModel
 import com.efthemiosprime.pasabayan.presentation.viewmodel.ShipperViewModel
-import com.efthemiosprime.pasabayan.ui.screens.analytics.AnalyticsScreen
-import com.efthemiosprime.pasabayan.ui.screens.dashboard.BrowseTabContent
+
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.CreateTabContent
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.ShipperPackagesScreen
 import com.efthemiosprime.pasabayan.ui.screens.packagerequest.DeliveryRequestScreen
@@ -29,11 +28,12 @@ import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.TabNavigatio
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.TabNavigationConfig
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.TabItem
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.home.ShipperHomeContent
+import com.efthemiosprime.pasabayan.ui.screens.trip.BrowseTripsView
 
 /**
  * Shipper Dashboard Content - Mirrors iOS ShipperDashboard (70 lines)
  * Tab navigation layout for shipper role with "More" tab system
- * Visible: Home, Analytics, Browse, Packages, More
+ * Visible: Home, Packages, Browse (trips compatible with packages), More
  * Hidden under More: Create, Profile
  */
 @Composable
@@ -69,12 +69,6 @@ fun ShipperDashboardContent(
                 TabItem("Home", painterResource(id = R.drawable.home_24)) { 
                     ShipperHomeContent(viewModel, authViewModel, roleViewModel) 
                 },
-                TabItem("Analytics", painterResource(id = R.drawable.analysis)) { 
-                    AnalyticsScreen() 
-                },
-                TabItem("Browse", painterResource(id = R.drawable.browse)) { 
-                    BrowseTabContent(currentRole = UserRole.SHIPPER, authViewModel = authViewModel) 
-                },
                 TabItem("Packages", painterResource(id = R.drawable.traveling_24)) { 
                     ShipperPackagesScreen(
                         packageViewModel = viewModel.packageViewModel,
@@ -85,6 +79,9 @@ fun ShipperDashboardContent(
                             // Navigation handled internally by ShipperPackagesScreen
                         }
                     ) 
+                },
+                TabItem("Browse", painterResource(id = R.drawable.browse)) { 
+                    BrowseTripsView(packageViewModel = viewModel.packageViewModel, authViewModel = authViewModel) 
                 }
             ),
             moreTabs = listOf(

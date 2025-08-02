@@ -21,6 +21,8 @@ import com.efthemiosprime.pasabayan.presentation.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.ui.shared.ScreenContainer
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.PackageCard
 import com.efthemiosprime.pasabayan.ui.screens.packagedetail.PackageDetailScreen
+import com.efthemiosprime.pasabayan.ui.screens.findcarriers.FindCarriersScreen
+import com.efthemiosprime.pasabayan.ui.screens.match.ViewMatchScreen
 
 /**
  * My Packages Screen - matches the carrier "My Trips" design from iOS
@@ -43,6 +45,12 @@ fun ShipperPackagesScreen(
     // State for navigation to package detail screen
     var selectedPackageForDetails by remember { mutableStateOf<PackageRequest?>(null) }
     
+    // State for navigation to find carriers screen
+    var selectedPackageForCarriers by remember { mutableStateOf<PackageRequest?>(null) }
+    
+    // State for navigation to view match screen
+    var selectedPackageForMatches by remember { mutableStateOf<PackageRequest?>(null) }
+    
     // Show package detail screen if a package is selected
     selectedPackageForDetails?.let { packageRequest ->
         PackageDetailScreen(
@@ -50,6 +58,36 @@ fun ShipperPackagesScreen(
             onNavigateBack = { 
                 selectedPackageForDetails = null
                 // Refresh packages list after coming back from details
+                packageViewModel.loadPackageRequests()
+            }
+        )
+        return
+    }
+    
+    // Show find carriers screen if a package is selected
+    selectedPackageForCarriers?.let { packageRequest ->
+        println("🔧 DEBUG: Showing FindCarriersScreen for package ID: ${packageRequest.id}")
+        FindCarriersScreen(
+            packageRequest = packageRequest,
+            onNavigateBack = {
+                println("🔧 DEBUG: Navigating back from FindCarriersScreen")
+                selectedPackageForCarriers = null
+                // Refresh packages to update compatible trips count
+                packageViewModel.loadPackageRequests()
+            }
+        )
+        return
+    }
+    
+    // Show view match screen if a package is selected
+    selectedPackageForMatches?.let { packageRequest ->
+        println("🔧 DEBUG: Showing ViewMatchScreen for package ID: ${packageRequest.id}")
+        ViewMatchScreen(
+            packageRequest = packageRequest,
+            onNavigateBack = {
+                println("🔧 DEBUG: Navigating back from ViewMatchScreen")
+                selectedPackageForMatches = null
+                // Refresh packages to update match status
                 packageViewModel.loadPackageRequests()
             }
         )
@@ -174,7 +212,12 @@ fun ShipperPackagesScreen(
                             selectedPackageForDetails = packageRequest
                         },
                         onFindCarriersClick = { 
-                            // TODO: Navigate to carrier search
+                            println("🔧 DEBUG: Find Carriers clicked for package ID: ${packageRequest.id}")
+                            selectedPackageForCarriers = packageRequest
+                        },
+                        onViewMatchClick = {
+                            println("🔧 DEBUG: View Match clicked for package ID: ${packageRequest.id}")
+                            selectedPackageForMatches = packageRequest
                         }
                     )
                 }
