@@ -8,7 +8,8 @@ import com.efthemiosprime.pasabayan.data.common.validate
 
 /**
  * User model representing the authenticated user
- * Mirrors iOS User model structure
+ * Exactly matching iOS User model structure and behavior
+ * Follows functional programming principles with immutable data and pure functions
  */
 @Serializable
 data class User(
@@ -27,9 +28,9 @@ data class User(
     @SerialName("email_verified_at")
     val emailVerifiedAt: String? = null,
     @SerialName("created_at")
-    val createdAt: String? = null,
+    val createdAt: String = "",
     @SerialName("updated_at")
-    val updatedAt: String? = null,
+    val updatedAt: String = "",
     @SerialName("user_types")
     val userTypes: List<String> = emptyList(),
     @SerialName("is_active_carrier")
@@ -40,125 +41,128 @@ data class User(
     @SerialName("total_ratings")
     val totalRatings: Int = 0,
     @SerialName("verification_level")
-    val verificationLevel: String = "unverified"
+    val verificationLevel: String = "basic"
 ) {
     
+    // MARK: - Pure Computed Properties (exactly matching iOS)
+    
     /**
-     * Get user initials for avatar display
+     * Display name derived from name or email (iOS: displayName)
+     */
+    val displayName: String
+        get() = if (name.isEmpty()) extractNameFromEmail(email) else name
+    
+    /**
+     * Get user initials for avatar display (iOS: initials)
      */
     val initials: String
-        get() = name.split(" ")
-            .mapNotNull { it.firstOrNull()?.toString() }
-            .take(2)
-            .joinToString("")
-            .uppercase()
+        get() = computeInitials(name)
     
     /**
-     * Check if phone is verified
+     * Phone verification status (iOS: isPhoneVerified)
      */
     val isPhoneVerified: Boolean
-        get() = phoneVerified
+        get() = phoneVerified && phone != null && phone.isNotEmpty()
     
     /**
-     * Check if profile is complete
+     * Profile completion status (iOS: isProfileComplete)
      */
     val isProfileComplete: Boolean
         get() = profileCompleted
     
     /**
-     * Check if user has carrier role
+     * Available user roles (iOS: availableRoles)
+     */
+    val availableRoles: List<UserRole>
+        get() = userTypes.mapNotNull { UserRole.fromString(it) }
+    
+    /**
+     * Carrier role status (iOS: isCarrier)
      */
     val isCarrier: Boolean
         get() = userTypes.contains("carrier")
     
     /**
-     * Check if user has shipper role
+     * Shipper role status (iOS: isShipper)
      */
     val isShipper: Boolean
         get() = userTypes.contains("shipper")
     
     /**
-     * Check if user has both roles
+     * Multi-role capability (iOS: hasBothRoles)
      */
     val hasBothRoles: Boolean
         get() = isCarrier && isShipper
     
     /**
-     * Get available user roles
-     */
-    val availableRoles: List<UserRole>
-        get() = buildList {
-            if (isShipper) add(UserRole.SHIPPER)
-            if (isCarrier) add(UserRole.CARRIER)
-        }
-    
-    /**
-     * Get formatted rating display string
+     * Formatted rating display (iOS: displayRating)
      */
     val displayRating: String
-        get() = if (rating != null && totalRatings > 0) {
-            "%.1f ⭐ (%d reviews)".format(rating, totalRatings)
-        } else {
-            "0"
-        }
-    
-    // MARK: - Functional Update Methods (Immutable)
+        get() = formatRating(rating, totalRatings)
     
     /**
-     * Update user name functionally
+     * User verification level enum (iOS: verificationLevelEnum)
      */
-    fun updateName(newName: String): User = copy(name = newName)
+    val verificationLevelEnum: VerificationLevel
+        get() = VerificationLevel.fromString(verificationLevel)
     
     /**
-     * Update user email functionally
+     * Account age in days (iOS: accountAgeInDays)
      */
-    fun updateEmail(newEmail: String): User = copy(email = newEmail)
+    val accountAgeInDays: Int
+        get() = calculateAccountAge(createdAt)
+    
+    // MARK: - Functional Update Methods (exactly matching iOS)
     
     /**
-     * Update phone number functionally
+     * Create a new User instance with updated name (iOS: updatingName)
      */
-    fun updatePhone(newPhone: String): User = copy(phone = newPhone)
+    fun updatingName(newName: String): User = copy(
+        name = newName,
+        updatedAt = getCurrentTimestamp()
+    )
     
     /**
-     * Mark phone as verified functionally
+     * Create a new User instance with updated phone verification (iOS: updatingPhoneVerification)
      */
-    fun markPhoneVerified(): User = copy(phoneVerified = true)
+    fun updatingPhoneVerification(phone: String, verified: Boolean): User = copy(
+        phone = phone,
+        phoneVerified = verified,
+        updatedAt = getCurrentTimestamp()
+    )
     
     /**
-     * Mark profile as completed functionally
+     * Create a new User instance with updated profile completion (iOS: updatingProfileCompletion)
      */
-    fun markProfileCompleted(): User = copy(profileCompleted = true)
+    fun updatingProfileCompletion(isCompleted: Boolean): User = copy(
+        profileCompleted = isCompleted,
+        updatedAt = getCurrentTimestamp()
+    )
     
     /**
-     * Update user types functionally
+     * Create a new User instance with updated roles (iOS: updatingRoles)
      */
-    fun updateUserTypes(newUserTypes: List<String>): User = copy(userTypes = newUserTypes)
+    fun updatingRoles(carrier: Boolean, shipper: Boolean): User {
+        val newUserTypes = mutableListOf<String>()
+        if (shipper) newUserTypes.add("shipper")
+        if (carrier) newUserTypes.add("carrier")
+        
+        return copy(
+            userTypes = newUserTypes,
+            isActiveCarrier = carrier,
+            isActiveShipper = shipper,
+            updatedAt = getCurrentTimestamp()
+        )
+    }
     
     /**
-     * Add user type functionally
+     * Create a new User instance with updated rating (iOS: updatingRating)
      */
-    fun addUserType(userType: String): User = copy(userTypes = userTypes + userType)
-    
-    /**
-     * Remove user type functionally
-     */
-    fun removeUserType(userType: String): User = copy(userTypes = userTypes - userType)
-    
-    /**
-     * Update carrier status functionally
-     */
-    fun updateCarrierStatus(isActive: Boolean): User = copy(isActiveCarrier = isActive)
-    
-    /**
-     * Update shipper status functionally
-     */
-    fun updateShipperStatus(isActive: Boolean): User = copy(isActiveShipper = isActive)
-    
-    /**
-     * Update rating functionally
-     */
-    fun updateRating(newRating: Double, newTotalRatings: Int): User = 
-        copy(rating = newRating, totalRatings = newTotalRatings)
+    fun updatingRating(newRating: Double, newTotalRatings: Int): User = copy(
+        rating = newRating,
+        totalRatings = newTotalRatings,
+        updatedAt = getCurrentTimestamp()
+    )
     
     // MARK: - Validation Methods (Pure Functions)
     
@@ -196,14 +200,14 @@ data class User(
             provider = null,
             providerId = null,
             emailVerifiedAt = null,
-            createdAt = null,
-            updatedAt = null,
+            createdAt = "",
+            updatedAt = "",
             userTypes = emptyList(),
             isActiveCarrier = false,
             isActiveShipper = false,
             rating = null,
             totalRatings = 0,
-            verificationLevel = "unverified"
+            verificationLevel = "basic"
         )
     }
 }
@@ -399,11 +403,70 @@ data class PhoneVerificationStatus(
 )
 
 /**
- * User role enumeration
+ * User role enumeration - exactly matching iOS UserRole enum
  */
-enum class UserRole {
-    SHIPPER,
-    CARRIER
+enum class UserRole(val rawValue: String) {
+    SHIPPER("shipper"),
+    CARRIER("carrier");
+    
+    val displayName: String
+        get() = when (this) {
+            SHIPPER -> "Shipper"
+            CARRIER -> "Carrier"
+        }
+    
+    val icon: String
+        get() = when (this) {
+            SHIPPER -> "shop"
+            CARRIER -> "courier"
+        }
+    
+    val description: String
+        get() = when (this) {
+            SHIPPER -> "Send packages with Carriers"
+            CARRIER -> "Deliver packages while traveling"
+        }
+    
+    val capabilities: List<String>
+        get() = when (this) {
+            SHIPPER -> listOf("Create package requests", "Track deliveries", "Rate carriers")
+            CARRIER -> listOf("Create trips", "Accept packages", "Earn money")
+        }
+    
+    companion object {
+        fun fromString(value: String): UserRole? {
+            return values().find { it.rawValue == value }
+        }
+    }
+}
+
+/**
+ * Verification Level Enum - exactly matching iOS VerificationLevel enum
+ */
+enum class VerificationLevel(val rawValue: String) {
+    BASIC("basic"),
+    VERIFIED("verified"),
+    PREMIUM("premium");
+    
+    val displayName: String
+        get() = when (this) {
+            BASIC -> "Basic"
+            VERIFIED -> "Verified"
+            PREMIUM -> "Premium"
+        }
+    
+    val trustScore: Int
+        get() = when (this) {
+            BASIC -> 1
+            VERIFIED -> 3
+            PREMIUM -> 5
+        }
+    
+    companion object {
+        fun fromString(value: String): VerificationLevel {
+            return values().find { it.rawValue == value } ?: BASIC
+        }
+    }
 }
 
 /**
@@ -423,4 +486,60 @@ data class UserDataResponse(
 @Serializable
 data class UserData(
     val user: User
-) 
+)
+
+// MARK: - Pure Helper Functions (exactly matching iOS)
+
+/**
+ * Extract name from email address
+ */
+private fun extractNameFromEmail(email: String): String {
+    return email.substringBefore("@").ifEmpty { "User" }
+}
+
+/**
+ * Compute user initials from full name
+ */
+private fun computeInitials(name: String): String {
+    return name.split(" ")
+        .mapNotNull { it.firstOrNull()?.toString() }
+        .take(2)
+        .joinToString("")
+        .uppercase()
+}
+
+/**
+ * Format rating for display
+ */
+private fun formatRating(rating: Double?, totalRatings: Int): String {
+    return if (rating != null && totalRatings > 0) {
+        String.format("%.1f ⭐ (%d reviews)", rating, totalRatings)
+    } else {
+        "No ratings yet"
+    }
+}
+
+/**
+ * Calculate account age in days
+ */
+private fun calculateAccountAge(dateString: String): Int {
+    if (dateString.isEmpty()) return 0
+    
+    return try {
+        val formatter = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.getDefault())
+        val createdDate = formatter.parse(dateString) ?: return 0
+        val diffInMs = System.currentTimeMillis() - createdDate.time
+        (diffInMs / (1000 * 60 * 60 * 24)).toInt()
+    } catch (e: Exception) {
+        0
+    }
+}
+
+/**
+ * Get current timestamp in ISO format
+ */
+private fun getCurrentTimestamp(): String {
+    val formatter = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.getDefault())
+    formatter.timeZone = java.util.TimeZone.getTimeZone("UTC")
+    return formatter.format(java.util.Date())
+} 

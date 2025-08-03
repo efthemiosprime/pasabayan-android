@@ -51,6 +51,8 @@ data class DeviceInfo(
     val osVersion: String? = null
 )
 
+
+
 /**
  * API Error model for error responses
  */

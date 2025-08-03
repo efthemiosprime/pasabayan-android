@@ -85,4 +85,24 @@ interface DeliveryMatchRepository {
      * Reactive Flow for shipper matches
      */
     fun getShipperMatchesFlow(): Flow<Result<PaginatedResponse<DeliveryMatch>>>
+    
+    /**
+     * Carrier accepts shipper request (iOS: acceptShipperRequest)
+     */
+    suspend fun acceptShipperRequest(matchId: Int, message: String): Result<DeliveryMatch>
+    
+    /**
+     * Carrier declines shipper request (iOS: declineShipperRequest)
+     */
+    suspend fun declineShipperRequest(matchId: Int, reason: String, message: String): Result<DeliveryMatch>
+    
+    /**
+     * Shipper accepts carrier request (iOS: acceptCarrierRequest)
+     */
+    suspend fun acceptCarrierRequest(matchId: Int, message: String?): Result<DeliveryMatch>
+    
+    /**
+     * Shipper declines carrier request (iOS: declineCarrierRequest)
+     */
+    suspend fun declineCarrierRequest(matchId: Int, reason: String?, message: String?): Result<DeliveryMatch>
 } 

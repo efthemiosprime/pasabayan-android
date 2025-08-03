@@ -285,6 +285,161 @@ class MatchViewModel(application: Application) : AndroidViewModel(application) {
     }
     
     /**
+     * Carrier accepts shipper request - mirrors iOS acceptShipperRequest
+     */
+    fun acceptShipperRequest(matchId: Int, message: String) {
+        Log.d(TAG, "✅ Accepting shipper request for match $matchId")
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            
+            try {
+                val result = matchRepository.acceptShipperRequest(matchId, message)
+                result.fold(
+                    onSuccess = { updatedMatch ->
+                        Log.d(TAG, "✅ Shipper request accepted successfully")
+                        Log.d(TAG, "   📊 Match Status: ${updatedMatch.status}")
+                        Log.d(TAG, "   💬 Carrier Message: $message")
+                        updateMatchInState(updatedMatch)
+                        // Refresh all matches to get latest state
+                        refreshMatches()
+                    },
+                    onFailure = { exception ->
+                        val errorMsg = exception.message ?: "Failed to accept shipper request"
+                        _errorMessage.value = errorMsg
+                        Log.e(TAG, "❌ Failed to accept shipper request: $errorMsg")
+                    }
+                )
+            } catch (e: Exception) {
+                val errorMsg = e.message ?: "Unknown error occurred"
+                _errorMessage.value = errorMsg
+                Log.e(TAG, "❌ Exception accepting shipper request: $errorMsg", e)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+    
+    /**
+     * Carrier declines shipper request - mirrors iOS declineShipperRequest
+     */
+    fun declineShipperRequest(matchId: Int, reason: String, message: String) {
+        Log.d(TAG, "❌ Declining shipper request for match $matchId")
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            
+            try {
+                val result = matchRepository.declineShipperRequest(matchId, reason, message)
+                result.fold(
+                    onSuccess = { updatedMatch ->
+                        Log.d(TAG, "✅ Shipper request declined successfully")
+                        Log.d(TAG, "   📊 Match Status: ${updatedMatch.status}")
+                        Log.d(TAG, "   🚫 Decline Reason: $reason")
+                        Log.d(TAG, "   💬 Carrier Message: $message")
+                        updateMatchInState(updatedMatch)
+                        // Refresh all matches to get latest state
+                        refreshMatches()
+                    },
+                    onFailure = { exception ->
+                        val errorMsg = exception.message ?: "Failed to decline shipper request"
+                        _errorMessage.value = errorMsg
+                        Log.e(TAG, "❌ Failed to decline shipper request: $errorMsg")
+                    }
+                )
+            } catch (e: Exception) {
+                val errorMsg = e.message ?: "Unknown error occurred"
+                _errorMessage.value = errorMsg
+                Log.e(TAG, "❌ Exception declining shipper request: $errorMsg", e)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+    
+    /**
+     * Shipper accepts carrier request - mirrors iOS acceptCarrierRequest
+     */
+    fun acceptCarrierRequest(matchId: Int, message: String?) {
+        Log.d(TAG, "✅ Accepting carrier request for match $matchId")
+        if (!message.isNullOrBlank()) {
+            Log.d(TAG, "   💬 Shipper Message: $message")
+        }
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            
+            try {
+                val result = matchRepository.acceptCarrierRequest(matchId, message)
+                result.fold(
+                    onSuccess = { updatedMatch ->
+                        Log.d(TAG, "✅ Carrier request accepted successfully")
+                        Log.d(TAG, "   📊 Match Status: ${updatedMatch.status}")
+                        Log.d(TAG, "   💬 Shipper Message: ${message ?: "No message"}")
+                        updateMatchInState(updatedMatch)
+                        // Refresh all matches to get latest state
+                        refreshMatches()
+                    },
+                    onFailure = { exception ->
+                        val errorMsg = exception.message ?: "Failed to accept carrier request"
+                        _errorMessage.value = errorMsg
+                        Log.e(TAG, "❌ Failed to accept carrier request: $errorMsg")
+                    }
+                )
+            } catch (e: Exception) {
+                val errorMsg = e.message ?: "Unknown error occurred"
+                _errorMessage.value = errorMsg
+                Log.e(TAG, "❌ Exception accepting carrier request: $errorMsg", e)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+    
+    /**
+     * Shipper declines carrier request - mirrors iOS declineCarrierRequest
+     */
+    fun declineCarrierRequest(matchId: Int, reason: String?, message: String?) {
+        Log.d(TAG, "❌ Declining carrier request for match $matchId")
+        if (!reason.isNullOrBlank()) {
+            Log.d(TAG, "   🚫 Decline Reason: $reason")
+        }
+        if (!message.isNullOrBlank()) {
+            Log.d(TAG, "   💬 Shipper Message: $message")
+        }
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            
+            try {
+                val result = matchRepository.declineCarrierRequest(matchId, reason, message)
+                result.fold(
+                    onSuccess = { updatedMatch ->
+                        Log.d(TAG, "✅ Carrier request declined successfully")
+                        Log.d(TAG, "   📊 Match Status: ${updatedMatch.status}")
+                        Log.d(TAG, "   🚫 Decline Reason: ${reason ?: "No reason"}")
+                        Log.d(TAG, "   💬 Shipper Message: ${message ?: "No message"}")
+                        updateMatchInState(updatedMatch)
+                        // Refresh all matches to get latest state
+                        refreshMatches()
+                    },
+                    onFailure = { exception ->
+                        val errorMsg = exception.message ?: "Failed to decline carrier request"
+                        _errorMessage.value = errorMsg
+                        Log.e(TAG, "❌ Failed to decline carrier request: $errorMsg")
+                    }
+                )
+            } catch (e: Exception) {
+                val errorMsg = e.message ?: "Unknown error occurred"
+                _errorMessage.value = errorMsg
+                Log.e(TAG, "❌ Exception declining carrier request: $errorMsg", e)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+    
+    /**
      * Update match in local state - helper function
      */
     private fun updateMatchInState(updatedMatch: DeliveryMatch) {

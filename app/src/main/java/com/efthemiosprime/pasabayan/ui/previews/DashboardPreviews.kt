@@ -189,7 +189,7 @@ private val samplePackageRequests = listOf(
         packageValue = 24.0, // Converted from ₱1,000 at 0.024 CAD/PHP
         isFragile = false,
         specialInstructions = "Handle with care",
-        status = PackageRequestStatus.PENDING,
+        status = PackageRequestStatus.OPEN,
         createdAt = "2024-01-01T00:00:00Z",
         updatedAt = "2024-01-01T00:00:00Z"
     ),
@@ -223,7 +223,7 @@ private val samplePackageRequests = listOf(
         packageValue = 19.2, // Converted from ₱800 at 0.024 CAD/PHP
         isFragile = true,
         specialInstructions = "Keep refrigerated",
-        status = PackageRequestStatus.IN_TRANSIT,
+        status = PackageRequestStatus.DELIVERED,
         createdAt = "2024-01-01T00:00:00Z",
         updatedAt = "2024-01-01T00:00:00Z"
     )

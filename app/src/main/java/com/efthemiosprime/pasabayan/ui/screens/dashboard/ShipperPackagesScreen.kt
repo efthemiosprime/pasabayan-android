@@ -263,12 +263,11 @@ fun PackageFilterRow(
         listOf(
             FilterOption("All", packages.size, null),
             FilterOption(
-                "Pending", 
-                packages.count { it.status in listOf(PackageRequestStatus.PENDING, PackageRequestStatus.OPEN) },
-                PackageRequestStatus.PENDING
+                "Open", 
+                packages.count { it.status in listOf(PackageRequestStatus.OPEN, PackageRequestStatus.PENDING_REQUEST) },
+                PackageRequestStatus.OPEN
             ),
             FilterOption("Matched", packages.count { it.status == PackageRequestStatus.MATCHED }, PackageRequestStatus.MATCHED),
-            FilterOption("In Transit", packages.count { it.status == PackageRequestStatus.IN_TRANSIT }, PackageRequestStatus.IN_TRANSIT),
             FilterOption("Delivered", packages.count { it.status == PackageRequestStatus.DELIVERED }, PackageRequestStatus.DELIVERED)
         )
     }

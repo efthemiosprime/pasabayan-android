@@ -16,7 +16,7 @@ data class PackageRequestUiState(
     val packageValue: String = "",
     val maxBudget: String = "",
     val packageSize: PackageSize = PackageSize.MEDIUM,
-    val packageType: PackageType = PackageType.ELECTRONICS,
+    val packageType: PackageType = PackageType.GENERAL,
     val urgencyLevel: UrgencyLevel = UrgencyLevel.NORMAL,
     val isFragile: Boolean = false,
     val specialInstructions: String = "",

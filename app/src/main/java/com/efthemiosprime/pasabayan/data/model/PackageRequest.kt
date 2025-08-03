@@ -99,7 +99,7 @@ data class AvailablePackageApiData(
             isFragile = fragile,
             specialInstructions = specialHandlingRequirements,
             maxBudget = maxPriceBudget.toDoubleOrNull(),
-            status = PackageRequestStatus.PENDING, // Available packages are by default pending
+            status = PackageRequestStatus.OPEN, // Available packages are open for matching
             createdAt = createdAt,
             updatedAt = createdAt, // Use created_at as fallback since updated_at not provided
             shipper = shipper.toUser(),
@@ -265,13 +265,13 @@ data class Coordinates(
 )
 
 /**
- * Package dimensions model
+ * Package dimensions model - Matching iOS PackageDimensions exactly
  */
 @Serializable
 data class PackageDimensions(
-    val length: Int,
-    val width: Int,
-    val height: Int
+    val length: Double,
+    val width: Double,
+    val height: Double
 )
 
 /**
@@ -325,69 +325,77 @@ enum class PackageSize {
 }
 
 /**
- * Package request status enumeration
+ * Package request status enumeration - exactly matching iOS PackageRequestStatus
  */
 @Serializable
 enum class PackageRequestStatus {
-    @SerialName("pending")
-    PENDING,
     @SerialName("open")
     OPEN,
+    @SerialName("pending_request")
+    PENDING_REQUEST,
     @SerialName("matched")
     MATCHED,
-    @SerialName("booked")
-    BOOKED,
-    @SerialName("in_transit")
-    IN_TRANSIT,
     @SerialName("delivered")
     DELIVERED,
     @SerialName("cancelled")
-    CANCELLED;
+    CANCELLED,
+    
+    // Legacy statuses for backward compatibility
+    @SerialName("pending")
+    PENDING,
+    @SerialName("booked")
+    BOOKED,
+    @SerialName("in_transit")
+    IN_TRANSIT;
     
     val displayName: String
         get() = when (this) {
-            PENDING -> "Pending"
             OPEN -> "Open"
+            PENDING_REQUEST -> "Pending Request"
             MATCHED -> "Matched"
-            BOOKED -> "Booked"
-            IN_TRANSIT -> "In Transit"
             DELIVERED -> "Delivered"
             CANCELLED -> "Cancelled"
+            PENDING -> "Pending"
+            BOOKED -> "Booked"
+            IN_TRANSIT -> "In Transit"
         }
     
     val color: String
         get() = when (this) {
-            PENDING -> "orange"
             OPEN -> "blue"
-            MATCHED -> "blue"
-            BOOKED -> "purple"
-            IN_TRANSIT -> "green"
-            DELIVERED -> "gray"
+            PENDING_REQUEST -> "orange"
+            MATCHED -> "purple"
+            DELIVERED -> "green"
             CANCELLED -> "red"
+            PENDING -> "orange"
+            BOOKED -> "purple"
+            IN_TRANSIT -> "yellow"
         }
     
     val icon: String
         get() = when (this) {
-            PENDING -> "⏳"
             OPEN -> "📂"
+            PENDING_REQUEST -> "📋"
             MATCHED -> "🔗"
-            BOOKED -> "✅"
-            IN_TRANSIT -> "🚛"
             DELIVERED -> "✅"
             CANCELLED -> "❌"
+            PENDING -> "⏳"
+            BOOKED -> "✅"
+            IN_TRANSIT -> "🚛"
         }
     
     companion object {
         fun fromString(status: String): PackageRequestStatus {
             return when (status.lowercase()) {
-                "pending" -> PENDING
                 "open" -> OPEN
+                "pending_request" -> PENDING_REQUEST
                 "matched" -> MATCHED
-                "booked" -> BOOKED
-                "in_transit" -> IN_TRANSIT
                 "delivered" -> DELIVERED
                 "cancelled" -> CANCELLED
-                else -> PENDING
+                "pending" -> PENDING
+                "booked" -> BOOKED
+                "in_transit" -> IN_TRANSIT
+                else -> OPEN
             }
         }
     }
@@ -514,45 +522,195 @@ data class CreatePackageRequest(
 }
 
 /**
- * Package type enumeration - Updated to match iOS implementation
+ * Package type enumeration - Exactly matching iOS PackageType enum
  */
-enum class PackageType(val value: String, val displayName: String) {
-    ELECTRONICS("electronics", "Electronics"),
-    CLOTHING("clothing", "Clothing"),
-    BOOKS("books", "Books"),
-    FOOD("food", "Food"),
-    FURNITURE("furniture", "Furniture"),
-    MEDICAL("medical", "Medical"),
-    DOCUMENTS("documents", "Documents"),
-    GIFTS("gifts", "Gifts"),
-    AUTOMOTIVE("automotive", "Automotive"),
-    BEAUTY("beauty", "Beauty"),
-    SPORTS("sports", "Sports"),
-    TOYS("toys", "Toys"),
-    HOUSEHOLD("household", "Household"),
-    JEWELRY("jewelry", "Jewelry"),
-    ART("art", "Art"),
-    OTHER("other", "Other");
+@Serializable
+enum class PackageType {
+    @SerialName("general")
+    GENERAL,
+    @SerialName("electronics")
+    ELECTRONICS,
+    @SerialName("clothing")
+    CLOTHING,
+    @SerialName("books")
+    BOOKS,
+    @SerialName("food")
+    FOOD,
+    @SerialName("furniture")
+    FURNITURE,
+    @SerialName("medical")
+    MEDICAL,
+    @SerialName("documents")
+    DOCUMENTS,
+    @SerialName("gifts")
+    GIFTS,
+    @SerialName("automotive")
+    AUTOMOTIVE,
+    @SerialName("beauty")
+    BEAUTY,
+    @SerialName("sports")
+    SPORTS,
+    @SerialName("toys")
+    TOYS,
+    @SerialName("household")
+    HOUSEHOLD,
+    @SerialName("jewelry")
+    JEWELRY,
+    @SerialName("art")
+    ART,
+    @SerialName("industrial")
+    INDUSTRIAL,
+    @SerialName("other")
+    OTHER;
+    
+    val displayName: String
+        get() = when (this) {
+            GENERAL -> "General"
+            ELECTRONICS -> "Electronics"
+            CLOTHING -> "Clothing"
+            BOOKS -> "Books"
+            FOOD -> "Food"
+            FURNITURE -> "Furniture"
+            MEDICAL -> "Medical"
+            DOCUMENTS -> "Documents"
+            GIFTS -> "Gifts"
+            AUTOMOTIVE -> "Automotive"
+            BEAUTY -> "Beauty"
+            SPORTS -> "Sports"
+            TOYS -> "Toys"
+            HOUSEHOLD -> "Household"
+            JEWELRY -> "Jewelry"
+            ART -> "Art"
+            INDUSTRIAL -> "Industrial"
+            OTHER -> "Other"
+        }
+    
+    val icon: String
+        get() = when (this) {
+            GENERAL -> "📦"
+            ELECTRONICS -> "💻"
+            CLOTHING -> "👕"
+            BOOKS -> "📚"
+            FOOD -> "🍕"
+            FURNITURE -> "🪑"
+            MEDICAL -> "💊"
+            DOCUMENTS -> "📄"
+            GIFTS -> "🎁"
+            AUTOMOTIVE -> "🚗"
+            BEAUTY -> "💄"
+            SPORTS -> "⚽"
+            TOYS -> "🧸"
+            HOUSEHOLD -> "🏠"
+            JEWELRY -> "💎"
+            ART -> "🎨"
+            INDUSTRIAL -> "🏭"
+            OTHER -> "📦"
+        }
+    
+    val serializedName: String
+        get() = when (this) {
+            GENERAL -> "general"
+            ELECTRONICS -> "electronics"
+            CLOTHING -> "clothing"
+            BOOKS -> "books"
+            FOOD -> "food"
+            FURNITURE -> "furniture"
+            MEDICAL -> "medical"
+            DOCUMENTS -> "documents"
+            GIFTS -> "gifts"
+            AUTOMOTIVE -> "automotive"
+            BEAUTY -> "beauty"
+            SPORTS -> "sports"
+            TOYS -> "toys"
+            HOUSEHOLD -> "household"
+            JEWELRY -> "jewelry"
+            ART -> "art"
+            INDUSTRIAL -> "industrial"
+            OTHER -> "other"
+        }
     
     companion object {
         fun fromString(value: String): PackageType {
-            return values().find { it.value == value } ?: OTHER
+            return when (value.lowercase()) {
+                "general" -> GENERAL
+                "electronics" -> ELECTRONICS
+                "clothing" -> CLOTHING
+                "books" -> BOOKS
+                "food" -> FOOD
+                "furniture" -> FURNITURE
+                "medical" -> MEDICAL
+                "documents" -> DOCUMENTS
+                "gifts" -> GIFTS
+                "automotive" -> AUTOMOTIVE
+                "beauty" -> BEAUTY
+                "sports" -> SPORTS
+                "toys" -> TOYS
+                "household" -> HOUSEHOLD
+                "jewelry" -> JEWELRY
+                "art" -> ART
+                "industrial" -> INDUSTRIAL
+                "other" -> OTHER
+                else -> OTHER
+            }
         }
     }
 }
 
 /**
- * Urgency level enumeration
+ * Urgency level enumeration - Exactly matching iOS UrgencyLevel enum
  */
-enum class UrgencyLevel(val value: String, val displayName: String) {
-    LOW("low", "Low Priority"),
-    NORMAL("normal", "Normal"),
-    HIGH("high", "High Priority"),
-    URGENT("urgent", "Urgent");
+@Serializable
+enum class UrgencyLevel {
+    @SerialName("low")
+    LOW,
+    @SerialName("normal")
+    NORMAL,
+    @SerialName("high")
+    HIGH,
+    @SerialName("urgent")
+    URGENT;
+    
+    val displayName: String
+        get() = when (this) {
+            LOW -> "Low"
+            NORMAL -> "Normal"
+            HIGH -> "High"
+            URGENT -> "Urgent"
+        }
+    
+    val color: String
+        get() = when (this) {
+            LOW -> "gray"
+            NORMAL -> "blue"
+            HIGH -> "orange"
+            URGENT -> "red"
+        }
+    
+    val icon: String
+        get() = when (this) {
+            LOW -> "🐌"
+            NORMAL -> "📦"
+            HIGH -> "⚡"
+            URGENT -> "🚨"
+        }
+    
+    val serializedName: String
+        get() = when (this) {
+            LOW -> "low"
+            NORMAL -> "normal"
+            HIGH -> "high"
+            URGENT -> "urgent"
+        }
     
     companion object {
         fun fromString(value: String): UrgencyLevel {
-            return values().find { it.value == value } ?: NORMAL
+            return when (value.lowercase()) {
+                "low" -> LOW
+                "normal" -> NORMAL
+                "high" -> HIGH
+                "urgent" -> URGENT
+                else -> NORMAL
+            }
         }
     }
 }
@@ -649,4 +807,51 @@ data class CompatibleTripsResponse(
     val success: Boolean = true,
     val message: String,
     val data: PaginatedResponse<CompatibleTrip>
-) 
+)
+
+/**
+ * iOS AvailablePackage model - Exactly matching iOS structure
+ * Used for /packages/available endpoint responses
+ */
+@Serializable
+data class AvailablePackage(
+    val id: Int,
+    @SerialName("pickup_city")
+    val pickupCity: String,
+    @SerialName("delivery_city")
+    val deliveryCity: String,
+    @SerialName("package_weight_kg")
+    val packageWeightKg: Double,
+    @SerialName("package_dimensions")
+    val packageDimensions: PackageDimensions? = null,
+    @SerialName("volume_liters")
+    val volumeLiters: Double? = null,
+    @SerialName("urgency_level")
+    val urgencyLevel: UrgencyLevel,
+    @SerialName("max_price_budget")
+    val maxPriceBudget: Double? = null,
+    @SerialName("pickup_date_preferred")
+    val pickupDatePreferred: String,
+    @SerialName("delivery_date_needed")
+    val deliveryDateNeeded: String,
+    val fragile: Boolean,
+    @SerialName("package_type")
+    val packageType: PackageType,
+    @SerialName("package_description")
+    val packageDescription: String? = null,
+    @SerialName("created_at")
+    val createdAt: String,
+    val shipper: AvailablePackageShipper? = null
+)
+
+/**
+ * iOS AvailablePackageShipper model - Exactly matching iOS structure
+ */
+@Serializable
+data class AvailablePackageShipper(
+    val id: Int,
+    val name: String,
+    val rating: String
+)
+
+ 

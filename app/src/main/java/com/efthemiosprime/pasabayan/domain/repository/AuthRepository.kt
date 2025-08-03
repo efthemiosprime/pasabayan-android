@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import com.efthemiosprime.pasabayan.data.model.AuthResponse
 import com.efthemiosprime.pasabayan.data.model.User
+import com.efthemiosprime.pasabayan.data.model.PhoneVerificationStatus
+import com.efthemiosprime.pasabayan.data.model.DataResponse
 import com.efthemiosprime.pasabayan.data.common.Result
 
 /**
@@ -66,7 +68,9 @@ interface AuthRepository {
     suspend fun getToken(): String?
     
     /**
-     * Mock login for development
+     * Get phone verification status
+     * iOS equivalent: getPhoneVerificationStatus()
      */
-    suspend fun mockLogin(): Flow<Result<AuthResponse>>
+    suspend fun getPhoneVerificationStatus(): Flow<Result<DataResponse<PhoneVerificationStatus>>>
+
 } 

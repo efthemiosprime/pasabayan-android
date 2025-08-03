@@ -16,6 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.efthemiosprime.pasabayan.presentation.viewmodel.CarrierViewModel
 import com.efthemiosprime.pasabayan.presentation.viewmodel.AuthViewModel
 import com.efthemiosprime.pasabayan.presentation.viewmodel.RoleViewModel
+import com.efthemiosprime.pasabayan.presentation.viewmodel.MatchViewModel
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.UserHeaderCard
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.CarrierStatusCard
 import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.CarrierStatsGrid
@@ -31,7 +32,8 @@ import com.efthemiosprime.pasabayan.ui.common.EmptyStateData
 fun CarrierHomeContent(
     viewModel: CarrierViewModel,
     authViewModel: AuthViewModel,
-    roleViewModel: RoleViewModel
+    roleViewModel: RoleViewModel,
+    matchViewModel: MatchViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
@@ -63,6 +65,7 @@ fun CarrierHomeContent(
         item {
             CarrierStatsGrid(
                 carrierViewModel = viewModel,
+                matchViewModel = matchViewModel,
                 onBookingRequestsClick = { showBookingRequests = true }
             )
         }

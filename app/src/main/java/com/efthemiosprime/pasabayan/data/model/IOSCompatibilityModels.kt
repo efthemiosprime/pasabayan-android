@@ -58,6 +58,58 @@ data class TripCapacity(
 )
 
 /**
+ * Shipper Match Response Models - iOS APIService.acceptCarrierRequest/declineCarrierRequest
+ */
+@Serializable
+data class ShipperAcceptRequest(
+    val message: String? = null
+)
+
+@Serializable
+data class ShipperDeclineRequest(
+    val reason: String? = null,
+    val message: String? = null
+)
+
+/**
+ * Carrier Match Response Models - iOS APIService.acceptShipperRequest/declineShipperRequest
+ */
+@Serializable
+data class CarrierAcceptRequest(
+    @SerialName("carrier_message")
+    val carrierMessage: String
+)
+
+@Serializable
+data class CarrierDeclineRequest(
+    @SerialName("decline_reason")
+    val declineReason: String,
+    @SerialName("carrier_message")
+    val carrierMessage: String
+)
+
+/**
+ * Response models for iOS match responses
+ */
+@Serializable
+data class ShipperMatchResponse(
+    val success: Boolean? = null,
+    val message: String,
+    val data: DeliveryMatch,
+    @SerialName("chat_conversation_id")
+    val chatConversationId: String? = null
+)
+
+@Serializable
+data class CarrierResponseResult(
+    val success: Boolean? = null,
+    val message: String,
+    val data: DeliveryMatch,
+    @SerialName("chat_conversation_id")
+    val chatConversationId: String? = null
+)
+
+/**
  * Health Response - iOS: HealthResponse
  */
 @Serializable
@@ -169,12 +221,11 @@ data class BackendUserProfile(
 )
 
 /**
- * Request to Carry Request - iOS: RequestToCarryRequest
+ * Request to Carry Request - Updated API: POST /api/trips/{trip_id}/packages/{package_id}/request
+ * trip_id and package_id are now path parameters, not in request body
  */
 @Serializable
 data class RequestToCarryRequest(
-    @SerialName("trip_id")
-    val tripId: Int,
     @SerialName("proposed_price")
     val proposedPrice: Double,
     val message: String? = null
@@ -227,4 +278,136 @@ data class PackageRejectionResponseData(
     val reason: String? = null,
     @SerialName("rejected_at")
     val rejectedAt: String
+)
+
+// MARK: - Match Creation Models - exactly matching iOS
+
+/**
+ * Create Match Request - iOS: CreateMatchRequest
+ */
+@Serializable
+data class CreateMatchRequest(
+    @SerialName("carrier_trip_id")
+    val carrierTripId: Int,
+    @SerialName("package_request_id")
+    val packageRequestId: Int,
+    @SerialName("agreed_price")
+    val agreedPrice: Double
+)
+
+// MARK: - Direct Trip Booking Models - exactly matching iOS
+
+/**
+ * Direct Trip Booking Request - iOS: DirectTripBookingRequest
+ */
+@Serializable
+data class DirectTripBookingRequest(
+    @SerialName("booking_type")
+    val bookingType: String,
+    @SerialName("space_needed_liters")
+    val spaceNeededLiters: Double,
+    @SerialName("weight_needed_kg")
+    val weightNeededKg: Double,
+    @SerialName("pickup_location")
+    val pickupLocation: String,
+    @SerialName("delivery_location")
+    val deliveryLocation: String,
+    @SerialName("price_agreed")
+    val priceAgreed: Double,
+    @SerialName("special_requirements")
+    val specialRequirements: String? = null
+)
+
+/**
+ * Direct Trip Booking Response - iOS: DirectTripBookingResponse
+ */
+@Serializable
+data class DirectTripBookingResponse(
+    val success: Boolean,
+    val message: String,
+    val data: DirectTripBookingDataContainer
+)
+
+/**
+ * Direct Trip Booking Data Container - iOS: DirectTripBookingDataContainer
+ */
+@Serializable
+data class DirectTripBookingDataContainer(
+    val booking: DirectTripBookingInfo
+)
+
+/**
+ * Direct Trip Booking Info - iOS: DirectTripBookingInfo
+ */
+@Serializable
+data class DirectTripBookingInfo(
+    val id: Int,
+    @SerialName("trip_id")
+    val tripId: Int,
+    @SerialName("booker_id")
+    val bookerId: Int,
+    @SerialName("booking_type")
+    val bookingType: String,
+    val status: String,
+    @SerialName("price_agreed")
+    val priceAgreed: Double,
+    @SerialName("created_at")
+    val createdAt: String
+)
+
+// MARK: - Supporting Info Models - exactly matching iOS
+
+/**
+ * Carrier Trip Info - iOS: CarrierTripInfo
+ */
+@Serializable
+data class CarrierTripInfo(
+    val id: Int,
+    @SerialName("origin_city")
+    val originCity: String,
+    @SerialName("destination_city")
+    val destinationCity: String,
+    @SerialName("departure_date")
+    val departureDate: String,
+    @SerialName("transportation_method")
+    val transportationMethod: String
+)
+
+/**
+ * Package Request Info - iOS: PackageRequestInfo
+ */
+@Serializable
+data class PackageRequestInfo(
+    val id: Int,
+    @SerialName("package_name")
+    val packageName: String,
+    @SerialName("weight_kg")
+    val weightKg: Double,
+    @SerialName("pickup_city")
+    val pickupCity: String,
+    @SerialName("delivery_city")
+    val deliveryCity: String,
+    @SerialName("request_status")
+    val requestStatus: String
+)
+
+/**
+ * User Info - iOS: UserInfo
+ */
+@Serializable
+data class UserInfo(
+    val id: Int,
+    val name: String,
+    val email: String
+)
+
+// MARK: - Generic API Error Response - exactly matching iOS
+
+/**
+ * API Error Response - iOS: APIErrorResponse
+ */
+@Serializable
+data class APIErrorResponse(
+    val message: String,
+    val errors: Map<String, List<String>>? = null
 ) 

@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.catch
 import com.efthemiosprime.pasabayan.domain.repository.AuthRepository
 import com.efthemiosprime.pasabayan.data.model.AuthResponse
 import com.efthemiosprime.pasabayan.data.model.User
+import com.efthemiosprime.pasabayan.data.model.PhoneVerificationStatus
+import com.efthemiosprime.pasabayan.data.model.DataResponse
 import com.efthemiosprime.pasabayan.data.service.AuthService
 import com.efthemiosprime.pasabayan.data.common.Result
 import com.efthemiosprime.pasabayan.data.common.AppError
@@ -74,13 +76,6 @@ class AuthRepositoryImpl(context: Context) : AuthRepository {
         authService.getToken()
     }.getOrNull()
     
-    override suspend fun mockLogin(): Flow<Result<AuthResponse>> = flow {
-        emit(resultOf {
-            authService.mockLogin().getOrThrow()
-        })
-    }.catch { exception ->
-        emit(Result.Failure(AppError.AuthenticationError(exception.message ?: "Mock login failed")))
-    }
     
     override suspend fun signInWithFacebook(
         activity: Activity
@@ -90,5 +85,13 @@ class AuthRepositoryImpl(context: Context) : AuthRepository {
         })
     }.catch { exception ->
         emit(Result.Failure(AppError.AuthenticationError(exception.message ?: "Facebook sign-in failed")))
+    }
+    
+    override suspend fun getPhoneVerificationStatus(): Flow<Result<DataResponse<PhoneVerificationStatus>>> = flow {
+        emit(resultOf {
+            authService.createApiService().getPhoneVerificationStatus()
+        })
+    }.catch { exception ->
+        emit(Result.Failure(AppError.UnknownError(exception.message ?: "Failed to get phone verification status", exception)))
     }
 } 

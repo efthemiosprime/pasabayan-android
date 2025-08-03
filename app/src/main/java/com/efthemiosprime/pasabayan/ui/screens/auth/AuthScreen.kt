@@ -28,25 +28,19 @@ fun AuthScreen(
     val isLoading by authViewModel.isLoading.collectAsState()
     val error by authViewModel.error.collectAsState()
     
-    AuthScreenContent(
+        AuthScreenContent(
         isLoading = isLoading,
         error = error,
-        onSignInWithGoogle = { 
-            // Use real Google Sign-In if available, otherwise mock
+        onSignInWithGoogle = {
+            // Only use real Google Sign-In
             if (activity != null && googleOneTapLauncher != null && googleRegularSignInLauncher != null) {
                 authViewModel.signInWithGoogle(activity, googleOneTapLauncher, googleRegularSignInLauncher)
-            } else {
-                // Fallback to mock for preview/testing
-                authViewModel.mockLogin()
             }
         },
         onSignInWithFacebook = {
-            // Use real Facebook Sign-In if available, otherwise mock
+            // Only use real Facebook Sign-In
             if (activity != null) {
                 authViewModel.signInWithFacebook(activity)
-            } else {
-                // Fallback to mock for preview/testing
-                authViewModel.mockLogin()
             }
         }
     )

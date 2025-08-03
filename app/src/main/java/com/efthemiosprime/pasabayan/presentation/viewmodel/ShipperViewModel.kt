@@ -20,6 +20,8 @@ class ShipperViewModel(application: Application) : AndroidViewModel(application)
     
     // Composition of PackageViewModel for package operations
     val packageViewModel = PackageViewModel(application)
+    // Added MatchViewModel to support carrier requests count in stats
+    val matchViewModel = MatchViewModel(application)
     
     // Internal state for user data
     private val _user = MutableStateFlow<User?>(null)

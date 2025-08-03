@@ -38,7 +38,7 @@ data class AuthState(
 sealed class AuthAction {
     object StartGoogleSignIn : AuthAction()
     object StartFacebookSignIn : AuthAction()
-    object StartMockLogin : AuthAction()
+
     data class GoogleSignInResult(val task: Task<GoogleSignInAccount>) : AuthAction()
     data class AuthSuccess(val response: AuthResponse) : AuthAction()
     data class AuthFailure(val error: AppError) : AuthAction()
@@ -66,7 +66,7 @@ sealed class AuthEffect {
  * Sign-in method tracking
  */
 enum class SignInMethod {
-    GOOGLE, FACEBOOK, MOCK
+    GOOGLE, FACEBOOK
 }
 
 /**
@@ -99,10 +99,6 @@ class AuthViewModel(
             signInMethod = SignInMethod.FACEBOOK
         )
         
-        is AuthAction.StartMockLogin -> currentState.copy(
-            authState = UiState.loading(currentState.authState.data),
-            signInMethod = SignInMethod.MOCK
-        )
         
         is AuthAction.AuthSuccess -> currentState.copy(
             user = action.response.data.user,
@@ -132,10 +128,7 @@ class AuthViewModel(
     override suspend fun handleSideEffect(action: AuthAction, currentState: AuthState): AuthEffect? = when (action) {
         is AuthAction.StartGoogleSignIn -> null // Handled by public function
         is AuthAction.StartFacebookSignIn -> null // Handled by public function
-        is AuthAction.StartMockLogin -> {
-            performMockLogin()
-            null
-        }
+
         is AuthAction.GoogleSignInResult -> {
             handleGoogleSignInResultInternal(action.task)
             null
@@ -210,12 +203,6 @@ class AuthViewModel(
         dispatch(AuthAction.SignOut)
     }
 
-    /**
-     * Mock login for development/testing
-     */
-    fun mockLogin() {
-        dispatch(AuthAction.StartMockLogin)
-    }
     
     /**
      * Clear authentication error
@@ -226,14 +213,6 @@ class AuthViewModel(
 
     // MARK: - Private Helper Methods (Side Effects Implementation)
     
-    private suspend fun performMockLogin() {
-        authRepository.mockLogin().collect { result ->
-            when (result) {
-                is Result.Success -> dispatch(AuthAction.AuthSuccess(result.data))
-                is Result.Failure -> dispatch(AuthAction.AuthFailure(result.error))
-            }
-        }
-    }
     
     private suspend fun handleGoogleSignInResultInternal(task: Task<GoogleSignInAccount>) {
         authRepository.handleGoogleSignInResult(task).collect { result ->

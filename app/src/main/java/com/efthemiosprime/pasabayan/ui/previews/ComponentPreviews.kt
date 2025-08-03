@@ -137,7 +137,7 @@ fun PackageCardPendingPreview() {
                 packageValue = 24.0, // Converted from ₱1,000 at 0.024 CAD/PHP
                 isFragile = false,
                 specialInstructions = "Handle with care",
-                status = PackageRequestStatus.PENDING,
+                status = PackageRequestStatus.OPEN,
                 createdAt = "2024-01-01T00:00:00Z",
                 updatedAt = "2024-01-01T00:00:00Z"
             ),
@@ -164,7 +164,7 @@ fun PackageCardInTransitPreview() {
                 packageValue = 120.0, // Converted from ₱5,000 at 0.024 CAD/PHP
                 isFragile = false,
                 specialInstructions = "Call recipient before delivery",
-                status = PackageRequestStatus.IN_TRANSIT,
+                status = PackageRequestStatus.DELIVERED,
                 createdAt = "2024-01-01T00:00:00Z",
                 updatedAt = "2024-01-01T00:00:00Z"
             ),
@@ -213,14 +213,14 @@ fun StatusChipsPreview() {
         ) {
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    StatusChip(status = PackageRequestStatus.PENDING)
-                    StatusChip(status = PackageRequestStatus.MATCHED)
+                    StatusChip(status = PackageRequestStatus.OPEN)
+                    StatusChip(status = PackageRequestStatus.PENDING_REQUEST)
                 }
             }
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    StatusChip(status = PackageRequestStatus.BOOKED)
-                    StatusChip(status = PackageRequestStatus.IN_TRANSIT)
+                    StatusChip(status = PackageRequestStatus.MATCHED)
+                    StatusChip(status = PackageRequestStatus.DELIVERED)
                 }
             }
             item {
@@ -360,7 +360,7 @@ fun ComponentsDarkThemePreview() {
                 )
             }
             item {
-                StatusChip(status = PackageRequestStatus.IN_TRANSIT)
+                StatusChip(status = PackageRequestStatus.DELIVERED)
             }
             item {
                 ProfileMenuItem(

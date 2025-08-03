@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -31,6 +32,12 @@ fun ShipperHomeContent(
     val uiState by viewModel.uiState.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
     
+    // Load data when screen appears - needed for stats grid carrier requests count
+    LaunchedEffect(Unit) {
+        viewModel.matchViewModel.loadShipperMatches()
+        viewModel.packageViewModel.loadPackageRequests()
+    }
+    
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -46,7 +53,10 @@ fun ShipperHomeContent(
         }
         
         item {
-            ShipperStatsGrid(packageViewModel = viewModel.packageViewModel)
+            ShipperStatsGrid(
+                packageViewModel = viewModel.packageViewModel,
+                matchViewModel = viewModel.matchViewModel
+            )
         }
         
         item {

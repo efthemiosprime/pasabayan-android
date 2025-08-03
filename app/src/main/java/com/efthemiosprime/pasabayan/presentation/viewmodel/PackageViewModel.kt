@@ -66,9 +66,9 @@ class PackageViewModel(application: Application) : AndroidViewModel(application)
     ) { packages, filter ->
         when (filter) {
             null -> packages
-            PackageRequestStatus.PENDING -> packages.filter { 
-                // 🔑 KEY: "Pending" filter includes both PENDING and OPEN statuses
-                it.status in listOf(PackageRequestStatus.PENDING, PackageRequestStatus.OPEN) 
+            PackageRequestStatus.OPEN -> packages.filter { 
+                // 🔑 KEY: "Open" filter includes both OPEN and PENDING_REQUEST statuses
+                it.status in listOf(PackageRequestStatus.OPEN, PackageRequestStatus.PENDING_REQUEST) 
             }
             else -> packages.filter { it.status == filter }
         }
@@ -189,14 +189,12 @@ class PackageViewModel(application: Application) : AndroidViewModel(application)
     }
     
     fun getMatchedRequests(): List<PackageRequest> = getPackagesByStatus(PackageRequestStatus.MATCHED)
-    fun getBookedRequests(): List<PackageRequest> = getPackagesByStatus(PackageRequestStatus.BOOKED)
-    fun getInTransitRequests(): List<PackageRequest> = getPackagesByStatus(PackageRequestStatus.IN_TRANSIT)
     fun getDeliveredRequests(): List<PackageRequest> = getPackagesByStatus(PackageRequestStatus.DELIVERED)
     
     // Update existing method to use new status enum:
-    fun getPendingRequests(): List<PackageRequest> = 
+    fun getOpenRequests(): List<PackageRequest> = 
         _myPackageRequests.value.filter { 
-            it.status == PackageRequestStatus.PENDING || it.status == PackageRequestStatus.OPEN 
+            it.status == PackageRequestStatus.OPEN || it.status == PackageRequestStatus.PENDING_REQUEST 
         }
     
     /**
@@ -237,19 +235,7 @@ class PackageViewModel(application: Application) : AndroidViewModel(application)
                      loadPackageRequests()
                  }.onFailure { exception ->
                      Log.e("PackageViewModel", "❌ Authentication test failed: ${exception.message}")
-                     Log.d("PackageViewModel", "🔧 Attempting mock login...")
-                     
-                     // Try mock login
-                     val authService = AuthService.getInstance(getApplication())
-                     val mockResult = authService.mockLogin()
-                     
-                     mockResult.onSuccess {
-                         Log.d("PackageViewModel", "✅ Mock login successful, loading packages")
-                         loadPackageRequests()
-                     }.onFailure { mockException ->
-                         Log.e("PackageViewModel", "❌ Mock login failed: ${mockException.message}")
-                         _errorMessage.value = "Authentication failed: ${mockException.message}"
-                     }
+                     _errorMessage.value = "Authentication failed: ${exception.message}"
                  }
              } catch (e: Exception) {
                  Log.e("PackageViewModel", "❌ Test failed: ${e.message}", e)
@@ -296,32 +282,13 @@ class PackageViewModel(application: Application) : AndroidViewModel(application)
                          _isLoading.value = false
                     }.onFailure { exception ->
                         Log.e("PackageViewModel", "❌ FAILED with existing token: ${exception.message}")
-                        Log.d("PackageViewModel", "🔄 Token might be invalid, trying mock login...")
-                        
-                        // Try mock login as fallback
-                        val mockResult = authService.mockLogin()
-                        mockResult.onSuccess {
-                            Log.d("PackageViewModel", "✅ Mock login successful, retrying packages...")
-                            loadPackageRequests()
-                        }.onFailure { mockException ->
-                            Log.e("PackageViewModel", "❌ Mock login also failed: ${mockException.message}")
-                            _errorMessage.value = "Authentication failed: ${mockException.message}"
-                            _isLoading.value = false
-                        }
-                    }
-                } else {
-                    Log.w("PackageViewModel", "❌ No token found, trying mock login...")
-                    
-                    // No token, try mock login
-                    val mockResult = authService.mockLogin()
-                    mockResult.onSuccess {
-                        Log.d("PackageViewModel", "✅ Mock login successful, loading packages...")
-                        loadPackageRequests()
-                    }.onFailure { exception ->
-                        Log.e("PackageViewModel", "❌ Mock login failed: ${exception.message}")
                         _errorMessage.value = "Authentication failed: ${exception.message}"
                         _isLoading.value = false
                     }
+                } else {
+                    Log.w("PackageViewModel", "❌ No token found")
+                    _errorMessage.value = "Authentication required"
+                    _isLoading.value = false
                 }
                 
                 Log.d("PackageViewModel", "=== END ANDROID vs iOS DEBUG ===")
@@ -340,5 +307,82 @@ class PackageViewModel(application: Application) : AndroidViewModel(application)
         } catch (e: Exception) {
             null
         }
+    }
+    
+    /**
+     * Cancel a package request (changes status to cancelled)
+     * Matches iOS PackageViewModel.cancelPackageRequest method
+     */
+    fun cancelPackageRequest(packageId: Int) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            
+            Log.d(TAG, "🚫 Cancelling package request: $packageId")
+            
+            packageRepository.cancelPackageRequest(packageId)
+                .onSuccess {
+                    Log.d(TAG, "✅ Package request cancelled successfully")
+                    // Refresh the package list to get updated status
+                    loadPackageRequests()
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "❌ Failed to cancel package request: ${error.message}")
+                    _errorMessage.value = error.message ?: "Failed to cancel package request"
+                }
+            
+            _isLoading.value = false
+        }
+    }
+    
+    /**
+     * Shipper requests trip for package
+     * Matches iOS PackageViewModel.requestTripForPackage method  
+     */
+    fun requestTripForPackage(
+        packageId: Int,
+        tripId: Int,
+        offeredPrice: Double,
+        message: String,
+        onComplete: (Result<com.efthemiosprime.pasabayan.data.model.DeliveryMatch>) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            
+            Log.d(TAG, "📨 Requesting trip for package $packageId")
+            Log.d(TAG, "   🚛 Trip ID: $tripId")
+            Log.d(TAG, "   💰 Offered Price: CAD $offeredPrice")
+            Log.d(TAG, "   💬 Message: $message")
+            
+            val result = packageRepository.sendShipperTripRequest(
+                packageId = packageId,
+                tripId = tripId,
+                offeredPrice = offeredPrice,
+                message = message
+            )
+            
+            result
+                .onSuccess { match ->
+                    Log.d(TAG, "✅ Trip request sent successfully")
+                    Log.d(TAG, "   🆔 Match ID: ${match.id}")
+                    Log.d(TAG, "   📊 Match Status: ${match.status}")
+                    
+                    // Refresh package requests to get updated status
+                    loadPackageRequests()
+                    onComplete(Result.success(match))
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "❌ Failed to send trip request: ${error.message}")
+                    _errorMessage.value = error.message ?: "Failed to send trip request"
+                    onComplete(Result.failure(error))
+                }
+            
+            _isLoading.value = false
+        }
+    }
+    
+    companion object {
+        private const val TAG = "PackageViewModel"
     }
 } 

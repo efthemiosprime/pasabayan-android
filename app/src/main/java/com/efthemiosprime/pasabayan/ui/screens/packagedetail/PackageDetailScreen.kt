@@ -14,12 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.efthemiosprime.pasabayan.data.model.*
+import com.efthemiosprime.pasabayan.presentation.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.ui.components.status.StatusChip
 import com.efthemiosprime.pasabayan.ui.shared.ScreenContainer
 import com.efthemiosprime.pasabayan.ui.shared.cards.PCardStandard
@@ -37,8 +40,20 @@ import java.util.*
 fun PackageDetailScreen(
     packageRequest: PackageRequest,
     onNavigateBack: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    packageViewModel: PackageViewModel? = null
 ) {
+    var showCancelDialog by remember { mutableStateOf(false) }
+    var showTripRequestDialog by remember { mutableStateOf(false) }
+    
+    val context = LocalContext.current
+    val viewModel = packageViewModel ?: viewModel { 
+        PackageViewModel(context.applicationContext as android.app.Application)
+    }
+    
+    // Observe loading and error states
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
     ScreenContainer {
         Scaffold(
             topBar = {
@@ -99,7 +114,94 @@ fun PackageDetailScreen(
                 item {
                     TimelineSection(packageRequest = packageRequest)
                 }
+                
+                // Action Buttons Section (mirrors iOS functionality)
+                item {
+                    ActionButtonsSection(
+                        packageRequest = packageRequest,
+                        onCancelPackage = { showCancelDialog = true },
+                        onRequestTrip = { showTripRequestDialog = true }
+                    )
+                }
             }
+        }
+        
+        // Cancel Package Confirmation Dialog - Mirrors iOS alert
+        if (showCancelDialog) {
+            AlertDialog(
+                onDismissRequest = { showCancelDialog = false },
+                title = {
+                    Text(
+                        text = "Cancel Package",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        text = "This will cancel your package request. This action cannot be undone.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showCancelDialog = false
+                            viewModel.cancelPackageRequest(packageRequest.id)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text("Cancel Package")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showCancelDialog = false }
+                    ) {
+                        Text("Keep Package")
+                    }
+                }
+            )
+        }
+        
+        // Find Compatible Trips Dialog - Mirrors iOS behavior
+        if (showTripRequestDialog) {
+            AlertDialog(
+                onDismissRequest = { showTripRequestDialog = false },
+                title = {
+                    Text(
+                        text = "Find Compatible Trips",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Browse available trips to find carriers who can deliver your package. You'll be able to send requests to compatible trips.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showTripRequestDialog = false
+                            // TODO: Navigate to Browse Trips screen filtered for this package
+                            // For now, we'll just dismiss the dialog
+                        }
+                    ) {
+                        Text("Browse Trips")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showTripRequestDialog = false }
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
@@ -400,6 +502,165 @@ private fun TimelineItem(
 }
 
 /**
+ * Action Buttons Section
+ * Mirrors iOS package detail action buttons
+ */
+@Composable
+private fun ActionButtonsSection(
+    packageRequest: PackageRequest,
+    onCancelPackage: () -> Unit,
+    onRequestTrip: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    PCardStandard(
+        modifier = modifier
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.lg)
+        ) {
+            Text(
+                text = "Actions",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            
+            // Show different actions based on package status
+            when (packageRequest.status) {
+                PackageRequestStatus.OPEN, PackageRequestStatus.PENDING_REQUEST, PackageRequestStatus.PENDING -> {
+                    // Open packages can be cancelled or have trips requested
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.md)
+                    ) {
+                        Button(
+                            onClick = onRequestTrip,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Find Compatible Trips")
+                        }
+                        
+                        OutlinedButton(
+                            onClick = onCancelPackage,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Cancel,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Cancel Package Request")
+                        }
+                    }
+                }
+                
+                PackageRequestStatus.MATCHED, PackageRequestStatus.BOOKED -> {
+                    // Matched packages show tracking info
+                    OutlinedButton(
+                        onClick = { /* TODO: Navigate to tracking */ },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Visibility,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Track Package")
+                    }
+                }
+                
+                PackageRequestStatus.IN_TRANSIT -> {
+                    // In transit packages show tracking info
+                    OutlinedButton(
+                        onClick = { /* TODO: Navigate to tracking */ },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Visibility,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Track Package")
+                    }
+                }
+                
+                PackageRequestStatus.DELIVERED -> {
+                    // Delivered packages show confirmation
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(PasabayanDesignSystem.Spacing.lg),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Package Successfully Delivered",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                }
+                
+                PackageRequestStatus.CANCELLED -> {
+                    // Cancelled packages show cancellation info
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(PasabayanDesignSystem.Spacing.lg),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Cancel,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Package Request Cancelled",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
  * Timeline Item Data Class
  */
 private data class TimelineItemData(
@@ -431,8 +692,6 @@ private fun getTimelineItems(packageRequest: PackageRequest): List<TimelineItemD
             timestamp = null,
             isCompleted = packageRequest.status in listOf(
                 PackageRequestStatus.MATCHED,
-                PackageRequestStatus.BOOKED,
-                PackageRequestStatus.IN_TRANSIT,
                 PackageRequestStatus.DELIVERED
             )
         ),
@@ -440,8 +699,6 @@ private fun getTimelineItems(packageRequest: PackageRequest): List<TimelineItemD
             title = "Carrier Assigned",
             timestamp = null,
             isCompleted = packageRequest.status in listOf(
-                PackageRequestStatus.BOOKED,
-                PackageRequestStatus.IN_TRANSIT,
                 PackageRequestStatus.DELIVERED
             )
         ),
@@ -449,7 +706,6 @@ private fun getTimelineItems(packageRequest: PackageRequest): List<TimelineItemD
             title = "Package Picked Up",
             timestamp = null,
             isCompleted = packageRequest.status in listOf(
-                PackageRequestStatus.IN_TRANSIT,
                 PackageRequestStatus.DELIVERED
             )
         ),

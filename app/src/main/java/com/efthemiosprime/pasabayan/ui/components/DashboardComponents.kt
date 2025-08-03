@@ -377,13 +377,15 @@ fun StatusChip(
     modifier: Modifier = Modifier
 ) {
     val (backgroundColor, textColor) = when (status) {
-        PackageRequestStatus.PENDING -> Color(0xFFFFF3E0) to Color(0xFFE65100)
         PackageRequestStatus.OPEN -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
+        PackageRequestStatus.PENDING_REQUEST -> Color(0xFFFFF3E0) to Color(0xFFE65100)
         PackageRequestStatus.MATCHED -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
-        PackageRequestStatus.BOOKED -> Color(0xFFE8F5E8) to Color(0xFF2E7D32)
-        PackageRequestStatus.IN_TRANSIT -> Color(0xFFE1F5FE) to Color(0xFF0288D1)
         PackageRequestStatus.DELIVERED -> Color(0xFFE8F5E8) to Color(0xFF388E3C)
         PackageRequestStatus.CANCELLED -> Color(0xFFFFEBEE) to Color(0xFFD32F2F)
+        // Legacy statuses
+        PackageRequestStatus.PENDING -> Color(0xFFFFF3E0) to Color(0xFFE65100)
+        PackageRequestStatus.BOOKED -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
+        PackageRequestStatus.IN_TRANSIT -> Color(0xFFFFF8E1) to Color(0xFFF57F17)
     }
     
     Surface(
@@ -1285,14 +1287,14 @@ fun StatusChipsPreview() {
         ) {
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    StatusChip(status = PackageRequestStatus.PENDING)
-                    StatusChip(status = PackageRequestStatus.MATCHED)
+                    StatusChip(status = PackageRequestStatus.OPEN)
+                    StatusChip(status = PackageRequestStatus.PENDING_REQUEST)
                 }
             }
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    StatusChip(status = PackageRequestStatus.BOOKED)
-                    StatusChip(status = PackageRequestStatus.IN_TRANSIT)
+                    StatusChip(status = PackageRequestStatus.MATCHED)
+                    StatusChip(status = PackageRequestStatus.DELIVERED)
                 }
             }
             item {
@@ -1411,7 +1413,7 @@ fun ComponentsDarkThemePreview() {
                 )
             }
             item {
-                StatusChip(status = PackageRequestStatus.IN_TRANSIT)
+                StatusChip(status = PackageRequestStatus.DELIVERED)
             }
             item {
                 ProfileMenuItem(
@@ -1439,7 +1441,7 @@ private val samplePackageRequestPending = PackageRequest(
     packageValue = 24.0, // Converted from ₱1,000 at 0.024 CAD/PHP
     isFragile = false,
     specialInstructions = "Handle with care",
-    status = PackageRequestStatus.PENDING,
+    status = PackageRequestStatus.OPEN,
     createdAt = "2024-01-01T00:00:00Z",
     updatedAt = "2024-01-01T00:00:00Z"
 )
@@ -1457,7 +1459,7 @@ private val samplePackageRequestInTransit = PackageRequest(
     packageValue = 120.0, // Converted from ₱5,000 at 0.024 CAD/PHP
     isFragile = false,
     specialInstructions = "Call recipient before delivery",
-    status = PackageRequestStatus.IN_TRANSIT,
+    status = PackageRequestStatus.DELIVERED,
     createdAt = "2024-01-01T00:00:00Z",
     updatedAt = "2024-01-01T00:00:00Z"
 ) 

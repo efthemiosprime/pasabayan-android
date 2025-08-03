@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.data.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.data.model.MatchStatus
@@ -79,6 +80,12 @@ private fun MatchStatusChip(status: MatchStatus) {
         MatchStatus.IN_TRANSIT -> Color(0xFF00BCD4) to Color.White
         MatchStatus.DELIVERED -> Color(0xFF4CAF50) to Color.White
         MatchStatus.CANCELLED -> Color(0xFFF44336) to Color.White
+        MatchStatus.CARRIER_REQUESTED -> Color(0xFF03A9F4) to Color.White
+        MatchStatus.SHIPPER_REQUESTED -> Color(0xFF9C27B0) to Color.White
+        MatchStatus.SHIPPER_ACCEPTED -> Color(0xFF4CAF50) to Color.White
+        MatchStatus.SHIPPER_DECLINED -> Color(0xFFF44336) to Color.White
+        MatchStatus.CARRIER_ACCEPTED -> Color(0xFF4CAF50) to Color.White
+        MatchStatus.CARRIER_DECLINED -> Color(0xFFF44336) to Color.White
     }
     
     Surface(
@@ -207,6 +214,20 @@ private fun MatchActionsRow(
                     Text("Accept")
                 }
             }
+            MatchStatus.CARRIER_REQUESTED -> {
+                OutlinedButton(
+                    onClick = { onAction(MatchAction.CANCEL) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Decline Request")
+                }
+                Button(
+                    onClick = { onAction(MatchAction.CONFIRM) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Accept Request")
+                }
+            }
             MatchStatus.CONFIRMED -> {
                 Button(
                     onClick = { onAction(MatchAction.PICKUP) },
@@ -234,6 +255,51 @@ private fun MatchActionsRow(
             }
             MatchStatus.CANCELLED -> {
                 // No actions for cancelled matches
+            }
+            MatchStatus.SHIPPER_REQUESTED -> {
+                Text(
+                    text = "Waiting for Carrier Response",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
+            MatchStatus.SHIPPER_ACCEPTED -> {
+                Text(
+                    text = "Shipper Accepted - Waiting for Confirmation",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
+            MatchStatus.SHIPPER_DECLINED -> {
+                Text(
+                    text = "Shipper Declined",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
+            MatchStatus.CARRIER_ACCEPTED -> {
+                Text(
+                    text = "Carrier Accepted - Ready for Pickup",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
+            MatchStatus.CARRIER_DECLINED -> {
+                Text(
+                    text = "Carrier Declined",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }

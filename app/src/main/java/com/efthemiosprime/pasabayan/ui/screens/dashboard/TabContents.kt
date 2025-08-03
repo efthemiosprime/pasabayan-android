@@ -746,7 +746,7 @@ private fun ShipperPackagesTabContent(
                 packageSize = PackageSize.SMALL,
                 packageWeight = 0.5,
                 packageValue = 24.0,
-                status = PackageRequestStatus.PENDING,
+                status = PackageRequestStatus.OPEN,
                 createdAt = "2024-01-14T11:00:00Z",
                 updatedAt = "2024-01-14T11:00:00Z"
             )

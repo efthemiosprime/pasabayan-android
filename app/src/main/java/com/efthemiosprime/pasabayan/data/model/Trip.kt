@@ -10,30 +10,31 @@ import com.efthemiosprime.pasabayan.data.common.Validation
 import com.efthemiosprime.pasabayan.data.common.validate
 
 /**
- * Trip model exactly matching iOS Trip.swift structure
+ * Trip model exactly matching iOS Trip.swift structure  
  * Represents a carrier's delivery trip with all iOS properties
+ * Field mappings and nullability match iOS CodingKeys exactly
  */
 @Serializable
 data class Trip(
     val id: Int,
     @SerialName("carrier_id")
-    val carrierId: Int,
+    val carrierId: Int = 0, // Default 0 like iOS when not in limited API responses
     @SerialName("origin_city")
     val originCity: String,
     @SerialName("origin_country")
-    val originCountry: String,
+    val originCountry: String = "", // Default empty like iOS when not in limited API responses
     @SerialName("origin_lat")
-    val originLat: Double? = null,
+    val originLat: Double = 0.0, // Handle coordinates that might be sent as strings like iOS
     @SerialName("origin_lng")
-    val originLng: Double? = null,
+    val originLng: Double = 0.0,
     @SerialName("destination_city")
     val destinationCity: String,
     @SerialName("destination_country")
-    val destinationCountry: String,
+    val destinationCountry: String = "", // Default empty like iOS when not in limited API responses
     @SerialName("destination_lat")
-    val destinationLat: Double? = null,
+    val destinationLat: Double = 0.0,
     @SerialName("destination_lng")
-    val destinationLng: Double? = null,
+    val destinationLng: Double = 0.0,
     @SerialName("departure_date")
     val departureDate: String, // ISO date string
     @SerialName("arrival_date")
@@ -43,9 +44,9 @@ data class Trip(
     @SerialName("available_space_liters")
     val availableSpaceLiters: Double,
     @SerialName("price_per_kg")
-    val pricePerKg: Double,
+    val pricePerKg: Double = 0.0, // Default 0.0 like iOS when not in limited API responses
     @SerialName("trip_status")
-    val tripStatus: TripStatus,
+    val tripStatus: TripStatus = TripStatus.PLANNING, // Default to planning like iOS when not provided
     @SerialName("transportation_method")
     val transportationMethod: TransportationMethod,
     @SerialName("special_notes")
@@ -265,7 +266,7 @@ enum class TripStatus {
     
     val color: String
         get() = when (this) {
-            PLANNING -> "orange"
+            PLANNING -> "blue"
             SCHEDULED -> "blue"
             ACTIVE -> "green"
             COMPLETED -> "gray"
@@ -281,8 +282,28 @@ enum class TripStatus {
             CANCELLED -> "❌"
         }
     
+    val rawValue: String
+        get() = when (this) {
+            PLANNING -> "planning"
+            SCHEDULED -> "scheduled"
+            ACTIVE -> "active"
+            COMPLETED -> "completed"
+            CANCELLED -> "cancelled"
+        }
+    
     companion object {
         val allCases = values().toList()
+        
+        fun fromString(status: String): TripStatus? {
+            return when (status.lowercase()) {
+                "planning" -> PLANNING
+                "scheduled" -> SCHEDULED
+                "active" -> ACTIVE
+                "completed" -> COMPLETED
+                "cancelled" -> CANCELLED
+                else -> null
+            }
+        }
     }
 }
 
@@ -327,6 +348,32 @@ enum class TransportationMethod {
             SHIP -> "🚢"
             TRAIN -> "🚂"
         }
+    
+    val rawValue: String
+        get() = when (this) {
+            FLIGHT -> "flight"
+            BUS -> "bus"
+            CAR -> "car"
+            TRUCK -> "truck"
+            MOTORCYCLE -> "motorcycle"
+            SHIP -> "ship"
+            TRAIN -> "train"
+        }
+    
+    companion object {
+        fun fromString(method: String): TransportationMethod? {
+            return when (method.lowercase()) {
+                "flight" -> FLIGHT
+                "bus" -> BUS
+                "car" -> CAR
+                "truck" -> TRUCK
+                "motorcycle" -> MOTORCYCLE
+                "ship" -> SHIP
+                "train" -> TRAIN
+                else -> null
+            }
+        }
+    }
 }
 
 /**

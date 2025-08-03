@@ -19,6 +19,7 @@ import com.efthemiosprime.pasabayan.presentation.viewmodel.MatchViewModel
 import com.efthemiosprime.pasabayan.ui.screens.carrier.components.BookingRequestCard
 import com.efthemiosprime.pasabayan.ui.screens.carrier.components.ActiveBookingCard
 import com.efthemiosprime.pasabayan.ui.screens.carrier.components.BookingRequestDetailSheet
+import com.efthemiosprime.pasabayan.ui.screens.carrier.components.AcceptDeclineDialog
 import com.efthemiosprime.pasabayan.ui.shared.ScreenContainer
 import com.efthemiosprime.pasabayan.ui.shared.EmptyStateView
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanDesignSystem
@@ -45,20 +46,22 @@ fun CarrierRequestsScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     
-    // State for detail sheet
+    // State for detail sheet and accept/decline dialogs
     var selectedRequest by remember { mutableStateOf<DeliveryMatch?>(null) }
     var showingRequestDetail by remember { mutableStateOf(false) }
+    var showingAcceptDialog by remember { mutableStateOf(false) }
+    var showingDeclineDialog by remember { mutableStateOf(false) }
     var showingAlert by remember { mutableStateOf(false) }
     var alertMessage by remember { mutableStateOf("") }
     
     // Computed properties matching iOS implementation
     val pendingRequests = remember(carrierMatches) {
-        carrierMatches.filter { it.status == MatchStatus.PENDING }
+        carrierMatches.filter { it.status == MatchStatus.SHIPPER_REQUESTED }
     }
     
     val activeBookings = remember(carrierMatches) {
         carrierMatches.filter { 
-            it.status == MatchStatus.CONFIRMED || 
+            it.status == MatchStatus.CARRIER_ACCEPTED || 
             it.status == MatchStatus.PICKED_UP || 
             it.status == MatchStatus.IN_TRANSIT 
         }
@@ -133,10 +136,8 @@ fun CarrierRequestsScreen(
                             showingRequestDetail = true
                         },
                         onQuickAccept = { request ->
-                            handleAcceptRequest(request, viewModel) { message ->
-                                alertMessage = message
-                                showingAlert = true
-                            }
+                            selectedRequest = request
+                            showingAcceptDialog = true
                         }
                     )
                 }
@@ -151,17 +152,13 @@ fun CarrierRequestsScreen(
             onDismiss = { showingRequestDetail = false },
             onAccept = { request ->
                 showingRequestDetail = false
-                handleAcceptRequest(request, viewModel) { message ->
-                    alertMessage = message
-                    showingAlert = true
-                }
+                selectedRequest = request
+                showingAcceptDialog = true
             },
             onDecline = { request ->
                 showingRequestDetail = false
-                handleDeclineRequest(request, viewModel) { message ->
-                    alertMessage = message
-                    showingAlert = true
-                }
+                selectedRequest = request
+                showingDeclineDialog = true
             },
             onCancel = { booking ->
                 showingRequestDetail = false
@@ -173,7 +170,47 @@ fun CarrierRequestsScreen(
         )
     }
     
-    // Alert Dialog
+    // Accept Dialog - Shows message input for accepting shipper request
+    if (showingAcceptDialog && selectedRequest != null) {
+        AcceptDeclineDialog(
+            request = selectedRequest!!,
+            isAcceptMode = true,
+            onAccept = { message ->
+                showingAcceptDialog = false
+                viewModel.acceptShipperRequest(selectedRequest!!.id, message)
+                alertMessage = "Shipper request accepted! Chat has been opened for communication."
+                showingAlert = true
+                selectedRequest = null
+            },
+            onDecline = { _, _ -> /* Not used in accept mode */ },
+            onDismiss = { 
+                showingAcceptDialog = false
+                selectedRequest = null
+            }
+        )
+    }
+    
+    // Decline Dialog - Shows reason selection and message input for declining
+    if (showingDeclineDialog && selectedRequest != null) {
+        AcceptDeclineDialog(
+            request = selectedRequest!!,
+            isAcceptMode = false,
+            onAccept = { _ -> /* Not used in decline mode */ },
+            onDecline = { reason, message ->
+                showingDeclineDialog = false
+                viewModel.declineShipperRequest(selectedRequest!!.id, reason, message)
+                alertMessage = "Shipper request declined."
+                showingAlert = true
+                selectedRequest = null
+            },
+            onDismiss = { 
+                showingDeclineDialog = false
+                selectedRequest = null
+            }
+        )
+    }
+    
+    // Alert Dialog - Shows action completion messages
     if (showingAlert) {
         AlertDialog(
             onDismissRequest = { showingAlert = false },
@@ -312,24 +349,6 @@ private fun RequestsAndBookingsList(
 }
 
 // MARK: - Action Handlers (mirroring iOS implementation)
-
-private fun handleAcceptRequest(
-    request: DeliveryMatch,
-    viewModel: MatchViewModel,
-    onShowAlert: (String) -> Unit
-) {
-    viewModel.confirmMatch(request.id)
-    onShowAlert("Booking request accepted! The shipper has been notified.")
-}
-
-private fun handleDeclineRequest(
-    request: DeliveryMatch,
-    viewModel: MatchViewModel,
-    onShowAlert: (String) -> Unit
-) {
-    viewModel.cancelMatch(request.id)
-    onShowAlert("Booking request declined.")
-}
 
 private fun handleCancelBooking(
     booking: DeliveryMatch,

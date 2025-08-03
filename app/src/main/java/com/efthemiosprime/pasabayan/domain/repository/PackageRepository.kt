@@ -4,6 +4,7 @@ import com.efthemiosprime.pasabayan.data.model.PackageRequest
 import com.efthemiosprime.pasabayan.data.model.CreatePackageRequest
 import com.efthemiosprime.pasabayan.data.model.CompatibleTrip
 import com.efthemiosprime.pasabayan.data.model.DeliveryMatch
+import com.efthemiosprime.pasabayan.data.model.CompatibilityResult
 
 /**
  * Package Repository Interface - matching existing repository pattern
@@ -56,6 +57,32 @@ interface PackageRepository {
      * Get compatible trips for a package request
      */
     suspend fun getCompatibleTrips(packageId: Int): Result<List<CompatibleTrip>>
+    
+    /**
+     * Cancel a package request (changes status to cancelled)
+     * Matches iOS APIService.cancelPackageRequest method
+     */
+    suspend fun cancelPackageRequest(packageId: Int): Result<Unit>
+    
+    /**
+     * Shipper requests trip for package
+     * Matches iOS APIService.sendShipperTripRequest method
+     */
+    suspend fun sendShipperTripRequest(
+        packageId: Int,
+        tripId: Int,
+        offeredPrice: Double,
+        message: String
+    ): Result<DeliveryMatch>
+    
+    /**
+     * Check trip compatibility with package
+     * GET /api/trips/{trip_id}/compatibility/{package_id}
+     */
+    suspend fun checkTripCompatibility(
+        tripId: Int,
+        packageId: Int
+    ): Result<CompatibilityResult>
     
     /**
      * Accept a package request for a specific trip (Create Match)

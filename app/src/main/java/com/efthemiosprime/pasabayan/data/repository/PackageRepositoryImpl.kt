@@ -17,6 +17,8 @@ import com.efthemiosprime.pasabayan.data.model.CreatePackageRequest
 import com.efthemiosprime.pasabayan.data.model.CompatibleTrip
 import com.efthemiosprime.pasabayan.data.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.data.model.AcceptPackageRequest
+import com.efthemiosprime.pasabayan.data.model.ShipperTripRequest
+import com.efthemiosprime.pasabayan.data.model.CompatibilityResult
 import com.efthemiosprime.pasabayan.data.service.APIService
 import com.efthemiosprime.pasabayan.data.service.AuthService
 
@@ -274,6 +276,76 @@ class PackageRepositoryImpl(
             Result.success(response.data)
         } catch (e: Exception) {
             Log.e(TAG, "❌ Exception while accepting package: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+    
+    override suspend fun cancelPackageRequest(packageId: Int): Result<Unit> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            Log.d(TAG, "🚫 Cancelling package request with ID: $packageId")
+            
+            val requestBody = mapOf("request_status" to "cancelled")
+            val response = apiService.cancelPackageRequest(packageId, requestBody)
+            
+            Log.d(TAG, "✅ Package request cancelled successfully")
+            Log.d(TAG, "   📝 Response message: ${response.message}")
+            
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Failed to cancel package request", e)
+            Result.failure(e)
+        }
+    }
+    
+    override suspend fun sendShipperTripRequest(
+        packageId: Int,
+        tripId: Int,
+        offeredPrice: Double,
+        message: String
+    ): Result<DeliveryMatch> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            Log.d(TAG, "📨 Shipper requesting trip for package $packageId")
+            Log.d(TAG, "   🚛 Trip ID: $tripId")
+            Log.d(TAG, "   💰 Offered Price: CAD $offeredPrice")
+            Log.d(TAG, "   💬 Message: $message")
+            
+            val request = ShipperTripRequest(
+                offeredPrice = offeredPrice,
+                message = message
+            )
+            
+            val response = apiService.sendShipperTripRequest(packageId, tripId, request)
+            
+            Log.d(TAG, "✅ Shipper trip request sent successfully")
+            Log.d(TAG, "   🆔 Match ID: ${response.data.id}")
+            Log.d(TAG, "   📊 Match Status: ${response.data.status}")
+            
+            Result.success(response.data)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Failed to send shipper trip request", e)
+            Result.failure(e)
+        }
+    }
+    
+    override suspend fun checkTripCompatibility(
+        tripId: Int,
+        packageId: Int
+    ): Result<CompatibilityResult> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            Log.d(TAG, "🔍 Checking trip compatibility: Trip $tripId with Package $packageId")
+            
+            val response = apiService.checkTripCompatibility(tripId, packageId)
+            val compatibilityResult = response.data
+            
+            Log.d(TAG, "✅ Trip compatibility check successful")
+            Log.d(TAG, "   🔗 Compatible: ${compatibilityResult.isCompatible}")
+            Log.d(TAG, "   💰 Estimated Price: ${compatibilityResult.estimatedPrice}")
+            Log.d(TAG, "   ⚖️ Available Weight: ${compatibilityResult.availableCapacity.weightKg}kg")
+            Log.d(TAG, "   📦 Available Space: ${compatibilityResult.availableCapacity.spaceLiters}L")
+            
+            Result.success(compatibilityResult)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Failed to check trip compatibility", e)
             Result.failure(e)
         }
     }

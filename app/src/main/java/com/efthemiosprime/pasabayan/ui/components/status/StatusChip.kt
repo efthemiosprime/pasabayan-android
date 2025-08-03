@@ -18,23 +18,35 @@ import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
 /**
  * Status chip component for package/trip status
  * Provides consistent status visualization across the app
- * Matches iOS status chip styling and behavior
- * EXACTLY preserves original functionality
+ * Uses the new enum display properties from synchronized models
+ * NOW LEVERAGES: status.displayName, status.color from the updated PackageRequestStatus enum
  */
 @Composable
 fun StatusChip(
     status: PackageRequestStatus,
     modifier: Modifier = Modifier
 ) {
-    val (backgroundColor, textColor) = when (status) {
-        PackageRequestStatus.PENDING -> Color(0xFFFFF3E0) to Color(0xFFE65100)
-        PackageRequestStatus.OPEN -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
-        PackageRequestStatus.MATCHED -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
-        PackageRequestStatus.BOOKED -> Color(0xFFE8F5E8) to Color(0xFF2E7D32)
-        PackageRequestStatus.IN_TRANSIT -> Color(0xFFE1F5FE) to Color(0xFF0288D1)
-        PackageRequestStatus.DELIVERED -> Color(0xFFE8F5E8) to Color(0xFF388E3C)
-        PackageRequestStatus.CANCELLED -> Color(0xFFFFEBEE) to Color(0xFFD32F2F)
+    // Parse hex color from enum (iOS style: "#FF5722" -> Color)
+    fun parseColor(colorString: String): Color {
+        return try {
+            Color(android.graphics.Color.parseColor(colorString))
+        } catch (e: Exception) {
+            // Fallback colors for existing statuses
+            when (status) {
+                PackageRequestStatus.OPEN -> Color(0xFF1565C0)
+                PackageRequestStatus.PENDING_REQUEST -> Color(0xFFE65100)
+                PackageRequestStatus.MATCHED -> Color(0xFF1565C0)
+                PackageRequestStatus.DELIVERED -> Color(0xFF388E3C)
+                PackageRequestStatus.CANCELLED -> Color(0xFFD32F2F)
+                PackageRequestStatus.PENDING -> Color(0xFFE65100)
+                PackageRequestStatus.BOOKED -> Color(0xFF1565C0)
+                PackageRequestStatus.IN_TRANSIT -> Color(0xFFF57F17)
+            }
+        }
     }
+    
+    val primaryColor = parseColor(status.color)
+    val backgroundColor = primaryColor.copy(alpha = 0.12f)
     
     Surface(
         modifier = modifier,
@@ -42,9 +54,9 @@ fun StatusChip(
         color = backgroundColor
     ) {
         Text(
-            text = status.name.lowercase().replaceFirstChar { it.uppercase() },
+            text = status.displayName, // ✅ NOW USING ENUM PROPERTY!
             style = MaterialTheme.typography.labelSmall,
-            color = textColor,
+            color = primaryColor,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
     }
@@ -58,12 +70,14 @@ fun StatusChipsPreview() {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            StatusChip(status = PackageRequestStatus.PENDING)
+            StatusChip(status = PackageRequestStatus.OPEN)
+            StatusChip(status = PackageRequestStatus.PENDING_REQUEST)
             StatusChip(status = PackageRequestStatus.MATCHED)
-            StatusChip(status = PackageRequestStatus.BOOKED)
-            StatusChip(status = PackageRequestStatus.IN_TRANSIT)
             StatusChip(status = PackageRequestStatus.DELIVERED)
             StatusChip(status = PackageRequestStatus.CANCELLED)
+            StatusChip(status = PackageRequestStatus.PENDING)
+            StatusChip(status = PackageRequestStatus.BOOKED)
+            StatusChip(status = PackageRequestStatus.IN_TRANSIT)
         }
     }
 } 

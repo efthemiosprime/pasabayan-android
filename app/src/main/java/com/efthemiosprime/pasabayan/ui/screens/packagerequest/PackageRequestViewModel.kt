@@ -212,16 +212,16 @@ class PackageRequestViewModel(application: Application) : AndroidViewModel(appli
                             state.packageWidth.isNotBlank() && 
                             state.packageHeight.isNotBlank()) {
             PackageDimensions(
-                length = state.packageLength.toIntOrNull() ?: 30,
-                width = state.packageWidth.toIntOrNull() ?: 20,
-                height = state.packageHeight.toIntOrNull() ?: 15
+                length = state.packageLength.toDoubleOrNull() ?: 30.0,
+                width = state.packageWidth.toDoubleOrNull() ?: 20.0,
+                height = state.packageHeight.toDoubleOrNull() ?: 15.0
             )
         } else {
             // Default dimensions matching iOS implementation
             PackageDimensions(
-                length = 30,  // 30 cm default length
-                width = 20,   // 20 cm default width  
-                height = 15   // 15 cm default height
+                length = 30.0,  // 30 cm default length
+                width = 20.0,   // 20 cm default width  
+                height = 15.0   // 15 cm default height
             )
         }
         
@@ -242,10 +242,10 @@ class PackageRequestViewModel(application: Application) : AndroidViewModel(appli
             packageSize = state.packageSize,
             packageWeight = weightValue,
             packageDimensions = dimensions,
-            packageType = state.packageType.value,
+            packageType = state.packageType.serializedName,
             packageValue = PackageRequestValidator.validateAmount(state.packageValue),
             isFragile = state.isFragile,
-            urgencyLevel = state.urgencyLevel.value,
+            urgencyLevel = state.urgencyLevel.serializedName,
             specialInstructions = state.specialInstructions.takeIf { it.isNotBlank() },
             maxBudget = PackageRequestValidator.validateAmount(state.maxBudget),
             pickupDateFlexible = state.pickupDateFlexible

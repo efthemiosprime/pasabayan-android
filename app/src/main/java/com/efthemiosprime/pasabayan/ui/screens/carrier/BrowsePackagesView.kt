@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -21,15 +19,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.efthemiosprime.pasabayan.data.model.PackageRequest
 import com.efthemiosprime.pasabayan.data.model.PackageSize
-import com.efthemiosprime.pasabayan.data.model.Trip
-import com.efthemiosprime.pasabayan.data.repository.TripRepositoryImpl
-import com.efthemiosprime.pasabayan.data.repository.DeliveryMatchRepositoryImpl
-import com.efthemiosprime.pasabayan.data.service.APIService
-import com.efthemiosprime.pasabayan.data.service.AuthService
 import com.efthemiosprime.pasabayan.presentation.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.ui.shared.cards.PCardStandard
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanDesignSystem
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -55,22 +47,8 @@ fun BrowsePackagesView(
     // Search state
     var searchQuery by remember { mutableStateOf("") }
     
-    // Request to carry dialog state
-    var showRequestDialog by remember { mutableStateOf(false) }
-    var selectedPackage by remember { mutableStateOf<PackageRequest?>(null) }
-    var carrierTrips by remember { mutableStateOf<List<Trip>>(emptyList()) }
-    var selectedTrip by remember { mutableStateOf<Trip?>(null) }
-    var proposedPrice by remember { mutableStateOf("") }
-    var isRequesting by remember { mutableStateOf(false) }
-    var requestErrorMessage by remember { mutableStateOf<String?>(null) }
-    
-    // Initialize repositories
-    val tripRepository = remember { 
-        TripRepositoryImpl.create(context)
-    }
-    val matchRepository = remember { 
-        DeliveryMatchRepositoryImpl.create(context)
-    }
+    // Navigation state
+    var selectedPackageForRequest by remember { mutableStateOf<PackageRequest?>(null) }
     
     // Filter packages based on search
     val filteredPackages = remember(packageRequests, searchQuery) {
@@ -90,11 +68,31 @@ fun BrowsePackagesView(
         packageViewModel.loadPackageRequests()
     }
     
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(PasabayanDesignSystem.Spacing.lg)
-    ) {
+    // Navigate to Request to Carry Screen
+    if (selectedPackageForRequest != null) {
+        println("🔧 DEBUG: Showing Request to Carry screen for package: ${selectedPackageForRequest!!.id}")
+        RequestToCarryScreen(
+            packageRequest = selectedPackageForRequest!!,
+            onNavigateBack = {
+                println("🔧 DEBUG: Navigating back from Request to Carry screen")
+                selectedPackageForRequest = null
+            },
+            onRequestSent = {
+                println("🔧 DEBUG: Request sent successfully, navigating back")
+                selectedPackageForRequest = null
+                // Refresh the package list after successful request
+                packageViewModel.loadAvailablePackages()
+            }
+        )
+        return // Prevent showing the browse view
+    }
+    
+    // Browse Packages View
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(PasabayanDesignSystem.Spacing.lg)
+        ) {
         // Title
         Text(
             text = "Browse Packages",
@@ -192,80 +190,13 @@ fun BrowsePackagesView(
                         BrowsePackageCard(
                             packageRequest = packageRequest,
                             onRequestToCarry = {
-                                selectedPackage = packageRequest
-                                scope.launch {
-                                    // Load carrier trips when dialog opens
-                                    tripRepository.getTripsForCarrier(1).collect { result ->
-                                        result.fold(
-                                            onSuccess = { trips -> 
-                                                carrierTrips = trips
-                                                showRequestDialog = true
-                                            },
-                                            onFailure = { error ->
-                                                requestErrorMessage = "Failed to load trips: ${error.message}"
-                                            }
-                                        )
-                                    }
-                                }
+                                println("🔧 DEBUG: Request to Carry clicked for package: ${packageRequest.id}")
+                                selectedPackageForRequest = packageRequest
                             }
                         )
                     }
                 }
             }
-        }
-        
-        // Request to Carry Dialog
-        if (showRequestDialog && selectedPackage != null) {
-            RequestToCarryDialog(
-                packageRequest = selectedPackage!!,
-                availableTrips = carrierTrips,
-                selectedTrip = selectedTrip,
-                proposedPrice = proposedPrice,
-                isRequesting = isRequesting,
-                errorMessage = requestErrorMessage,
-                onTripSelected = { selectedTrip = it },
-                onPriceChanged = { proposedPrice = it },
-                onConfirm = {
-                    scope.launch {
-                        if (selectedTrip != null && proposedPrice.isNotBlank()) {
-                            isRequesting = true
-                            requestErrorMessage = null
-                            
-                            val price = proposedPrice.toDoubleOrNull()
-                            if (price != null) {
-                                matchRepository.requestToCarryPackage(
-                                    packageId = selectedPackage!!.id,
-                                    tripId = selectedTrip!!.id,
-                                    proposedPrice = price,
-                                    message = null
-                                ).fold(
-                                    onSuccess = { match ->
-                                        // Success - close dialog and refresh
-                                        showRequestDialog = false
-                                        selectedPackage = null
-                                        selectedTrip = null
-                                        proposedPrice = ""
-                                        packageViewModel.loadAvailablePackages()
-                                    },
-                                    onFailure = { error ->
-                                        requestErrorMessage = error.message
-                                    }
-                                )
-                            } else {
-                                requestErrorMessage = "Please enter a valid price"
-                            }
-                            isRequesting = false
-                        }
-                    }
-                },
-                onDismiss = {
-                    showRequestDialog = false
-                    selectedPackage = null
-                    selectedTrip = null
-                    proposedPrice = ""
-                    requestErrorMessage = null
-                }
-            )
         }
     }
 }
@@ -536,180 +467,3 @@ private fun formatDate(dateString: String): String {
     }
 }
 
-/**
- * Request to Carry Dialog - allows carrier to select trip and enter proposed price
- */
-@Composable
-private fun RequestToCarryDialog(
-    packageRequest: PackageRequest,
-    availableTrips: List<Trip>,
-    selectedTrip: Trip?,
-    proposedPrice: String,
-    isRequesting: Boolean,
-    errorMessage: String?,
-    onTripSelected: (Trip) -> Unit,
-    onPriceChanged: (String) -> Unit,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "Request to Carry Package",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Package info
-                Text(
-                    text = packageRequest.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "${packageRequest.pickupLocation} → ${packageRequest.deliveryLocation}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "Weight: ${packageRequest.packageWeight ?: "N/A"}kg • Budget: $${packageRequest.maxBudget ?: "N/A"}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                Divider()
-                
-                // Trip selection
-                Text(
-                    text = "Select Your Trip:",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Medium
-                )
-                
-                if (availableTrips.isEmpty()) {
-                    Text(
-                        text = "No available trips found. Create a trip first.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.height(120.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(availableTrips) { trip ->
-                            val isSelected = selectedTrip?.id == trip.id
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { 
-                                        println("🔧 DEBUG: Trip selected - ID: ${trip.id}, Route: ${trip.route}")
-                                        onTripSelected(trip) 
-                                    },
-                                colors = CardDefaults.cardColors(
-                                    containerColor = if (isSelected) {
-                                        MaterialTheme.colorScheme.primaryContainer
-                                    } else {
-                                        MaterialTheme.colorScheme.surface
-                                    }
-                                ),
-                                border = if (isSelected) {
-                                    BorderStroke(
-                                        2.dp, 
-                                        MaterialTheme.colorScheme.primary
-                                    )
-                                } else null
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(12.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Text(
-                                            text = trip.route,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.Medium
-                                        )
-                                        Text(
-                                            text = "${trip.departureDate} • Capacity: ${trip.availableWeightKg}kg",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    
-                                    if (isSelected) {
-                                        Icon(
-                                            imageVector = Icons.Default.CheckCircle,
-                                            contentDescription = "Selected",
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // Price input
-                Text(
-                    text = "Proposed Price:",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Medium
-                )
-                
-                OutlinedTextField(
-                    value = proposedPrice,
-                    onValueChange = onPriceChanged,
-                    label = { Text("Enter price (CDN)") },
-                    prefix = { Text("$") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !isRequesting
-                )
-                
-                // Error message
-                if (errorMessage != null) {
-                    Text(
-                        text = errorMessage,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            val buttonEnabled = !isRequesting && selectedTrip != null && proposedPrice.isNotBlank()
-            println("🔧 DEBUG: Button state - isRequesting: $isRequesting, selectedTrip: ${selectedTrip?.id}, proposedPrice: '$proposedPrice', enabled: $buttonEnabled")
-            Button(
-                onClick = onConfirm,
-                enabled = buttonEnabled
-            ) {
-                if (isRequesting) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Text("Send Request")
-                }
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                enabled = !isRequesting
-            ) {
-                Text("Cancel")
-            }
-        }
-    )
-}

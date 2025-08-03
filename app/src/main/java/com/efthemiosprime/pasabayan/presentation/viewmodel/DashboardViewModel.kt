@@ -29,6 +29,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private val _roleViewModel = RoleViewModel()
     private val _shipperViewModel = ShipperViewModel(application)
     private val _carrierViewModel = CarrierViewModel(apiService)
+    private val _matchViewModel = MatchViewModel(application)
     
     // Public access to role state
     val currentRole: StateFlow<UserRole> = _roleViewModel.currentRole
@@ -37,6 +38,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     val shipperViewModel: ShipperViewModel = _shipperViewModel
     val carrierViewModel: CarrierViewModel = _carrierViewModel
     val roleViewModel: RoleViewModel = _roleViewModel
+    val matchViewModel: MatchViewModel = _matchViewModel
     
     /**
      * Create APIService with authentication headers

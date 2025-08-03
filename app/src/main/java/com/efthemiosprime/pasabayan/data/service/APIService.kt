@@ -34,6 +34,16 @@ import com.efthemiosprime.pasabayan.data.model.RequestToCarryRequest
 import com.efthemiosprime.pasabayan.data.model.DirectBookingRequest
 import com.efthemiosprime.pasabayan.data.model.DirectBookingResponse
 import com.efthemiosprime.pasabayan.data.model.MatchesResponse
+import com.efthemiosprime.pasabayan.data.model.ShipperTripRequest
+import com.efthemiosprime.pasabayan.data.model.CompatibilityResult
+import com.efthemiosprime.pasabayan.data.model.ShipperAcceptRequest
+import com.efthemiosprime.pasabayan.data.model.ShipperDeclineRequest
+import com.efthemiosprime.pasabayan.data.model.CarrierAcceptRequest
+import com.efthemiosprime.pasabayan.data.model.CarrierDeclineRequest
+import com.efthemiosprime.pasabayan.data.model.ShipperMatchResponse
+import com.efthemiosprime.pasabayan.data.model.CarrierResponseResult
+import com.efthemiosprime.pasabayan.data.model.PhoneVerificationStatus
+
 
 /**
  * API Service interface for authentication endpoints
@@ -74,12 +84,21 @@ interface APIService {
     @POST("api/auth/refresh")
     suspend fun refreshToken(): AuthResponse
     
+    
     /**
      * Get current user profile
      * iOS endpoint: /api/profile
      */
     @GET("api/profile")
     suspend fun getUserProfile(): AuthResponse
+    
+    /**
+     * Get phone verification status
+     * iOS endpoint: /api/profile/phone-verification-status (assumed)
+     * Returns current user's phone verification status
+     */
+    @GET("api/profile/phone-verification-status")
+    suspend fun getPhoneVerificationStatus(): DataResponse<PhoneVerificationStatus>
     
     /**
      * Toggle carrier status (activate/deactivate)
@@ -146,6 +165,17 @@ interface APIService {
     suspend fun deletePackageRequest(
         @Path("id") packageId: Int
     ): Map<String, String>
+    
+    /**
+     * Cancel package request (changes status to cancelled)
+     * Matches iOS APIService.cancelPackageRequest method
+     * iOS endpoint: PUT /api/packages/{id} with {"request_status": "cancelled"}
+     */
+    @PUT("api/packages/{id}")
+    suspend fun cancelPackageRequest(
+        @Path("id") packageId: Int,
+        @Body request: Map<String, String>
+    ): EmptyResponse
     
     @GET("api/packages/{id}/compatible-trips")
     suspend fun getCompatibleTrips(
@@ -266,11 +296,134 @@ interface APIService {
         @Body request: AcceptPackageRequest
     ): AcceptPackageResponse
     
-    @POST("api/packages/{id}/request-to-carry")
+    @POST("api/trips/{trip_id}/packages/{package_id}/request")
     suspend fun requestToCarryPackage(
-        @Path("id") packageId: Int,
+        @Path("trip_id") tripId: Int,
+        @Path("package_id") packageId: Int,
         @Body request: RequestToCarryRequest
     ): DataResponse<DeliveryMatch>
+    
+    /**
+     * Shipper requests trip for package
+     * Matches iOS APIService.sendShipperTripRequest method
+     * iOS endpoint: POST /api/packages/{id}/request-trip/{trip_id}
+     */
+    @POST("api/packages/{package_id}/request-trip/{trip_id}")
+    suspend fun sendShipperTripRequest(
+        @Path("package_id") packageId: Int,
+        @Path("trip_id") tripId: Int,
+        @Body request: ShipperTripRequest
+    ): DataResponse<DeliveryMatch>
+    
+    /**
+     * MISSING ENDPOINTS - Essential iOS functionality
+     */
+    
+    /**
+     * Check trip compatibility with package
+     * Matches iOS: GET /trips/{id}/compatibility/{package_id}
+     */
+    @GET("api/trips/{trip_id}/compatibility/{package_id}")
+    suspend fun checkTripCompatibility(
+        @Path("trip_id") tripId: Int,
+        @Path("package_id") packageId: Int
+    ): DataResponse<CompatibilityResult>
+    
+    /**
+     * Carrier requests to carry package
+     * Matches iOS: POST /packages/{id}/request-to-carry
+     */
+    @POST("api/packages/{package_id}/request-to-carry")
+    suspend fun requestToCarryPackage(
+        @Path("package_id") packageId: Int,
+        @Body request: RequestToCarryRequest
+    ): DataResponse<DeliveryMatch>
+    
+    /**
+     * Get pending requests for carrier
+     * Matches iOS: GET /matches/pending-requests
+     */
+    @GET("api/matches/pending-requests")
+    suspend fun getCarrierPendingRequests(): MatchesResponse
+    
+    /**
+     * SHIPPER MATCH RESPONSES - Accept/Decline Carrier Requests
+     */
+    
+    /**
+     * Shipper accepts carrier request
+     * Matches iOS: PUT /matches/{id}/accept
+     */
+    @PUT("api/matches/{match_id}/accept")
+    suspend fun acceptCarrierRequest(
+        @Path("match_id") matchId: Int,
+        @Body request: ShipperAcceptRequest
+    ): DataResponse<DeliveryMatch>
+    
+    /**
+     * Shipper declines carrier request  
+     * Matches iOS: PUT /matches/{id}/decline
+     */
+    @PUT("api/matches/{match_id}/decline")
+    suspend fun declineCarrierRequest(
+        @Path("match_id") matchId: Int,
+        @Body request: ShipperDeclineRequest
+    ): DataResponse<DeliveryMatch>
+    
+    /**
+     * CARRIER MATCH RESPONSES - Accept/Decline Shipper Requests
+     */
+    
+    /**
+     * Carrier accepts shipper request
+     * Matches iOS: PUT /matches/{id}/accept-shipper-request
+     */
+    @PUT("api/matches/{match_id}/accept-shipper-request")
+    suspend fun acceptShipperRequest(
+        @Path("match_id") matchId: Int,
+        @Body request: CarrierAcceptRequest
+    ): DataResponse<DeliveryMatch>
+    
+    /**
+     * Carrier declines shipper request
+     * Matches iOS: PUT /matches/{id}/decline-shipper-request
+     */
+    @PUT("api/matches/{match_id}/decline-shipper-request")
+    suspend fun declineShipperRequest(
+        @Path("match_id") matchId: Int,
+        @Body request: CarrierDeclineRequest
+    ): DataResponse<DeliveryMatch>
+    
+    /**
+     * FIX HTTP METHODS - Ensure iOS compatibility
+     */
+    
+    @PUT("api/matches/{id}/confirm")
+    suspend fun confirmMatchFixed(
+        @Path("id") matchId: Int
+    ): DataResponse<DeliveryMatch>
+    
+    @PUT("api/matches/{id}/pickup")
+    suspend fun pickupMatchFixed(
+        @Path("id") matchId: Int,
+        @Body updateRequest: MatchUpdateRequest?
+    ): DataResponse<DeliveryMatch>
+    
+    @PUT("api/matches/{id}/transit")
+    suspend fun transitMatchFixed(
+        @Path("id") matchId: Int
+    ): DataResponse<DeliveryMatch>
+    
+    @PUT("api/matches/{id}/deliver")
+    suspend fun deliverMatchFixed(
+        @Path("id") matchId: Int,
+        @Body updateRequest: MatchUpdateRequest?
+    ): DataResponse<DeliveryMatch>
+    
+    @DELETE("api/matches/{id}")
+    suspend fun cancelMatchFixed(
+        @Path("id") matchId: Int
+    ): EmptyResponse
     
     /**
      * Direct Trip Booking - matching iOS functionality
@@ -288,6 +441,8 @@ interface APIService {
         const val LOCAL_DEVICE_URL = "http://10.0.2.2:8001" // Android emulator localhost
         
         // Current base URL - switch between environments
-        const val BASE_URL = PRODUCTION_URL
+        // Use production for auth, local for other APIs while debugging
+        const val BASE_URL = PRODUCTION_URL // Temporary: use production until local auth is fixed
+        // const val BASE_URL = LOCAL_DEVICE_URL // Use when local server auth is working
     }
 } 

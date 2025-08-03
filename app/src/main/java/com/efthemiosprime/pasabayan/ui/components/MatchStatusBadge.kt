@@ -82,8 +82,14 @@ private fun getBackgroundColor(status: MatchStatus): Color {
         MatchStatus.CONFIRMED -> MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
         MatchStatus.PICKED_UP -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f)
         MatchStatus.IN_TRANSIT -> Color(0xFF4CAF50).copy(alpha = 0.12f)
-        MatchStatus.DELIVERED -> MaterialTheme.colorScheme.outline.copy(alpha = 0.12f)
+        MatchStatus.DELIVERED -> Color(0xFF4CAF50).copy(alpha = 0.12f)
         MatchStatus.CANCELLED -> MaterialTheme.colorScheme.error.copy(alpha = 0.12f)
+        MatchStatus.CARRIER_REQUESTED -> Color(0xFF03A9F4).copy(alpha = 0.12f)
+        MatchStatus.SHIPPER_REQUESTED -> Color(0xFF9C27B0).copy(alpha = 0.12f)
+        MatchStatus.SHIPPER_ACCEPTED -> Color(0xFF4CAF50).copy(alpha = 0.12f)
+        MatchStatus.SHIPPER_DECLINED -> MaterialTheme.colorScheme.error.copy(alpha = 0.12f)
+        MatchStatus.CARRIER_ACCEPTED -> Color(0xFF4CAF50).copy(alpha = 0.12f)
+        MatchStatus.CARRIER_DECLINED -> MaterialTheme.colorScheme.error.copy(alpha = 0.12f)
     }
 }
 
@@ -97,8 +103,14 @@ private fun getTextColor(status: MatchStatus): Color {
         MatchStatus.CONFIRMED -> MaterialTheme.colorScheme.primary
         MatchStatus.PICKED_UP -> MaterialTheme.colorScheme.secondary
         MatchStatus.IN_TRANSIT -> Color(0xFF4CAF50)
-        MatchStatus.DELIVERED -> MaterialTheme.colorScheme.outline
+        MatchStatus.DELIVERED -> Color(0xFF4CAF50)
         MatchStatus.CANCELLED -> MaterialTheme.colorScheme.error
+        MatchStatus.CARRIER_REQUESTED -> Color(0xFF03A9F4)
+        MatchStatus.SHIPPER_REQUESTED -> Color(0xFF9C27B0)
+        MatchStatus.SHIPPER_ACCEPTED -> Color(0xFF4CAF50)
+        MatchStatus.SHIPPER_DECLINED -> MaterialTheme.colorScheme.error
+        MatchStatus.CARRIER_ACCEPTED -> Color(0xFF4CAF50)
+        MatchStatus.CARRIER_DECLINED -> MaterialTheme.colorScheme.error
     }
 }
 
@@ -113,5 +125,11 @@ private fun getIcon(status: MatchStatus): String {
         MatchStatus.IN_TRANSIT -> "🚛"
         MatchStatus.DELIVERED -> "✅"
         MatchStatus.CANCELLED -> "❌"
+        MatchStatus.CARRIER_REQUESTED -> "📝"
+        MatchStatus.SHIPPER_REQUESTED -> "📨"
+        MatchStatus.SHIPPER_ACCEPTED -> "✅"
+        MatchStatus.SHIPPER_DECLINED -> "❌"
+        MatchStatus.CARRIER_ACCEPTED -> "✅"
+        MatchStatus.CARRIER_DECLINED -> "❌"
     }
 }

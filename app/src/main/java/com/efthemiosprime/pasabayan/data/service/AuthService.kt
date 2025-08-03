@@ -606,17 +606,7 @@ class AuthService(private val context: Context) {
         }
     }
     
-    /**
-     * REMOVED: Mock login disabled to enforce real authentication
-     * Use Google OAuth, Facebook login, or phone verification instead
-     */
-    @Deprecated("Mock login removed - use real authentication methods only", ReplaceWith(""))
-    suspend fun mockLogin(): Result<AuthResponse> = withContext(Dispatchers.IO) {
-        Log.w(TAG, "❌ Mock login disabled - use real authentication")
-        return@withContext Result.failure(
-            UnsupportedOperationException("Mock login disabled - use real authentication methods (Google, Facebook, Phone)")
-        )
-    }
+
     
     /**
      * Get Facebook callback manager for activity result handling

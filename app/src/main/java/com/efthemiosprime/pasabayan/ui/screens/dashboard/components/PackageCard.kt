@@ -119,7 +119,7 @@ fun PackageCard(
                         Text("View Details")
                     }
                     
-                    if (packageRequest.status in listOf(PackageRequestStatus.PENDING, PackageRequestStatus.OPEN)) {
+                    if (packageRequest.status in listOf(PackageRequestStatus.OPEN, PackageRequestStatus.PENDING_REQUEST)) {
                         Button(
                             onClick = {
                                 println("🔧 DEBUG: Find Carriers button clicked! Package ID: ${packageRequest.id}, Status: ${packageRequest.status}")
@@ -198,12 +198,14 @@ private fun DetailInfo(
 private fun StatusBadge(status: PackageRequestStatus) {
     val backgroundColor = when (status) {
         PackageRequestStatus.OPEN -> MaterialTheme.colorScheme.primary
-        PackageRequestStatus.PENDING -> Color(0xFFFF9800)
+        PackageRequestStatus.PENDING_REQUEST -> Color(0xFFFF9800)
         PackageRequestStatus.MATCHED -> Color(0xFF9C27B0)
-        PackageRequestStatus.BOOKED -> Color(0xFF9C27B0)
-        PackageRequestStatus.IN_TRANSIT -> Color(0xFF4CAF50)
-        PackageRequestStatus.DELIVERED -> Color(0xFF2196F3)
+        PackageRequestStatus.DELIVERED -> Color(0xFF4CAF50)
         PackageRequestStatus.CANCELLED -> Color(0xFFF44336)
+        // Legacy statuses
+        PackageRequestStatus.PENDING -> Color(0xFFFF9800)
+        PackageRequestStatus.BOOKED -> Color(0xFF9C27B0)
+        PackageRequestStatus.IN_TRANSIT -> Color(0xFFFFC107)
     }
     
     Surface(

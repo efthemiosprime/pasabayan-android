@@ -383,7 +383,7 @@ private fun PackageTypePicker(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            PackageType.values().forEach { type ->
+            PackageType.entries.forEach { type ->
                 DropdownMenuItem(
                     text = { Text(type.displayName) },
                     onClick = {
@@ -427,7 +427,7 @@ private fun UrgencyLevelPicker(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            UrgencyLevel.values().forEach { level ->
+            UrgencyLevel.entries.forEach { level ->
                 DropdownMenuItem(
                     text = { Text(level.displayName) },
                     onClick = {

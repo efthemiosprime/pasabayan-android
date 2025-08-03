@@ -128,11 +128,10 @@ class DeliveryMatchRepositoryImpl(
     
     override suspend fun requestToCarryPackage(packageId: Int, tripId: Int, proposedPrice: Double, message: String?): Result<DeliveryMatch> = try {
         val request = RequestToCarryRequest(
-            tripId = tripId,
             proposedPrice = proposedPrice,
             message = message
         )
-        val response = apiService.requestToCarryPackage(packageId, request)
+        val response = apiService.requestToCarryPackage(tripId, packageId, request)
         Result.Success(response.data)
     } catch (e: Exception) {
         Result.Failure(AppError.UnknownError("Failed to request to carry package: ${e.message ?: "Unknown error"}"))
@@ -154,6 +153,38 @@ class DeliveryMatchRepositoryImpl(
         } catch (e: Exception) {
             emit(Result.Failure(AppError.UnknownError("Failed to load shipper matches: ${e.message ?: "Unknown error"}")))
         }
+    }
+    
+    override suspend fun acceptShipperRequest(matchId: Int, message: String): Result<DeliveryMatch> = try {
+        val request = CarrierAcceptRequest(carrierMessage = message)
+        val response = apiService.acceptShipperRequest(matchId, request)
+        Result.Success(response.data)
+    } catch (e: Exception) {
+        Result.Failure(AppError.UnknownError("Failed to accept shipper request: ${e.message ?: "Unknown error"}"))
+    }
+    
+    override suspend fun declineShipperRequest(matchId: Int, reason: String, message: String): Result<DeliveryMatch> = try {
+        val request = CarrierDeclineRequest(declineReason = reason, carrierMessage = message)
+        val response = apiService.declineShipperRequest(matchId, request)
+        Result.Success(response.data)
+    } catch (e: Exception) {
+        Result.Failure(AppError.UnknownError("Failed to decline shipper request: ${e.message ?: "Unknown error"}"))
+    }
+    
+    override suspend fun acceptCarrierRequest(matchId: Int, message: String?): Result<DeliveryMatch> = try {
+        val request = ShipperAcceptRequest(message = message)
+        val response = apiService.acceptCarrierRequest(matchId, request)
+        Result.Success(response.data)
+    } catch (e: Exception) {
+        Result.Failure(AppError.UnknownError("Failed to accept carrier request: ${e.message ?: "Unknown error"}"))
+    }
+    
+    override suspend fun declineCarrierRequest(matchId: Int, reason: String?, message: String?): Result<DeliveryMatch> = try {
+        val request = ShipperDeclineRequest(reason = reason, message = message)
+        val response = apiService.declineCarrierRequest(matchId, request)
+        Result.Success(response.data)
+    } catch (e: Exception) {
+        Result.Failure(AppError.UnknownError("Failed to decline carrier request: ${e.message ?: "Unknown error"}"))
     }
     
     companion object {
