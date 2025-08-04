@@ -25,10 +25,7 @@ class FindCarriersViewModel(application: Application) : AndroidViewModel(applica
         PackageRepositoryImpl.create(getApplication())
     }
     
-    // TODO: Implement match repository when ready
-    // private val matchRepository: DeliveryMatchRepositoryImpl by lazy {
-    //     DeliveryMatchRepositoryImpl.create(getApplication())
-    // }
+    // No need for match repository - using package repository for trip requests
     
     // UI State
     private val _uiState = MutableStateFlow(FindCarriersUiState())
@@ -70,25 +67,44 @@ class FindCarriersViewModel(application: Application) : AndroidViewModel(applica
     }
     
     /**
-     * Request a carrier to carry the package
-     * TODO: Implement actual match creation when backend is ready
+     * Request a trip for package - iOS parity implementation
+     * Uses PackageViewModel.requestTripForPackage to match iOS exactly
+     * Matches iOS packageViewModel.requestTripForPackage functionality
      */
-    fun requestToCarry(packageId: Int, tripId: Int) {
+    fun requestToCarry(packageId: Int, tripId: Int, offeredPrice: Double, message: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             
             try {
-                // TODO: Implement actual match creation API call
-                // For now, just simulate success
-                kotlinx.coroutines.delay(1000) // Simulate network call
+                // Create PackageViewModel to match iOS call structure exactly
+                val packageViewModel = com.efthemiosprime.pasabayan.presentation.viewmodel.PackageViewModel(getApplication())
                 
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    requestSent = true,
-                    error = null
-                )
-                
-                println("🚚 Carrier request sent: Package $packageId -> Trip $tripId")
+                // Call requestTripForPackage exactly like iOS does
+                packageViewModel.requestTripForPackage(
+                    packageId = packageId,
+                    tripId = tripId,
+                    offeredPrice = offeredPrice,
+                    message = message
+                ) { result ->
+                    // Handle result exactly like iOS
+                    result.fold(
+                        onSuccess = { match ->
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                requestSent = true,
+                                error = null
+                            )
+                            println("✅ Trip request sent successfully: Package $packageId -> Trip $tripId, Match ID: ${match.id}")
+                        },
+                        onFailure = { error ->
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                error = error.message
+                            )
+                            println("❌ Failed to send trip request: ${error.message}")
+                        }
+                    )
+                }
                 
             } catch (exception: Exception) {
                 _uiState.value = _uiState.value.copy(

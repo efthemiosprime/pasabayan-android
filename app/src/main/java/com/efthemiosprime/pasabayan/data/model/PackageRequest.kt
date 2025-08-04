@@ -716,20 +716,11 @@ enum class UrgencyLevel {
 }
 
 /**
- * Compatible trip model for matching trips with package requests
+ * Compatible trip model - iOS parity
+ * API returns Trip objects directly, so we use typealias to match iOS behavior
+ * This matches how iOS handles compatible trips as Trip objects directly
  */
-@Serializable
-data class CompatibleTrip(
-    val trip: Trip,
-    @SerialName("match_score")
-    val matchScore: Double,
-    @SerialName("estimated_price")
-    val estimatedPrice: Double,
-    @SerialName("compatibility_reasons")
-    val compatibilityReasons: List<String> = emptyList()
-) {
-    val id: Int get() = trip.id
-}
+typealias CompatibleTrip = Trip
 
 /**
  * Paginated response model for Laravel pagination

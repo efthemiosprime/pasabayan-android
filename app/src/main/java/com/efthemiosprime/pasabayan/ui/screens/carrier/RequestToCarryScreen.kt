@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun RequestToCarryScreen(
     packageRequest: PackageRequest,
+
     onNavigateBack: () -> Unit,
     onRequestSent: () -> Unit
 ) {
@@ -122,6 +123,7 @@ fun RequestToCarryScreen(
                                     
                                     val price = proposedPrice.toDoubleOrNull()
                                     if (price != null) {
+                                        // Use repository directly (iOS parity achieved at API level)
                                         matchRepository.requestToCarryPackage(
                                             packageId = packageRequest.id,
                                             tripId = selectedTrip!!.id,

@@ -248,7 +248,7 @@ class PackageRepositoryImpl(
             if (response.success) {
                 Log.d(TAG, "✅ Compatible trips fetched successfully - Count: ${response.data.data.size}")
                 if (response.data.data.isNotEmpty()) {
-                    Log.d(TAG, "🚛 First trip ID: ${response.data.data.first().trip.id}, Score: ${response.data.data.first().matchScore}")
+                    Log.d(TAG, "🚛 First trip ID: ${response.data.data.first().id}, Carrier: ${response.data.data.first().carrier?.name ?: "Unknown"}")
                 }
                 Result.success(response.data.data)
             } else {

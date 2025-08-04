@@ -114,7 +114,20 @@ fun FindCarriersScreen(
                                 CarrierTripCard(
                                     compatibleTrip = compatibleTrip,
                                     onRequestToCarry = {
-                                        viewModel.requestToCarry(packageRequest.id, compatibleTrip.id)
+                                        // Calculate offered price based on trip price per kg and package weight
+                                        val pricePerKg = compatibleTrip.pricePerKg
+                                        val packageWeight = packageRequest.packageWeight ?: 0.0
+                                        val offeredPrice = pricePerKg * packageWeight
+                                        
+                                        // Create personalized message like iOS
+                                        val message = "Hi! I'd like to book your ${compatibleTrip.transportationMethod} from ${compatibleTrip.originCity} to ${compatibleTrip.destinationCity} for my ${packageRequest.packageSize.displayName} package."
+                                        
+                                        viewModel.requestToCarry(
+                                            packageId = packageRequest.id,
+                                            tripId = compatibleTrip.id,
+                                            offeredPrice = offeredPrice,
+                                            message = message
+                                        )
                                     }
                                 )
                             }
@@ -187,7 +200,7 @@ private fun CarrierTripCard(
     onRequestToCarry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val trip = compatibleTrip.trip
+    val trip = compatibleTrip
     PCardStandard(modifier = modifier) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             // Carrier info header
@@ -221,13 +234,13 @@ private fun CarrierTripCard(
                 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "₱${String.format("%.2f", compatibleTrip.estimatedPrice)}",
+                        text = "₱${String.format("%.2f", trip.pricePerKg)} /kg",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "${String.format("%.0f", compatibleTrip.matchScore * 100)}% match",
+                        text = trip.transportationMethod.displayName.toString(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -270,7 +283,7 @@ private fun CarrierTripCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = trip.transportationMethod.displayName,
+                    text = trip.transportationMethod.displayName.toString(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

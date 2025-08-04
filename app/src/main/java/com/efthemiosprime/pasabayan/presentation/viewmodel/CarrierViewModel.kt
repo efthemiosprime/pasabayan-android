@@ -447,6 +447,10 @@ class CarrierViewModel(
         loadBookingsInternal()
     }
     
+    // Note: requestToCarryPackage method would be implemented here
+    // but requires context which this ViewModel doesn't have access to
+    // For now, keep using the repository pattern directly from UI
+    
     // Sync legacy StateFlows with functional state
     init {
         viewModelScope.launch {
