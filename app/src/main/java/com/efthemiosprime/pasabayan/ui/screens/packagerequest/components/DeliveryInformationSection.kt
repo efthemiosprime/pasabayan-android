@@ -1,7 +1,6 @@
 package com.efthemiosprime.pasabayan.ui.screens.packagerequest.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
@@ -13,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
+import com.efthemiosprime.pasabayan.ui.shared.cards.PCardStandard
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -35,13 +35,10 @@ fun DeliveryInformationSection(
     onPreferredDeliveryTimeChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    PCardStandard(
+        modifier = modifier
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
@@ -222,7 +219,9 @@ private fun DatePickerModal(
             TextButton(
                 onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
-                        val date = java.time.Instant.ofEpochMilli(millis)
+                        // Fix timezone issue: Add 24 hours to ensure correct date selection
+                        val adjustedMillis = millis + (24 * 60 * 60 * 1000) // Add 24 hours
+                        val date = java.time.Instant.ofEpochMilli(adjustedMillis)
                             .atZone(java.time.ZoneId.systemDefault())
                             .toLocalDate()
                         onDateSelected(date.toString())

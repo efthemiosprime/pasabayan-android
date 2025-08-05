@@ -162,9 +162,13 @@ class PackageRequestViewModel(application: Application) : AndroidViewModel(appli
                         println("   📦 Package Status: ${createdPackage.status}")
                         
                         _uiState.update { it.copy(isLoading = false) }
-                        clearForm()
-                        sendEvent(PackageRequestEvent.ShowSuccess("Package request created successfully!"))
-                        sendEvent(PackageRequestEvent.NavigateBack)
+                        // Don't clear form here - wait for successful navigation back
+                        sendEvent(
+                            PackageRequestEvent.NavigateBackWithSuccess(
+                                createdPackage = createdPackage,
+                                message = "Package request created successfully!"
+                            )
+                        )
                     }
                     .onFailure { exception ->
                         println("❌ Package creation failed: ${exception.message}")

@@ -27,6 +27,7 @@ import com.efthemiosprime.pasabayan.ui.screens.carrier.models.TripCreationUiStat
 import com.efthemiosprime.pasabayan.ui.shared.cards.PCardStandard
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
 import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 /**
@@ -548,7 +549,13 @@ private fun TripCreationContent(
             confirmButton = {
                 TextButton(onClick = {
                     departureDatePickerState.selectedDateMillis?.let { millis ->
-                        onDepartureDateChange(dateFormatter.format(Date(millis)))
+                        // Fix timezone issue: Use UTC zone to extract the correct date
+                        val localDate = java.time.Instant.ofEpochMilli(millis)
+                            .atZone(java.time.ZoneId.of("UTC"))
+                            .toLocalDate()
+                        // Format LocalDate directly to avoid timezone conversion issues
+                        val formatter = java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.getDefault())
+                        onDepartureDateChange(localDate.format(formatter))
                     }
                     onShowDepartureDatePicker(false)
                 }) {
@@ -571,7 +578,13 @@ private fun TripCreationContent(
             confirmButton = {
                 TextButton(onClick = {
                     arrivalDatePickerState.selectedDateMillis?.let { millis ->
-                        onArrivalDateChange(dateFormatter.format(Date(millis)))
+                        // Fix timezone issue: Use UTC zone to extract the correct date
+                        val localDate = java.time.Instant.ofEpochMilli(millis)
+                            .atZone(java.time.ZoneId.of("UTC"))
+                            .toLocalDate()
+                        // Format LocalDate directly to avoid timezone conversion issues
+                        val formatter = java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.getDefault())
+                        onArrivalDateChange(localDate.format(formatter))
                     }
                     onShowArrivalDatePicker(false)
                 }) {

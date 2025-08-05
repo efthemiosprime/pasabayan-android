@@ -62,9 +62,10 @@ data class TabNavigationConfig(
 fun TabNavigationLayout(
     config: TabNavigationConfig,
     accentColor: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initialSelectedTabIndex: Int = 0
 ) {
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var selectedTabIndex by remember { mutableIntStateOf(initialSelectedTabIndex) }
     var selectedMoreTabIndex by remember { mutableIntStateOf(0) }
     val isMoreTabSelected = selectedTabIndex == config.visibleTabs.size
     
@@ -244,7 +245,8 @@ private fun MoreTabScreen(
 fun TabNavigationLayout(
     tabs: List<TabItem>,
     accentColor: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initialSelectedTabIndex: Int = 0
 ) {
     val config = remember(tabs) {
         TabNavigationConfig(
@@ -256,6 +258,7 @@ fun TabNavigationLayout(
     TabNavigationLayout(
         config = config,
         accentColor = accentColor,
-        modifier = modifier
+        modifier = modifier,
+        initialSelectedTabIndex = initialSelectedTabIndex
     )
 } 

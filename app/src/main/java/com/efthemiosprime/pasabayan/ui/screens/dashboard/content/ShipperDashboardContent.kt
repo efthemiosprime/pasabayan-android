@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.efthemiosprime.pasabayan.R
+import com.efthemiosprime.pasabayan.data.model.PackageRequest
 import com.efthemiosprime.pasabayan.data.model.UserRole
 import com.efthemiosprime.pasabayan.data.repository.PackageRepositoryImpl
 import com.efthemiosprime.pasabayan.presentation.viewmodel.AuthViewModel
@@ -47,6 +48,9 @@ fun ShipperDashboardContent(
     // State for navigation to create package screen
     var showCreatePackageScreen by remember { mutableStateOf(false) }
     
+    // State for initial selected tab (0 = Home, 1 = Packages, 2 = Browse)
+    var initialSelectedTab by remember { mutableIntStateOf(0) }
+    
     if (showCreatePackageScreen) {
         // Create PackageRequestViewModel with Application parameter
         val packageRequestViewModel: PackageRequestViewModel = viewModel { 
@@ -60,6 +64,16 @@ fun ShipperDashboardContent(
                 showCreatePackageScreen = false
                 // Refresh packages list after coming back from creation
                 viewModel.packageViewModel.loadPackageRequests()
+            },
+            onNavigateBackWithSuccess = { createdPackage, message ->
+                showCreatePackageScreen = false
+                // Switch to Packages tab (index 1) to show the new package
+                initialSelectedTab = 1
+                // Refresh packages list to show the new package
+                viewModel.packageViewModel.loadPackageRequests()
+                // Log successful creation for debugging
+                println("🎉 Package created successfully: ${createdPackage.title} (ID: ${createdPackage.id})")
+                println("📦 Message: $message")
             }
         )
     } else {
@@ -96,7 +110,8 @@ fun ShipperDashboardContent(
         
         TabNavigationLayout(
             config = config,
-            accentColor = MaterialTheme.colorScheme.primary
+            accentColor = MaterialTheme.colorScheme.primary,
+            initialSelectedTabIndex = initialSelectedTab
         )
     }
 }

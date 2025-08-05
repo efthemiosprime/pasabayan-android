@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
+import com.efthemiosprime.pasabayan.data.model.PackageRequest
 import com.efthemiosprime.pasabayan.data.model.PackageSize
 import com.efthemiosprime.pasabayan.data.model.PackageType
 import com.efthemiosprime.pasabayan.data.model.UrgencyLevel
@@ -41,7 +42,8 @@ import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
 @Composable
 fun DeliveryRequestScreen(
     viewModel: PackageRequestViewModel? = null,
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    onNavigateBackWithSuccess: (PackageRequest, String) -> Unit = { _, _ -> onNavigateBack() }
 ) {
     val context = LocalContext.current
     val actualViewModel: PackageRequestViewModel = viewModel ?: viewModel { 
@@ -69,6 +71,11 @@ fun DeliveryRequestScreen(
                 }
                 is PackageRequestEvent.NavigateBack -> {
                     onNavigateBack()
+                }
+                is PackageRequestEvent.NavigateBackWithSuccess -> {
+                    // Clear form only after successful creation, before navigation
+                    actualViewModel.clearForm()
+                    onNavigateBackWithSuccess(event.createdPackage, event.message)
                 }
                 is PackageRequestEvent.ClearForm -> {
                     // Form cleared, no additional action needed

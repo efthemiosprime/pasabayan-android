@@ -1,11 +1,14 @@
 package com.efthemiosprime.pasabayan.ui.screens.packagerequest.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -14,14 +17,14 @@ import com.efthemiosprime.pasabayan.data.model.PackageSize
 import com.efthemiosprime.pasabayan.data.model.PackageType
 import com.efthemiosprime.pasabayan.data.model.UrgencyLevel
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
-import com.efthemiosprime.pasabayan.ui.shared.cards.PCardStandard
 
 /**
- * Package Details Section - Focused component for package information
+ * Package Details Section - No Card Version
+ * Matches the design shown in the image with light background container
  * Following functional programming patterns with pure event handlers
  */
 @Composable
-fun PackageDetailsSection(
+fun PackageDetailsSectionNoCard(
     packageDescription: String,
     onPackageDescriptionChange: (String) -> Unit,
     weight: String,
@@ -48,8 +51,15 @@ fun PackageDetailsSection(
     onSpecialInstructionsChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    PCardStandard(
+    // Light gray/lavender background container as shown in image
+    Box(
         modifier = modifier
+            .fillMaxWidth()
+            .background(
+                color = Color(0xFFE8E7F3), // Light lavender/gray background
+                shape = RoundedCornerShape(16.dp)
+            )
+            .padding(16.dp)
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -57,7 +67,8 @@ fun PackageDetailsSection(
             Text(
                 text = "Package Details",
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
             
             PackageDescriptionField(
@@ -180,7 +191,11 @@ private fun PackageDescriptionField(
         placeholder = { Text("Describe your package") },
         modifier = Modifier.fillMaxWidth(),
         minLines = 2,
-        maxLines = 3
+        maxLines = 3,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White
+        )
     )
 }
 
@@ -197,7 +212,11 @@ private fun WeightInputField(
         placeholder = { Text("0.0") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         trailingIcon = { Text("kg", style = MaterialTheme.typography.bodyMedium) },
-        modifier = modifier
+        modifier = modifier,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White
+        )
     )
 }
 
@@ -214,7 +233,11 @@ private fun PackageValueField(
         placeholder = { Text("0.00") },
         leadingIcon = { Text("$", style = MaterialTheme.typography.bodyLarge) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        modifier = modifier
+        modifier = modifier,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White
+        )
     )
 }
 
@@ -231,7 +254,11 @@ private fun MaxBudgetField(
         placeholder = { Text("0.00") },
         leadingIcon = { Text("$", style = MaterialTheme.typography.bodyLarge) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        modifier = modifier
+        modifier = modifier,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White
+        )
     )
 }
 
@@ -257,7 +284,11 @@ private fun PackageSizePicker(
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .menuAnchor()
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
+            )
         )
         
         ExposedDropdownMenu(
@@ -327,7 +358,11 @@ private fun SpecialInstructionsField(
         placeholder = { Text("Any special handling requirements") },
         modifier = Modifier.fillMaxWidth(),
         minLines = 2,
-        maxLines = 3
+        maxLines = 3,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White
+        )
     )
 }
 
@@ -345,7 +380,11 @@ private fun DimensionInputField(
         placeholder = { Text("0") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         trailingIcon = { Text("cm", style = MaterialTheme.typography.bodyMedium) },
-        modifier = modifier
+        modifier = modifier,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White
+        )
     )
 }
 
@@ -373,7 +412,11 @@ private fun PackageTypePicker(
             },
             modifier = Modifier
                 .menuAnchor()
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
+            )
         )
         
         ExposedDropdownMenu(
@@ -417,7 +460,11 @@ private fun UrgencyLevelPicker(
             },
             modifier = Modifier
                 .menuAnchor()
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
+            )
         )
         
         ExposedDropdownMenu(
@@ -439,9 +486,9 @@ private fun UrgencyLevelPicker(
 
 @Preview(showBackground = true)
 @Composable
-private fun PackageDetailsSectionPreview() {
+private fun PackageDetailsSectionNoCardPreview() {
     PasabayanTheme {
-        PackageDetailsSection(
+        PackageDetailsSectionNoCard(
             packageDescription = "Electronics and gadgets",
             onPackageDescriptionChange = { },
             weight = "2.5",
@@ -452,7 +499,7 @@ private fun PackageDetailsSectionPreview() {
             onMaxBudgetChange = { },
             packageSize = PackageSize.MEDIUM,
             onPackageSizeChange = { },
-            packageType = PackageType.ELECTRONICS,
+            packageType = PackageType.GENERAL,
             onPackageTypeChange = { },
             urgencyLevel = UrgencyLevel.NORMAL,
             onUrgencyLevelChange = { },
@@ -469,4 +516,4 @@ private fun PackageDetailsSectionPreview() {
             modifier = Modifier.padding(16.dp)
         )
     }
-} 
+}

@@ -185,12 +185,39 @@ class AuthService(private val context: Context) {
         
         val client = OkHttpClient.Builder()
             .addInterceptor(logging)
+            // Enhanced timeout configuration for better reliability
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
+            .callTimeout(60, TimeUnit.SECONDS)
+            // Add retry on connection failure
+            .retryOnConnectionFailure(true)
+            // Enhanced SSL configuration for api.pasabayan.com
+            .apply {
+                try {
+                    // Use system default SSL configuration which works with network_security_config.xml
+                    // This ensures compatibility with our domain configurations
+                    val trustManagerFactory = javax.net.ssl.TrustManagerFactory.getInstance(
+                        javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm()
+                    )
+                    trustManagerFactory.init(null as java.security.KeyStore?)
+                    
+                    val sslContext = javax.net.ssl.SSLContext.getInstance("TLS")
+                    sslContext.init(null, trustManagerFactory.trustManagers, null)
+                    
+                    sslSocketFactory(sslContext.socketFactory, trustManagerFactory.trustManagers[0] as javax.net.ssl.X509TrustManager)
+                    
+                    Log.d(TAG, "🔒 SSL configuration applied for api.pasabayan.com")
+                } catch (e: Exception) {
+                    Log.w(TAG, "⚠️ Failed to configure SSL, using default: ${e.message}")
+                }
+            }
             .addInterceptor { chain ->
                 val originalRequest = chain.request()
                 val requestBuilder = originalRequest.newBuilder()
+                
+                // Add User-Agent for better server compatibility
+                requestBuilder.addHeader("User-Agent", "Pasabayan-Android/1.0")
                 
                 // Get auth token synchronously using runBlocking
                 try {
@@ -207,7 +234,22 @@ class AuthService(private val context: Context) {
                     Log.w(TAG, "Failed to get token for request: ${e.message}")
                 }
                 
-                chain.proceed(requestBuilder.build())
+                val request = requestBuilder.build()
+                Log.d(TAG, "🌐 Making request to: ${request.url}")
+                
+                try {
+                    chain.proceed(request)
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Network request failed: ${e.message}")
+                    Log.e(TAG, "   URL: ${request.url}")
+                    Log.e(TAG, "   Method: ${request.method}")
+                    if (e is java.net.UnknownHostException) {
+                        Log.e(TAG, "   🔍 DNS resolution failed - check network connectivity")
+                    } else if (e is javax.net.ssl.SSLException) {
+                        Log.e(TAG, "   🔒 SSL error - check network_security_config.xml")
+                    }
+                    throw e
+                }
             }
             .build()
         

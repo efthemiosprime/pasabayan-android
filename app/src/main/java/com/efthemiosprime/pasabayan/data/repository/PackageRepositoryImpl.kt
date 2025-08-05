@@ -164,14 +164,21 @@ class PackageRepositoryImpl(
             
             // Convert to API format
             val apiRequest = request.toApiRequest()
-            Log.d(TAG, "📦 API Request fields:")
+            Log.d(TAG, "📦 API Request fields (matching exact API specification):")
             Log.d(TAG, "   📍 Pickup: ${apiRequest.pickupAddress}, ${apiRequest.pickupCity}, ${apiRequest.pickupCountry}")
             Log.d(TAG, "   📍 Delivery: ${apiRequest.deliveryAddress}, ${apiRequest.deliveryCity}, ${apiRequest.deliveryCountry}")
-            Log.d(TAG, "   📦 Package: ${apiRequest.packageType}, ${apiRequest.packageWeightKg}kg")
-            Log.d(TAG, "   📏 Dimensions: ${apiRequest.packageDimensions.length}x${apiRequest.packageDimensions.width}x${apiRequest.packageDimensions.height}")
+            Log.d(TAG, "   📦 Package Weight: ${apiRequest.packageWeightKg} (Double)")
+            Log.d(TAG, "   📦 Package Type: ${apiRequest.packageType}")
+            Log.d(TAG, "   📦 Package Value: ${apiRequest.packageValue} (Double)")
+            Log.d(TAG, "   📦 Package Description: ${apiRequest.packageDescription}")
+            Log.d(TAG, "   📏 Dimensions: length=${apiRequest.packageDimensions.length}, width=${apiRequest.packageDimensions.width}, height=${apiRequest.packageDimensions.height}")
             Log.d(TAG, "   🚀 Urgency: ${apiRequest.urgencyLevel}")
+            Log.d(TAG, "   💰 Max Budget: ${apiRequest.maxPriceBudget} (Double)")
             Log.d(TAG, "   📅 Pickup date: ${apiRequest.pickupDatePreferred}")
+            Log.d(TAG, "   📅 Pickup flexible: ${apiRequest.pickupDateFlexible}")
             Log.d(TAG, "   📅 Delivery date: ${apiRequest.deliveryDateNeeded}")
+            Log.d(TAG, "   🧊 Fragile: ${apiRequest.fragile}")
+            Log.d(TAG, "   📝 Special handling: ${apiRequest.specialHandlingRequirements ?: "none"}")
             
             val response = apiService.createPackageRequest(apiRequest)
             

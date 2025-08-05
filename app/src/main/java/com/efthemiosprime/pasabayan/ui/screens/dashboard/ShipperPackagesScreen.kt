@@ -23,6 +23,7 @@ import com.efthemiosprime.pasabayan.ui.screens.dashboard.components.PackageCard
 import com.efthemiosprime.pasabayan.ui.screens.packagedetail.PackageDetailScreen
 import com.efthemiosprime.pasabayan.ui.screens.findcarriers.FindCarriersScreen
 import com.efthemiosprime.pasabayan.ui.screens.match.ViewMatchScreen
+import com.efthemiosprime.pasabayan.ui.theme.PasabayanDesignSystem
 
 /**
  * My Packages Screen - matches the carrier "My Trips" design from iOS
@@ -146,7 +147,7 @@ fun ShipperPackagesScreen(
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     CircularProgressIndicator()
-                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Spacer(modifier = Modifier.height(PasabayanDesignSystem.Spacing.lg))
                                     Text("Loading packages...")
                                 }
                             }
@@ -202,8 +203,8 @@ fun ShipperPackagesScreen(
                         else -> {
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                                contentPadding = PaddingValues(PasabayanDesignSystem.Spacing.lg),
+                                verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.lg)
                             ) {
                                                 items(filteredPackages) { packageRequest ->
                     PackageCard(
@@ -273,8 +274,8 @@ fun PackageFilterRow(
     }
     
     LazyRow(
-        modifier = Modifier.padding(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier.padding(PasabayanDesignSystem.Spacing.lg),
+        horizontalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.md)
     ) {
         items(filterOptions) { option ->
             FilterChip(
@@ -307,12 +308,12 @@ fun EmptyPackagesState(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.lg)
         ) {
             Icon(
                 imageVector = Icons.Default.Inbox,
                 contentDescription = null,
-                modifier = Modifier.size(64.dp),
+                modifier = Modifier.size(PasabayanDesignSystem.Spacing.xxxxxl),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
             

@@ -24,12 +24,20 @@ android {
     }
 
     buildTypes {
+        debug {
+            isDebuggable = true
+            isMinifyEnabled = false
+            // Use debug-friendly network security config
+            manifestPlaceholders["networkSecurityConfig"] = "@xml/network_security_config"
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Production network security config
+            manifestPlaceholders["networkSecurityConfig"] = "@xml/network_security_config"
         }
     }
     compileOptions {

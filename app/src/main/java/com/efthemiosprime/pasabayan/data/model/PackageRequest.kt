@@ -4,30 +4,27 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Limited shipper model for package listings
- * Used when API returns only basic shipper info without email
+ * Package shipper model - matches exact API response structure from specification
+ * Used in package creation success response
  */
 @Serializable
 data class PackageShipper(
     val id: Int,
     val name: String,
-    val rating: String, // API returns rating as string, not Double
-    @SerialName("total_ratings")
-    val totalRatings: Int,
-    @SerialName("verification_level")
-    val verificationLevel: String
+    val email: String,
+    val avatar: String? = null,
+    @SerialName("phone_verified")
+    val phoneVerified: Boolean = false
 ) {
     /**
      * Convert to User model for UI compatibility
-     * Fills in required email field with placeholder
      */
     fun toUser(): User = User(
         id = id,
         name = name,
-        email = "", // Not provided in package listings
-        rating = rating.toDoubleOrNull(),
-        totalRatings = totalRatings,
-        verificationLevel = verificationLevel
+        email = email,
+        avatar = avatar,
+        phoneVerified = phoneVerified
     )
 }
 
@@ -420,19 +417,19 @@ data class CreatePackageRequestApi(
     @SerialName("delivery_country")
     val deliveryCountry: String,
     @SerialName("package_weight_kg")
-    val packageWeightKg: String,
+    val packageWeightKg: Double, // ✅ Fixed: Now Number as per API spec
     @SerialName("package_dimensions")
     val packageDimensions: PackageDimensions,
     @SerialName("package_type")
     val packageType: String,
     @SerialName("package_value")
-    val packageValue: String,
+    val packageValue: Double, // ✅ Fixed: Now Number as per API spec
     @SerialName("package_description")
     val packageDescription: String,
     @SerialName("urgency_level")
     val urgencyLevel: String,
     @SerialName("max_price_budget")
-    val maxPriceBudget: String,
+    val maxPriceBudget: Double, // ✅ Fixed: Now Number as per API spec
     @SerialName("pickup_date_preferred")
     val pickupDatePreferred: String,
     @SerialName("pickup_date_flexible")
@@ -505,13 +502,13 @@ data class CreatePackageRequest(
             deliveryAddress = deliveryAddress,
             deliveryCity = deliveryCity,
             deliveryCountry = deliveryCountry,
-            packageWeightKg = packageWeight?.toString() ?: "0",
+            packageWeightKg = packageWeight ?: 0.0, // ✅ Fixed: Send as Double, not String
             packageDimensions = packageDimensions,
             packageType = packageType,
-            packageValue = packageValue?.toString() ?: "0",
+            packageValue = packageValue ?: 0.0, // ✅ Fixed: Send as Double, not String
             packageDescription = title,
             urgencyLevel = urgencyLevel,
-            maxPriceBudget = maxBudget?.toString() ?: "0",
+            maxPriceBudget = maxBudget ?: 0.0, // ✅ Fixed: Send as Double, not String
             pickupDatePreferred = preferredPickupDate,
             pickupDateFlexible = pickupDateFlexible,
             deliveryDateNeeded = preferredDeliveryDate ?: preferredPickupDate,

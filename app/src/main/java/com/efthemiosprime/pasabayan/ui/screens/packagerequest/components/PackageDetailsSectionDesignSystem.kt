@@ -1,27 +1,27 @@
 package com.efthemiosprime.pasabayan.ui.screens.packagerequest.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.data.model.PackageSize
 import com.efthemiosprime.pasabayan.data.model.PackageType
 import com.efthemiosprime.pasabayan.data.model.UrgencyLevel
+import com.efthemiosprime.pasabayan.ui.theme.PasabayanDesignSystem
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
-import com.efthemiosprime.pasabayan.ui.shared.cards.PCardStandard
 
 /**
- * Package Details Section - Focused component for package information
- * Following functional programming patterns with pure event handlers
+ * Package Details Section - Design System Compliant
+ * Uses light background container instead of card, following Pasabayan design system
  */
 @Composable
-fun PackageDetailsSection(
+fun PackageDetailsSectionDesignSystem(
     packageDescription: String,
     onPackageDescriptionChange: (String) -> Unit,
     weight: String,
@@ -48,26 +48,36 @@ fun PackageDetailsSection(
     onSpecialInstructionsChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    PCardStandard(
+    // Design system compliant container
+    Box(
         modifier = modifier
+            .fillMaxWidth()
+            .background(
+                color = PasabayanDesignSystem.Colors.surfaceVariant,
+                shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.lg)
+            )
+            .padding(PasabayanDesignSystem.Spacing.cardPadding)
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.formFieldSpacing)
         ) {
+            // Section title using design system typography
             Text(
                 text = "Package Details",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                style = PasabayanDesignSystem.Typography.headingH3,
+                color = PasabayanDesignSystem.Colors.onSurface
             )
             
+            // Package description field
             PackageDescriptionField(
                 value = packageDescription,
                 onValueChange = onPackageDescriptionChange
             )
             
+            // Package type and urgency level row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.md)
             ) {
                 PackageTypePicker(
                     selectedType = packageType,
@@ -82,9 +92,10 @@ fun PackageDetailsSection(
                 )
             }
             
+            // Weight and size row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.md)
             ) {
                 WeightInputField(
                     value = weight,
@@ -99,22 +110,23 @@ fun PackageDetailsSection(
                 )
             }
             
-            // Package Dimensions Section
+            // Package dimensions section
             Text(
                 text = "Package Dimensions (cm) - Optional",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
+                style = PasabayanDesignSystem.Typography.bodyLarge,
+                color = PasabayanDesignSystem.Colors.onSurface
             )
             
             Text(
                 text = "Leave empty for smart defaults (30×20×15 cm)",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = PasabayanDesignSystem.Typography.caption,
+                color = PasabayanDesignSystem.Colors.onSurfaceVariant
             )
             
+            // Dimensions row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.md)
             ) {
                 DimensionInputField(
                     value = packageLength,
@@ -138,9 +150,10 @@ fun PackageDetailsSection(
                 )
             }
             
+            // Package value and budget row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(PasabayanDesignSystem.Spacing.md)
             ) {
                 PackageValueField(
                     value = packageValue,
@@ -155,11 +168,13 @@ fun PackageDetailsSection(
                 )
             }
             
+            // Fragile package toggle
             FragilityToggle(
                 isFragile = isFragile,
                 onFragileChange = onFragileChange
             )
             
+            // Special instructions
             SpecialInstructionsField(
                 value = specialInstructions,
                 onValueChange = onSpecialInstructionsChange
@@ -180,7 +195,8 @@ private fun PackageDescriptionField(
         placeholder = { Text("Describe your package") },
         modifier = Modifier.fillMaxWidth(),
         minLines = 2,
-        maxLines = 3
+        maxLines = 3,
+        shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.button)
     )
 }
 
@@ -196,8 +212,15 @@ private fun WeightInputField(
         label = { Text("Weight *") },
         placeholder = { Text("0.0") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        trailingIcon = { Text("kg", style = MaterialTheme.typography.bodyMedium) },
-        modifier = modifier
+        trailingIcon = { 
+            Text(
+                "kg", 
+                style = PasabayanDesignSystem.Typography.bodySmall,
+                color = PasabayanDesignSystem.Colors.onSurfaceVariant
+            ) 
+        },
+        modifier = modifier,
+        shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.button)
     )
 }
 
@@ -212,9 +235,16 @@ private fun PackageValueField(
         onValueChange = onValueChange,
         label = { Text("Package value") },
         placeholder = { Text("0.00") },
-        leadingIcon = { Text("$", style = MaterialTheme.typography.bodyLarge) },
+        leadingIcon = { 
+            Text(
+                "$", 
+                style = PasabayanDesignSystem.Typography.bodyLarge,
+                color = PasabayanDesignSystem.Colors.onSurfaceVariant
+            ) 
+        },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        modifier = modifier
+        modifier = modifier,
+        shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.button)
     )
 }
 
@@ -229,9 +259,16 @@ private fun MaxBudgetField(
         onValueChange = onValueChange,
         label = { Text("Max budget") },
         placeholder = { Text("0.00") },
-        leadingIcon = { Text("$", style = MaterialTheme.typography.bodyLarge) },
+        leadingIcon = { 
+            Text(
+                "$", 
+                style = PasabayanDesignSystem.Typography.bodyLarge,
+                color = PasabayanDesignSystem.Colors.onSurfaceVariant
+            ) 
+        },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        modifier = modifier
+        modifier = modifier,
+        shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.button)
     )
 }
 
@@ -257,7 +294,8 @@ private fun PackageSizePicker(
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .menuAnchor()
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.button)
         )
         
         ExposedDropdownMenu(
@@ -268,11 +306,14 @@ private fun PackageSizePicker(
                 DropdownMenuItem(
                     text = {
                         Column {
-                            Text(size.displayName)
+                            Text(
+                                text = size.displayName,
+                                style = PasabayanDesignSystem.Typography.bodyRegular
+                            )
                             Text(
                                 text = size.description,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                style = PasabayanDesignSystem.Typography.caption,
+                                color = PasabayanDesignSystem.Colors.onSurfaceVariant
                             )
                         }
                     },
@@ -299,12 +340,13 @@ private fun FragilityToggle(
         Column {
             Text(
                 text = "Fragile package",
-                style = MaterialTheme.typography.bodyLarge
+                style = PasabayanDesignSystem.Typography.bodyLarge,
+                color = PasabayanDesignSystem.Colors.onSurface
             )
             Text(
                 text = "Requires special handling",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = PasabayanDesignSystem.Typography.caption,
+                color = PasabayanDesignSystem.Colors.onSurfaceVariant
             )
         }
         
@@ -327,7 +369,8 @@ private fun SpecialInstructionsField(
         placeholder = { Text("Any special handling requirements") },
         modifier = Modifier.fillMaxWidth(),
         minLines = 2,
-        maxLines = 3
+        maxLines = 3,
+        shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.button)
     )
 }
 
@@ -344,8 +387,15 @@ private fun DimensionInputField(
         label = { Text(label) },
         placeholder = { Text("0") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        trailingIcon = { Text("cm", style = MaterialTheme.typography.bodyMedium) },
-        modifier = modifier
+        trailingIcon = { 
+            Text(
+                "cm", 
+                style = PasabayanDesignSystem.Typography.bodySmall,
+                color = PasabayanDesignSystem.Colors.onSurfaceVariant
+            ) 
+        },
+        modifier = modifier,
+        shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.button)
     )
 }
 
@@ -373,7 +423,8 @@ private fun PackageTypePicker(
             },
             modifier = Modifier
                 .menuAnchor()
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.button)
         )
         
         ExposedDropdownMenu(
@@ -382,7 +433,12 @@ private fun PackageTypePicker(
         ) {
             PackageType.entries.forEach { type ->
                 DropdownMenuItem(
-                    text = { Text(type.displayName) },
+                    text = { 
+                        Text(
+                            text = type.displayName,
+                            style = PasabayanDesignSystem.Typography.bodyRegular
+                        ) 
+                    },
                     onClick = {
                         onTypeSelected(type)
                         expanded = false
@@ -417,7 +473,8 @@ private fun UrgencyLevelPicker(
             },
             modifier = Modifier
                 .menuAnchor()
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(PasabayanDesignSystem.CornerRadius.button)
         )
         
         ExposedDropdownMenu(
@@ -426,7 +483,12 @@ private fun UrgencyLevelPicker(
         ) {
             UrgencyLevel.entries.forEach { level ->
                 DropdownMenuItem(
-                    text = { Text(level.displayName) },
+                    text = { 
+                        Text(
+                            text = level.displayName,
+                            style = PasabayanDesignSystem.Typography.bodyRegular
+                        ) 
+                    },
                     onClick = {
                         onLevelSelected(level)
                         expanded = false
@@ -439,34 +501,40 @@ private fun UrgencyLevelPicker(
 
 @Preview(showBackground = true)
 @Composable
-private fun PackageDetailsSectionPreview() {
+private fun PackageDetailsSectionDesignSystemPreview() {
     PasabayanTheme {
-        PackageDetailsSection(
-            packageDescription = "Electronics and gadgets",
-            onPackageDescriptionChange = { },
-            weight = "2.5",
-            onWeightChange = { },
-            packageValue = "1080",
-            onPackageValueChange = { },
-            maxBudget = "500",
-            onMaxBudgetChange = { },
-            packageSize = PackageSize.MEDIUM,
-            onPackageSizeChange = { },
-            packageType = PackageType.ELECTRONICS,
-            onPackageTypeChange = { },
-            urgencyLevel = UrgencyLevel.NORMAL,
-            onUrgencyLevelChange = { },
-            packageLength = "30",
-            onPackageLengthChange = { },
-            packageWidth = "20",
-            onPackageWidthChange = { },
-            packageHeight = "15",
-            onPackageHeightChange = { },
-            isFragile = true,
-            onFragileChange = { },
-            specialInstructions = "Handle with care",
-            onSpecialInstructionsChange = { },
-            modifier = Modifier.padding(16.dp)
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(PasabayanDesignSystem.Colors.screenBackground)
+                .padding(PasabayanDesignSystem.Spacing.screenPadding)
+        ) {
+            PackageDetailsSectionDesignSystem(
+                packageDescription = "Electronics and gadgets",
+                onPackageDescriptionChange = { },
+                weight = "2.5",
+                onWeightChange = { },
+                packageValue = "1080",
+                onPackageValueChange = { },
+                maxBudget = "500",
+                onMaxBudgetChange = { },
+                packageSize = PackageSize.MEDIUM,
+                onPackageSizeChange = { },
+                packageType = PackageType.ELECTRONICS,
+                onPackageTypeChange = { },
+                urgencyLevel = UrgencyLevel.NORMAL,
+                onUrgencyLevelChange = { },
+                packageLength = "30",
+                onPackageLengthChange = { },
+                packageWidth = "20",
+                onPackageWidthChange = { },
+                packageHeight = "15",
+                onPackageHeightChange = { },
+                isFragile = true,
+                onFragileChange = { },
+                specialInstructions = "Handle with care",
+                onSpecialInstructionsChange = { }
+            )
+        }
     }
-} 
+}

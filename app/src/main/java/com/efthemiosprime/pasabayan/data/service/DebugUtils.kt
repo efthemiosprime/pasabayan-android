@@ -68,25 +68,81 @@ object DebugUtils {
             Log.e(TAG, "   ❌ Internet connectivity: FAILED - ${e.message}")
         }
         
-        // Test API server connectivity
+        // Test API server connectivity with enhanced SSL/TLS diagnostics
         try {
             Log.d(TAG, "   🌐 Testing API server connectivity...")
-            val connection = java.net.URL(APIService.BASE_URL).openConnection()
+            Log.d(TAG, "   📡 Target: ${APIService.BASE_URL}")
+            
+            val url = java.net.URL(APIService.BASE_URL)
+            val connection = url.openConnection()
             connection.connectTimeout = 10000
             connection.readTimeout = 10000
-            connection.connect()
-            results["apiServerConnectivity"] = true
-            Log.d(TAG, "   ✅ API server connectivity: OK")
+            
+            // Enhanced SSL diagnostics for HTTPS connections
+            if (connection is javax.net.ssl.HttpsURLConnection) {
+                Log.d(TAG, "   🔒 HTTPS connection detected - testing SSL...")
+                connection.setRequestProperty("User-Agent", "Pasabayan-Android/1.0")
+                
+                try {
+                    connection.connect()
+                    val responseCode = connection.responseCode
+                    Log.d(TAG, "   📊 HTTP Response Code: $responseCode")
+                    
+                    // Check SSL certificate info
+                    val serverCerts = connection.serverCertificates
+                    if (serverCerts.isNotEmpty()) {
+                        Log.d(TAG, "   🔒 SSL Certificate: ${serverCerts[0].type}")
+                        Log.d(TAG, "   🔒 Certificate Subject: ${(serverCerts[0] as java.security.cert.X509Certificate).subjectDN}")
+                    }
+                    
+                    results["apiServerConnectivity"] = true
+                    results["httpResponseCode"] = responseCode
+                    results["sslCertificateValid"] = true
+                    Log.d(TAG, "   ✅ API server connectivity: OK")
+                    Log.d(TAG, "   ✅ SSL certificate: VALID")
+                    
+                } catch (sslE: javax.net.ssl.SSLException) {
+                    results["apiServerConnectivity"] = false
+                    results["sslError"] = sslE.message ?: "SSL handshake failed"
+                    Log.e(TAG, "   ❌ SSL Error: ${sslE.message}")
+                    Log.e(TAG, "   🔍 Check network_security_config.xml for api.pasabayan.com domain")
+                    Log.e(TAG, "   🔍 Verify SSL certificate is valid and trusted")
+                }
+            } else {
+                connection.connect()
+                results["apiServerConnectivity"] = true
+                Log.d(TAG, "   ✅ API server connectivity: OK (HTTP)")
+            }
+            
         } catch (e: Exception) {
             results["apiServerConnectivity"] = false
             results["apiServerError"] = e.message ?: "Unknown error"
             Log.e(TAG, "   ❌ API server connectivity: FAILED - ${e.message}")
             
+            when (e) {
+                is java.net.UnknownHostException -> {
+                    Log.e(TAG, "   🔍 DNS resolution failed for api.pasabayan.com")
+                    Log.e(TAG, "   💡 Check internet connection and DNS settings")
+                }
+                is java.net.ConnectException -> {
+                    Log.e(TAG, "   🔍 Connection refused - server may be down")
+                    Log.e(TAG, "   💡 Try switching to LOCAL_URL for local testing")
+                }
+                is javax.net.ssl.SSLException -> {
+                    Log.e(TAG, "   🔍 SSL/TLS error - certificate or configuration issue")
+                    Log.e(TAG, "   💡 Check network_security_config.xml configuration")
+                }
+                else -> {
+                    Log.e(TAG, "   🔍 Unexpected error: ${e.javaClass.simpleName}")
+                }
+            }
+            
             // Suggest alternative URLs
             Log.d(TAG, "   💡 Try these alternatives:")
             Log.d(TAG, "      - Change BASE_URL to LOCAL_URL for local testing")
             Log.d(TAG, "      - Check if server is running")
-            Log.d(TAG, "      - Verify firewall settings")
+            Log.d(TAG, "      - Verify network_security_config.xml")
+            Log.d(TAG, "      - Test api.pasabayan.com in browser")
         }
         
         return results
