@@ -30,8 +30,7 @@ import com.efthemiosprime.pasabayan.presentation.viewmodel.AuthViewModel
 import com.efthemiosprime.pasabayan.ui.shared.EmptyStateView
 import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
 import com.efthemiosprime.pasabayan.ui.components.TripCard
-import com.efthemiosprime.pasabayan.ui.screens.booking.DirectBookingSheet
-import com.efthemiosprime.pasabayan.ui.screens.booking.BookingSuccessView
+import com.efthemiosprime.pasabayan.ui.screens.booking.MatchCreationScreen
 
 /**
  * BrowseTripsView - Exact Mirror of iOS Implementation
@@ -62,11 +61,9 @@ fun BrowseTripsView(
     val filterSheetState by viewModel.filterSheetState.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     
-    // Direct Booking State
+    // Match Creation State
     var selectedTrip by remember { mutableStateOf<Trip?>(null) }
-    var showingDirectBooking by remember { mutableStateOf(false) }
-    var showingBookingSuccess by remember { mutableStateOf(false) }
-    var completedBookingData by remember { mutableStateOf<DirectBookingData?>(null) }
+    var showingMatchCreation by remember { mutableStateOf(false) }
     
     LaunchedEffect(Unit) {
         println("🔍 BrowseTripsView: LaunchedEffect triggered")
@@ -104,7 +101,7 @@ fun BrowseTripsView(
             errorMessage = errorMessage,
             onTripBookClick = { trip ->
                 selectedTrip = trip
-                showingDirectBooking = true
+                showingMatchCreation = true
             },
             onRefresh = viewModel::loadAvailableTrips
         )
@@ -127,36 +124,19 @@ fun BrowseTripsView(
         )
     }
     
-    // Direct Booking Sheet - Enhanced version matching iOS DirectBookingSheet
-    if (showingDirectBooking && selectedTrip != null) {
-        DirectBookingSheet(
+    // Match Creation Screen - iOS-style package selection + price + send
+    if (showingMatchCreation && selectedTrip != null) {
+        MatchCreationScreen(
             trip = selectedTrip!!,
-            onBookingComplete = { booking ->
-                // Handle successful booking - store data and show success view
-                completedBookingData = booking
-                showingDirectBooking = false
-                showingBookingSuccess = true
-                viewModel.loadAvailableTrips() // Refresh trips
-            },
-            onDismiss = { showingDirectBooking = false },
-            viewModel = viewModel
-        )
-    }
-    
-    // Booking Success View - Enhanced version matching iOS BookingSuccessView
-    if (showingBookingSuccess && completedBookingData != null && selectedTrip != null) {
-        BookingSuccessView(
-            bookingData = completedBookingData!!,
-            trip = selectedTrip!!,
-            onDismiss = { 
-                showingBookingSuccess = false
-                completedBookingData = null
+            onNavigateBack = { 
+                showingMatchCreation = false
                 selectedTrip = null
             },
-            onViewBookingDetails = {
-                // TODO: Navigate to booking details screen
-                // For now, just dismiss
-                println("📱 Navigate to booking details: ${completedBookingData?.bookingReference}")
+            onMatchCreated = {
+                showingMatchCreation = false
+                selectedTrip = null
+                viewModel.loadAvailableTrips() // Refresh trips
+                packageViewModel.loadPackageRequests() // Refresh packages
             }
         )
     }
