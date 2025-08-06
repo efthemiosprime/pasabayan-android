@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.efthemiosprime.pasabayan.data.config.NetworkConfig
 import kotlinx.serialization.json.Json
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -397,10 +398,11 @@ class PackageRepositoryImpl(
         }
         
         /**
-         * Factory method to create PackageRepositoryImpl with APIService
-         * Includes authentication interceptor like AuthService
+         * Factory method to create PackageRepositoryImpl with existing auth pattern and centralized URL
          */
         fun create(context: Context): PackageRepositoryImpl {
+            Log.d(TAG, "Creating PackageRepositoryImpl with centralized URL configuration")
+            
             val json = Json {
                 ignoreUnknownKeys = true
                 coerceInputValues = true
@@ -419,10 +421,9 @@ class PackageRepositoryImpl(
                     val originalRequest = chain.request()
                     val requestBuilder = originalRequest.newBuilder()
                     
-                    // Add authentication header if available
+                    // Add authentication header if available - existing pattern
                     try {
                         val token = kotlinx.coroutines.runBlocking { 
-                            // Get token from AuthService singleton
                             AuthService.getInstance(context).getToken()
                         }
                         if (token != null) {
@@ -463,7 +464,7 @@ class PackageRepositoryImpl(
                 .build()
             
             val retrofit = Retrofit.Builder()
-                .baseUrl("${APIService.BASE_URL}/")
+                .baseUrl("${NetworkConfig.baseUrl}/") // Use centralized URL config
                 .client(client)
                 .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
                 .build()

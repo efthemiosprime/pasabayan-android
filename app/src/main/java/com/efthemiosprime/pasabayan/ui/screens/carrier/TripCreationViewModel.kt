@@ -194,9 +194,9 @@ class TripCreationViewModel(application: Application) : AndroidViewModel(applica
                             println("✅ Trip created successfully - ID: ${createdTrip.id}")
                             _uiState.update { it.copy(isLoading = false) }
                             sendEvent(TripCreationEvent.ShowSuccess("Trip created successfully!"))
-                            // Auto-navigate back after 2 seconds
+                            // Auto-navigate to Trips tab after 2 seconds
                             delay(2000)
-                            sendEvent(TripCreationEvent.NavigateBack)
+                            sendEvent(TripCreationEvent.NavigateToTripsTab)
                         },
                         onFailure = { error ->
                             println("❌ Trip creation failed: ${error.message}")

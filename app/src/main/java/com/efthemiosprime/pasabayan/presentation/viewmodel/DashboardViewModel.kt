@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 import com.efthemiosprime.pasabayan.data.model.UserRole
 import com.efthemiosprime.pasabayan.data.service.APIService
 import com.efthemiosprime.pasabayan.data.service.AuthService
+import com.efthemiosprime.pasabayan.data.config.NetworkConfig
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import okhttp3.MediaType.Companion.toMediaType
@@ -41,7 +42,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     val matchViewModel: MatchViewModel = _matchViewModel
     
     /**
-     * Create APIService with authentication headers
+     * Create APIService using centralized URL configuration with existing auth pattern
      */
     private fun createApiService(): APIService {
         val json = Json {
@@ -62,7 +63,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 val originalRequest = chain.request()
                 val requestBuilder = originalRequest.newBuilder()
                 
-                // Get auth token from AuthService
+                // Get auth token from AuthService - existing pattern
                 try {
                     val authService = AuthService.getInstance(getApplication())
                     val token = kotlinx.coroutines.runBlocking { authService.getToken() }
@@ -78,7 +79,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             .build()
         
         return Retrofit.Builder()
-            .baseUrl("${APIService.BASE_URL}/")
+            .baseUrl("${NetworkConfig.baseUrl}/") // Use centralized URL config
             .client(client)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()

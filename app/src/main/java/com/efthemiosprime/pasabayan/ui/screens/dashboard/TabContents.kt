@@ -395,6 +395,30 @@ private fun CarrierTripsTabContent(
                         isLoading = false
                     }
                 }
+            },
+            onNavigateToTripsTab = {
+                // Close trip creation screen and refresh trips list
+                showCreateTripScreen = false
+                scope.launch {
+                    isLoading = true
+                    try {
+                        tripRepository.getTripsForCarrier(1).collect { result ->
+                            result.fold(
+                                onSuccess = { tripList ->
+                                    trips = tripList
+                                    isLoading = false
+                                },
+                                onFailure = { error ->
+                                    errorMessage = error.message ?: "Failed to refresh trips"
+                                    isLoading = false
+                                }
+                            )
+                        }
+                    } catch (e: Exception) {
+                        errorMessage = e.message ?: "Failed to refresh trips"
+                        isLoading = false
+                    }
+                }
             }
         )
         return

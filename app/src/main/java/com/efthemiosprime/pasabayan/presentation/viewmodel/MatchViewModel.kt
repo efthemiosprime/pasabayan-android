@@ -13,6 +13,7 @@ import com.efthemiosprime.pasabayan.data.repository.DeliveryMatchRepositoryImpl
 import com.efthemiosprime.pasabayan.data.service.AuthService
 import com.efthemiosprime.pasabayan.data.service.APIService
 import com.efthemiosprime.pasabayan.data.common.Result
+import com.efthemiosprime.pasabayan.data.config.NetworkConfig
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -475,8 +476,7 @@ class MatchViewModel(application: Application) : AndroidViewModel(application) {
     }
     
     /**
-     * Create Retrofit API service
-     * Following the same pattern as BrowseTripsViewModel and AuthService
+     * Create Retrofit API service with existing auth pattern and centralized URL
      */
     private fun createApiService(): APIService {
         val json = Json {
@@ -497,7 +497,7 @@ class MatchViewModel(application: Application) : AndroidViewModel(application) {
                 val originalRequest = chain.request()
                 val requestBuilder = originalRequest.newBuilder()
                 
-                // Get auth token from AuthService
+                // Get auth token from AuthService - existing pattern
                 try {
                     val token = kotlinx.coroutines.runBlocking { authService.getToken() }
                     if (token != null) {
@@ -516,7 +516,7 @@ class MatchViewModel(application: Application) : AndroidViewModel(application) {
             .build()
         
         return Retrofit.Builder()
-            .baseUrl("${APIService.BASE_URL}/")
+            .baseUrl("${NetworkConfig.baseUrl}/") // Use centralized URL config
             .client(client)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()

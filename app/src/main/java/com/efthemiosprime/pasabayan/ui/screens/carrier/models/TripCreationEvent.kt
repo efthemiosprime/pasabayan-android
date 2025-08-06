@@ -8,5 +8,6 @@ sealed class TripCreationEvent {
     data class ShowError(val message: String) : TripCreationEvent()
     data class ShowSuccess(val message: String) : TripCreationEvent()
     object NavigateBack : TripCreationEvent()
+    object NavigateToTripsTab : TripCreationEvent()
     object ClearForm : TripCreationEvent()
 } 

@@ -435,14 +435,17 @@ interface APIService {
     ): DirectBookingResponse
     
     companion object {
-        // URLs for different environments - mirrors iOS APIService
+        // DEPRECATED: Use NetworkConfig instead for centralized configuration
+        @Deprecated("Use NetworkConfig.baseUrl instead", ReplaceWith("NetworkConfig.baseUrl"))
         const val PRODUCTION_URL = "https://api.pasabayan.com"
+        @Deprecated("Use NetworkConfig.baseUrl instead", ReplaceWith("NetworkConfig.baseUrl"))
         const val LOCAL_URL = "http://localhost:8001"
-        const val LOCAL_DEVICE_URL = "http://10.0.2.2:8001" // Android emulator localhost
+        @Deprecated("Use NetworkConfig.baseUrl instead", ReplaceWith("NetworkConfig.baseUrl"))
+        const val LOCAL_DEVICE_URL = "http://10.0.2.2:8001"
         
-        // Current base URL - switch between environments
-        // Use production for auth, local for other APIs while debugging
-        const val BASE_URL = PRODUCTION_URL // Temporary: use production until local auth is fixed
-        // const val BASE_URL = LOCAL_DEVICE_URL // Use when local server auth is working
+        // Use centralized configuration for consistent URL management
+        @Deprecated("Use NetworkConfig.baseUrl instead", ReplaceWith("NetworkConfig.baseUrl"))
+        val BASE_URL: String
+            get() = com.efthemiosprime.pasabayan.data.config.NetworkConfig.baseUrl
     }
 } 

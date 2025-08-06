@@ -34,13 +34,14 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
+import com.efthemiosprime.pasabayan.data.model.*
+import com.efthemiosprime.pasabayan.data.config.NetworkConfig
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
-import com.efthemiosprime.pasabayan.data.model.*
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
 import com.facebook.FacebookException
@@ -176,42 +177,25 @@ class AuthService(private val context: Context) {
     }
     
     /**
-     * Create Retrofit API service
+     * Create Retrofit API service with authentication
+     * AuthService needs to send tokens for endpoints like /carrier/toggle-status
      */
     fun createApiService(): APIService {
+        Log.d(TAG, "Creating AuthService API client with authentication")
+        Log.d(TAG, "   Base URL: ${NetworkConfig.baseUrl}")
+        Log.d(TAG, "   Environment: ${NetworkConfig.environmentName}")
+        
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
         
         val client = OkHttpClient.Builder()
             .addInterceptor(logging)
-            // Enhanced timeout configuration for better reliability
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .callTimeout(60, TimeUnit.SECONDS)
-            // Add retry on connection failure
             .retryOnConnectionFailure(true)
-            // Enhanced SSL configuration for api.pasabayan.com
-            .apply {
-                try {
-                    // Use system default SSL configuration which works with network_security_config.xml
-                    // This ensures compatibility with our domain configurations
-                    val trustManagerFactory = javax.net.ssl.TrustManagerFactory.getInstance(
-                        javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm()
-                    )
-                    trustManagerFactory.init(null as java.security.KeyStore?)
-                    
-                    val sslContext = javax.net.ssl.SSLContext.getInstance("TLS")
-                    sslContext.init(null, trustManagerFactory.trustManagers, null)
-                    
-                    sslSocketFactory(sslContext.socketFactory, trustManagerFactory.trustManagers[0] as javax.net.ssl.X509TrustManager)
-                    
-                    Log.d(TAG, "🔒 SSL configuration applied for api.pasabayan.com")
-                } catch (e: Exception) {
-                    Log.w(TAG, "⚠️ Failed to configure SSL, using default: ${e.message}")
-                }
-            }
             .addInterceptor { chain ->
                 val originalRequest = chain.request()
                 val requestBuilder = originalRequest.newBuilder()
@@ -219,42 +203,37 @@ class AuthService(private val context: Context) {
                 // Add User-Agent for better server compatibility
                 requestBuilder.addHeader("User-Agent", "Pasabayan-Android/1.0")
                 
-                // Get auth token synchronously using runBlocking
+                // Get auth token for authenticated endpoints
                 try {
                     val token = kotlinx.coroutines.runBlocking { getToken() }
                     if (token != null) {
                         requestBuilder.addHeader("Authorization", "Bearer $token")
-                        Log.d(TAG, "🔐 Added Authorization header to request")
+                        Log.d(TAG, "🔐 Added Authorization header to AuthService request")
                         Log.d(TAG, "   Token length: ${token.length}")
                         Log.d(TAG, "   Token preview: ${token.take(20)}...")
                     } else {
-                        Log.w(TAG, "⚠️ No auth token available for request")
+                        Log.w(TAG, "⚠️ No auth token available for AuthService request")
                     }
                 } catch (e: Exception) {
-                    Log.w(TAG, "Failed to get token for request: ${e.message}")
+                    Log.w(TAG, "Failed to get token for AuthService request: ${e.message}")
                 }
                 
                 val request = requestBuilder.build()
-                Log.d(TAG, "🌐 Making request to: ${request.url}")
+                Log.d(TAG, "🌐 AuthService making request to: ${request.url}")
                 
                 try {
                     chain.proceed(request)
                 } catch (e: Exception) {
-                    Log.e(TAG, "❌ Network request failed: ${e.message}")
+                    Log.e(TAG, "❌ AuthService network request failed: ${e.message}")
                     Log.e(TAG, "   URL: ${request.url}")
                     Log.e(TAG, "   Method: ${request.method}")
-                    if (e is java.net.UnknownHostException) {
-                        Log.e(TAG, "   🔍 DNS resolution failed - check network connectivity")
-                    } else if (e is javax.net.ssl.SSLException) {
-                        Log.e(TAG, "   🔒 SSL error - check network_security_config.xml")
-                    }
                     throw e
                 }
             }
             .build()
         
         return Retrofit.Builder()
-                            .baseUrl("${APIService.BASE_URL}/")
+            .baseUrl("${NetworkConfig.baseUrl}/")
             .client(client)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()

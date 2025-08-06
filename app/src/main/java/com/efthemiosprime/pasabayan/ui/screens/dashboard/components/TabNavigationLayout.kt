@@ -63,11 +63,14 @@ fun TabNavigationLayout(
     config: TabNavigationConfig,
     accentColor: Color,
     modifier: Modifier = Modifier,
-    initialSelectedTabIndex: Int = 0
+    initialSelectedTabIndex: Int = 0,
+    selectedTabIndex: Int? = null,
+    onTabIndexChange: ((Int) -> Unit)? = null
 ) {
-    var selectedTabIndex by remember { mutableIntStateOf(initialSelectedTabIndex) }
+    var internalSelectedTabIndex by remember { mutableIntStateOf(initialSelectedTabIndex) }
+    val currentSelectedTabIndex = selectedTabIndex ?: internalSelectedTabIndex
     var selectedMoreTabIndex by remember { mutableIntStateOf(0) }
-    val isMoreTabSelected = selectedTabIndex == config.visibleTabs.size
+    val isMoreTabSelected = currentSelectedTabIndex == config.visibleTabs.size
     
     Scaffold(
         modifier = modifier,
@@ -91,9 +94,12 @@ fun TabNavigationLayout(
                             }
                         },
                         label = { Text(tab.title) },
-                        selected = selectedTabIndex == index && !isMoreTabSelected,
+                        selected = currentSelectedTabIndex == index && !isMoreTabSelected,
                         onClick = { 
-                            selectedTabIndex = index
+                            if (selectedTabIndex == null) {
+                                internalSelectedTabIndex = index
+                            }
+                            onTabIndexChange?.invoke(index)
                         },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = accentColor,
@@ -114,7 +120,11 @@ fun TabNavigationLayout(
                         label = { Text("More") },
                         selected = isMoreTabSelected,
                         onClick = { 
-                            selectedTabIndex = config.visibleTabs.size
+                            val moreTabIndex = config.visibleTabs.size
+                            if (selectedTabIndex == null) {
+                                internalSelectedTabIndex = moreTabIndex
+                            }
+                            onTabIndexChange?.invoke(moreTabIndex)
                         },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = accentColor,
@@ -142,9 +152,9 @@ fun TabNavigationLayout(
                         accentColor = accentColor
                     )
                 }
-                selectedTabIndex < config.visibleTabs.size -> {
+                currentSelectedTabIndex < config.visibleTabs.size -> {
                     // Show selected visible tab content
-                    config.visibleTabs[selectedTabIndex].content()
+                    config.visibleTabs[currentSelectedTabIndex].content()
                 }
             }
         }

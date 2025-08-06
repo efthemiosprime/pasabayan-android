@@ -38,7 +38,8 @@ import java.util.*
 @Composable
 fun TripCreationScreen(
     viewModel: TripCreationViewModel? = null,
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    onNavigateToTripsTab: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val actualViewModel: TripCreationViewModel = viewModel ?: viewModel { 
@@ -106,6 +107,9 @@ fun TripCreationScreen(
                 }
                 is TripCreationEvent.NavigateBack -> {
                     onNavigateBack()
+                }
+                is TripCreationEvent.NavigateToTripsTab -> {
+                    onNavigateToTripsTab()
                 }
                 is TripCreationEvent.ClearForm -> {
                     // Form cleared, no additional action needed
