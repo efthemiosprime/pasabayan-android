@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.core.network.di;
 
 import com.efthemiosprime.pasabayan.core.network.AuthInterceptor;
+import com.efthemiosprime.pasabayan.core.network.UnauthorizedClearingInterceptor;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.Preconditions;
@@ -30,27 +31,33 @@ import okhttp3.logging.HttpLoggingInterceptor;
 public final class NetworkModule_ProvideOkHttpClientFactory implements Factory<OkHttpClient> {
   private final Provider<AuthInterceptor> authInterceptorProvider;
 
+  private final Provider<UnauthorizedClearingInterceptor> unauthorizedClearingInterceptorProvider;
+
   private final Provider<HttpLoggingInterceptor> loggingInterceptorProvider;
 
   public NetworkModule_ProvideOkHttpClientFactory(Provider<AuthInterceptor> authInterceptorProvider,
+      Provider<UnauthorizedClearingInterceptor> unauthorizedClearingInterceptorProvider,
       Provider<HttpLoggingInterceptor> loggingInterceptorProvider) {
     this.authInterceptorProvider = authInterceptorProvider;
+    this.unauthorizedClearingInterceptorProvider = unauthorizedClearingInterceptorProvider;
     this.loggingInterceptorProvider = loggingInterceptorProvider;
   }
 
   @Override
   public OkHttpClient get() {
-    return provideOkHttpClient(authInterceptorProvider.get(), loggingInterceptorProvider.get());
+    return provideOkHttpClient(authInterceptorProvider.get(), unauthorizedClearingInterceptorProvider.get(), loggingInterceptorProvider.get());
   }
 
   public static NetworkModule_ProvideOkHttpClientFactory create(
       Provider<AuthInterceptor> authInterceptorProvider,
+      Provider<UnauthorizedClearingInterceptor> unauthorizedClearingInterceptorProvider,
       Provider<HttpLoggingInterceptor> loggingInterceptorProvider) {
-    return new NetworkModule_ProvideOkHttpClientFactory(authInterceptorProvider, loggingInterceptorProvider);
+    return new NetworkModule_ProvideOkHttpClientFactory(authInterceptorProvider, unauthorizedClearingInterceptorProvider, loggingInterceptorProvider);
   }
 
   public static OkHttpClient provideOkHttpClient(AuthInterceptor authInterceptor,
+      UnauthorizedClearingInterceptor unauthorizedClearingInterceptor,
       HttpLoggingInterceptor loggingInterceptor) {
-    return Preconditions.checkNotNullFromProvides(NetworkModule.INSTANCE.provideOkHttpClient(authInterceptor, loggingInterceptor));
+    return Preconditions.checkNotNullFromProvides(NetworkModule.INSTANCE.provideOkHttpClient(authInterceptor, unauthorizedClearingInterceptor, loggingInterceptor));
   }
 }

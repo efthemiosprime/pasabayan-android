@@ -27,6 +27,7 @@ include(":app")
 include(":core:designsystem")
 include(":core:domain-error")
 include(":core:network")
+include(":core:session")
 
 /**
  * AGP's JdkImageTransform resolves jlink using [JAVA_HOME]. Gradle can run on org.gradle.java.home

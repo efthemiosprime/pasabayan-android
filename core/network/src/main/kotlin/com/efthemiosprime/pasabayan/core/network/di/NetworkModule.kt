@@ -1,8 +1,9 @@
 package com.efthemiosprime.pasabayan.core.network.di
 
 import com.efthemiosprime.pasabayan.core.network.AuthInterceptor
-import com.efthemiosprime.pasabayan.core.network.AuthTokenProvider
+import com.efthemiosprime.pasabayan.core.network.UnauthorizedClearingInterceptor
 import com.efthemiosprime.pasabayan.core.network.BuildConfig
+import com.efthemiosprime.pasabayan.core.network.auth.AuthApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,11 +29,6 @@ object NetworkModule {
         coerceInputValues = true
     }
 
-    /** Default: no token until auth feature provides a real [AuthTokenProvider] binding. */
-    @Provides
-    @Singleton
-    fun provideAuthTokenProvider(): AuthTokenProvider = AuthTokenProvider { null }
-
     @Provides
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
@@ -49,6 +45,7 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(
         authInterceptor: AuthInterceptor,
+        unauthorizedClearingInterceptor: UnauthorizedClearingInterceptor,
         loggingInterceptor: HttpLoggingInterceptor,
     ): OkHttpClient {
         return OkHttpClient.Builder()
@@ -56,6 +53,7 @@ object NetworkModule {
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .addInterceptor(authInterceptor)
+            .addInterceptor(unauthorizedClearingInterceptor)
             .addInterceptor(loggingInterceptor)
             .build()
     }
@@ -73,4 +71,8 @@ object NetworkModule {
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
     }
+
+    @Provides
+    @Singleton
+    fun provideAuthApi(retrofit: Retrofit): AuthApi = retrofit.create(AuthApi::class.java)
 }

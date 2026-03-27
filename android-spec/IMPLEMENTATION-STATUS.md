@@ -18,7 +18,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Current phase** | Phase 0 — Foundation (HTTP→domain mapping + tests landed; contract YAML audit remains) |
+| **Current phase** | Phase 1 — Authentication (session + Compose sign-in; onboarding polish remains) |
 | **Last updated** | 2026-03-27 |
 
 ---
@@ -28,7 +28,7 @@
 | Phase | Exit gate | Status |
 |-------|-----------|--------|
 | **0** — Foundation | See [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md) § Phase 0 | **In progress** — `ApiErrorMapper` + `DomainError.userMessage()` + unit tests; **api-contract-matrix** + **API-SHAPES** row audit still TODO |
-| **1** — Authentication | Login, token, `/auth/me`, logout | Not started (OAuth client libs present; flows not wired) |
+| **1** — Authentication | Login, token, `/auth/me`, logout | **In progress** — session + **Compose auth screen** (Google ID token + Facebook SDK → backend); onboarding / full **02-auth-session** polish still TODO |
 | **2** — Trips, packages, Explore | … | Not started |
 | **3** — Bookings & matches | … | Not started |
 | **4** — Payments & Stripe | … | Not started |
@@ -49,10 +49,20 @@
 | **`:app`** | Partial | `@HiltAndroidApp` `PasabayanApplication`; `@AndroidEntryPoint` `MainActivity`; Compose shell showing API base URL |
 | **Hilt** | Done | App + `:core:network` (KSP) |
 | **Google Services / Firebase** | Partial | `com.google.gms.google-services` plugin; `app/google-services.json`; Firebase BOM + **firebase-messaging**; **`PasabayanFirebaseMessagingService`** stub (token POST + routing **TODO** Phase 5) |
-| **Google Sign-In (prep)** | Partial | `play-services-auth`, `play-services-identity` — **no UI / `GoogleSignInClient` flow yet** (Phase 1) |
-| **Facebook Login (prep)** | Partial | `facebook-login` SDK; manifest meta-data + `FacebookActivity` / `CustomTabActivity`; strings from legacy `pasabayan-android-develop` — **no `LoginManager` flow yet** (Phase 1) |
+| **Google Sign-In** | Partial | `GoogleSignInHelper` + `AuthScreen` / `AuthViewModel`; Credential Manager / One Tap **not** wired (optional) |
+| **Facebook Login** | Partial | `FacebookLoginStarter` + `LoginManager`; `MainActivity` forwards `onActivityResult` to `CallbackManager` |
 | **Manifest & security** | Done | `INTERNET`, `ACCESS_NETWORK_STATE`, `POST_NOTIFICATIONS`, `WAKE_LOCK`; `network_security_config` (HTTPS; debug cleartext for localhost); backup / data-extraction XML |
 | **Tests** | Partial | `AuthInterceptorTest` + **`ApiErrorMapperTest`** (401/404/402/409/400/422/403/500/429); repository-level integration tests **TODO** |
+
+---
+
+## Phase 1 — What is implemented (codebase)
+
+| Item | Status | Notes |
+|------|--------|--------|
+| **`:core:session`** | Done | `TokenStore`, `EncryptedTokenStore` (EncryptedSharedPreferences + MasterKey); `StoredAuthTokenProvider`; `TokenClearingHandler` → `SessionInvalidationHandler`; `AuthRepository` / `AuthRepositoryImpl` (provider login, `getMe`, logout); `SessionModule` (Hilt) |
+| **`app` dependency** | Done | `implementation(project(":core:session"))` |
+| **OAuth UI** | Partial | `AuthScreen` + `AuthViewModel`; `GoogleSignInHelper` (web client ID); `FacebookLoginStarter` + `MainActivity.onActivityResult` |
 
 ---
 
@@ -77,7 +87,7 @@
 
 | Spec | Done |
 |------|------|
-| [02-auth-session.md](02-auth-session.md) | [ ] |
+| [02-auth-session.md](02-auth-session.md) | [ ] (repository + token storage landed; full spec = UI + flows) |
 | [17-onboarding.md](17-onboarding.md) | [ ] |
 | [03-trips.md](03-trips.md) | [ ] |
 | [04-packages.md](04-packages.md) | [ ] |
@@ -96,7 +106,7 @@
 
 ## iOS feature folders → Android (from [FEATURE-COVERAGE-MATRIX.md](FEATURE-COVERAGE-MATRIX.md))
 
-- [ ] `Authentication/` — OAuth deps only; no feature module yet  
+- [ ] `Authentication/` — `:core:session` + **AuthScreen** (Google/Facebook); parity vs iOS onboarding **TODO**  
 - [ ] `Analytics/`  
 - [ ] `Bookings/`  
 - [ ] `Chat/`  
@@ -120,4 +130,4 @@
 - [x] Design tokens in `:core:designsystem`  
 - [ ] App shell / tabs / Explore — not built  
 - [x] `google-services.json` + Firebase project linkage for FCM (runtime registration **TODO**)  
-- [ ] Google / Facebook **sign-in flows** end-to-end (Phase 1)
+- [ ] Google / Facebook **sign-in flows** — basic Compose + backend exchange **done**; production hardening / tests **TODO**
