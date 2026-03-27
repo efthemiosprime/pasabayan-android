@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.efthemiosprime.pasabayan.core.network.ApiErrorMapperTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-03-27T21:23:21" hostname="efthemios-bong-suyat-MacBook-Pro.local" time="0.036">
+  <properties/>
+  <testcase name="402 payment_required maps to PaymentRequired" classname="com.efthemiosprime.pasabayan.core.network.ApiErrorMapperTest" time="0.017"/>
+  <testcase name="429 maps to RateLimited" classname="com.efthemiosprime.pasabayan.core.network.ApiErrorMapperTest" time="0.0"/>
+  <testcase name="401 is Unauthorized" classname="com.efthemiosprime.pasabayan.core.network.ApiErrorMapperTest" time="0.0"/>
+  <testcase name="422 carrier_onboarding_required takes precedence" classname="com.efthemiosprime.pasabayan.core.network.ApiErrorMapperTest" time="0.014"/>
+  <testcase name="403 maps to ServerError with message" classname="com.efthemiosprime.pasabayan.core.network.ApiErrorMapperTest" time="0.001"/>
+  <testcase name="500 extracts message" classname="com.efthemiosprime.pasabayan.core.network.ApiErrorMapperTest" time="0.0"/>
+  <testcase name="404 with trip message is TripNotFound" classname="com.efthemiosprime.pasabayan.core.network.ApiErrorMapperTest" time="0.001"/>
+  <testcase name="422 validation body maps to ValidationError" classname="com.efthemiosprime.pasabayan.core.network.ApiErrorMapperTest" time="0.001"/>
+  <testcase name="404 without trip wording is NotFound" classname="com.efthemiosprime.pasabayan.core.network.ApiErrorMapperTest" time="0.0"/>
+  <testcase name="409 maps message and expires_at" classname="com.efthemiosprime.pasabayan.core.network.ApiErrorMapperTest" time="0.001"/>
+  <testcase name="400 validation maps to ValidationError" classname="com.efthemiosprime.pasabayan.core.network.ApiErrorMapperTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

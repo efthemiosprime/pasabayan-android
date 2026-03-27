@@ -46,4 +46,10 @@ sealed class DomainError {
     data object NoTransportTypeSpecified : DomainError()
 
     data object Unknown : DomainError()
+
+    /** HTTP 400/422 + Laravel-style `errors` map (parity with iOS `ValidationErrorResponse`). */
+    data class ValidationError(
+        val message: String,
+        val fieldErrors: Map<String, List<String>>,
+    ) : DomainError()
 }

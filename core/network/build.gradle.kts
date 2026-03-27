@@ -37,6 +37,8 @@ android {
 dependencies {
     testImplementation(libs.junit)
 
+    implementation(project(":core:domain-error"))
+
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 

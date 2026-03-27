@@ -18,7 +18,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Current phase** | Phase 0 — Foundation (mostly scaffolded; a few exit-gate items remain) |
+| **Current phase** | Phase 0 — Foundation (HTTP→domain mapping + tests landed; contract YAML audit remains) |
 | **Last updated** | 2026-03-27 |
 
 ---
@@ -27,7 +27,7 @@
 
 | Phase | Exit gate | Status |
 |-------|-----------|--------|
-| **0** — Foundation | See [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md) § Phase 0 | **In progress** — scaffold + core modules + OAuth/FCM **deps** done; HTTP→domain mapping + contract review TODO |
+| **0** — Foundation | See [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md) § Phase 0 | **In progress** — `ApiErrorMapper` + `DomainError.userMessage()` + unit tests; **api-contract-matrix** + **API-SHAPES** row audit still TODO |
 | **1** — Authentication | Login, token, `/auth/me`, logout | Not started (OAuth client libs present; flows not wired) |
 | **2** — Trips, packages, Explore | … | Not started |
 | **3** — Bookings & matches | … | Not started |
@@ -44,15 +44,15 @@
 |------|--------|--------|
 | Gradle **Version Catalog** (`gradle/libs.versions.toml`) | Done | AGP 8.8.2, Gradle 8.10.2, Kotlin 2.2.10, KSP, Compose |
 | **`:core:designsystem`** | Done | `PasabayanTheme`, spacing / radius / colors / typography per [14-design-system.md](14-design-system.md); Material3 DayNight XML theme in `:app` |
-| **`:core:domain-error`** | Partial | Sealed `DomainError` per [01-error-taxonomy.md](01-error-taxonomy.md); **HTTP/transport → `DomainError` mappers** not wired |
-| **`:core:network`** | Done | OkHttp + Retrofit + kotlinx-serialization; Hilt `NetworkModule`; `AuthInterceptor` (Bearer except `/auth/*` without `/auth/me`); `BuildConfig.API_BASE_URL` = production; `consumer-rules.pro` |
+| **`:core:domain-error`** | Done | `DomainError` + `ValidationError`; [01-error-taxonomy.md](01-error-taxonomy.md); **`userMessage()`** (iOS `userFriendlyMessage` parity) |
+| **`:core:network`** | Done | OkHttp + Retrofit + kotlinx-serialization; Hilt `NetworkModule`; `AuthInterceptor` (Bearer except `/auth/*` without `/auth/me`); **`ApiErrorMapper`** + error DTOs; **`Response.toDomainResult` / `foldDomainResult`**; `BuildConfig.API_BASE_URL` = production; `consumer-rules.pro` |
 | **`:app`** | Partial | `@HiltAndroidApp` `PasabayanApplication`; `@AndroidEntryPoint` `MainActivity`; Compose shell showing API base URL |
 | **Hilt** | Done | App + `:core:network` (KSP) |
 | **Google Services / Firebase** | Partial | `com.google.gms.google-services` plugin; `app/google-services.json`; Firebase BOM + **firebase-messaging**; **`PasabayanFirebaseMessagingService`** stub (token POST + routing **TODO** Phase 5) |
 | **Google Sign-In (prep)** | Partial | `play-services-auth`, `play-services-identity` — **no UI / `GoogleSignInClient` flow yet** (Phase 1) |
 | **Facebook Login (prep)** | Partial | `facebook-login` SDK; manifest meta-data + `FacebookActivity` / `CustomTabActivity`; strings from legacy `pasabayan-android-develop` — **no `LoginManager` flow yet** (Phase 1) |
 | **Manifest & security** | Done | `INTERNET`, `ACCESS_NETWORK_STATE`, `POST_NOTIFICATIONS`, `WAKE_LOCK`; `network_security_config` (HTTPS; debug cleartext for localhost); backup / data-extraction XML |
-| **Tests** | Partial | `AuthInterceptorTest` in `:core:network`; full taxonomy / interceptor integration tests **TODO** |
+| **Tests** | Partial | `AuthInterceptorTest` + **`ApiErrorMapperTest`** (401/404/402/409/400/422/403/500/429); repository-level integration tests **TODO** |
 
 ---
 
@@ -62,14 +62,14 @@
 |-----------------|------|-------|
 | [16-project-bootstrap.md](16-project-bootstrap.md) | [x] | Modules, Hilt, Retrofit, theme, `assembleDebug` |
 | [00-architecture.md](00-architecture.md) | [x] | Core module split; lean stack documented in Gradle |
-| [01-error-taxonomy.md](01-error-taxonomy.md) | [ ] | Types exist; **mapping from API responses** + `ErrorAlertPolicy`-style UI layer **TODO** |
+| [01-error-taxonomy.md](01-error-taxonomy.md) | [x] | **HTTP status → `DomainError`** via `ApiErrorMapper`; **`userMessage()`** for UI copy; foreground/background **ErrorAlertPolicy** still TODO |
 | [14-design-system.md](14-design-system.md) | [x] | Baseline tokens + theme; iterate vs iOS as screens ship |
 | [API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md) | [ ] | Not audited for Android DTOs yet |
 | [contracts/api-contract-matrix.yaml](contracts/api-contract-matrix.yaml) | [ ] | Not reviewed row-by-row for Android |
 | [IMPLEMENTATION-GUIDE.md](IMPLEMENTATION-GUIDE.md) | — | Process doc; no “done” checkbox |
-| [TDD-PARITY-BACKLOG.md](TDD-PARITY-BACKLOG.md) | [ ] | Partial network test only |
+| [TDD-PARITY-BACKLOG.md](TDD-PARITY-BACKLOG.md) | [ ] | Auth interceptor + **API error branch** tests; expand per backlog when features land |
 
-**Phase 0 exit gate (from [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md)):** treat as **not fully met** until error mapping + contract/YAML alignment + agreed test bar for foundation are done.
+**Phase 0 exit gate (from [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md)):** **Error mapping + user-facing strings** are in place; gate **not fully met** until [contracts/api-contract-matrix.yaml](contracts/api-contract-matrix.yaml) and [API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md) are reviewed for Android DTOs; **ErrorAlertPolicy**-style presentation (foreground vs background) is optional for the gate but still TODO.
 
 ---
 
