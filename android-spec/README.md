@@ -7,8 +7,6 @@ Spec-driven documentation for re-implementing Pasabayan on Android. **Work is or
 
 **Start here:** [**IMPLEMENTATION-GUIDE.md**](IMPLEMENTATION-GUIDE.md) — read order, daily workflow, common pitfalls.
 
-**What’s done vs pending:** [**IMPLEMENTATION-STATUS.md**](IMPLEMENTATION-STATUS.md) — phase + per-spec checklists; update when milestones land.
-
 **Empty Android repo:** [**16-project-bootstrap.md**](16-project-bootstrap.md) — initialize Gradle, Version Catalog, `:core:*` modules, Hilt, Compose theme, network stack.
 
 Then: [**PHASES-AND-FEATURES.md**](PHASES-AND-FEATURES.md) — phase table, exit gates, **per-phase** and **per-feature** workflows.
@@ -31,7 +29,6 @@ Then: [**PHASES-AND-FEATURES.md**](PHASES-AND-FEATURES.md) — phase table, exit
 | Step | Action |
 |------|--------|
 | 0 | If the Android project is empty or new: follow [**16-project-bootstrap.md**](16-project-bootstrap.md) (modules, dependencies, Hilt, theme). |
-| 0b | Track progress in [**IMPLEMENTATION-STATUS.md**](IMPLEMENTATION-STATUS.md) (tick phases/specs when done). |
 | 1 | Confirm scope in [**FEATURE-COVERAGE-MATRIX.md**](FEATURE-COVERAGE-MATRIX.md) (feature → spec). |
 | 2 | Open [**PHASES-AND-FEATURES.md**](PHASES-AND-FEATURES.md) and find your **phase**. |
 | 3 | For any UI work, apply [**14-design-system.md**](14-design-system.md) (theme tokens — no one-off magic numbers). |
@@ -45,7 +42,7 @@ Then: [**PHASES-AND-FEATURES.md**](PHASES-AND-FEATURES.md) — phase table, exit
 | Phase | Focus | Specs |
 |-------|--------|--------|
 | **0** | Foundation | [**16-project-bootstrap.md**](16-project-bootstrap.md) (Gradle scaffold), [00-architecture.md](00-architecture.md), [01-error-taxonomy.md](01-error-taxonomy.md), [**14-design-system.md**](14-design-system.md) (mandatory theme), [contracts/api-contract-matrix.yaml](contracts/api-contract-matrix.yaml) |
-| **1** | Auth | [02-auth-session.md](02-auth-session.md) |
+| **1** | Auth + onboarding gates | [02-auth-session.md](02-auth-session.md), [**17-onboarding.md**](17-onboarding.md) |
 | **2** | Trips, packages, Explore UI | [03-trips.md](03-trips.md), [04-packages.md](04-packages.md), [13-ui-tab-explore.md](13-ui-tab-explore.md) |
 | **3** | Bookings / matches | [05-bookings-matches.md](05-bookings-matches.md) |
 | **4** | Payments / Stripe | [06-payments-stripe.md](06-payments-stripe.md) |
@@ -58,7 +55,6 @@ Then: [**PHASES-AND-FEATURES.md**](PHASES-AND-FEATURES.md) — phase table, exit
 | File | Topic |
 |------|--------|
 | [**IMPLEMENTATION-GUIDE.md**](IMPLEMENTATION-GUIDE.md) | **Start here** — read order, workflow, pitfalls |
-| [**IMPLEMENTATION-STATUS.md**](IMPLEMENTATION-STATUS.md) | **Progress** — what’s done; phase + spec checklists (keep updated) |
 | [**16-project-bootstrap.md**](16-project-bootstrap.md) | **Empty project** — Version Catalog, modules, deps, Hilt, theme |
 | [**API-SHAPES-REFERENCE.md**](API-SHAPES-REFERENCE.md) | **Endpoints + Swift types** — mirror in DTOs / repositories |
 | [**FEATURE-COVERAGE-MATRIX.md**](FEATURE-COVERAGE-MATRIX.md) | **Every iOS feature folder** → spec (gap check) |
@@ -78,7 +74,8 @@ Then: [**PHASES-AND-FEATURES.md**](PHASES-AND-FEATURES.md) — phase table, exit
 | [12-legal-support-misc.md](12-legal-support-misc.md) | Legal, support, catalog, shipper, routes, activity |
 | [13-ui-tab-explore.md](13-ui-tab-explore.md) | UI: tabs & Explore (cross-cutting) |
 | [**14-design-system.md**](14-design-system.md) | **Design tokens** (spacing, type, color, radii, cards) — **follow for all UI** |
-| [**15-platform-and-tab-index.md**](15-platform-and-tab-index.md) | **Tab docs index** + iOS feature audit (`docs/tabs/`, onboarding, analytics mock, realtime) |
+| [**15-platform-and-tab-index.md**](15-platform-and-tab-index.md) | **Tab docs index** + iOS feature audit (`docs/tabs/`, analytics mock, realtime) |
+| [**17-onboarding.md**](17-onboarding.md) | **Onboarding** — first-launch, city, consent, flags (`PasabayanApp`, `ContentView`) |
 | [TDD-PARITY-BACKLOG.md](TDD-PARITY-BACKLOG.md) | TDD checklist **by phase** |
 | [contracts/api-contract-matrix.yaml](contracts/api-contract-matrix.yaml) | Endpoint matrix **by feature group** |
 

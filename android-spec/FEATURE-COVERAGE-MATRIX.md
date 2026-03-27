@@ -13,7 +13,7 @@
 | 5 | `Favorites/` | [11-favorites-ratings.md](11-favorites-ratings.md) | 6 | Direct URLSession patterns — match error handling |
 | 6 | `Legal/` | [12-legal-support-misc.md](12-legal-support-misc.md) | 7 | [`LegalAgreementService`](../../Pasabayan/Features/Legal/Services/LegalAgreementService.swift), [`LegalAgreementViewModel`](../../Pasabayan/Features/Legal/ViewModels/LegalAgreementViewModel.swift) |
 | 7 | `Notifications/` | [08-notifications-device-tokens.md](08-notifications-device-tokens.md) | 5 | All `NotificationType` cases — see that spec |
-| 8 | `Onboarding/` | [15-platform-and-tab-index.md](15-platform-and-tab-index.md) | 1–2 | Before dashboard: `OnboardingScreen`, city selection, `@AppStorage` flags |
+| 8 | `Onboarding/` | [**17-onboarding.md**](17-onboarding.md) | 1 | `PasabayanApp` + `ContentView` gates; `OnboardingScreen`, city, consent — see spec |
 | 9 | `Packages/` | [04-packages.md](04-packages.md) | 2 | API + local: `ShipperDisclaimerStore`, `SavedPackageDescriptionsStore`, route templates |
 | 10 | `Payments/` | [06-payments-stripe.md](06-payments-stripe.md) | 4 | `PaymentService`, Stripe, receipts WebView, tips, refunds, [`PaymentMethodsViewModel`](../../Pasabayan/Features/Payments/ViewModels/PaymentMethodsViewModel.swift) `/stripe/*` |
 | 11 | `Profile/` | [09-profile-carrier-consent.md](09-profile-carrier-consent.md) | 6 | Profile, carrier prefs, privacy, role switcher, menus → bookings/payments |
@@ -43,4 +43,4 @@
 - [ ] Every row in **`Features/`** table has an Android module or explicit “defer”.
 - [ ] [08-notifications-device-tokens.md](08-notifications-device-tokens.md) handles **all** `NotificationType` raw values.
 - [ ] `docs/tabs/*.md` covered by navigation design ([13](13-ui-tab-explore.md), [15](15-platform-and-tab-index.md)).
-- [ ] Onboarding + auth gate ordering matches [`ContentView`](../../Pasabayan/ContentView.swift) / [`PasabayanApp`](../../Pasabayan/PasabayanApp.swift).
+- [ ] Onboarding + auth gate ordering matches [`ContentView`](../../Pasabayan/ContentView.swift) / [`PasabayanApp`](../../Pasabayan/PasabayanApp.swift) — [17-onboarding.md](17-onboarding.md).

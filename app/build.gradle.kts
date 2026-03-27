@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
+    // Must be applied last — processes app/google-services.json (Firebase + Google OAuth client IDs)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -39,6 +41,11 @@ android {
     buildFeatures {
         compose = true
     }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
 }
 
 dependencies {
@@ -54,6 +61,17 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+
+    // Firebase (FCM) — BOM aligns messaging with google-services.json
+    implementation(platform(libs.firebase.bom))
+    implementation("com.google.firebase:firebase-messaging")
+
+    // Google Sign-In + Credential Manager–related Play Services (parity with pasabayan-android-develop)
+    implementation(libs.play.services.auth)
+    implementation(libs.play.services.identity)
+
+    // Facebook Login — meta-data + activities in AndroidManifest
+    implementation(libs.facebook.login)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

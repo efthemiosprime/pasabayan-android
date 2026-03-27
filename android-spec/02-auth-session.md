@@ -27,7 +27,7 @@ OAuth/token login, current user, logout, token storage behavior (parity with [`A
 
 ## UI (iOS reference)
 
-Auth screens and onboarding gates: [`ContentView.swift`](../../Pasabayan/ContentView.swift), [`Features/Authentication/`](../../Pasabayan/Features/Authentication/).
+Auth screens: [`Features/Authentication/`](../../Pasabayan/Features/Authentication/). **Gating order** (first-launch onboarding vs `AuthView` vs post-login city/consent): [`PasabayanApp.swift`](../../Pasabayan/PasabayanApp.swift), [`ContentView.swift`](../../Pasabayan/ContentView.swift) — full spec [**17-onboarding.md**](17-onboarding.md).
 
 ## ROP branches
 

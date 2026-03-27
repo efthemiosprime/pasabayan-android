@@ -12,6 +12,7 @@ android {
 
     defaultConfig {
         minSdk = 25
+        consumerProguardFiles("consumer-rules.pro")
         // Production API — matches iOS APIConfiguration (release / USE_PRODUCTION_API).
         buildConfigField(
             "String",

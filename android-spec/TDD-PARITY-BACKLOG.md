@@ -2,7 +2,7 @@
 
 **Workflow:** [IMPLEMENTATION-GUIDE.md](IMPLEMENTATION-GUIDE.md). **Feature inventory:** [FEATURE-COVERAGE-MATRIX.md](FEATURE-COVERAGE-MATRIX.md).
 
-Organized **by implementation phase** (same order as [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md)). Use with **per-feature** specs (`02`–`12`).
+Organized **by implementation phase** (same order as [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md)). Use with **per-feature** specs (`02`–`12`, plus [17-onboarding.md](17-onboarding.md) with Phase 1).
 
 Test order: **contract** (DTO decode) → **repository** (fake API) → **MVI reducer** → **Compose UI** (critical paths only).
 
@@ -15,6 +15,7 @@ Test order: **contract** (DTO decode) → **repository** (fake API) → **MVI re
 ## Phase 1 — Auth
 
 - [ ] Parity: `PasabayanTests/AuthViewModelTests.swift` scenarios.
+- [ ] **Onboarding:** navigation order and flags per [17-onboarding.md](17-onboarding.md) (`hasCompletedOnboarding`, city/consent gates, consent API keys); instrumented or integration smoke if iOS has UI tests for flows.
 
 ## Phase 2 — Trips & packages
 

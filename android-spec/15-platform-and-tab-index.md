@@ -48,7 +48,7 @@ See the full **audit table** (all 16 `Features/` modules + cross-cutting service
 
 | Topic | Where |
 |-------|--------|
-| **Onboarding** | `Features/Onboarding/` — `@AppStorage` / `OnboardingScreen`; before main dashboard |
+| **Onboarding** | [**17-onboarding.md**](17-onboarding.md) — `PasabayanApp` / `ContentView` order, `OnboardingScreen`, city, consent |
 | **Analytics** | **Mock-only** — `AnalyticsViewModel.loadMockData()`; no REST in folder |
 | **Home city** | `HomeCityDetectionService` → [12-legal-support-misc.md](12-legal-support-misc.md) |
 | **Live carrier GPS** | `LiveTrackingViewModel`, `CarrierLocationService` → [05-bookings-matches.md](05-bookings-matches.md) |

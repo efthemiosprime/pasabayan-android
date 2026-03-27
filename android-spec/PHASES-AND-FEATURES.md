@@ -2,8 +2,6 @@
 
 This document is the **primary roadmap**: work **by phase**, and within each phase **by feature**. Each phase has a clear exit gate (specs + TDD) before the next phase starts.
 
-**Track what’s done:** [IMPLEMENTATION-STATUS.md](IMPLEMENTATION-STATUS.md) — tick phases and specs as the Android codebase catches up.
-
 **Implementation quick start:** [IMPLEMENTATION-GUIDE.md](IMPLEMENTATION-GUIDE.md). **Empty Gradle project:** [16-project-bootstrap.md](16-project-bootstrap.md). **Ensure no missing iOS modules:** [FEATURE-COVERAGE-MATRIX.md](FEATURE-COVERAGE-MATRIX.md).
 
 ## Feature → iOS code → spec file
@@ -28,7 +26,7 @@ This document is the **primary roadmap**: work **by phase**, and within each pha
 | Shipper (nearby) | `Features/Shipper/` | [12-legal-support-misc.md](12-legal-support-misc.md) |
 | Route activity | `Features/RouteActivity/` | [12-legal-support-misc.md](12-legal-support-misc.md) |
 | UI shell / all tabs (`docs/tabs/`) | `Views/Screens/Dashboard/`, `docs/tabs/` | [13-ui-tab-explore.md](13-ui-tab-explore.md) + [14-design-system.md](14-design-system.md) + [15-platform-and-tab-index.md](15-platform-and-tab-index.md) |
-| Onboarding | `Features/Onboarding/` | [15-platform-and-tab-index.md](15-platform-and-tab-index.md) (`OnboardingScreen`, local persistence) |
+| Onboarding | `Features/Onboarding/` | [**17-onboarding.md**](17-onboarding.md) (`OnboardingScreen`, city, consent, `@AppStorage` / flags) |
 | Analytics (UI, mock) | `Features/Analytics/` | [15-platform-and-tab-index.md](15-platform-and-tab-index.md) — **no REST API** in folder; mock stats |
 
 ## Phase breakdown (implementation order)
@@ -53,8 +51,9 @@ This document is the **primary roadmap**: work **by phase**, and within each pha
 | Feature | Spec |
 |---------|------|
 | Auth & session | [02-auth-session.md](02-auth-session.md) |
+| Onboarding (first launch, post-login city + consent) | [**17-onboarding.md**](17-onboarding.md) |
 
-**Exit gate:** Login → token persist → `/auth/me` user load → logout; contract tests for auth DTOs.
+**Exit gate:** Login → token persist → `/auth/me` user load → logout; contract tests for auth DTOs. **Onboarding parity:** cold-start `OnboardingScreen` equivalent before auth when not completed; after login, city → consent → dashboard order and persistence keys per [17-onboarding.md](17-onboarding.md).
 
 ---
 

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Networking -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- Push notifications (FCM) — required from API 33+ when posting notifications -->
-    <uses-permission
-        android:name="android.permission.POST_NOTIFICATIONS"
-        tools:targetApi="33" />
+    <!-- FCM may hold a partial wake lock for delivery; merged from firebase-messaging -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Push notifications (FCM) — runtime permission on API 33+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".PasabayanApplication"
@@ -23,13 +23,21 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Pasabayan"
-        android:usesCleartextTraffic="false"
-        tools:targetApi="33">
+        android:usesCleartextTraffic="false">
+
+        <!-- Facebook SDK (same app id / client token as pasabayan-android-develop) -->
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
+        <meta-data
+            android:name="com.facebook.sdk.ClientToken"
+            android:value="@string/facebook_client_token" />
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.Pasabayan"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -38,6 +46,32 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name" />
+
+        <activity
+            android:name="com.facebook.CustomTabActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="@string/facebook_login_protocol_scheme" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".fcm.PasabayanFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
