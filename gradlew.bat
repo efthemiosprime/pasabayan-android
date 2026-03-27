@@ -38,6 +38,15 @@ for %%i in ("%APP_HOME%") do set APP_HOME=%%~fi
 @rem Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
 set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m"
 
+@rem Pasabayan: AGP jlink uses JAVA_HOME. If the current JAVA_HOME has no jlink (e.g. Red Hat Java JRE), use Android Studio JBR.
+if not defined PASABAYAN_SKIP_JAVA_HOME_FIX if defined JAVA_HOME (
+  if not exist "%JAVA_HOME%\bin\jlink.exe" (
+    if exist "%ProgramFiles%\Android\Android Studio\jbr\bin\jlink.exe" (
+      set "JAVA_HOME=%ProgramFiles%\Android\Android Studio\jbr"
+    )
+  )
+)
+
 @rem Find java.exe
 if defined JAVA_HOME goto findJavaFromJavaHome
 

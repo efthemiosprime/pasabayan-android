@@ -116,6 +116,65 @@ esac
 
 CLASSPATH="\\\"\\\""
 
+# Pasabayan: AGP reads JAVA_HOME for jlink, not only org.gradle.java.home. Always export JAVA_HOME from
+# gradle.properties when set so daemons/workers match. Fallback if property missing or invalid.
+# Set PASABAYAN_SKIP_JAVA_HOME_FIX=1 to disable.
+if [ -z "${PASABAYAN_SKIP_JAVA_HOME_FIX:-}" ] && [ -r "$APP_HOME/gradle.properties" ]; then
+    _pb_gh=""
+    while IFS= read -r _pb_line || [ -n "$_pb_line" ]; do
+        case $_pb_line in
+            \#*|'') ;;
+            org.gradle.java.home=*)
+                _pb_gh=${_pb_line#org.gradle.java.home=}
+                _pb_gh=${_pb_gh%%#*}
+                break
+                ;;
+        esac
+    done < "$APP_HOME/gradle.properties"
+    _pb_gh=${_pb_gh%$'\r'}
+    case $_pb_gh in
+        \"*) _pb_gh=${_pb_gh#\"}; _pb_gh=${_pb_gh%\"} ;;
+    esac
+    if [ -n "$_pb_gh" ] && [ -x "$_pb_gh/bin/java" ] && [ -x "$_pb_gh/bin/jlink" ]; then
+        JAVA_HOME="$_pb_gh"
+        export JAVA_HOME
+    else
+        _pb_need_fix=false
+        case "${JAVA_HOME:-}" in
+            *redhat.java*) _pb_need_fix=true ;;
+        esac
+        if [ "$_pb_need_fix" = false ] && [ -n "${JAVA_HOME:-}" ] && [ ! -x "${JAVA_HOME}/bin/jlink" ]; then
+            _pb_need_fix=true
+        fi
+        if [ "$_pb_need_fix" = false ] && [ -z "${JAVA_HOME:-}" ]; then
+            _pb_java=$(command -v java 2>/dev/null) || _pb_java=""
+            case "$_pb_java" in
+                *redhat.java*) _pb_need_fix=true ;;
+            esac
+            unset _pb_java
+        fi
+        if [ "$_pb_need_fix" = true ]; then
+            _pb_jbr=""
+            for _pb_cand in \
+                "${SDKMAN_DIR:-$HOME/.sdkman}/candidates/java/17.0.9-tem" \
+                "${SDKMAN_DIR:-$HOME/.sdkman}/candidates/java/current" \
+                "/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+            do
+                if [ -x "${_pb_cand}/bin/jlink" ]; then
+                    _pb_jbr="$_pb_cand"
+                    break
+                fi
+            done
+            if [ -n "$_pb_jbr" ]; then
+                JAVA_HOME="$_pb_jbr"
+                export JAVA_HOME
+            fi
+            unset _pb_jbr _pb_cand
+        fi
+        unset _pb_need_fix
+    fi
+    unset _pb_gh _pb_line
+fi
 
 # Determine the Java command to use to start the JVM.
 if [ -n "$JAVA_HOME" ] ; then

@@ -7,6 +7,8 @@ Spec-driven documentation for re-implementing Pasabayan on Android. **Work is or
 
 **Start here:** [**IMPLEMENTATION-GUIDE.md**](IMPLEMENTATION-GUIDE.md) — read order, daily workflow, common pitfalls.
 
+**What’s implemented vs pending:** [**IMPLEMENTATION-STATUS.md**](IMPLEMENTATION-STATUS.md) — phase + spec checklist (keep updated).
+
 **Empty Android repo:** [**16-project-bootstrap.md**](16-project-bootstrap.md) — initialize Gradle, Version Catalog, `:core:*` modules, Hilt, Compose theme, network stack.
 
 Then: [**PHASES-AND-FEATURES.md**](PHASES-AND-FEATURES.md) — phase table, exit gates, **per-phase** and **per-feature** workflows.
@@ -29,6 +31,7 @@ Then: [**PHASES-AND-FEATURES.md**](PHASES-AND-FEATURES.md) — phase table, exit
 | Step | Action |
 |------|--------|
 | 0 | If the Android project is empty or new: follow [**16-project-bootstrap.md**](16-project-bootstrap.md) (modules, dependencies, Hilt, theme). |
+| 0b | Track progress in [**IMPLEMENTATION-STATUS.md**](IMPLEMENTATION-STATUS.md). |
 | 1 | Confirm scope in [**FEATURE-COVERAGE-MATRIX.md**](FEATURE-COVERAGE-MATRIX.md) (feature → spec). |
 | 2 | Open [**PHASES-AND-FEATURES.md**](PHASES-AND-FEATURES.md) and find your **phase**. |
 | 3 | For any UI work, apply [**14-design-system.md**](14-design-system.md) (theme tokens — no one-off magic numbers). |
@@ -55,6 +58,7 @@ Then: [**PHASES-AND-FEATURES.md**](PHASES-AND-FEATURES.md) — phase table, exit
 | File | Topic |
 |------|--------|
 | [**IMPLEMENTATION-GUIDE.md**](IMPLEMENTATION-GUIDE.md) | **Start here** — read order, workflow, pitfalls |
+| [**IMPLEMENTATION-STATUS.md**](IMPLEMENTATION-STATUS.md) | **Progress tracker** — what’s implemented; update with each milestone |
 | [**16-project-bootstrap.md**](16-project-bootstrap.md) | **Empty project** — Version Catalog, modules, deps, Hilt, theme |
 | [**API-SHAPES-REFERENCE.md**](API-SHAPES-REFERENCE.md) | **Endpoints + Swift types** — mirror in DTOs / repositories |
 | [**FEATURE-COVERAGE-MATRIX.md**](FEATURE-COVERAGE-MATRIX.md) | **Every iOS feature folder** → spec (gap check) |

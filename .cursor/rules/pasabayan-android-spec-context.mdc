@@ -5,6 +5,13 @@ alwaysApply: true
 
 # Pasabayan Android — spec and iOS reference
 
+## IDE workflow (authoritative)
+
+- **Cursor:** editing and AI-assisted coding only. Do not assume Cursor’s embedded Java / Red Hat Java extension is the Gradle JDK.
+- **Android Studio:** **Sync**, **Run**, **Gradle**, **JDK**, **emulator / device**, and **Build** are done here. Treat Android Studio as source of truth when Gradle fails in a terminal that inherited a bad `JAVA_HOME`, or when diagnosing `jlink` / `androidJdkImage` issues — fix via **Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK** (use the **embedded JBR** or **JDK 17**).
+
+If the user reports build problems, prefer Android Studio sync/logs over Cursor-only Java tooling.
+
 ## iOS codebase (always reference)
 
 **Canonical iOS project path:** `/Users/efthemios/Documents/projects/pasabayan/pasabayan-ios`

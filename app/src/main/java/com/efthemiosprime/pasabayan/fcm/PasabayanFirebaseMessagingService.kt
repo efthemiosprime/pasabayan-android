@@ -4,7 +4,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 /**
- * FCM entry point. Register device token with backend (Phase 5 / [android-spec/08-notifications-device-tokens.md]).
+ * FCM entry point. Register device token with backend (Phase 5).
  */
 class PasabayanFirebaseMessagingService : FirebaseMessagingService() {
 

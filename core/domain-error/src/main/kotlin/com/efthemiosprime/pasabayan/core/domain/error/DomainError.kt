@@ -1,7 +1,7 @@
 package com.efthemiosprime.pasabayan.core.domain.error
 
 /**
- * Domain-level errors aligned with [android-spec/01-error-taxonomy.md] and iOS APIError.
+ * Domain-level errors aligned with the API contract (parity with iOS APIError).
  * Map HTTP/transport failures to these at the repository boundary.
  */
 sealed class DomainError {

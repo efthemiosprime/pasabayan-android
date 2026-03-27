@@ -1,5 +1,8 @@
 *.iml
 .gradle
+
+# IDE output outside Gradle build/ (not app source)
+bin/
 /local.properties
 /.idea/caches
 /.idea/libraries
