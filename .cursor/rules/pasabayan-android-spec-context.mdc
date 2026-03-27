@@ -1,0 +1,38 @@
+---
+description: Pasabayan Android rebuild — spec-driven parity with iOS and key doc anchors
+alwaysApply: true
+---
+
+# Pasabayan Android — spec and iOS reference
+
+## iOS codebase (always reference)
+
+**Canonical iOS project path:** `/Users/efthemios/Documents/projects/pasabayan/pasabayan-ios`
+
+For parity work, read and cite Swift sources under that tree — especially `Pasabayan/Features/*`, `Pasabayan/Services/*`, `Pasabayan/Views/*`, and `docs/`. Prefer this absolute path when opening files or describing locations so links resolve consistently.
+
+## Source of truth
+
+- **Product/API behavior:** mirror the iOS app at **`/Users/efthemios/Documents/projects/pasabayan/pasabayan-ios`** (`Pasabayan/Features/*`, `Pasabayan/Services/*`, `Pasabayan/Views/*`). iOS is the reference implementation for endpoints, flows, and copy unless a spec documents an exception.
+- **Written specs:** this repo’s `android-spec/` — start with `IMPLEMENTATION-GUIDE.md`, then phases in `PHASES-AND-FEATURES.md`.
+- **UI tokens:** `14-design-system.md` (derived from iOS `.../pasabayan-ios/Pasabayan/Views/Components/DesignSystem.swift`). No unstructured magic numbers in feature UI.
+- **Coverage check:** `FEATURE-COVERAGE-MATRIX.md` maps every iOS `Features/*` folder to a spec and phase; use it so nothing is orphaned.
+- **Tabs and shell:** `15-platform-and-tab-index.md` + **`/Users/efthemios/Documents/projects/pasabayan/pasabayan-ios/docs/tabs/`** (shipper/carrier tab indices 0–4, shared Messages/Profile).
+
+## Architecture direction (from `00-architecture.md`)
+
+- Jetpack Compose, Clean Architecture + MVVM, Hilt, OkHttp + Retrofit (single HTTP stack), `kotlin.Result` + sealed domain errors, one JSON strategy (kotlinx Serialization **or** Moshi, not both).
+- Feature modules and packages should mirror iOS feature boundaries (`Models` → DTO/domain, `Services` → Api/repository, `ViewModels` → presentation, `Views` → composables).
+- Shared shell/dashboard lives like iOS: not inside a single feature module when iOS keeps it under `Views/Screens/Dashboard/`.
+
+## Phases (summary)
+
+0 Foundation → 1 Auth → 2 Trips/Packages/Explore → 3 Bookings/matches (incl. counter-offer) → 4 Payments/Stripe → 5 Chat + notifications → 6 Profile/verification/favorites/ratings → 7 Legal/support/misc + tab audit.
+
+## Path note
+
+- Specs may link to `../../Pasabayan/...` as if `Pasabayan/` sits next to `android-spec/` (iOS repo layout). Resolve those against **`/Users/efthemios/Documents/projects/pasabayan/pasabayan-ios/Pasabayan/`**, or use **`.../pasabayan-ios/docs/android-spec/`** copies of the same markdown.
+
+## Current repo state
+
+- Implement toward `16-project-bootstrap.md` (`:core:network`, `:core:domain-error`, `:core:designsystem`, feature modules) — verify Gradle layout against the spec as work proceeds.

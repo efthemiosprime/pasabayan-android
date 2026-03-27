@@ -1,0 +1,107 @@
+# Pasabayan API contract matrix (iOS-derived)
+# Maintain per feature as you implement Android modules. See docs/android-spec/PHASES-AND-FEATURES.md
+# Full method + Swift response types: docs/android-spec/API-SHAPES-REFERENCE.md
+# Android module/package layout vs iOS Features/<Name>/: docs/android-spec/00-architecture.md
+#
+# Fields:
+#   phase: implementation phase (0-7)
+#   feature: logical feature name
+#   method, path: HTTP (path is relative to API base URL, e.g. /auth/me)
+#   auth: bearer | none | conditional (document in notes)
+#   ios_service: Swift file defining the call
+#   ambiguous: true if multiple response shapes or bypass clients — verify against iOS
+
+version: 1
+base_url_env: APIConfiguration.baseURL  # Pasabayan/Services/APIConfiguration.swift
+
+groups:
+  - name: auth
+    phase: 1
+    feature: Authentication
+    endpoints:
+      - { method: POST, path: "/auth/{provider}/login", auth: none, ios_service: Pasabayan/Services/APIService.swift }
+      - { method: GET, path: "/auth/me", auth: bearer, ios_service: Pasabayan/Services/APIService.swift }
+      - { method: POST, path: "/auth/logout", auth: bearer, ios_service: Pasabayan/Services/APIService.swift }
+
+  - name: trips
+    phase: 2
+    feature: Trips
+    endpoints:
+      - { method: GET, path: "/trips", auth: bearer, ios_service: Pasabayan/Features/Trips/Services/TripsAPIService.swift, ambiguous: true, notes: "Fallback to /carrier/trips on role message" }
+      - { method: GET, path: "/carrier/trips", auth: bearer, ios_service: Pasabayan/Features/Trips/Services/TripsAPIService.swift }
+      - { method: POST, path: "/trips", auth: bearer, ios_service: Pasabayan/Features/Trips/Services/TripsAPIService.swift, ambiguous: true, notes: "Custom URLSession not APIService" }
+      - { method: PUT, path: "/trips/{id}", auth: bearer, ios_service: Pasabayan/Features/Trips/Services/TripsAPIService.swift }
+      - { method: DELETE, path: "/trips/{id}", auth: bearer, ios_service: Pasabayan/Features/Trips/Services/TripsAPIService.swift }
+      - { method: GET, path: "/trips/available", auth: bearer, ios_service: Pasabayan/Features/Trips/Services/TripsAPIService.swift }
+
+  - name: packages
+    phase: 2
+    feature: Packages
+    endpoints:
+      - { method: GET, path: "/packages", auth: bearer, ios_service: Pasabayan/Features/Packages/Services/PackagesAPIService.swift }
+      - { method: GET, path: "/packages/available", auth: bearer, ios_service: Pasabayan/Features/Packages/Services/PackagesAPIService.swift }
+      - { method: POST, path: "/packages", auth: bearer, ios_service: Pasabayan/Features/Packages/Services/PackagesAPIService.swift, ambiguous: true, notes: "JSON or multipart" }
+      - { method: GET, path: "/packages/{id}", auth: bearer, ios_service: Pasabayan/Features/Packages/Services/PackagesAPIService.swift }
+      - { method: PUT, path: "/packages/{id}", auth: bearer, ios_service: Pasabayan/Features/Packages/Services/PackagesAPIService.swift }
+      - { method: DELETE, path: "/packages/{id}", auth: bearer, ios_service: Pasabayan/Features/Packages/Services/PackagesAPIService.swift }
+      - { method: POST, path: "/services/request", auth: bearer, ios_service: Pasabayan/Features/Packages/Services/PackagesAPIService.swift }
+
+  - name: bookings_matches
+    phase: 3
+    feature: Bookings
+    notes: "See 05-bookings-matches.md for full path list. Counter-offer uses POST to request-trip and trips/.../request with is_counter_offer body — same paths as initial requests."
+    endpoints:
+      - { method: GET, path: "/matches", auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift }
+      - { method: POST, path: "/matches", auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift }
+      - { method: POST, path: "/trips/{tripId}/book", auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift }
+      - { method: POST, path: "/bookings", auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift }
+      - { method: POST, path: "/payments/matches/{matchId}/auto-charge", auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift }
+      - { method: POST, path: "/packages/{packageId}/request-trip/{tripId}", auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift, ambiguous: true, notes: "ShipperCounterOfferRequest when is_counter_offer; else initial request" }
+      - { method: POST, path: "/trips/{tripId}/packages/{packageId}/request", auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift, ambiguous: true, notes: "CarrierCounterOfferRequest when is_counter_offer; else initial request" }
+
+  - name: payments
+    phase: 4
+    feature: Payments
+    endpoints:
+      - { method: GET, path: "/payments/config", auth: bearer, ios_service: Pasabayan/Features/Payments/Services/StripeConfigService.swift }
+      - { method: POST, path: "/payments", auth: bearer, ios_service: Pasabayan/Features/Payments/Services/PaymentService.swift }
+      - { method: GET, path: "/payments", auth: bearer, ios_service: Pasabayan/Features/Payments/Services/PaymentService.swift }
+      - { method: GET, path: "/receipts", auth: bearer, ios_service: Pasabayan/Features/Payments/Services/ReceiptService.swift }
+
+  - name: chat
+    phase: 5
+    feature: Chat
+    endpoints:
+      - { method: GET, path: "/config/broadcasting", auth: bearer, ios_service: Pasabayan/Features/Chat/Services/ChatAPIService.swift }
+      - { method: GET, path: "/chat/conversations", auth: bearer, ios_service: Pasabayan/Features/Chat/Services/ChatAPIService.swift }
+
+  - name: notifications
+    phase: 5
+    feature: Notifications
+    notes: "NotificationType includes counter_offer; push/in-app routing in NotificationModels + ComprehensiveNotificationsView"
+    endpoints:
+      - { method: POST, path: "/device-tokens", auth: bearer, ios_service: Pasabayan/Features/Notifications/Services/NotificationAPIService.swift, ambiguous: true, notes: "Custom session path" }
+      - { method: GET, path: "/notifications", auth: bearer, ios_service: Pasabayan/Features/Notifications/Services/NotificationAPIService.swift }
+
+  - name: profile
+    phase: 6
+    feature: Profile
+    endpoints:
+      - { method: GET, path: "/profile", auth: bearer, ios_service: Pasabayan/Features/Profile/Services/ProfileAPIService.swift }
+      - { method: PUT, path: "/profile", auth: bearer, ios_service: Pasabayan/Features/Profile/Services/ProfileAPIService.swift }
+
+  - name: locations_home_city
+    phase: 7
+    feature: LocationsProfile
+    notes: "HomeCityDetectionService + profile home_city_id"
+    endpoints:
+      - { method: GET, path: "/locations/countries/CA/cities", auth: bearer, ios_service: Pasabayan/Services/HomeCityDetectionService.swift }
+      - { method: GET, path: "/profile", auth: bearer, ios_service: Pasabayan/Features/Profile/Services/ProfileAPIService.swift, notes: "home_city_id" }
+      - { method: PUT, path: "/profile", auth: bearer, ios_service: Pasabayan/Features/Profile/Services/ProfileAPIService.swift, notes: "Update home city when GPS differs" }
+
+  - name: misc
+    phase: 7
+    feature: LegalSupportMisc
+    endpoints:
+      - { method: GET, path: "/health", auth: bearer, ios_service: Pasabayan/Services/APIService.swift }
+      - { method: GET, path: "/legal/status", auth: bearer, ios_service: Pasabayan/Features/Legal/Services/LegalAgreementService.swift }
