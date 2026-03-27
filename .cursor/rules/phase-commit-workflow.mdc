@@ -1,0 +1,56 @@
+---
+description: Stop at each android-spec phase; suggest conventional commits — user commits manually
+alwaysApply: true
+---
+
+# Phase gates and commit messages
+
+## Workflow
+
+- Implementation follows **phases** in `android-spec/PHASES-AND-FEATURES.md` (0–7).
+- **At the end of each completed phase** (exit gate met, or before starting the next phase): **stop** — do not start the next phase until the user confirms they are ready.
+- **Do not run `git commit`** unless the user explicitly asks the agent to commit. Default: output **suggested** commit message(s) only; the user commits manually.
+
+## Commit message format (required)
+
+```
+type(what): short imperative description
+```
+
+| Field | Rules |
+|-------|--------|
+| **type** | One of: `fix`, `feat`, `chore`, `perf`, `ci`, `test`, `docs`, `refactor`, `revert`, `build`, `ui`, `style` |
+| **what** | Scope: feature, module, or area (e.g. `auth`, `network`, `bookings`, `design-system`). Prefer lowercase; kebab-case is fine for multi-word scopes |
+| **description** | After the colon + space: concise, **imperative** (e.g. "add session repository", "wire Retrofit auth interceptor") |
+
+### Choosing `type`
+
+- **feat** — new capability or user-visible behavior
+- **fix** — bug fix
+- **chore** — maintenance, tooling, deps without feature behavior change
+- **perf** — performance-only changes
+- **ci** — CI / automation config
+- **test** — tests only
+- **docs** — documentation / specs markdown
+- **refactor** — behavior-preserving code structure change
+- **revert** — revert a prior commit
+- **build** — Gradle, packaging, codegen that affects builds
+- **ui** — Compose/UI behavior or layout (product-facing)
+- **style** — formatting, naming-only, non-functional polish
+
+### Examples
+
+- `feat(auth): add token storage and /auth/me session load`
+- `chore(gradle): add :core:network and Version Catalog entries`
+- `docs(android-spec): sync api-contract-matrix for trips endpoints`
+- `test(network): add auth header policy unit tests`
+- `ui(explore): mirror shipper explore tab structure per spec`
+
+## At each phase stop
+
+1. Briefly note **what** satisfies the phase exit gate in `PHASES-AND-FEATURES.md` (or what remains).
+2. Provide **one or more** suggested commit lines (split by concern if needed: e.g. `feat` + `test` + `docs`).
+3. State that the user will **commit manually** using the suggested line(s).
+4. **Progress tracking:** Update `android-spec/IMPLEMENTATION-STATUS.md` — tick completed phase exit gates and spec rows, set **Current phase** / **Last updated**, and add short **Notes** (PR/commit) when a milestone is done. Do not skip this when implementation work completes a spec or phase.
+
+Cross-reference: phase list and gates — `android-spec/PHASES-AND-FEATURES.md`; feature scope — `android-spec/FEATURE-COVERAGE-MATRIX.md`; done/pending — `android-spec/IMPLEMENTATION-STATUS.md`.

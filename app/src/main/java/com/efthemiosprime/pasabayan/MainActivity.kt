@@ -11,8 +11,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.efthemiosprime.pasabayan.ui.theme.PasabayanTheme
+import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
+import com.efthemiosprime.pasabayan.core.network.BuildConfig as NetworkBuildConfig
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,8 +24,8 @@ class MainActivity : ComponentActivity() {
             PasabayanTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                        apiBaseUrl = NetworkBuildConfig.API_BASE_URL,
+                        modifier = Modifier.padding(innerPadding),
                     )
                 }
             }
@@ -31,17 +34,17 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun Greeting(apiBaseUrl: String, modifier: Modifier = Modifier) {
     Text(
-        text = "Hello $name!",
-        modifier = modifier
+        text = "Pasabayan\nAPI: $apiBaseUrl",
+        modifier = modifier,
     )
 }
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+private fun GreetingPreview() {
     PasabayanTheme {
-        Greeting("Android")
+        Greeting(apiBaseUrl = "https://api.pasabayan.com/api")
     }
 }

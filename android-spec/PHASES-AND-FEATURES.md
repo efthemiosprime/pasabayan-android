@@ -2,6 +2,8 @@
 
 This document is the **primary roadmap**: work **by phase**, and within each phase **by feature**. Each phase has a clear exit gate (specs + TDD) before the next phase starts.
 
+**Track what’s done:** [IMPLEMENTATION-STATUS.md](IMPLEMENTATION-STATUS.md) — tick phases and specs as the Android codebase catches up.
+
 **Implementation quick start:** [IMPLEMENTATION-GUIDE.md](IMPLEMENTATION-GUIDE.md). **Empty Gradle project:** [16-project-bootstrap.md](16-project-bootstrap.md). **Ensure no missing iOS modules:** [FEATURE-COVERAGE-MATRIX.md](FEATURE-COVERAGE-MATRIX.md).
 
 ## Feature → iOS code → spec file

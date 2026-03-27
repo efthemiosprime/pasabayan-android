@@ -24,3 +24,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "Pasabayan"
 include(":app")
+include(":core:designsystem")
+include(":core:domain-error")
+include(":core:network")

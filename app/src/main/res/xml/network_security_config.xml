@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Default: HTTPS only. Debug builds: cleartext allowed for local API (matches iOS DEBUG localhost). -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Only applied when android:debuggable="true" (debug builds). -->
+    <debug-overrides>
+        <domain-config cleartextTrafficPermitted="true">
+            <domain includeSubdomains="true">localhost</domain>
+            <domain includeSubdomains="true">127.0.0.1</domain>
+            <domain includeSubdomains="true">10.0.2.2</domain>
+        </domain-config>
+    </debug-overrides>
+</network-security-config>
