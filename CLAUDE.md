@@ -40,6 +40,17 @@ Use **`shared/`** for cross-feature shell (e.g. root entry, shared error helpers
 
 **Full rules:** `.cursor/rules/app-feature-package-layout.mdc`.
 
+## Lean files and thin classes (strict)
+
+- **Single responsibility per file.** One class/composable/interface per file. DTOs, domain models, and mappers in separate files.
+- **Small files:** aim < 200 lines; split at 400. Functions < 30 lines. Classes < 150 lines of logic.
+- **Thin ViewModels:** delegate to repositories and use cases — no inline API calls, mapping, or business logic. Extract a use case when ≥ 2 call sites share logic.
+- **No god objects:** avoid `Utils.kt`, `Helpers.kt`, `Manager.kt` catch-alls. Name by responsibility (`DateParser`, `PriceFormatter`).
+- **Compose screens** delegate to smaller composable components in `components/`; extract repeated blocks (≥ 2 uses or ≥ 30 lines).
+- **Separate for testability:** if testing a piece of logic requires unrelated dependencies, extract it into its own file/class. Use cases, mappers, components, and DTOs should each be independently testable.
+
+Cursor rule: `.cursor/rules/lean-classes-separation.mdc`. Architecture: `android-spec/00-architecture.md` (Lean files and thin classes).
+
 ## Design system and UI (strict)
 
 - Root UI: **`PasabayanTheme`**.
@@ -72,6 +83,9 @@ Rules: `.cursor/rules/phase-commit-workflow.mdc`, `.cursor/rules/pasabayan-andro
 ## Build / IDE
 
 - **Gradle, Run, JDK, emulator:** use **Android Studio** as source of truth if terminal Gradle fails (e.g. `JAVA_HOME` / `jlink`). Cursor is for editing and AI-assisted coding.
+- **Tests and builds:** Prefer **you** running Gradle locally. Assistants should **provide copy-paste commands** (e.g. `./gradlew :core:session:testDebugUnitTest`, `./gradlew :app:compileDebugKotlin`, `./gradlew :app:assembleDebug`) rather than relying on Cursor to execute Gradle for authoritative results.
+
+Cursor rule: `.cursor/rules/gradle-user-runs-builds.mdc`.
 
 ## iOS reference path (parity)
 

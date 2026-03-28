@@ -80,6 +80,24 @@ These rules sit **on top of** feature mirroring ([module layout](#module-layout-
 - Use **`sealed class` / `sealed interface`** for `UiState` and navigation effects instead of many independent booleans (`isLoading`, `isError`, …) where a single discriminated state is clearer.
 - **Effects** (snackbar, navigation): `Channel` or `SharedFlow` from ViewModel — one pipeline, not ad hoc callbacks from deep children.
 
+### Lean files and thin classes
+
+Keep files **small** and classes **focused** — one clear responsibility per file. Cursor rule: `.cursor/rules/lean-classes-separation.mdc`.
+
+| Metric | Guideline |
+|--------|-----------|
+| File length | < 200 lines ideal; split at 400 |
+| Class body | < 150 lines of logic |
+| Function body | < 30 lines; extract helper when longer |
+| Function params | ≤ 5; group into data class when more |
+
+**Split early:**
+- ViewModels **delegate** to repositories / use cases — no inline business logic or API calls.
+- DTOs, domain models, and mappers each get **their own file**.
+- Compose screens delegate to smaller composable components in `components/`.
+- Use cases: extract when **≥ 2** call sites share logic; one `invoke()` per class.
+- Avoid god objects: no `Utils.kt`, `Helpers.kt`, or `Manager.kt` catch-alls — name classes by what they do (`DateParser`, `PriceFormatter`).
+
 ### Anti-patterns vs fixes
 
 | Avoid | Prefer |
