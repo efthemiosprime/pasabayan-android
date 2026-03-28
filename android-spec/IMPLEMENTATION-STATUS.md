@@ -18,8 +18,8 @@
 
 | Field | Value |
 |-------|--------|
-| **Current phase** | Phase 1 — Authentication (session + Compose sign-in; onboarding polish remains) |
-| **Last updated** | 2026-03-27 |
+| **Current phase** | Phase 2 — Trips, packages, Explore (Phase 1 complete) |
+| **Last updated** | 2026-03-28 |
 | **Spec audit** | **Complete** — YAML expanded from ~25 to ~100 endpoint rows; all feature specs updated with query params, multipart fields, WebSocket protocol, local storage keys, activity logs, cache policy, GPS services, badge rules, analytics mock structures |
 
 ---
@@ -29,7 +29,7 @@
 | Phase | Exit gate | Status |
 |-------|-----------|--------|
 | **0** — Foundation | See [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md) § Phase 0 | **Complete** — foundation modules, API-SHAPES (auth), **ErrorAlertPolicy**, TDD Phase 0 backlog ticked; app shell polish remains in later phases |
-| **1** — Authentication | Login, token, `/auth/me`, logout | **In progress** — session + **Compose auth screen** (Google ID token + Facebook SDK → backend); onboarding / full **02-auth-session** polish still TODO |
+| **1** — Authentication | Login, token, `/auth/me`, logout | **Complete** — OAuth UI (Google/Facebook → backend); cold-start onboarding → auth; post-login city → consent → dashboard shell; **`UnauthorizedSessionNotifier`** + **`AuthViewModel`** signed-out on **401**; `didJustCompleteConsent` one-shot; auth DTO tests + **`AuthRepositoryIntegrationTest`** + **`TokenClearingHandlerTest`**. Optional: Credential Manager / One Tap, extra `AuthViewModel` tests. |
 | **2** — Trips, packages, Explore | … | Not started |
 | **3** — Bookings & matches | … | Not started |
 | **4** — Payments & Stripe | … | Not started |
@@ -61,9 +61,10 @@
 
 | Item | Status | Notes |
 |------|--------|--------|
-| **`:core:session`** | Done | `TokenStore`, `EncryptedTokenStore` (EncryptedSharedPreferences + MasterKey); `StoredAuthTokenProvider`; `TokenClearingHandler` → `SessionInvalidationHandler`; `AuthRepository` / `AuthRepositoryImpl` (provider login, `getMe`, logout); `SessionModule` (Hilt) |
+| **`:core:session`** | Done | `TokenStore`, `EncryptedTokenStore`; `StoredAuthTokenProvider`; `TokenClearingHandler` → `SessionInvalidationHandler` + **`UnauthorizedSessionNotifier`** (401 → UI); `AuthRepository` / `AuthRepositoryImpl`; `SessionModule` (Hilt); **`TokenClearingHandlerTest`** |
 | **`app` dependency** | Done | `implementation(project(":core:session"))` |
-| **OAuth UI** | Partial | `AuthScreen` + `AuthViewModel`; `GoogleSignInHelper` (web client ID); `FacebookLoginStarter` + `MainActivity.onActivityResult` |
+| **OAuth UI** | Done | `AuthScreen` + `AuthRoute` + `AuthViewModel`; Google + Facebook → backend; **`DashboardScreen`** placeholder; **401** + `error_unauthorized`; **`didJustCompleteConsent`** via dashboard |
+| **Onboarding (17)** | Done | `RootViewModel` / `AppEntryContent`; `OnboardingRoute`; city + consent gates; prefs keys; consent failure still advances |
 
 ---
 
@@ -82,14 +83,16 @@
 
 **Phase 0 exit gate (from [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md)):** **Error mapping + user-facing strings** are in place; **contract YAML audit complete** (expanded to ~100 endpoints); **[API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md) verified for implemented Android DTOs** (auth — golden JSON tests in `:core:network`); extend fixtures as new DTO modules ship. **ErrorAlertPolicy** (foreground vs background) implemented in `:core:domain-error`. [TDD-PARITY-BACKLOG.md](TDD-PARITY-BACKLOG.md) Phase 0 complete.
 
+**Phase 1 exit gate:** Login → token persist → **`/auth/me`** → logout; auth DTO tests; onboarding order per [17-onboarding.md](17-onboarding.md). **Met** for shipped scope (see phase table).
+
 ---
 
-## Phase 1+ — Feature specs (not started)
+## Feature specs (remaining phases)
 
 | Spec | Done |
 |------|------|
-| [02-auth-session.md](02-auth-session.md) | [ ] (repository + token storage landed; full spec = UI + flows) |
-| [17-onboarding.md](17-onboarding.md) | [ ] |
+| [02-auth-session.md](02-auth-session.md) | [x] | App + `:core:session` meets exit gate; optional extra VM/repo tests later |
+| [17-onboarding.md](17-onboarding.md) | [x] | Flows + keys + gates; carrier consent flash uses `didJustCompleteConsent` when carrier UI ships |
 | [03-trips.md](03-trips.md) | [ ] |
 | [04-packages.md](04-packages.md) | [ ] |
 | [13-ui-tab-explore.md](13-ui-tab-explore.md) | [ ] |
@@ -107,14 +110,14 @@
 
 ## iOS feature folders → Android (from [FEATURE-COVERAGE-MATRIX.md](FEATURE-COVERAGE-MATRIX.md))
 
-- [ ] `Authentication/` — `:core:session` + **AuthScreen** (Google/Facebook); parity vs iOS onboarding **TODO**  
+- [x] `Authentication/` — `:core:session` + **AuthScreen** / **AuthRoute** / **AuthViewModel**; **401 → signed-out**  
 - [ ] `Analytics/`  
 - [ ] `Bookings/`  
 - [ ] `Chat/`  
 - [ ] `Favorites/`  
 - [ ] `Legal/`  
 - [ ] `Notifications/` — FCM dependency + stub service only  
-- [ ] `Onboarding/`  
+- [x] `Onboarding/` — Phase 1 scope  
 - [ ] `Packages/`  
 - [ ] `Payments/`  
 - [ ] `Profile/`  
@@ -131,4 +134,4 @@
 - [x] Design tokens in `:core:designsystem`  
 - [ ] App shell / tabs / Explore — not built  
 - [x] `google-services.json` + Firebase project linkage for FCM (runtime registration **TODO**)  
-- [ ] Google / Facebook **sign-in flows** — basic Compose + backend exchange **done**; production hardening / tests **TODO**
+- [x] Google / Facebook **sign-in flows** — Compose + backend **done**; Credential Manager / extra tests **optional**
