@@ -46,4 +46,9 @@
     <!-- Browse -->
     <string name="packages_browse_title">Parcourir les colis</string>
     <string name="packages_browse_search">Rechercher des colis\u2026</string>
+
+    <!-- Tutorial -->
+    <string name="packages_tutorial_title">Bienvenue, exp\u00e9diteur !</string>
+    <string name="packages_tutorial_body">Cr\u00e9ez une demande de colis en d\u00e9crivant votre article, les lieux de r\u00e9cup\u00e9ration et de livraison, et vos dates pr\u00e9f\u00e9r\u00e9es. Les transporteurs trouveront votre colis et proposeront de le livrer.</string>
+    <string name="packages_tutorial_dismiss">Compris</string>
 </resources>

@@ -46,4 +46,9 @@
     <!-- Browse -->
     <string name="packages_browse_title">Browse Packages</string>
     <string name="packages_browse_search">Search packages\u2026</string>
+
+    <!-- Tutorial -->
+    <string name="packages_tutorial_title">Welcome, Shipper!</string>
+    <string name="packages_tutorial_body">Create a package request by describing your item, pickup and delivery locations, and preferred dates. Carriers will find your package and offer to deliver it.</string>
+    <string name="packages_tutorial_dismiss">Got it</string>
 </resources>
