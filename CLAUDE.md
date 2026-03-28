@@ -99,6 +99,33 @@ Avoid common Android bug patterns. Full reference: `.cursor/rules/android-gotcha
 - **Gradle, Run, JDK, emulator:** use **Android Studio** as source of truth if terminal Gradle fails (e.g. `JAVA_HOME` / `jlink`). Cursor is for editing and AI-assisted coding.
 - **Tests and builds:** Prefer **you** running Gradle locally. Assistants should **provide copy-paste commands** (e.g. `./gradlew :core:session:testDebugUnitTest`, `./gradlew :app:compileDebugKotlin`, `./gradlew :app:assembleDebug`) rather than relying on Cursor to execute Gradle for authoritative results.
 
+### jlink / JAVA_HOME troubleshooting
+
+AGP 8.8+ requires `jlink` for `compileDebugJavaWithJavac`. Some editors (Cursor, VS Code) spawn terminals with a stripped JRE that lacks `jlink`, causing:
+
+```
+jlink executable .../bin/jlink does not exist.
+```
+
+**Diagnosis:** `$JAVA_HOME/bin/jlink` must exist. SDKMAN Java 21.0.1-tem at `~/.sdkman/candidates/java/current` has it. Android Studio JBR at `/Applications/Android Studio.app/Contents/jbr/Contents/Home` also has it.
+
+**Fix:** If the error appears after JAVA_HOME is already correct (e.g. via SDKMAN), the Gradle daemon is caching the old bad JRE. Run:
+
+```bash
+./gradlew --stop          # kill stale daemon
+./gradlew assembleDebug   # restarts with correct JAVA_HOME
+```
+
+If JAVA_HOME itself is wrong, set it explicitly:
+
+```bash
+export JAVA_HOME="$HOME/.sdkman/candidates/java/current"
+# or
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+```
+
+`settings.gradle.kts` has a `syncJavaHomeForAgpJlink()` workaround that tries to fix this at build time, but it cannot override a daemon that started with a bad JRE.
+
 Cursor rule: `.cursor/rules/gradle-user-runs-builds.mdc`.
 
 ## iOS reference path (parity)

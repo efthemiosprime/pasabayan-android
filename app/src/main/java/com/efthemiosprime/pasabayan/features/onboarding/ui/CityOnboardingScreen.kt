@@ -161,6 +161,7 @@ fun CityOnboardingScreen(
                     value = state.selectedCity?.display.orEmpty(),
                     onValueChange = { },
                     readOnly = true,
+                    enabled = false,
                     label = { Text(stringResource(R.string.onboarding_city_sheettitle)) },
                     placeholder = { Text(stringResource(R.string.onboarding_city_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),

@@ -18,19 +18,23 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun loginWithProviderAccessToken(provider: String, accessToken: String): Result<AuthUser> {
         return try {
-            val res = authApi.loginWithProvider(provider, ProviderLoginRequestJson(accessToken))
+            val body = when (provider) {
+                "google" -> ProviderLoginRequestJson(idToken = accessToken)
+                else -> ProviderLoginRequestJson(accessToken = accessToken)
+            }
+            val res = authApi.loginWithProvider(provider, body)
             if (!res.isSuccessful) {
                 return Result.failure(
                     DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
                 )
             }
-            val body = res.body()
+            val responseBody = res.body()
                 ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
-            if (!body.success || body.data == null) {
-                val msg = body.message.ifBlank { "Login failed" }
+            if (!responseBody.success || responseBody.data == null) {
+                val msg = responseBody.message.ifBlank { "Login failed" }
                 return Result.failure(DomainErrorMapperException(DomainError.ServerError(msg)))
             }
-            val authData = requireNotNull(body.data)
+            val authData = requireNotNull(responseBody.data)
             tokenStore.setToken(authData.token)
             Result.success(authData.user.toAuthUser())
         } catch (e: Exception) {

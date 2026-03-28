@@ -5,7 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ProviderLoginRequestJson(
-    @SerialName("access_token") val accessToken: String,
+    @SerialName("access_token") val accessToken: String? = null,
+    val idToken: String? = null,
 )
 
 @Serializable

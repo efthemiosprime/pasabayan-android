@@ -19,6 +19,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
+import android.util.Log
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -75,6 +76,10 @@ class AuthViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AuthScreenState())
     val uiState: StateFlow<AuthScreenState> = _uiState.asStateFlow()
 
+    companion object {
+        private const val TAG = "AuthViewModel"
+    }
+
     init {
         refreshSession()
         viewModelScope.launch {
@@ -89,6 +94,7 @@ class AuthViewModel @Inject constructor(
     }
 
     fun refreshSession() {
+        Log.d(TAG, "refreshSession: checking stored token...")
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
@@ -132,11 +138,14 @@ class AuthViewModel @Inject constructor(
 
     fun onGoogleSignInResult(task: Task<GoogleSignInAccount>) {
         viewModelScope.launch {
+            Log.d(TAG, "onGoogleSignInResult: task received")
             _uiState.update { it.copy(isBusy = true, transientError = null) }
             try {
                 val account = task.getResult(ApiException::class.java)
+                Log.d(TAG, "Google account: ${account.email}, hasIdToken=${account.idToken != null}")
                 val idToken = account.idToken
                 if (idToken.isNullOrBlank()) {
+                    Log.e(TAG, "Google sign-in: no ID token returned")
                     _uiState.update {
                         it.copy(
                             isBusy = false,
@@ -145,17 +154,21 @@ class AuthViewModel @Inject constructor(
                     }
                     return@launch
                 }
+                Log.d(TAG, "Calling backend loginWithProviderAccessToken(google)...")
                 authRepository.loginWithProviderAccessToken("google", idToken).fold(
                     onSuccess = { user ->
+                        Log.d(TAG, "Backend login SUCCESS: userId=${user.id}, name=${user.name}")
                         applySignedInWithCityGate(user)
                     },
                     onFailure = { e ->
+                        Log.e(TAG, "Backend login FAILED: ${e.javaClass.simpleName}: ${e.message}")
                         _uiState.update {
                             it.copy(isBusy = false, transientError = e.toLocalizedUserMessage())
                         }
                     },
                 )
             } catch (e: ApiException) {
+                Log.e(TAG, "Google ApiException: statusCode=${e.statusCode}, message=${e.message}")
                 if (e.statusCode == GoogleSignInStatusCodes.SIGN_IN_CANCELLED) {
                     _uiState.update { it.copy(isBusy = false) }
                 } else {
@@ -254,6 +267,7 @@ class AuthViewModel @Inject constructor(
     private suspend fun applySignedInWithCityGate(user: AuthUser) {
         val cityDone = onboardingPreferences.hasCompletedCitySetup()
         val consentDone = onboardingPreferences.hasCompletedConsentSetup()
+        Log.d(TAG, "applySignedInWithCityGate: user=${user.name}, cityDone=$cityDone, consentDone=$consentDone")
         val consentPhase = when {
             !cityDone -> null
             !consentDone -> ConsentSetupPhase.NeedsSetup

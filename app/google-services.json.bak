@@ -1,13 +1,13 @@
 {
   "project_info": {
     "project_number": "249733420573",
-    "project_id": "pasabayan-api",
-    "storage_bucket": "pasabayan-api.firebasestorage.app"
+    "project_id": "pasabayan-436810",
+    "storage_bucket": "pasabayan-436810.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:249733420573:android:0f97fda43a9122f45318f4",
+        "mobilesdk_app_id": "1:249733420573:android:f1b8c3e5d6a7e9f2c4d5e6",
         "android_client_info": {
           "package_name": "com.efthemiosprime.pasabayan"
         }
@@ -18,7 +18,7 @@
           "client_type": 1,
           "android_info": {
             "package_name": "com.efthemiosprime.pasabayan",
-            "certificate_hash": "cc8e08cc8b4eaedf6790d2026fa24dbf39ecee3a"
+            "certificate_hash": "22:8F:4E:3B:E4:85:C8:CE:C0:CC:2B:C0:15:EE:3D:83:99:27:D6:1F"
           }
         },
         {
@@ -28,7 +28,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAnBgKgdS--ajaiszeVCqrDJMcLPR-87qE"
+          "current_key": "AIzaSyDJcAHZKGxbnNcmoLkce4D6p6a5sTewKIY"
         }
       ],
       "services": {
@@ -37,13 +37,6 @@
             {
               "client_id": "249733420573-2rfuqsub2eipc6m1ci8ht5mfpq5hsg7n.apps.googleusercontent.com",
               "client_type": 3
-            },
-            {
-              "client_id": "249733420573-mbm15fe57r9minet8ern4jlalsp0p1ul.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.efthemiosprime.Pasabayan"
-              }
             }
           ]
         }
@@ -51,4 +44,4 @@
     }
   ],
   "configuration_version": "1"
-}
+} 
