@@ -108,6 +108,7 @@ fun AuthRoute(
                                 onSignInWithGoogle = onLaunchGoogleSignIn,
                                 onSignInWithFacebook = { viewModel.signInWithFacebook(activity) },
                                 onLogout = { viewModel.logout() },
+                                onConsumeDidJustCompleteConsent = { viewModel.consumeDidJustCompleteConsent() },
                                 modifier = modifier,
                             )
                         }
@@ -125,6 +126,7 @@ fun AuthRoute(
                 onSignInWithGoogle = onLaunchGoogleSignIn,
                 onSignInWithFacebook = { viewModel.signInWithFacebook(activity) },
                 onLogout = { viewModel.logout() },
+                onConsumeDidJustCompleteConsent = { viewModel.consumeDidJustCompleteConsent() },
                 modifier = modifier,
             )
         }
@@ -139,6 +141,7 @@ fun AuthScreen(
     onSignInWithGoogle: () -> Unit,
     onSignInWithFacebook: () -> Unit,
     onLogout: () -> Unit,
+    onConsumeDidJustCompleteConsent: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -154,6 +157,8 @@ fun AuthScreen(
                     onLogout = onLogout,
                     apiBaseUrl = apiBaseUrl,
                     showApiFooter = showApiFooter,
+                    justCompletedConsent = state.didJustCompleteConsent,
+                    onConsumedJustCompletedConsent = onConsumeDidJustCompleteConsent,
                 )
             }
             SessionUiState.Checking,

@@ -1,0 +1,36 @@
+---
+description: User runs Gradle/tests locally; assistant supplies commands instead of relying on Cursor Gradle
+alwaysApply: true
+---
+
+# Gradle and tests — user runs locally
+
+## Default workflow
+
+- **Do not depend on the AI agent** to run `./gradlew` for authoritative pass/fail. Cursor’s environment often **timeouts**, **fails to spawn** Gradle, or shows **no output** for long periods.
+- **Give the user copy-paste commands** to run in their own terminal or **Android Studio** (Build, Run, test actions). Treat **Android Studio + the user’s machine** as the source of truth for Gradle, JDK, and test results (see `pasabayan-android-spec-context.mdc`).
+
+## When verifying builds or tests
+
+After code changes, output **explicit shell commands** (repo root), for example:
+
+```bash
+# One module’s unit tests
+./gradlew :core:session:testDebugUnitTest
+
+# App compile (KSP + Kotlin)
+./gradlew :app:compileDebugKotlin
+
+# Full debug APK
+./gradlew :app:assembleDebug
+
+# All unit tests (adjust if slow)
+./gradlew testDebugUnitTest
+```
+
+- Prefer **targeted** tasks (`:module:task`) over whole-project tasks when suggesting checks after a small change.
+- If the user reports failures, ask for the **last ~40 lines** of Gradle output (or the first `e:` / `FAILURE` block) and fix from that.
+
+## Optional agent runs
+
+Running Gradle inside the agent is **optional** and best-effort only. If it fails or hangs, **do not block** on it — provide the same commands for local execution.

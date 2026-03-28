@@ -7,8 +7,10 @@ import javax.inject.Singleton
 @Singleton
 class TokenClearingHandler @Inject constructor(
     private val tokenStore: TokenStore,
+    private val unauthorizedSessionNotifier: UnauthorizedSessionNotifier,
 ) : SessionInvalidationHandler {
     override fun onUnauthorized() {
         tokenStore.clear()
+        unauthorizedSessionNotifier.notifyUnauthorized()
     }
 }

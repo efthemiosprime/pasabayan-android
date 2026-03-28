@@ -10,6 +10,7 @@ import com.efthemiosprime.pasabayan.shared.error.localizedMessage
 import com.efthemiosprime.pasabayan.core.session.AuthRepository
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.core.session.TokenStore
+import com.efthemiosprime.pasabayan.core.session.UnauthorizedSessionNotifier
 import com.efthemiosprime.pasabayan.features.auth.services.FacebookLoginCancelledException
 import com.efthemiosprime.pasabayan.features.auth.services.FacebookLoginStarter
 import com.efthemiosprime.pasabayan.features.auth.services.GoogleSignInHelper
@@ -53,6 +54,11 @@ data class AuthScreenState(
     val citySetupPhase: CitySetupPhase? = null,
     /** After city is complete; non-null while signed in with city done. Cleared when signed out. */
     val consentSetupPhase: ConsentSetupPhase? = null,
+    /**
+     * One-shot after consent onboarding completes ([markConsentOnboardingComplete]).
+     * Parity with iOS `OnboardingState.didJustCompleteConsent` (carrier dashboard uses first frame).
+     */
+    val didJustCompleteConsent: Boolean = false,
 )
 
 @HiltViewModel
@@ -63,6 +69,7 @@ class AuthViewModel @Inject constructor(
     private val googleSignInHelper: GoogleSignInHelper,
     private val facebookLoginStarter: FacebookLoginStarter,
     private val onboardingPreferences: OnboardingPreferences,
+    private val unauthorizedSessionNotifier: UnauthorizedSessionNotifier,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthScreenState())
@@ -70,6 +77,15 @@ class AuthViewModel @Inject constructor(
 
     init {
         refreshSession()
+        viewModelScope.launch {
+            unauthorizedSessionNotifier.events.collect {
+                handleUnauthorizedFromNetwork()
+            }
+        }
+    }
+
+    fun consumeDidJustCompleteConsent() {
+        _uiState.update { it.copy(didJustCompleteConsent = false) }
     }
 
     fun refreshSession() {
@@ -80,6 +96,7 @@ class AuthViewModel @Inject constructor(
                     transientError = null,
                     citySetupPhase = null,
                     consentSetupPhase = null,
+                    didJustCompleteConsent = false,
                 )
             }
             val token = tokenStore.getToken()
@@ -89,6 +106,7 @@ class AuthViewModel @Inject constructor(
                         session = SessionUiState.SignedOut,
                         citySetupPhase = null,
                         consentSetupPhase = null,
+                        didJustCompleteConsent = false,
                     )
                 }
                 return@launch
@@ -103,6 +121,7 @@ class AuthViewModel @Inject constructor(
                             session = SessionUiState.SignedOut,
                             citySetupPhase = null,
                             consentSetupPhase = null,
+                            didJustCompleteConsent = false,
                             transientError = e.toLocalizedUserMessage(),
                         )
                     }
@@ -197,6 +216,7 @@ class AuthViewModel @Inject constructor(
                     isBusy = false,
                     citySetupPhase = null,
                     consentSetupPhase = null,
+                    didJustCompleteConsent = false,
                 )
             }
         }
@@ -222,7 +242,12 @@ class AuthViewModel @Inject constructor(
     fun markConsentOnboardingComplete() {
         viewModelScope.launch {
             onboardingPreferences.setHasCompletedConsentSetup(true)
-            _uiState.update { it.copy(consentSetupPhase = ConsentSetupPhase.Complete) }
+            _uiState.update {
+                it.copy(
+                    consentSetupPhase = ConsentSetupPhase.Complete,
+                    didJustCompleteConsent = true,
+                )
+            }
         }
     }
 
@@ -240,6 +265,21 @@ class AuthViewModel @Inject constructor(
                 isBusy = false,
                 citySetupPhase = if (cityDone) CitySetupPhase.Complete else CitySetupPhase.NeedsSetup,
                 consentSetupPhase = consentPhase,
+                didJustCompleteConsent = false,
+            )
+        }
+    }
+
+    private fun handleUnauthorizedFromNetwork() {
+        googleSignInHelper.signOutGoogle()
+        _uiState.update { s ->
+            s.copy(
+                session = SessionUiState.SignedOut,
+                isBusy = false,
+                citySetupPhase = null,
+                consentSetupPhase = null,
+                didJustCompleteConsent = false,
+                transientError = appContext.getString(R.string.error_unauthorized),
             )
         }
     }

@@ -1,0 +1,93 @@
+---
+description: Keep files lean and classes thin — single responsibility, small files, extract early
+alwaysApply: true
+---
+
+# Lean files and thin classes
+
+Every file and class should have **one clear reason to exist**. When in doubt, split.
+
+## Hard limits
+
+| Metric | Guideline |
+|--------|-----------|
+| **File length** | Aim for **< 200 lines**; investigate at **300**; split at **400** |
+| **Class / object body** | Aim for **< 150 lines** of logic (excluding imports, blank lines, docs) |
+| **Function body** | Aim for **< 30 lines**; extract a private helper or use case when longer |
+| **Function parameters** | **≤ 5**; group into a data class or builder when more |
+| **Composable function** | One screen **or** one reusable component per function; do not mix both |
+
+These are guidelines, not walls — a 210-line file with clean structure is fine; a 150-line file with three responsibilities is not.
+
+## Separation rules
+
+### ViewModels
+- **One ViewModel per screen** — never a "god" ViewModel serving multiple screens.
+- A ViewModel should **delegate** to repositories and use cases, not contain business logic inline.
+- If a ViewModel accumulates **> 3 repository dependencies**, consider extracting a **use case** that orchestrates them.
+- Keep `UiState` data classes **in their own file** when they exceed ~30 lines or are referenced outside the ViewModel.
+
+### Repositories
+- **One repository per domain aggregate** (e.g. `TripRepository`, not `TripListRepository` + `TripDetailRepository`).
+- Repository methods should be **thin wrappers**: call API → map DTO → return `Result`. Business rules go in use cases.
+- If a repository grows beyond ~10 public methods, split by **sub-aggregate** (e.g. `TripRepository` + `TripSearchRepository`).
+
+### DTOs and mappers
+- **DTOs in their own file** — do not nest request/response classes inside the Retrofit `Api` interface.
+- **One mapper file per domain model** (e.g. `TripMapper.kt`) when mapping involves more than a trivial constructor call.
+- Keep DTOs and domain models in **separate files** — never in the same file.
+
+### Retrofit API interfaces
+- **One `*Api` interface per feature** (e.g. `TripsApi`, `PackagesApi`).
+- If an API interface exceeds ~15 endpoints, split by sub-domain (e.g. `TripsApi` + `TripSearchApi`).
+
+### Compose UI
+- **Screen composable** in its own file (e.g. `TripDetailScreen.kt`).
+- **Feature-local components** in `components/` subfolder, one component per file.
+- Extract repeated UI blocks (≥ 2 uses or ≥ 30 lines) into their own composable.
+- Preview functions live in the **same file** as the composable they preview, not in a separate previews file.
+
+### Use cases / interactors
+- Extract a use case when **≥ 2 ViewModels** (or call sites) share the same logic.
+- One use case class = **one public `operator fun invoke()`** — single responsibility.
+- Use cases return `Result<T>` (ROP); they do not hold state.
+
+### Hilt modules
+- **One `@Module` per feature** is the default (e.g. `TripsModule`).
+- Split only if a single module provides **> 10 bindings** — separate into `TripsNetworkModule` + `TripsDataModule`.
+
+## Separate for testability
+
+The primary reason to split is **easier testing**:
+- A **use case** in its own file can be unit-tested without a ViewModel, Android context, or Compose.
+- A **mapper** in its own file gets focused tests with clear input/output — not buried in a repository test.
+- A **composable component** in its own file can be previewed and tested independently from the full screen.
+- A **DTO** in its own file keeps serialization tests isolated from business logic.
+
+**Rule of thumb:** if you need to set up unrelated dependencies to test a piece of logic, that logic belongs in its own file/class.
+
+## When reviewing / refactoring
+
+Before adding code to an existing file, ask:
+1. Does this belong to the **same single responsibility** the file already owns?
+2. Would a new reader understand the file's purpose from its **name alone**?
+3. Is the file still under the size guideline after this addition?
+4. Can this piece be **tested independently**? If yes, it should be in its own file.
+
+If **any answer is no** → extract into a new file first, then add.
+
+## Anti-patterns
+
+| Avoid | Prefer |
+|-------|--------|
+| "Utils" / "Helpers" / "Manager" god files | Focused, named classes (`DateParser`, `PriceFormatter`) |
+| ViewModel doing API calls, mapping, caching, and navigation | ViewModel → UseCase → Repository → Api |
+| Putting 5 data classes in one `Models.kt` | One file per data class (or tightly coupled pair) |
+| 500-line Compose screen function | Screen delegates to smaller composable components |
+| Mapper logic inlined in ViewModel `init {}` | Dedicated `*Mapper` object or extension |
+
+## Cross-references
+
+- Architecture layers: `android-spec/00-architecture.md`
+- Package layout: `.cursor/rules/app-feature-package-layout.mdc`
+- Design system components: `android-spec/14-design-system.md`

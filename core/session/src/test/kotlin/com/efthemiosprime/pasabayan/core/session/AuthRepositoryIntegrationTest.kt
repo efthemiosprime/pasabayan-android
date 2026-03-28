@@ -26,8 +26,8 @@ class AuthRepositoryIntegrationTest {
     private class MemoryTokenStore : TokenStore {
         private var token: String? = null
         override fun getToken(): String? = token
-        override fun setToken(t: String?) {
-            token = t
+        override fun setToken(token: String?) {
+            this.token = token
         }
         override fun clear() {
             token = null
