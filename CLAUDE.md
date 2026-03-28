@@ -47,6 +47,9 @@ Use **`shared/`** for cross-feature shell (e.g. root entry, shared error helpers
 - Prefer **`PButton`**, **`PCard`**, **`POutlinedTextField`**, **`PScaffold`** / **`PSnackbar`**, **`PModalBottomSheet`**, **`PTopBar`**, **`PDivider`**, **`PCircularProgress`**, and future **`P*`** primitives; use **`ds*`** modifiers for repeated patterns.
 - **Do not** add ad-hoc colors, `dp`/`sp`, or bespoke `Button`/`Card` styling in feature modules. **Extend `:core:designsystem` + update `14-design-system.md`** when something is missing. Document rare exceptions in the feature spec + PR (per **14**).
 - **Light + dark theme (mandatory):** All UI must work in both light and dark mode. Use `MaterialTheme.colorScheme.*` or `PasabayanColors.*` — never `Color.White`, `Color.Black`, or `Color(0xFF...)` directly. Preview composables with `@Preview(uiMode = UI_MODE_NIGHT_YES)`. `PasabayanTheme` must define both `lightColorScheme` and `darkColorScheme`.
+- **Compose previews (mandatory):** Any new or changed composable under **`features/*/ui/`**, **`features/*/components/`**, or **`:core:designsystem`** must include **`@Preview`** composables: wrap in **`PasabayanTheme`**, and include **light + dark** previews for non-trivial UI. Use fake/static state for screens; do not depend on Hilt/`ViewModel` in previews.
+
+Cursor rule: `.cursor/rules/compose-ui-previews.mdc`.
 
 ## Localization (strict — always apply)
 

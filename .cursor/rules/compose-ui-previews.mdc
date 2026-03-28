@@ -1,0 +1,31 @@
+---
+description: Require @Preview for Compose UI and feature components; light + dark under PasabayanTheme
+alwaysApply: true
+---
+
+# Compose UI previews (mandatory)
+
+## Scope
+
+Every **new or materially changed** `@Composable` that is **user-visible UI** must ship with at least one **`@Preview`** in the **same file** (or same Kotlin file as the primary public composable if split is unavoidable — prefer same file).
+
+Applies to:
+
+- **`features/*/ui/**`** — screens, flows, route content
+- **`features/*/components/**`** — feature-scoped building blocks
+- **`:core:designsystem`** — `P*` and other design-system composables intended for reuse
+
+Does **not** apply to: ViewModels, repositories, DTOs, pure utilities, theme/token-only files with no composable, or generated code.
+
+## Requirements
+
+1. **Theme:** Previews must wrap content in **`PasabayanTheme { … }`** so colors and typography match the app.
+2. **Light + dark:** Provide **two** previews for non-trivial UI: default (light) and **`@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)`** (or `UI_MODE_NIGHT_YES` import from `android.content.res.Configuration`) so dark mode is visible in the preview panel.
+3. **Stateful screens:** Use a **`@Preview`-only** composable or **sample/fake state** (e.g. sealed state instances, `remember { mutableStateOf(...) }` with static data). Do not require a real `ViewModel` or Hilt in previews.
+4. **Localization:** Use the same **`stringResource`** / theme rules as production; previews run with default locale — no hardcoded user-visible strings.
+
+## Review
+
+Treat missing previews for new UI/components in the paths above as incomplete work unless the spec documents an exception.
+
+**Cross-reference:** `android-spec/14-design-system.md` (theme and tokens), `.cursor/rules/tdd-and-ui-conformance.mdc`, `CLAUDE.md` (Design system and UI).

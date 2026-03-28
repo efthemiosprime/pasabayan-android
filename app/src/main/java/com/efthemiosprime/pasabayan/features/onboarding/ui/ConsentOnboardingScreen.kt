@@ -38,12 +38,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import android.content.res.Configuration
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.R
+import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.features.auth.viewmodel.AuthViewModel
+import com.efthemiosprime.pasabayan.features.onboarding.model.ConsentSelections
 import com.efthemiosprime.pasabayan.features.onboarding.viewmodel.ConsentOnboardingUiState
 import com.efthemiosprime.pasabayan.features.onboarding.viewmodel.ConsentOnboardingViewModel
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
@@ -247,5 +251,72 @@ private fun ConsentToggleRow(
                 ),
             )
         }
+    }
+}
+
+@Preview(
+    showBackground = true,
+    name = "Consent — defaults — light",
+    widthDp = 360,
+    heightDp = 780,
+)
+@Preview(
+    showBackground = true,
+    name = "Consent — defaults — dark",
+    widthDp = 360,
+    heightDp = 780,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun ConsentOnboardingScreenPreview() {
+    PasabayanTheme {
+        ConsentOnboardingScreen(
+            state = ConsentOnboardingUiState(
+                selections = ConsentSelections(),
+                isSaving = false,
+            ),
+            onPushChanged = {},
+            onLocationChanged = {},
+            onAnalyticsChanged = {},
+            onMarketingChanged = {},
+            onContinue = {},
+            modifier = Modifier.fillMaxSize(),
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    name = "Consent — mixed + saving — light",
+    widthDp = 360,
+    heightDp = 780,
+)
+@Preview(
+    showBackground = true,
+    name = "Consent — mixed + saving — dark",
+    widthDp = 360,
+    heightDp = 780,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun ConsentOnboardingScreenMixedPreview() {
+    PasabayanTheme {
+        ConsentOnboardingScreen(
+            state = ConsentOnboardingUiState(
+                selections = ConsentSelections(
+                    pushNotifications = true,
+                    locationTracking = false,
+                    analytics = true,
+                    marketingCommunications = false,
+                ),
+                isSaving = true,
+            ),
+            onPushChanged = {},
+            onLocationChanged = {},
+            onAnalyticsChanged = {},
+            onMarketingChanged = {},
+            onContinue = {},
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }

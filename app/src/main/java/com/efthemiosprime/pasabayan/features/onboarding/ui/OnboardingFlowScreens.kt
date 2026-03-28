@@ -24,7 +24,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.outlined.ArrowForward
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.DirectionsCar
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Inventory2
@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.res.Configuration
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -692,7 +693,7 @@ fun OnboardingCompletionScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             OnboardingCompletionActionCard(
-                icon = Icons.Outlined.ArrowForward,
+                icon = Icons.AutoMirrored.Outlined.ArrowForward,
                 iconColor = PasabayanColors.OnboardingPrimary,
                 title = stringResource(R.string.onboarding_completion_continuetitle),
                 description = stringResource(R.string.onboarding_completion_continuedescription),
@@ -838,7 +839,45 @@ private fun OnboardingAllCaughtUpBadge() {
     }
 }
 
-@Preview(showBackground = true, name = "Journey — carrier step 1", widthDp = 360, heightDp = 800)
+@Preview(
+    showBackground = true,
+    name = "Role selection — light",
+    widthDp = 360,
+    heightDp = 800,
+)
+@Preview(
+    showBackground = true,
+    name = "Role selection — dark",
+    widthDp = 360,
+    heightDp = 800,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun OnboardingRoleSelectionScreenPreview() {
+    PasabayanTheme {
+        OnboardingRoleSelectionScreen(
+            hasViewedCarrier = false,
+            hasViewedSender = true,
+            onSelectCarrier = {},
+            onSelectSender = {},
+            modifier = Modifier.fillMaxSize(),
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    name = "Journey — carrier step 1 — light",
+    widthDp = 360,
+    heightDp = 800,
+)
+@Preview(
+    showBackground = true,
+    name = "Journey — carrier step 1 — dark",
+    widthDp = 360,
+    heightDp = 800,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
 @Composable
 private fun OnboardingJourneyScreenPreview() {
     PasabayanTheme {
@@ -858,7 +897,52 @@ private fun OnboardingJourneyScreenPreview() {
     }
 }
 
-@Preview(showBackground = true, name = "Completion — explore other role", widthDp = 360, heightDp = 800)
+@Preview(
+    showBackground = true,
+    name = "Journey — last step — light",
+    widthDp = 360,
+    heightDp = 800,
+)
+@Preview(
+    showBackground = true,
+    name = "Journey — last step — dark",
+    widthDp = 360,
+    heightDp = 800,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun OnboardingJourneyScreenLastStepPreview() {
+    val defs = JourneyStepDefinitions.stepsFor(OnboardingRole.Shipper)
+    PasabayanTheme {
+        OnboardingJourneyScreen(
+            definition = defs.last(),
+            role = OnboardingRole.Shipper,
+            stepIndex = defs.lastIndex,
+            totalSteps = defs.size,
+            isLastStep = true,
+            onBack = {},
+            onSkip = {},
+            onNext = {},
+            onSeeSummary = {},
+            onSkipToApp = {},
+            modifier = Modifier.fillMaxSize(),
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    name = "Completion — explore other role — light",
+    widthDp = 360,
+    heightDp = 800,
+)
+@Preview(
+    showBackground = true,
+    name = "Completion — explore other role — dark",
+    widthDp = 360,
+    heightDp = 800,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
 @Composable
 private fun OnboardingCompletionScreenPreview() {
     PasabayanTheme {
@@ -866,6 +950,33 @@ private fun OnboardingCompletionScreenPreview() {
             completedRole = OnboardingRole.Shipper,
             hasViewedOppositeJourney = false,
             hasViewedBothJourneys = false,
+            onContinueToApp = {},
+            onExploreOtherRole = {},
+            modifier = Modifier.fillMaxSize(),
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    name = "Completion — all journeys — light",
+    widthDp = 360,
+    heightDp = 800,
+)
+@Preview(
+    showBackground = true,
+    name = "Completion — all journeys — dark",
+    widthDp = 360,
+    heightDp = 800,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun OnboardingCompletionScreenAllDonePreview() {
+    PasabayanTheme {
+        OnboardingCompletionScreen(
+            completedRole = OnboardingRole.Carrier,
+            hasViewedOppositeJourney = true,
+            hasViewedBothJourneys = true,
             onContinueToApp = {},
             onExploreOtherRole = {},
             modifier = Modifier.fillMaxSize(),
