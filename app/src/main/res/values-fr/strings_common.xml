@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Pasabayan</string>
+    <string name="common_role_carrier">Transporteur</string>
+    <string name="common_role_sender">Expéditeur</string>
 </resources>

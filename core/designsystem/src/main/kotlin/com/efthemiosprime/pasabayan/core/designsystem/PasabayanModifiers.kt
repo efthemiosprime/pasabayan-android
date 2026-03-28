@@ -56,3 +56,12 @@ fun Modifier.dsShadowButton(shape: RoundedCornerShape): Modifier =
         spotColor = Color.Black.copy(alpha = 0.18f),
         ambientColor = Color.Black.copy(alpha = 0.08f),
     )
+
+/** iOS onboarding `RoleCard` / `CompletionActionCard` (~black 4% / radius 8). */
+fun Modifier.dsShadowOnboardingCard(shape: RoundedCornerShape): Modifier =
+    shadow(
+        elevation = 2.dp,
+        shape = shape,
+        spotColor = Color.Black.copy(alpha = 0.04f),
+        ambientColor = Color.Black.copy(alpha = 0.04f),
+    )

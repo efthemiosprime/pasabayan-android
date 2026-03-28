@@ -10,9 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.efthemiosprime.pasabayan.auth.AuthRoute
 import com.efthemiosprime.pasabayan.auth.AuthViewModel
 import com.efthemiosprime.pasabayan.auth.FacebookLoginStarter
+import com.efthemiosprime.pasabayan.root.AppEntryContent
+import com.efthemiosprime.pasabayan.root.RootViewModel
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PScaffold
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -30,18 +31,22 @@ class MainActivity : androidx.activity.ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PasabayanTheme {
-                val viewModel: AuthViewModel = hiltViewModel()
+                val rootViewModel: RootViewModel = hiltViewModel()
+                val authViewModel: AuthViewModel = hiltViewModel()
                 val googleLauncher = rememberLauncherForActivityResult(
                     ActivityResultContracts.StartActivityForResult(),
                 ) { result ->
                     val data: Intent = result.data ?: return@rememberLauncherForActivityResult
                     val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-                    viewModel.onGoogleSignInResult(task)
+                    authViewModel.onGoogleSignInResult(task)
                 }
                 PScaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AuthRoute(
-                        viewModel = viewModel,
-                        onLaunchGoogleSignIn = { googleLauncher.launch(viewModel.googleSignInIntent()) },
+                    AppEntryContent(
+                        rootViewModel = rootViewModel,
+                        authViewModel = authViewModel,
+                        onLaunchGoogleSignIn = {
+                            googleLauncher.launch(authViewModel.googleSignInIntent())
+                        },
                         modifier = Modifier.padding(innerPadding),
                     )
                 }

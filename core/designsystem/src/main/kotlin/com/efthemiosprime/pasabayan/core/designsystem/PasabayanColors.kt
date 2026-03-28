@@ -21,6 +21,9 @@ object PasabayanColors {
     val BadgeGray = Color(0xFF8E8E93)
     val BadgeGold = Color(0xFFFFD700)
 
+    /** iOS `OnboardingTheme.primary` / carrier accent — not the app-wide M3 primary. */
+    val OnboardingPrimary = Color(0xFF4A6CF7)
+
     val Border = Color(0xFFC6C6C8)
     val OverlayScrim = Color(0x4D000000)
 

@@ -5,4 +5,6 @@
       Add shared labels, errors, and chrome here — not feature-specific copy.
     -->
     <string name="app_name">Pasabayan</string>
+    <string name="common_role_carrier">Carrier</string>
+    <string name="common_role_sender">Sender</string>
 </resources>
