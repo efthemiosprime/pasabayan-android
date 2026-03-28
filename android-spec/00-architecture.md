@@ -676,6 +676,44 @@ From [`LocationService.swift`](../../Pasabayan/Services/LocationService.swift).
 - Geocoding: address → coordinates and reverse (use Android Geocoder)
 - Delivery fee calc: base `1.23 CAD` + `0.37 CAD/km` (for distance estimates)
 
+## Caching strategy (iOS parity)
+
+iOS uses `CacheManager` + `HTTPCacheService`. Android equivalent:
+
+| Layer | Implementation | Notes |
+|-------|---------------|-------|
+| HTTP cache | OkHttp `Cache` (10 MB disk) | Transparent for GET requests; configure `Cache-Control` headers |
+| In-memory image cache | Coil default `MemoryCache` | Auto-managed; cleared on "Clear Cache" in Settings |
+| Response cache | `DataStore` or Room for offline-first screens | Optional; implement per feature as needed |
+| Cache invalidation | After successful PUT/POST on the same resource | Invalidate stale entries on write |
+| Manual clear | `CacheManager.clearAllCaches()` | Clears HTTP + disk + memory; preserves one-time flags (tutorial, disclaimer) |
+
+## Crash reporting
+
+iOS uses `CrashReportingService` + `AppCrashHandler`. Android:
+
+- Use **Firebase Crashlytics** (already have Firebase dependency).
+- Initialize in `PasabayanApplication.onCreate()`.
+- Log non-fatal errors from `DomainError` handling (API errors, decode failures).
+- Set user ID on login, clear on logout.
+- No dedicated spec — standard Crashlytics integration.
+
+## Activity logging service
+
+Android equivalent of iOS `ActivityLogger`. Wraps `POST /activity-logs` (see [12-legal-support-misc.md](12-legal-support-misc.md)).
+
+- Singleton `ActivityLogger` injected via Hilt.
+- Fire-and-forget: logs should not block UI or fail visibly.
+- `ipAddress`: `"Android_{first8CharsOfAndroidId}"`.
+- `userAgent`: `"Pasabayan Android {versionName}"`.
+- Log key actions: create/update/delete trips, packages, matches; role switch; auth events.
+
+## Accessibility
+
+Provide `contentDescription` and `semantics` for all interactive elements. Use a centralized `AccessibilityIds` object (Kotlin equivalent of iOS `AccessibilityIdentifiers.swift`) for UI test automation identifiers.
+
+---
+
 ## TDD checklist (this spec)
 
 - [ ] Document module boundaries and naming in Android project README (when app repo exists).

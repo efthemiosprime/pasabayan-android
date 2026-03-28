@@ -8,6 +8,29 @@ Carrier trip CRUD, browse available trips for shippers, trip-package matching, r
 
 ---
 
+## Shared models (from `:core:domain` — see cross-spec note)
+
+The following types are **defined once** in `:core:domain` and **imported** by this feature. Do not redefine them in `features/trips/model/`. Specs 03, 04, and 05 all share these types.
+
+| Shared type | Module | Used here as |
+|------------|--------|-------------|
+| `UserSummary` | `:core:domain/model/` | Unified user subset — replaces iOS's scattered `CarrierInfo`, `UserInfo`, `AvailablePackageShipper`, `CarrierBasicInfo`. All fields optional except `id` + `name`. Computed: `effectiveVerificationLevel`, `ratingValue`, `formattedRating`, `isVerified`, `isPremium`. Used on `Trip.carrier`. |
+| `PackageDimensions` | `:core:domain/model/` | Flexible decode + dual format. Used on `PackageTemplateDetails`. |
+| `CompatibilityDetails` | `:core:domain/model/` | Shared with packages + bookings. |
+| `Coordinates` | `:core:domain/model/` | `latitude: Double`, `longitude: Double`. |
+| `PaginatedResponse<T>` | `:core:network` | Used by all list endpoints. |
+| `TripStatus` | `:core:domain/enum/` | 5 cases. Canonical definition here; also used by bookings + packages + UI. |
+| `TransportationMethod` | `:core:domain/enum/` | 10 cases + `isLandTransport`, `defaultPricingType`. Canonical here; also used by packages (`CompatibleTrip`). |
+| `PricingType` | `:core:domain/enum/` | 2 cases. Canonical here. |
+| `PricingMethod` | `:core:domain/enum/` | 3 cases. Canonical here. |
+| `MatchStatus` | `:core:domain/enum/` | 12 cases (canonical in 05-bookings). Used here on `TripMatchPackage.matchStatus`. |
+| `SortOrder` | `:core:domain/enum/` | `asc`/`desc`. Shared with packages browse. |
+| `VerificationLevel` | `:core:domain/enum/` | 3 cases + `normalized()`. Used for carrier display. |
+| `FlexibleDecoders` | `:core:domain/util/` | `flexibleDouble`, `flexibleBool`, `flexibleString`. |
+| `DateTimeParsing` | `:core:domain/util/` | `parseApiDate`, `parseApiDateTime`, `combineDateAndTime`. |
+
+---
+
 ## Component unification strategy
 
 Many UI patterns in Trips are **shared with Packages (04) and Bookings (05)**. Before building trip-specific UI, the following **shared primitives** must land in `:core:designsystem` (or `:core:ui` if stateful). Feature modules compose these — they never duplicate the patterns.
@@ -298,6 +321,8 @@ All fields optional — only send changed values:
 
 ## Enums (all raw values on wire — snake_case)
 
+> **All enums below are defined in `:core:domain/enum/`**, not in `features/trips/model/`. This spec documents their cases and display properties for reference. Implementation lives in the shared module.
+
 ### `TripStatus`
 
 | Case | Raw value | Display name | Color token | Icon |
@@ -342,7 +367,9 @@ Each case provides: `displayName` (localized string resource), `color` (from `Pa
 | `manual` | `"manual"` |
 | `perKg` | `"per_kg"` |
 
-### `MatchStatus` (shared with Bookings — define in `:core:domain` or `:core:network`)
+### `MatchStatus` — **shared** (`:core:domain/enum/MatchStatus.kt`, canonical in [05-bookings-matches.md](05-bookings-matches.md))
+
+The full 12-case enum is defined in spec 05. This feature uses a **9-case subset** (the cases below). The shared enum has all 12 cases; trips code simply doesn't encounter `shipperDeclined`, `carrierAccepted`, or `carrierDeclined` in its `TripMatchPackage` responses.
 
 | Case | Raw value | Notes |
 |------|-----------|-------|
@@ -356,8 +383,6 @@ Each case provides: `displayName` (localized string resource), `color` (from `Pa
 | `delivered` | `"delivered"` | Completed |
 | `cancelled` | `"cancelled"` | Either party cancelled |
 
-Used by `TripMatchPackage.matchStatus` and Bookings feature — **define once** in shared module.
-
 ### `TripSortOption` (browse query)
 
 | Case | Raw value |
@@ -367,14 +392,14 @@ Used by `TripMatchPackage.matchStatus` and Bookings feature — **define once** 
 | `availableCapacity` | `"available_capacity"` |
 | `distance` | `"distance"` |
 
-### `SortOrder` (shared — define in `:core:domain` or `:core:network`)
+### `SortOrder` — **shared** (`:core:domain/enum/SortOrder.kt`)
 
 | Case | Raw value |
 |------|-----------|
 | `ascending` | `"asc"` |
 | `descending` | `"desc"` |
 
-Shared with Packages browse. **Define once.**
+Shared with Packages browse (04-packages). Defined once in `:core:domain`.
 
 ### `TripPackagesFilter` (client-only, carrier UI)
 

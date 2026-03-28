@@ -78,6 +78,55 @@ From [`TabSelectionManager.swift`](../../Pasabayan/Services/TabSelectionManager.
 - [ ] Badge tests: same counts/sources as iOS ViewModels for Matches/Messages/Profile notification entry.  
 - [ ] Theme test: sample card/button use only tokens from [**14-design-system.md**](14-design-system.md) (exact match to iOS `DesignSystem`).
 
+## Dashboard sub-components (iOS parity)
+
+Both `CarrierHomeContent` and `ShipperHomeContent` compose the following sub-components. Android must implement equivalents.
+
+### Shared components
+
+| Component | iOS source | Purpose |
+|-----------|-----------|---------|
+| **`UserHeaderCard`** | [`UserHeaderCard.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/UserHeaderCard.swift) | Avatar (50×50 dp, circular) + welcome text + name + role chip (carrier=blue, shipper=purple) + verification badge (basic=gray, verified=green, premium=yellow) + role switcher menu (⋯) |
+| **`StatCard`** | [`StatCard.swift`](../../Pasabayan/Views/Cards/StatCard.swift) | Icon + label (caption) + value (h4 bold) + accent color. Reused across stats grids. |
+
+### Carrier Explore components
+
+| Component | iOS source | Purpose |
+|-----------|-----------|---------|
+| **`CarrierStatsGrid`** | [`CarrierStatsGrid.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/CarrierStatsGrid.swift) | 2×2 `LazyVerticalGrid` with 16 dp spacing: Active Trips, Monthly Earnings (CAD), Total Deliveries, Avg Rating. Data from `CarrierStats`. Shows shimmer while loading. |
+| **`CarrierStatusCard`** | [`CarrierStatusCard.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/CarrierStatusCard.swift) | Active/Inactive status badge with color (green=active, gray=inactive). |
+| **`RecentTripsSection`** | [`RecentTripsSection.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/RecentTripsSection.swift) | Title + trip list or empty state. Tap → `TripDetailsScreen`. |
+| **`TripFilterSection`** | [`TripFilterSection.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/TripFilterSection.swift) | Horizontal scroll of filter chips per `TripStatus` with count badge. |
+| **`TripsListSection`** | [`TripsListSection.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/TripsListSection.swift) | Loading / Error / Empty / Populated states. Empty state includes tutorial overlay (one-time) and “Create Trip” CTA. |
+| **`CarrierEarningsContent`** | [`CarrierEarningsContent.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/CarrierEarningsContent.swift) | Earnings display (currently stub/placeholder in iOS). |
+
+### Shipper Explore components
+
+| Component | iOS source | Purpose |
+|-----------|-----------|---------|
+| **`ShipperStatsGrid`** | [`ShipperStatsGrid.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/ShipperStatsGrid.swift) | 3-column `Row` with 16 dp spacing: In Transit, Delivered, Pending. Data from matches + package requests. |
+| **`ShipperFindCarriersHeaderView`** | [`ShipperHomeContent.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/ShipperHomeContent.swift) | Title + subtitle for “Find Carriers” section. |
+| **`ShipperSearchSectionView`** | [`ShipperHomeContent.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/ShipperHomeContent.swift) | Search input with focus state for browsing trips/carriers. |
+| **`ShipperTopCarriersSectionView`** | [`ShipperHomeContent.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/ShipperHomeContent.swift) | List of nearby carriers with completed trip counts; fallback to recent searches if none nearby. |
+| **`ShipperRecentSearchesSectionView`** | [`ShipperHomeContent.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/ShipperHomeContent.swift) | Recent/popular search destinations (max 8, persisted to DataStore). |
+| **`RecentActivitySection`** | [`RecentActivitySection.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/RecentActivitySection.swift) | Recent package requests or empty state with configurable empty icon/title/description. |
+
+### Dashboard data loading
+
+Both dashboards load data `onAppear`:
+- User profile, role, stats
+- Active bookings/matches
+- Home city auto-detection via `HomeCityDetectionService` (1-second delay, once per session — see [12-legal-support-misc.md](12-legal-support-misc.md))
+- Popular routes (carrier)
+- Nearby carriers (shipper)
+- Smart avatar/name resolution: prefer database profile over OAuth provider name
+
+### Popular searches persistence
+
+Both roles persist recent search terms (max 8 entries) to local DataStore under key `popular_searches_{role}`.
+
+---
+
 ## Related feature specs
 
-Each feature spec (`03`–`12`) should include a **“UI (iOS reference)”** subsection pointing to SwiftUI sources (e.g. `CompatibleTripsView`, `RequestToCarrySheet`, `EditTripSheet`). **Styling** for those screens must always go through [**14-design-system.md**](14-design-system.md).
+Each feature spec (`03`–`12`) should include a **”UI (iOS reference)”** subsection pointing to SwiftUI sources (e.g. `CompatibleTripsView`, `RequestToCarrySheet`, `EditTripSheet`). **Styling** for those screens must always go through [**14-design-system.md**](14-design-system.md).

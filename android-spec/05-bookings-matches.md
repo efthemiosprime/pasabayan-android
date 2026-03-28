@@ -8,6 +8,36 @@ Largest API surface: [`BookingsAPIService.swift`](../../Pasabayan/Features/Booki
 
 ---
 
+## Shared models (from `:core:domain` — see cross-spec note)
+
+The following types are **defined once** in `:core:domain` and **imported** by this feature. Do not redefine them in `features/bookings/model/`. Specs 03, 04, and 05 all share these types.
+
+| Shared type | Module | Used here as |
+|------------|--------|-------------|
+| `UserSummary` | `:core:domain/model/` | Replaces iOS `UserInfo` (on `CarrierRequestData`, `ShipperTripRequestData`) and `CarrierBasicInfo` (on `CarrierLocationResponse`). Used for `DeliveryMatch.carrier`, `DeliveryMatch.shipper`, `Booking.carrier`, `Booking.shipper` nested objects. Single type, all fields optional except `id` + `name`. |
+| `PackageDimensions` | `:core:domain/model/` | Used on `PackageRequestInfo`. Flexible decode + dual format. |
+| `CompatibilityDetails` | `:core:domain/model/` | Shared with packages feature. |
+| `Coordinates` | `:core:domain/model/` | `latitude: Double`, `longitude: Double`. Used on `CreateBookingRequest`, `Booking`. |
+| `PaginatedResponse<T>` | `:core:network` | Used by match listing endpoints. |
+| `MatchStatus` | `:core:domain/enum/` | 12-case canonical enum. **Defined here** (this is the authoritative spec). Lives in shared module. |
+| `PackageRequestStatus` | `:core:domain/enum/` | Used via nested `PackageRequest`. Defined in 04-packages. |
+| `PackageType` | `:core:domain/enum/` | Used via nested `PackageRequest`. Defined in 04-packages. |
+| `UrgencyLevel` | `:core:domain/enum/` | Used via nested `PackageRequest`. Defined in 04-packages. |
+| `TripStatus` | `:core:domain/enum/` | Used in `TripStatusError`. Defined in 03-trips. |
+| `TransportationMethod` | `:core:domain/enum/` | Used via nested `Trip`. Defined in 03-trips. |
+| `SortOrder` | `:core:domain/enum/` | Shared with trips + packages. |
+| `VerificationLevel` | `:core:domain/enum/` | Used on `UserSummary` computed properties. |
+| `InitiatedBy` | `:core:domain/enum/` | 3 cases. **Defined here**, lives in shared module. |
+| `FlexibleDecoders` | `:core:domain/util/` | `flexibleDouble` for `agreedPrice` (String or Number), etc. |
+| `DateTimeParsing` | `:core:domain/util/` | For timestamp fields. |
+| `ValidationErrorResponse` | `:core:network` | Shared error response type. |
+
+**Cross-feature model imports:** `DeliveryMatch` nests `PackageRequest` (from 04-packages) and `Trip` (from 03-trips) as related entities. These are the full feature models, not subsets. The `:features:bookings` module depends on `:features:packages:model` and `:features:trips:model` (or a shared `:core:domain` model interface if avoiding circular deps — see architecture note below).
+
+**Architecture note:** To avoid circular Gradle dependencies between feature modules, the full `PackageRequest` and `Trip` models could be in a shared `:core:model` or `:core:domain/model/` module that all three features import. Alternatively, use interface/DTO separation where the API DTO layer (`:core:network`) defines the wire types and each feature maps to its own domain model.
+
+---
+
 ## Android unification strategy (vs iOS)
 
 iOS has **separate** carrier and shipper views for match lists, match details, and card components — resulting in ~70–90% code duplication. Android should **unify** these into role-parameterized composables.
@@ -43,17 +73,22 @@ Counter-offer components, auto-charge confirmation, pickup/delivery code views, 
 ## Package layout (feature-first)
 
 ```
+# Shared types (NOT in features/bookings/) — imported via :core:domain / :core:network
+# :core:domain/model/   → UserSummary, PackageDimensions, CompatibilityDetails, Coordinates
+# :core:domain/enum/    → MatchStatus, BookingStatus, BookingType, InitiatedBy,
+#                         PackageRequestStatus, PackageType, UrgencyLevel, ServiceType,
+#                         TripStatus, TransportationMethod, PricingType, PricingMethod,
+#                         SortOrder, VerificationLevel
+# :core:domain/util/    → FlexibleDecoders, DateTimeParsing
+# :core:network         → PaginatedResponse<T>, ValidationErrorResponse
+
 features/bookings/
 ├── model/
-│   ├── DeliveryMatch.kt
-│   ├── Booking.kt
-│   ├── MatchStatus.kt
-│   ├── BookingStatus.kt
-│   ├── BookingStatusContext.kt
-│   ├── BookingType.kt
-│   ├── BookingAction.kt
-│   ├── InitiatedBy.kt
-│   ├── TripStatusError.kt
+│   ├── DeliveryMatch.kt             # carrier/shipper fields use UserSummary
+│   ├── Booking.kt                   # carrier/shipper fields use UserSummary
+│   ├── BookingStatusContext.kt      # Feature-only (3-case context enum)
+│   ├── BookingAction.kt             # Feature-only (10-case action enum)
+│   ├── TripStatusError.kt           # Feature-only (6-case error enum)
 │   ├── AutoChargeInfo.kt
 │   ├── MatchTransaction.kt
 │   ├── TrackingNote.kt
@@ -63,7 +98,7 @@ features/bookings/
 │   ├── ReceiverAccessToken.kt
 │   ├── PickupCodeData.kt
 │   ├── DeliveryCodeData.kt
-│   ├── CarrierLocationResponse.kt
+│   ├── CarrierLocationResponse.kt   # Uses UserSummary for carrier field
 │   ├── CompatibilityResult.kt
 │   ├── MatchCheckData.kt
 │   ├── BookingStats.kt
@@ -73,18 +108,18 @@ features/bookings/
 │   │   ├── MatchConfirmResponse.kt
 │   │   ├── CancelMatchResponse.kt
 │   │   ├── AutoChargeRetryResponse.kt
-│   │   ├── CreateBookingRequest.kt
+│   │   ├── CreateBookingRequest.kt        # Uses Coordinates from :core:domain
 │   │   ├── DirectBookingRequest.kt
 │   │   ├── DirectBookingResponse.kt
 │   │   ├── RequestToCarryRequest.kt
 │   │   ├── CarrierRequestBody.kt
-│   │   ├── CarrierRequestResponse.kt
+│   │   ├── CarrierRequestResponse.kt      # carrier/shipper = UserSummary
 │   │   ├── CarrierAcceptRequest.kt
 │   │   ├── CarrierDeclineRequest.kt
 │   │   ├── ShipperAcceptRequest.kt
 │   │   ├── ShipperDeclineRequest.kt
 │   │   ├── ShipperTripRequest.kt
-│   │   ├── ShipperTripRequestResponse.kt
+│   │   ├── ShipperTripRequestResponse.kt  # carrier/shipper = UserSummary
 │   │   ├── AcceptShipperRequestResponse.kt
 │   │   ├── ShipperMatchResponse.kt
 │   │   ├── PackageAcceptRequest.kt
@@ -111,20 +146,20 @@ features/bookings/
 │   │   ├── BookingResponse.kt
 │   │   ├── BookingStatsResponse.kt
 │   │   └── ErrorResponses.kt
-│   └── nested/                            # Nested info types from API
-│       ├── CarrierTripInfo.kt
-│       ├── PackageRequestInfo.kt
-│       ├── UserInfo.kt
-│       ├── CarrierBasicInfo.kt
+│   └── nested/                            # Nested info types from API (feature-scoped projections)
+│       ├── CarrierTripInfo.kt             # Projection of Trip (NOT full Trip model)
+│       ├── PackageRequestInfo.kt          # Projection of PackageRequest (uses shared PackageDimensions)
 │       ├── CurrentLocationData.kt
 │       ├── DeliveryAddressData.kt
 │       ├── DirectBookingData.kt
-│       ├── PackageDimensions.kt
 │       ├── RefundResult.kt
 │       ├── TripCapacity.kt
 │       ├── TripCapacityImpact.kt
 │       ├── TripAvailability.kt
 │       └── PackageCompatibility.kt
+│       # REMOVED: UserInfo.kt → use UserSummary from :core:domain
+│       # REMOVED: CarrierBasicInfo.kt → use UserSummary from :core:domain
+│       # REMOVED: PackageDimensions.kt → use shared from :core:domain
 ├── services/
 │   ├── BookingsRepository.kt             (interface)
 │   ├── BookingsRepositoryImpl.kt
@@ -174,7 +209,9 @@ features/bookings/
 
 ## Enums
 
-### `MatchStatus` (primary state machine — 12 cases)
+> **Shared enums** (`MatchStatus`, `InitiatedBy`, `BookingStatus`, `BookingType`) are defined in `:core:domain/enum/`, not in `features/bookings/model/`. Feature-only enums (`BookingAction`, `TripStatusError`, `BookingStatusContext`) stay in `features/bookings/model/`.
+
+### `MatchStatus` (primary state machine — 12 cases) — **shared** (`:core:domain/enum/MatchStatus.kt`, canonical here)
 
 | Case | Raw value | Meaning |
 |------|-----------|---------|
@@ -195,7 +232,7 @@ features/bookings/
 - `description: String` — human-readable
 - `isCancellable: Boolean` — true for pending/confirmed/requested states
 
-### `BookingStatus` (simplified — 6 cases, mapped from MatchStatus)
+### `BookingStatus` (simplified — 6 cases, mapped from MatchStatus) — **shared** (`:core:domain/enum/BookingStatus.kt`)
 
 | Case | Raw value | Maps from MatchStatus |
 |------|-----------|----------------------|
@@ -223,7 +260,7 @@ features/bookings/
 | `CARRIER` | Carrier's perspective display text |
 | `NEUTRAL` | Default display text |
 
-### `InitiatedBy` (3 cases)
+### `InitiatedBy` (3 cases) — **shared** (`:core:domain/enum/InitiatedBy.kt`)
 
 | Case | Raw value |
 |------|-----------|
@@ -233,7 +270,7 @@ features/bookings/
 
 **Computed:** `displayName: String` (localized)
 
-### `BookingType` (3 cases)
+### `BookingType` (3 cases) — **shared** (`:core:domain/enum/BookingType.kt`)
 
 | Case | Raw value | Purpose |
 |------|-----------|---------|
@@ -919,22 +956,25 @@ Full field table — similar to `DeliveryMatch` but uses `BookingStatus` and add
 
 **`CarrierRequestErrorResponse`:** same shape as above
 
-**`ValidationErrorResponse`:** `message: String`, `errors: Map<String, List<String>>`
-Computed: `formattedMessage: String` — joins all error lists
+**`ValidationErrorResponse`:** — **shared** from `:core:network`. `message: String`, `errors: Map<String, List<String>>`
+Computed: `formattedMessage: String` — joins all error lists. Same type used in 03-trips error handling.
 
 **`ConflictErrorResponse`:** `success: Boolean?`, `message: String`, `conflictType: String?`, `existingMatchId: Int?`
 
 ### Nested info types (from API responses)
 
 **`CarrierTripInfo`:** `id`, `carrierId`, `originCity`, `originCountry`, `destinationCity`, `destinationCountry`, `departureDate`, `arrivalDate`, `availableWeightKg: String`, `availableSpaceLiters: String`, `pricePerKg: String`, `tripStatus`, `transportationMethod`, `specialNotes`
+*(Feature-scoped in `features/bookings/model/nested/` — this is a projection of `Trip`, not the full model.)*
 
-**`PackageRequestInfo`:** `id`, `shipperId`, `pickupAddress`, `pickupCity`, `pickupCountry`, `deliveryAddress`, `deliveryCity`, `deliveryCountry`, `packageWeightKg: String`, `packageDimensions: PackageDimensions` (custom decoder for stringified JSON), `packageType`, `packageDescription`, `fragile`, `packageValue: String`, `urgencyLevel`, `maxPriceBudget: String`, `pickupDatePreferred`, `pickupDateFlexible`, `deliveryDateNeeded`, `specialHandlingRequirements`, `requestStatus`
+**`PackageRequestInfo`:** `id`, `shipperId`, `pickupAddress`, `pickupCity`, `pickupCountry`, `deliveryAddress`, `deliveryCity`, `deliveryCountry`, `packageWeightKg: String`, `packageDimensions: PackageDimensions` (custom decoder for stringified JSON — uses shared `PackageDimensions` from `:core:domain`), `packageType`, `packageDescription`, `fragile`, `packageValue: String`, `urgencyLevel`, `maxPriceBudget: String`, `pickupDatePreferred`, `pickupDateFlexible`, `deliveryDateNeeded`, `specialHandlingRequirements`, `requestStatus`
 Computed: `title: String`
+*(Feature-scoped — projection of `PackageRequest`.)*
 
-**`UserInfo`:** `id`, `name`, `email`, `avatar`, `phone`, `userTypes: List<String>`, `rating: String?`, `verificationLevel: String?`
-Computed: `effectiveVerificationLevel: String`
+**`UserInfo` → use `UserSummary`** from `:core:domain/model/UserSummary.kt`. iOS fields (`id`, `name`, `email`, `avatar`, `phone`, `userTypes`, `rating?`, `verificationLevel?`) all map to `UserSummary`. Computed `effectiveVerificationLevel` lives on `UserSummary`. **Do not create a separate `UserInfo` class.**
 
-**`PackageDimensions`:** Custom decoder — API may return as stringified JSON within `package_dimensions` field.
+**`CarrierBasicInfo` → use `UserSummary`** from `:core:domain`. iOS fields (`id`, `name`, `avatar?`) are a strict subset of `UserSummary`. **Do not create a separate class.**
+
+**`PackageDimensions`:** Shared from `:core:domain/model/PackageDimensions.kt`. Custom decoder — API may return as stringified JSON within `package_dimensions` field.
 
 ---
 
@@ -1480,6 +1520,100 @@ During active delivery, the carrier's device posts GPS coordinates every 30 seco
 | Shipper ← server | GET | `/matches/{matchId}/carrier-location` | Polling-based; shipper reads carrier position |
 
 Android: use a **foreground service** with notification during active delivery.
+
+---
+
+## Live delivery tracking UI (iOS parity)
+
+Parity target: [`LiveDeliveryTrackingView.swift`](../../Pasabayan/Views/Components/Tracking/LiveDeliveryTrackingView.swift), [`DeliveryMapView.swift`](../../Pasabayan/Views/Components/Tracking/DeliveryMapView.swift), [`TrackingCards.swift`](../../Pasabayan/Views/Components/Tracking/TrackingCards.swift), [`CarrierLocationSharingCard.swift`](../../Pasabayan/Views/Components/Tracking/CarrierLocationSharingCard.swift), [`LocationToast.swift`](../../Pasabayan/Views/Components/Tracking/LocationToast.swift).
+
+### `LiveDeliveryTrackingScreen` (shipper view)
+
+**Layout:**
+1. **`DeliveryMapComposable`** — 55% of screen height (Google Maps)
+2. **`ScrollableColumn`** below map:
+   - `DistanceBreakdownCard` (16 dp horizontal padding, 16 dp top)
+   - `StatusTransitCard` (16 dp horizontal padding)
+   - `CarrierInfoCard` (16 dp horizontal padding, conditional — only if carrier exists)
+   - Spacer (min 20 dp)
+
+**Toolbar:** Title "Live Tracking" (inline), back button (leading), refresh icon (trailing).
+
+**Pull-to-refresh:** calls `viewModel.refreshLocation()`.
+
+**Lifecycle:** `onAppear` → `startTracking()`, `onDispose` → `stopTracking()`.
+
+### `DeliveryMapComposable` (Google Maps)
+
+Android equivalent of iOS `DeliveryMapView` using Google Maps Compose:
+
+| Element | iOS | Android |
+|---------|-----|---------|
+| Map framework | MapKit `MKMapView` | Google Maps Compose `GoogleMap` |
+| Carrier marker | Blue circle (32 pt), paperplane icon, white | Blue `BitmapDescriptor` (32 dp), navigation icon |
+| Delivery marker | Green circle (40 pt), mappin icon, white | Green `BitmapDescriptor` (40 dp), location pin icon |
+| Route polyline | `MKPolylineRenderer` (blue, 3 pt, 0.7 opacity) | `Polyline` (blue, 3 dp, 0.7 alpha) |
+| Route calculation | `MKDirections` (.automobile) | Google Directions API or straight-line fallback |
+| Zoom controls | +/- buttons (top-right, 40×40 circular) | Same +/- overlay buttons (40×40 dp) |
+| Loading state | Blue-tinted ProgressView | `PCircularProgress` with blue-tinted background |
+
+**Zoom bounds:** min span 0.001°, max span 180° latitude / 360° longitude.
+
+**Map region:** Centers between carrier and delivery, 1.5× padding multiplier, min span 0.01°.
+
+### `DistanceBreakdownCard`
+
+| Element | Description |
+|---------|-------------|
+| Title | "Distance Breakdown" (h6 semibold) |
+| Progress bar | `PLinearProgress` gradient (blue → green), 12 dp height, 8 dp corner radius |
+| Labels | "Pickup" (left), "Remaining: X.X km" (center, blue), "Delivery: X.X km" (right) |
+| Styling | `dsCardStyle()`, 16 dp padding |
+
+### `StatusTransitCard`
+
+| Element | Description |
+|---------|-------------|
+| Background | `LinearGradient` (blue → blue 0.8), shadow (blue 0.3, 8 dp blur, 4 dp Y) |
+| Header | Paperplane icon (32 dp, white) + "Status" label + status text (h4 bold white) + "ACTIVE" badge |
+| Distance column | Map pin icon (24 dp) + "Remaining Distance" + large value (24 sp bold) + "away" |
+| ETA column | Clock icon (24 dp) + "Estimated Time" + large value (24 sp bold) + "until arrival" |
+| Divider | White (0.3 alpha), 60 dp height, between columns |
+| Last updated | Clock icon (12 dp) + "Last updated X min ago" (white 0.7 alpha) |
+
+### `CarrierInfoCard`
+
+| Element | Description |
+|---------|-------------|
+| Title | "Carrier Info" (h6 semibold) |
+| Avatar | `AsyncImage` (50×50 dp, circular clip), placeholder: person icon |
+| Info | Name (body semibold), star icon (orange) + rating + delivery count |
+| Call button | Green circle (36×36 dp) with phone icon (white); launches `tel://` intent |
+| Styling | `dsCardStyle()`, 16 dp padding |
+
+### `CarrierLocationSharingCard` (carrier-side)
+
+Toggle card for carrier to enable/disable location sharing.
+
+| Element | Description |
+|---------|-------------|
+| Header | Location icon (24 dp, conditional fill) + "Location Sharing" (h6) + status text + `Switch` toggle |
+| Active state | Green status text, info rows: real-time text, last updated, accuracy level, optional error (red) |
+| Inactive state | Orange info text "Enable to let shipper track your delivery progress" |
+| Permission denied | Red warning text with permission guidance |
+| Accuracy levels | Excellent (<10m), Good (<50m), Fair (<100m), Poor (≥100m) |
+
+**State source:** `CarrierLocationForegroundService` (Android equivalent of iOS `CarrierLocationService`).
+
+### `LocationToast`
+
+Transient toast/snackbar for location sharing confirmation.
+
+| Element | Description |
+|---------|-------------|
+| Layout | Location icon + message text + checkmark icon, white on green gradient |
+| Styling | Green `LinearGradient`, 12 dp corner radius, shadow (black 0.2, 8 dp blur) |
+| Behavior | Appears briefly at bottom of screen; use `PSnackbar` or custom composable |
 
 ---
 

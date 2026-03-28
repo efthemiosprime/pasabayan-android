@@ -6,6 +6,31 @@
 
 Package requests CRUD, available packages browse, multipart image uploads, service requests (grocery, errands), compatible trips; parity with [`PackagesAPIService.swift`](../../Pasabayan/Features/Packages/Services/PackagesAPIService.swift) and all files under [`Features/Packages/`](../../Pasabayan/Features/Packages/).
 
+## Shared models (from `:core:domain` — see cross-spec note)
+
+The following types are **defined once** in `:core:domain` and **imported** by this feature. Do not redefine them in `features/packages/model/`. Full definitions and canonical field tables live in the shared module; this spec documents feature-specific **usage** only.
+
+| Shared type | Module | Used here as |
+|------------|--------|-------------|
+| `UserSummary` | `:core:domain/model/` | Replaces iOS `CarrierInfo` (on `CompatibleTrip`) and `AvailablePackageShipper` (on `AvailablePackage`). Single type with all fields optional except `id` + `name`. Computed: `effectiveVerificationLevel`, `ratingValue`, `formattedRating`, `isVerified`, `isPremium`. |
+| `PackageDimensions` | `:core:domain/model/` | Flexible decode (Double/Int/String) + dual format (JSON object or stringified JSON). Used on `PackageRequest`, `AvailablePackage`, and in bookings `PackageRequestInfo`. |
+| `CompatibilityDetails` | `:core:domain/model/` | `routeMatch`, `capacitySufficient`, `dateCompatible`, `priceCompatible`, `weightUsagePercentage`, `spaceUsagePercentage`. Used on `PackageRequest` compatibility fields and in bookings. |
+| `Coordinates` | `:core:domain/model/` | `latitude: Double`, `longitude: Double`. Used in bookings but available to all features. |
+| `PaginatedResponse<T>` | `:core:network` | Generic paginated wrapper. Used by all list endpoints. |
+| `MatchStatus` | `:core:domain/enum/` | 12-case enum (canonical in 05-bookings). Used here via `CompatibleTrip.shipperRequestStatus` comparison. |
+| `PackageRequestStatus` | `:core:domain/enum/` | 9 cases. Defined here, lives in shared module. |
+| `PackageType` | `:core:domain/enum/` | 22 cases. Defined here, lives in shared module. |
+| `UrgencyLevel` | `:core:domain/enum/` | 6 cases. Defined here, lives in shared module. |
+| `ServiceType` | `:core:domain/enum/` | 5 cases. Defined here, lives in shared module. |
+| `PackageSize` | `:core:domain/enum/` | 4 cases (computed from weight). |
+| `TransportationMethod` | `:core:domain/enum/` | 10 cases. Defined in 03-trips, used here on `CompatibleTrip`. |
+| `PricingType` | `:core:domain/enum/` | 2 cases. Defined in 03-trips, used here on `CompatibleTrip`. |
+| `PricingMethod` | `:core:domain/enum/` | 3 cases. Defined in 03-trips, used here on `CompatibleTrip`. |
+| `SortOrder` | `:core:domain/enum/` | `asc`/`desc`. Shared with trips browse. |
+| `VerificationLevel` | `:core:domain/enum/` | 3 cases + `normalized()`. Used for user display across features. |
+| `FlexibleDecoders` | `:core:domain/util/` | `flexibleDouble`, `flexibleBool`, `flexibleString` kotlinx.serialization deserializers. |
+| `DateTimeParsing` | `:core:domain/util/` | `parseApiDate`, `parseApiDateTime`, `combineDateAndTime`, format helpers. |
+
 ## Models
 
 ### `PackageRequest` (core model — from [`PackageRequest.swift`](../../Pasabayan/Features/Packages/Models/PackageRequest.swift))
@@ -122,13 +147,15 @@ These fields appear on `PackageRequest` when returned by the `/trips/{tripId}/co
 | `createdAt` | String? | |
 | `updatedAt` | String? | |
 
-### `PackageDimensions`
+### `PackageDimensions` — **shared** (`:core:domain/model/PackageDimensions.kt`)
 
 | Field | Type | Notes |
 |-------|------|-------|
 | `length` | Double | Non-optional; Flexible decode: Double, Int, or String |
 | `width` | Double | Same |
 | `height` | Double | Same |
+
+Also used by bookings (`PackageRequestInfo`). Dual format: JSON object or stringified JSON string.
 
 ### `ShoppingItem`
 
@@ -256,25 +283,22 @@ These fields appear on `PackageRequest` when returned by the `/trips/{tripId}/co
 - `isServiceRequest` — same as PackageRequest
 - `toPackageRequest()` — converter for UI component reuse
 
-### `AvailablePackageShipper`
+### `AvailablePackageShipper` → **use `UserSummary`** from `:core:domain`
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `id` | Int | |
-| `name` | String | |
-| `email` | String? | |
-| `avatar` | String? | |
-| `rating` | String | Backend sends as String |
-| `totalRatings` | Int? | |
-| `verificationLevel` | String? | Normalized via `VerificationLevel.normalized()` |
-| `phoneVerified` | Bool? | |
+**Do not create a separate `AvailablePackageShipper` class.** Use the shared `UserSummary` type which has all fields optional except `id` + `name`. The API response fields map directly:
 
-**Computed:**
-- `effectiveVerificationLevel` — normalized to "basic" / "verified" / "premium"
-- `ratingValue: Double` — parsed from String
-- `formattedRating: String` — e.g. "4.5"
-- `isVerified: Bool` — verified or premium
-- `isPremium: Bool` — premium only
+| API field | `UserSummary` field |
+|-----------|-------------------|
+| `id` | `id` |
+| `name` | `name` |
+| `email` | `email` |
+| `avatar` | `avatar` |
+| `rating` | `rating` (String) |
+| `total_ratings` | `totalRatings` |
+| `verification_level` | `verificationLevel` |
+| `phone_verified` | `phoneVerified` |
+
+All computed properties (`effectiveVerificationLevel`, `ratingValue`, `formattedRating`, `isVerified`, `isPremium`) are on `UserSummary`.
 
 ### `AvailablePackagesResult` (client-side wrapper)
 
@@ -300,13 +324,13 @@ These fields appear on `PackageRequest` when returned by the `/trips/{tripId}/co
 - `canRequestTrip: Bool` — `canRequest ?? true`
 - `hasActiveRequest: Bool` — `shipperRequestStatus == "shipper_requested"`
 
-**CarrierInfo computed properties:**
-- `isVerified: Bool` — verified or premium
-- `isPremium: Bool` — premium only
-- `ratingValue: Double` — parsed from String
-- `formattedRating: String` — e.g. "4.5 ⭐ (12)"
+**`CarrierInfo` → use `UserSummary`** from `:core:domain`. The `carrier` field on `CompatibleTrip` deserializes into `UserSummary`. iOS's `CarrierInfo` fields (`id`, `name`, `email`, `avatar`, `phone`, `phoneVerified?`, `profileCompleted?`, `userTypes`, `rating` (String), `totalRatings?`, `verificationLevel`, `isActiveCarrier?`, `isActiveShipper?`) all map to `UserSummary` fields. Computed properties (`isVerified`, `isPremium`, `ratingValue`, `formattedRating`) live on `UserSummary`.
+
+Note: `userTypes` may arrive as `["shipper"]` (array) or `{"0": "shipper"}` (dictionary). The `UserSummary` deserializer must handle both — see `FlexibleDecoders`.
 
 ## Enums (all raw values on wire — snake_case)
+
+> **All enums below are defined in `:core:domain/enum/`**, not in `features/packages/model/`. This spec documents their cases and display properties for reference. Implementation lives in the shared module.
 
 ### `PackageType` (21 cases + 1 alias)
 
@@ -624,19 +648,25 @@ Duplicated in `PackageRequestCard` and inline views. Belongs on the `ServiceType
 ### Component file structure (Android)
 
 ```
+# Shared types (NOT in features/packages/) — imported via :core:domain
+# :core:domain/model/   → UserSummary, PackageDimensions, CompatibilityDetails, Coordinates
+# :core:domain/enum/    → PackageType, UrgencyLevel, PackageRequestStatus, ServiceType,
+#                         PackageSize, MatchStatus, TransportationMethod, PricingType,
+#                         PricingMethod, SortOrder, VerificationLevel
+# :core:domain/util/    → FlexibleDecoders, DateTimeParsing
+# :core:network         → PaginatedResponse<T>
+
 features/packages/
 ├── model/
-│   ├── PackageRequest.kt          # Core model
-│   ├── AvailablePackage.kt        # Browse model + toPackageRequest()
-│   ├── AvailablePackageShipper.kt
-│   ├── CompatibleTrip.kt          # + CarrierInfo
-│   ├── CompatibilityModels.kt     # Details, Summary, CapacityUtilization
+│   ├── PackageRequest.kt          # Core model (uses shared enums + PackageDimensions)
+│   ├── AvailablePackage.kt        # Browse model + toPackageRequest() (shipper = UserSummary)
+│   ├── CompatibleTrip.kt          # carrier = UserSummary (no separate CarrierInfo)
+│   ├── CompatibilitySummary.kt    # Summary + CapacityUtilization (feature-specific)
 │   ├── CreatePackageRequest.kt
 │   ├── PackageUpdateRequest.kt
 │   ├── CreateServiceRequestBody.kt
 │   ├── PackageImage.kt
 │   ├── ShoppingItem.kt
-│   ├── PackageEnums.kt            # PackageType, UrgencyLevel, PackageRequestStatus, ServiceType, PackageSize
 │   ├── DeliveryCardModels.kt      # UI-only: DeliveryCardData, variants, etc.
 │   └── PackageResponses.kt        # All response wrappers
 ├── services/

@@ -29,7 +29,7 @@ This document is the **primary roadmap**: work **by phase**, and within each pha
 | Route activity | `Features/RouteActivity/` | [12-legal-support-misc.md](12-legal-support-misc.md) |
 | UI shell / all tabs (`docs/tabs/`) | `Views/Screens/Dashboard/`, `docs/tabs/` | [13-ui-tab-explore.md](13-ui-tab-explore.md) + [14-design-system.md](14-design-system.md) + [15-platform-and-tab-index.md](15-platform-and-tab-index.md) |
 | Onboarding | `Features/Onboarding/` | [**17-onboarding.md**](17-onboarding.md) (`OnboardingScreen`, city, consent, `@AppStorage` / flags) |
-| Analytics (UI, mock) | `Features/Analytics/` | [15-platform-and-tab-index.md](15-platform-and-tab-index.md) — **no REST API** in folder; mock stats |
+| Analytics (UI, mock) | `Features/Analytics/` | [**19-analytics.md**](19-analytics.md) — **no REST API**; mock stats; full screen + component inventory |
 
 ## Phase breakdown (implementation order)
 

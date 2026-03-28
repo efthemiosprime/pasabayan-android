@@ -111,7 +111,7 @@
 ## iOS feature folders → Android (from [FEATURE-COVERAGE-MATRIX.md](FEATURE-COVERAGE-MATRIX.md))
 
 - [x] `Authentication/` — `:core:session` + **AuthScreen** / **AuthRoute** / **AuthViewModel**; **401 → signed-out**  
-- [ ] `Analytics/`  
+- [ ] `Analytics/` — [19-analytics.md](19-analytics.md)  
 - [ ] `Bookings/`  
 - [ ] `Chat/`  
 - [ ] `Favorites/`  

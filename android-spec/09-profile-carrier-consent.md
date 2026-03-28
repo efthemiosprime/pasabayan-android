@@ -501,12 +501,38 @@ Use custom `kotlinx.serialization` deserializers or `JsonTransformingSerializer`
 
 | Section | Items |
 |---------|-------|
-| **Preferences** | Preferred role (shipper/carrier), Language, Currency, Home city (autocomplete) |
+| **Preferences** | Preferred role (shipper/carrier), Language, Currency (CAD/USD/PHP), Home city (autocomplete, 10-minute cooldown after change) |
 | **Carrier Preferences** | Opens `CarrierPreferencesFormSheet` — weight, space, pickup city, transport method |
 | **Privacy Preferences** | Opens `PrivacyPreferencesScreen` — 4 consent toggles with confirmation alerts |
 | **Storage & Data** | Clear app cache, Export user data |
 | **Account** | Disable/delete account (red, destructive), Sign out |
-| **About** | App version, Terms & Privacy links |
+| **About** | App version, Build number, Terms & Privacy links |
+
+### Settings — Home city cooldown
+
+After changing home city, a **10-minute cooldown** prevents further city changes. Display a countdown timer in the city picker row while active. Persist cooldown timestamp in DataStore (`home_city_cooldown_until`).
+
+### Settings — Currency selection
+
+| Currency | Code | Symbol |
+|----------|------|--------|
+| Canadian Dollar | `CAD` | `$` |
+| US Dollar | `USD` | `$` |
+| Philippine Peso | `PHP` | `₱` |
+
+Persist to DataStore (`preferred_currency`). Used for display formatting only — API always stores amounts in the currency of the transaction.
+
+### Settings — Clear cache
+
+On "Clear Cache" tap:
+1. Delete OkHttp cache directory
+2. Clear in-memory image cache (Coil)
+3. Clear DataStore cached responses (if any)
+4. Show summary: "Cleared X files, Y MB freed" (or similar)
+
+### Settings — Sign out
+
+Clears tokens, resets navigation to auth screen. Same flow as 401 sign-out in [02-auth-session.md](02-auth-session.md).
 
 ---
 

@@ -7,7 +7,7 @@
 | # | iOS folder | Primary spec | Phase | Notes |
 |---|------------|--------------|-------|--------|
 | 1 | `Authentication/` | [02-auth-session.md](02-auth-session.md) | 1 | OAuth + session; [`AuthValidationService`](../../Pasabayan/Features/Authentication/Services/AuthValidationService.swift) client rules |
-| 2 | `Analytics/` | [15-platform-and-tab-index.md](15-platform-and-tab-index.md) + profile embed | 7 | **Mock-only** analytics UI; no REST in `Analytics/` — parity optional for charts |
+| 2 | `Analytics/` | [**19-analytics.md**](19-analytics.md) | 7 | **Mock-only** analytics UI (17 iOS files); dedicated spec with all screens, components, models, charts |
 | 3 | `Bookings/` | [05-bookings-matches.md](05-bookings-matches.md) | 3 | Matches, codes, receipts upload, counter-offer, live tracking, history views |
 | 4 | `Chat/` | [07-chat-broadcasting.md](07-chat-broadcasting.md) | 5 | REST + [`RealtimeChatService`](../../Pasabayan/Features/Chat/Services/RealtimeChatService.swift) WebSocket |
 | 5 | `Favorites/` | [11-favorites-ratings.md](11-favorites-ratings.md) | 6 | Direct URLSession patterns — match error handling |
@@ -34,7 +34,11 @@
 | Home city | `Services/HomeCityDetectionService.swift` | [12-legal-support-misc.md](12-legal-support-misc.md) |
 | Location GPS | `Services/LocationService.swift` | Used by home city, maps — align permissions |
 | Carrier GPS updates | `Services/CarrierLocationService.swift` | [05-bookings-matches.md](05-bookings-matches.md) (match location) |
-| HTTP cache | `Services/HTTPCacheService.swift` | Optional parity with `APIService` cache rules |
+| HTTP cache | `Services/HTTPCacheService.swift` | [00-architecture.md](00-architecture.md) — caching strategy section |
+| Crash reporting | `Services/CrashReportingService.swift`, `AppCrashHandler.swift` | [00-architecture.md](00-architecture.md) — Firebase Crashlytics |
+| Auth logging | `Services/AuthenticationLogger.swift` | [00-architecture.md](00-architecture.md) — activity logging service |
+| Tracking UI | `Views/Components/Tracking/` (6 files) | [05-bookings-matches.md](05-bookings-matches.md) — live tracking UI section |
+| Dashboard components | `Views/Screens/Dashboard/DashboardComponents/` (14 files) | [13-ui-tab-explore.md](13-ui-tab-explore.md) — dashboard sub-components |
 | Activity logs | `POST /activity-logs` in `APIService` | [12-legal-support-misc.md](12-legal-support-misc.md) |
 | Location catalog | `Services/LocationCatalogService.swift` | [12-legal-support-misc.md](12-legal-support-misc.md) |
 
