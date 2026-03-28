@@ -1,0 +1,59 @@
+---
+description: App module package layout — feature-first folders (model, viewmodel, ui, services, components) mirroring iOS Features/*; shared vs feature-local boundaries
+alwaysApply: true
+---
+
+# App module package layout (`app` / `com.efthemiosprime.pasabayan`)
+
+Organize **product code** like iOS **`Pasabayan/Features/<FeatureName>/`** (Models, ViewModels, Views, Services, Components): keep **feature-owned** code **inside** that feature’s tree. Use **`shared/`** and top-level **`services/`** only for **cross-cutting** or **multi-feature** code.
+
+## Feature root: `features/<featureName>/`
+
+Use **lowercase** folder names matching the feature (`auth`, `onboarding`, `dashboard`, `bookings`, …).
+
+| Subfolder | Purpose | Examples |
+|-----------|---------|----------|
+| **`model/`** | Types, enums, preference **interfaces**, feature-only state/DTOs | `OnboardingRole`, `OnboardingPreferences`, `CityPickerOption` |
+| **`viewmodel/`** | `ViewModel` classes; small UI-state data classes used only with that VM | `AuthViewModel`, `OnboardingViewModel`, `CityOnboardingUiState` (if colocated) |
+| **`ui/`** | Compose screens, routes, multi-step flow screens | `AuthScreen`, `OnboardingRoute`, `CityOnboardingScreen` |
+| **`services/`** | Feature-scoped **repositories**, SharedPreferences impls, **platform/SDK glue** used only by this feature | `CityOnboardingRepositoryImpl`, `GoogleSignInHelper`, `OnboardingModule` (Hilt) |
+| **`components/`** | Reusable **Compose** pieces **used only inside this feature** | `OnboardingFloatingIconsBackground` |
+
+- **Hilt `@Module` / `@Binds` for a feature** live under that feature’s **`services/`** (or a dedicated `di/` subfolder under the same feature if modules grow large).
+- **Do not** put feature-only helpers under a **global** `com...pasabayan.services.<feature>` package — use **`features/<feature>/services/`** instead (domain/feature cohesion).
+
+## Shared: `shared/`
+
+Cross-feature **shell**, bootstrap, or **non-product** glue:
+
+- **`shared/root/`** — e.g. `AppEntryContent`, `RootViewModel`
+- **`shared/error/`** — app-layer error presentation helpers (e.g. `DomainErrorLocalized`)
+
+If a file is **only** used by one feature, it **does not** belong in `shared/`.
+
+## Top-level `services/` (under `pasabayan/`)
+
+Reserve for infrastructure that is **not** owned by a **single** product feature, e.g. **FCM** (`PasabayanFirebaseMessagingService`). When a “service” is **only** for **auth**, **onboarding**, etc., place it under **`features/<feature>/services/`**.
+
+## Top-level `components/` (under `pasabayan/`)
+
+**Avoid** a root `components/` package unless the composable is **shared by multiple features**. If only one feature uses it, use **`features/<feature>/components/`**.
+
+**Shared UI primitives** belong in **`:core:designsystem`** (`P*`, tokens), not in `app` — see **`android-spec/14-design-system.md`**.
+
+## Module root (`com.efthemiosprime.pasabayan`)
+
+Keep **`MainActivity`**, **`PasabayanApplication`**, and similar **application entry** types at the **root** of the `pasabayan` package unless a spec says otherwise.
+
+## `:core:*` Gradle modules
+
+**Network, session, design system, domain errors** stay in **`core:network`**, **`core:session`**, **`core:designsystem`**, **`core:domain-error`** per **`android-spec/00-architecture.md`**. The **`app`** feature layout is for **presentation + feature glue + feature-owned persistence/SDK** — not for duplicating DTO stacks already in `core`.
+
+## When adding new code
+
+1. Pick the **feature** (or **`shared`** / top-level **`services`** if truly cross-cutting).
+2. Choose **`model` / `viewmodel` / `ui` / `services` / `components`** from the table above.
+3. **Package** = path: e.g. `...features.onboarding.services.OnboardingModule`.
+4. If unsure, compare to **iOS** `Pasabayan/Features/<SameArea>/` layout.
+
+Cross-reference: **`CLAUDE.md`** (App module layout), **`android-spec/00-architecture.md`**, iOS **`Pasabayan/Features/*`**.

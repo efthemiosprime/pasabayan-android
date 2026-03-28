@@ -51,7 +51,7 @@
     <string name="onboarding_completion_title">You\'re All Set!</string>
     <string name="onboarding_consent_analytics">Analytics</string>
     <string name="onboarding_consent_analyticsdescription">Help improve the app with anonymous usage data</string>
-    <string name="onboarding_consent_changeanytime">You can change these preferences anytime in Settings > Privacy Preferences.</string>
+    <string name="onboarding_consent_changeanytime">You can change these preferences anytime in Settings &gt; Privacy Preferences.</string>
     <string name="onboarding_consent_continue">Continue to App</string>
     <string name="onboarding_consent_description">Choose which features you\'d like to enable. You can change these anytime in Settings.</string>
     <string name="onboarding_consent_locationtracking">Location Tracking</string>

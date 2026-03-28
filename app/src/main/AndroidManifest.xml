@@ -67,7 +67,7 @@
         </activity>
 
         <service
-            android:name=".fcm.PasabayanFirebaseMessagingService"
+            android:name=".services.fcm.PasabayanFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

@@ -26,6 +26,20 @@ Kotlin, Jetpack Compose, Material 3, Hilt, Retrofit + OkHttp + kotlinx-serializa
 
 Cursor rule: `.cursor/rules/tdd-and-ui-conformance.mdc`.
 
+## App module layout (feature-first, iOS parity)
+
+The **`app`** module uses **`com.efthemiosprime.pasabayan`** with a **feature-first** tree (aligned with iOS **`Pasabayan/Features/<Name>/`**):
+
+- **`features/<feature>/model`** — types, preference interfaces, feature-only models  
+- **`features/<feature>/viewmodel`** — `ViewModel` + tightly coupled UI state  
+- **`features/<feature>/ui`** — Compose screens and routes  
+- **`features/<feature>/services`** — feature-owned repos, prefs impl, Hilt modules, **and** feature-scoped SDK glue (e.g. Google/Facebook sign-in under **`features/auth/services`**)  
+- **`features/<feature>/components`** — Compose building blocks **used only by that feature**  
+
+Use **`shared/`** for cross-feature shell (e.g. root entry, shared error helpers). Use top-level **`services/`** only for **multi-feature / infra** (e.g. FCM). **Do not** use a root **`components/`** package unless the UI is **shared across features**; prefer **`:core:designsystem`** for real design-system primitives.
+
+**Full rules:** `.cursor/rules/app-feature-package-layout.mdc`.
+
 ## Design system and UI (strict)
 
 - Root UI: **`PasabayanTheme`**.
@@ -50,7 +64,7 @@ Cursor rule: `.cursor/rules/tdd-and-ui-conformance.mdc`.
 - After each slice: **stop**, suggest **conventional commit** message(s), user commits manually unless they ask you to commit.
 - Update **`android-spec/IMPLEMENTATION-STATUS.md`** when a gate or milestone moves.
 
-Rules: `.cursor/rules/phase-commit-workflow.mdc`, `.cursor/rules/pasabayan-android-spec-context.mdc`.
+Rules: `.cursor/rules/phase-commit-workflow.mdc`, `.cursor/rules/pasabayan-android-spec-context.mdc`, `.cursor/rules/app-feature-package-layout.mdc`.
 
 ## Build / IDE
 

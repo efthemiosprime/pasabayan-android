@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.efthemiosprime.pasabayan.auth.AuthViewModel
-import com.efthemiosprime.pasabayan.auth.FacebookLoginStarter
-import com.efthemiosprime.pasabayan.root.AppEntryContent
-import com.efthemiosprime.pasabayan.root.RootViewModel
+import com.efthemiosprime.pasabayan.features.auth.viewmodel.AuthViewModel
+import com.efthemiosprime.pasabayan.features.auth.services.FacebookLoginStarter
+import com.efthemiosprime.pasabayan.shared.root.AppEntryContent
+import com.efthemiosprime.pasabayan.shared.root.RootViewModel
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PScaffold
 import com.google.android.gms.auth.api.signin.GoogleSignIn

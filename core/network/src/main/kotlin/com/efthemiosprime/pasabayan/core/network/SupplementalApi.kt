@@ -1,6 +1,8 @@
 package com.efthemiosprime.pasabayan.core.network
 
 import com.efthemiosprime.pasabayan.core.network.location.CitiesResponseJson
+import com.efthemiosprime.pasabayan.core.network.profile.ConsentPreferencesResponseJson
+import com.efthemiosprime.pasabayan.core.network.profile.ConsentPreferencesUpdateJson
 import com.efthemiosprime.pasabayan.core.network.profile.ProfileResponseJson
 import com.efthemiosprime.pasabayan.core.network.profile.UpdateProfileHomeCityRequestJson
 import retrofit2.Response
@@ -21,4 +23,9 @@ interface SupplementalApi {
     suspend fun updateProfile(
         @Body body: UpdateProfileHomeCityRequestJson,
     ): Response<ProfileResponseJson>
+
+    @PUT("profile/consent-preferences")
+    suspend fun updateConsentPreferences(
+        @Body body: ConsentPreferencesUpdateJson,
+    ): Response<ConsentPreferencesResponseJson>
 }

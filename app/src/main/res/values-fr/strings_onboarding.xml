@@ -51,7 +51,7 @@
     <string name="onboarding_completion_title">Vous êtes prêt !</string>
     <string name="onboarding_consent_analytics">Analytique</string>
     <string name="onboarding_consent_analyticsdescription">Aidez à améliorer l\'application avec des données d\'utilisation anonymes</string>
-    <string name="onboarding_consent_changeanytime">Vous pouvez modifier ces préférences à tout moment dans Paramètres > Préférences de confidentialité.</string>
+    <string name="onboarding_consent_changeanytime">Vous pouvez modifier ces préférences à tout moment dans Paramètres &gt; Préférences de confidentialité.</string>
     <string name="onboarding_consent_continue">Continuer vers l\'application</string>
     <string name="onboarding_consent_description">Choisissez les fonctionnalités que vous souhaitez activer. Vous pouvez les modifier à tout moment dans les Paramètres.</string>
     <string name="onboarding_consent_locationtracking">Suivi de localisation</string>

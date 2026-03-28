@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "data": {
+    "push_notifications": true,
+    "location_tracking": false,
+    "analytics": false,
+    "marketing_communications": true
+  }
+}

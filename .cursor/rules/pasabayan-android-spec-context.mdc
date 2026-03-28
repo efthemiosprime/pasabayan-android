@@ -31,6 +31,7 @@ For parity work, read and cite Swift sources under that tree — especially `Pas
 
 - Jetpack Compose, Clean Architecture + MVVM, Hilt, OkHttp + Retrofit (single HTTP stack), `kotlin.Result` + sealed domain errors, one JSON strategy (kotlinx Serialization **or** Moshi, not both).
 - Feature modules and packages should mirror iOS feature boundaries (`Models` → DTO/domain, `Services` → Api/repository, `ViewModels` → presentation, `Views` → composables).
+- **`app` source tree:** concrete package/folder rules (`features/<name>/{model,viewmodel,ui,services,components}`, `shared/`, when to use top-level `services/`) — **`.cursor/rules/app-feature-package-layout.mdc`**.
 - Shared shell/dashboard lives like iOS: not inside a single feature module when iOS keeps it under `Views/Screens/Dashboard/`.
 
 ## Phases (summary)
