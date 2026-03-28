@@ -1,6 +1,6 @@
 # TDD parity backlog (by phase)
 
-**Workflow:** [IMPLEMENTATION-GUIDE.md](IMPLEMENTATION-GUIDE.md). **Feature inventory:** [FEATURE-COVERAGE-MATRIX.md](FEATURE-COVERAGE-MATRIX.md).
+**Workflow:** [IMPLEMENTATION-GUIDE.md](IMPLEMENTATION-GUIDE.md). **Phase 0 cleanup TDD plan:** [PHASE-0-CLEANUP-TDD-PLAN.md](PHASE-0-CLEANUP-TDD-PLAN.md). **Feature inventory:** [FEATURE-COVERAGE-MATRIX.md](FEATURE-COVERAGE-MATRIX.md).
 
 Organized **by implementation phase** (same order as [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md)). Use with **per-feature** specs (`02`–`12`, plus [17-onboarding.md](17-onboarding.md) with Phase 1).
 

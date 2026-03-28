@@ -74,7 +74,7 @@
 | [16-project-bootstrap.md](16-project-bootstrap.md) | [x] | Modules, Hilt, Retrofit, theme, `assembleDebug` |
 | [00-architecture.md](00-architecture.md) | [x] | Core module split; lean stack documented in Gradle |
 | [01-error-taxonomy.md](01-error-taxonomy.md) | [x] | **HTTP status → `DomainError`** via `ApiErrorMapper`; **`userMessage()`** for UI copy; foreground/background **ErrorAlertPolicy** still TODO |
-| [14-design-system.md](14-design-system.md) | [x] | Tokens + `PButton`/`PCard`/tests + TDD slice table appended to spec; remaining checklist rows in 14 still open |
+| [14-design-system.md](14-design-system.md) | [x] | Core `P*` set + `ds*` + tokens + JVM/androidTest; DS-0–DS-7 done in TDD table. Large **14** inventory (every semantic color row, domain composites) grows with features. |
 | [API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md) | [ ] | Not audited for Android DTOs yet |
 | [contracts/api-contract-matrix.yaml](contracts/api-contract-matrix.yaml) | [x] | **Expanded** from ~25 to ~100 endpoints; 6 new groups (favorites, ratings, verification, stripe_connect, stripe_payment_methods, support) + expanded all existing groups |
 | [IMPLEMENTATION-GUIDE.md](IMPLEMENTATION-GUIDE.md) | — | Process doc; no “done” checkbox |
