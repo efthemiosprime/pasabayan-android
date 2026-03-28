@@ -29,4 +29,21 @@
     <string name="dashboard_stub_messages_description">Your conversations will appear here.</string>
     <string name="dashboard_stub_profile_title">Profile</string>
     <string name="dashboard_stub_profile_description">Your profile settings will appear here.</string>
+
+    <!-- Carrier explore -->
+    <string name="dashboard_carrier_stats_title">Your Stats</string>
+    <string name="dashboard_carrier_active_trips">Active Trips</string>
+    <string name="dashboard_carrier_earnings">Monthly Earnings</string>
+    <string name="dashboard_carrier_deliveries">Total Deliveries</string>
+    <string name="dashboard_carrier_rating">Avg Rating</string>
+    <string name="dashboard_carrier_recent_trips">Recent Trips</string>
+
+    <!-- Shipper explore -->
+    <string name="dashboard_shipper_in_transit">In Transit</string>
+    <string name="dashboard_shipper_delivered">Delivered</string>
+    <string name="dashboard_shipper_pending">Pending</string>
+    <string name="dashboard_shipper_find_carriers">Find Carriers</string>
+    <string name="dashboard_shipper_find_carriers_subtitle">Browse available trips and carriers near you</string>
+    <string name="dashboard_shipper_search_placeholder">Search trips or carriers\u2026</string>
+    <string name="dashboard_shipper_recent_activity">Recent Activity</string>
 </resources>

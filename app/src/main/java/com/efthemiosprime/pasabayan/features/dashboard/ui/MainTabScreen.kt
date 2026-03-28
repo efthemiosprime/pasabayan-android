@@ -69,7 +69,18 @@ fun MainTabScreen(
         ) {
             val currentTab = tabs.getOrNull(state.selectedTabIndex)
             when (currentTab?.route) {
-                "explore" -> ExploreStubContent(state.currentRole)
+                "explore" -> when (state.currentRole) {
+                    com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole.CARRIER ->
+                        CarrierExploreContent(
+                            user = user,
+                            onSwitchRole = { viewModel.switchRole() },
+                        )
+                    com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole.SHIPPER ->
+                        ShipperExploreContent(
+                            user = user,
+                            onSwitchRole = { viewModel.switchRole() },
+                        )
+                }
                 "matches" -> StubTabContent(
                     icon = Icons.Outlined.SwapHoriz,
                     title = stringResource(R.string.dashboard_stub_matches_title),

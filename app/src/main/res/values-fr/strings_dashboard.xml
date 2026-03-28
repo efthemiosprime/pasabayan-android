@@ -29,4 +29,21 @@
     <string name="dashboard_stub_messages_description">Vos conversations appara\u00eetront ici.</string>
     <string name="dashboard_stub_profile_title">Profil</string>
     <string name="dashboard_stub_profile_description">Vos param\u00e8tres de profil appara\u00eetront ici.</string>
+
+    <!-- Carrier explore -->
+    <string name="dashboard_carrier_stats_title">Vos statistiques</string>
+    <string name="dashboard_carrier_active_trips">Trajets actifs</string>
+    <string name="dashboard_carrier_earnings">Revenus mensuels</string>
+    <string name="dashboard_carrier_deliveries">Livraisons totales</string>
+    <string name="dashboard_carrier_rating">Note moyenne</string>
+    <string name="dashboard_carrier_recent_trips">Trajets r\u00e9cents</string>
+
+    <!-- Shipper explore -->
+    <string name="dashboard_shipper_in_transit">En transit</string>
+    <string name="dashboard_shipper_delivered">Livr\u00e9</string>
+    <string name="dashboard_shipper_pending">En attente</string>
+    <string name="dashboard_shipper_find_carriers">Trouver des transporteurs</string>
+    <string name="dashboard_shipper_find_carriers_subtitle">Parcourez les trajets et transporteurs pr\u00e8s de chez vous</string>
+    <string name="dashboard_shipper_search_placeholder">Rechercher des trajets ou transporteurs\u2026</string>
+    <string name="dashboard_shipper_recent_activity">Activit\u00e9 r\u00e9cente</string>
 </resources>
