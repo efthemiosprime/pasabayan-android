@@ -83,9 +83,46 @@ All fields optional unless noted. Snake_case on wire — see `CodingKeys` in [`N
 
 JSON: `token`, `platform`, `app_version`, `device_model`, `os_version`, optional `device_name` (see iOS implementation).
 
-## Ambiguity
+## Response shapes
 
-Unread count and mark-all-read responses accept **multiple shapes** on iOS — Android parsers should match `NotificationAPIService` / model tests.
+### GET `/notifications/unread-count`
+
+Query: `role` (optional). Response maps to `response.data.unreadCount`:
+
+```json
+{
+  "data": {
+    "unreadCount": 5
+  }
+}
+```
+
+### POST `/device-tokens` — request body
+
+```json
+{
+  "token": "fcm_token_string",
+  "platform": "android",
+  "app_version": "1.0.0",
+  "device_model": "Pixel 8",
+  "os_version": "14",
+  "device_name": "User's Phone"
+}
+```
+
+`platform` must be `"android"` (iOS sends `"ios"`). `device_name` is optional.
+
+### GET `/notifications` — query params
+
+| Param | Type | Notes |
+|-------|------|-------|
+| `page` | Int | Pagination |
+| `unread_only` | Bool | Optional filter |
+| `role` | String | Optional: `"shipper"` or `"carrier"` |
+
+## Ambiguity note
+
+Unread count and mark-all-read responses may accept multiple shapes on iOS — Android parsers should match `NotificationAPIService` / model tests. The primary shape is documented above.
 
 ## UI (iOS reference)
 

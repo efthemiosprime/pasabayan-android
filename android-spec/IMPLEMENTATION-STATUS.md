@@ -20,6 +20,7 @@
 |-------|--------|
 | **Current phase** | Phase 1 — Authentication (session + Compose sign-in; onboarding polish remains) |
 | **Last updated** | 2026-03-27 |
+| **Spec audit** | **Complete** — YAML expanded from ~25 to ~100 endpoint rows; all feature specs updated with query params, multipart fields, WebSocket protocol, local storage keys, activity logs, cache policy, GPS services, badge rules, analytics mock structures |
 
 ---
 
@@ -75,11 +76,11 @@
 | [01-error-taxonomy.md](01-error-taxonomy.md) | [x] | **HTTP status → `DomainError`** via `ApiErrorMapper`; **`userMessage()`** for UI copy; foreground/background **ErrorAlertPolicy** still TODO |
 | [14-design-system.md](14-design-system.md) | [x] | Baseline tokens + theme; iterate vs iOS as screens ship |
 | [API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md) | [ ] | Not audited for Android DTOs yet |
-| [contracts/api-contract-matrix.yaml](contracts/api-contract-matrix.yaml) | [ ] | Not reviewed row-by-row for Android |
+| [contracts/api-contract-matrix.yaml](contracts/api-contract-matrix.yaml) | [x] | **Expanded** from ~25 to ~100 endpoints; 6 new groups (favorites, ratings, verification, stripe_connect, stripe_payment_methods, support) + expanded all existing groups |
 | [IMPLEMENTATION-GUIDE.md](IMPLEMENTATION-GUIDE.md) | — | Process doc; no “done” checkbox |
 | [TDD-PARITY-BACKLOG.md](TDD-PARITY-BACKLOG.md) | [ ] | Auth interceptor + **API error branch** tests; expand per backlog when features land |
 
-**Phase 0 exit gate (from [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md)):** **Error mapping + user-facing strings** are in place; gate **not fully met** until [contracts/api-contract-matrix.yaml](contracts/api-contract-matrix.yaml) and [API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md) are reviewed for Android DTOs; **ErrorAlertPolicy**-style presentation (foreground vs background) is optional for the gate but still TODO.
+**Phase 0 exit gate (from [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md)):** **Error mapping + user-facing strings** are in place; **contract YAML audit complete** (expanded to ~100 endpoints); [API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md) still needs verification against Android DTOs; **ErrorAlertPolicy**-style presentation (foreground vs background) is optional for the gate but still TODO.
 
 ---
 

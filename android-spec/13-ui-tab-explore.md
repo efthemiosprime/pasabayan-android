@@ -29,7 +29,7 @@ This spec ties **Android UI behavior** to the **current iOS app** so Compose scr
 
 1. **Tab bar (per role)**  
    - Same **tab index, label, and root screen** as in the tab docs (Explore = index 0, then Matches, role-specific third tab, Messages, Profile).  
-   - Same **badge semantics** where documented (e.g. Matches, Messages unread, Profile notification dot).
+   - Same **badge semantics** — see badge computation rules below.
 
 2. **Explore tab**  
    - Reproduce the **view hierarchy** described in the tab docs: header card, search, secondary sections (e.g. top carriers / recent searches / popular routes), and documented sheet destinations (filters, profile popover, verification).  
@@ -43,6 +43,23 @@ This spec ties **Android UI behavior** to the **current iOS app** so Compose scr
 
 5. **Copy**  
    - Section titles, empty states, and primary CTAs should match iOS **unless** localization files differ; track copy in feature specs when adding Android-only wording.
+
+## Tab badge computation rules
+
+| Tab | Badge source | iOS implementation |
+|-----|-------------|-------------------|
+| **Messages** (index 3) | `chatViewModel.unreadTotal` — total unread message count across all conversations | `ChatViewModel` publishes `unreadTotal` |
+| **Profile** (index 4) | Notification dot — `true` when any unread notifications exist | `NotificationAPIService.getUnreadNotificationCount()` > 0 |
+| **Matches** (index 1) | Pending request count (role-specific) | `MatchingViewModel` pending requests count |
+
+Badge display: numeric count for Messages; dot indicator for Profile; count or dot for Matches (follow iOS behavior per role).
+
+## Tab selection & role switch
+
+From [`TabSelectionManager.swift`](../../Pasabayan/Services/TabSelectionManager.swift):
+
+- On role switch (shipper ↔ carrier): save current tab index, switch role, restore tab index after dashboard appears
+- Programmatic tab switches: used for deep links and notification routing (e.g. open Messages tab from push notification)
 
 ## Platform differences (document when used)
 

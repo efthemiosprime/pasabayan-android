@@ -8,26 +8,26 @@
 
 ## Favorites endpoints
 
-| Method | Path |
-|--------|------|
-| GET | `/favorites/carriers?...` |
-| POST | `/carriers/{carrierId}/favorite` |
-| DELETE | `/carriers/{carrierId}/unfavorite` |
-| GET | `/carriers/{carrierId}/is-favorite` |
-| POST | `/carriers/{carrierId}/request-delivery` |
-| GET | `/favorites/requests/sent` |
+**Note:** `FavoritesAPIService` uses `URLSession.shared` with `async/await` (not `BaseFeatureAPIService`). Custom error enum `FavoritesAPIError`: `.invalidURL`, `.invalidResponse`, `.serverError(statusCode)`, `.decodingError`, `.networkError`, `.cannotFavorite(String)`, `.alreadyFavorited`, `.unauthorized`, `.notFound`. Status 201 = success for addFavorite; 409 = alreadyFavorited; 400 = cannotFavorite with parsed message.
+
+| Method | Path | Query / Body |
+|--------|------|-------------|
+| GET | `/favorites/carriers` | query: `sort` (default: `"recent"`), `has_upcoming_trips` (bool) |
+| POST | `/carriers/{carrierId}/favorite` | body: `notes` (opt), `notification_enabled` (opt) |
+| DELETE | `/carriers/{carrierId}/unfavorite` | — |
+| GET | `/carriers/{carrierId}/is-favorite` | — |
+| POST | `/carriers/{carrierId}/request-delivery` | body: `pickup_city`, `pickup_date_preferred` (YYYY-MM-DD), `delivery_city`, `delivery_date_needed` (YYYY-MM-DD), `package_description`, `package_weight_kg`, `package_type`, `pickup_address` (opt), `delivery_address` (opt), `offered_price` (opt), `shipper_message` (opt) |
+| GET | `/favorites/requests/sent` | — |
 
 ## Ratings endpoints
 
-| Method | Path |
-|--------|------|
-| GET | `/users/{userId}/ratings?...` |
-| GET | `/user/stats` |
-| GET | `/ratings/pending?...` |
-| GET | `/ratings/given?...` |
-| PUT | `/ratings/{ratingId}/comment` |
-
-(Additional overloads in service — see Swift file.)
+| Method | Path | Query / Body |
+|--------|------|-------------|
+| GET | `/users/{userId}/ratings` | query: `page`, `per_page`, `sort` |
+| GET | `/user/stats` | — |
+| GET | `/ratings/pending` | query: `page` |
+| GET | `/ratings/given` | query: `page` |
+| PUT | `/ratings/{ratingId}/comment` | body: comment text |
 
 ## TDD checklist
 

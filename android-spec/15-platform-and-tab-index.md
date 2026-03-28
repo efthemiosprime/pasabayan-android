@@ -49,9 +49,39 @@ See the full **audit table** (all 16 `Features/` modules + cross-cutting service
 | Topic | Where |
 |-------|--------|
 | **Onboarding** | [**17-onboarding.md**](17-onboarding.md) — `PasabayanApp` / `ContentView` order, `OnboardingScreen`, city, consent |
-| **Analytics** | **Mock-only** — `AnalyticsViewModel.loadMockData()`; no REST in folder |
+| **Analytics** | **Mock-only** — `AnalyticsViewModel.loadMockData()`; no REST in folder; see mock data structures below |
 | **Home city** | `HomeCityDetectionService` → [12-legal-support-misc.md](12-legal-support-misc.md) |
 | **Live carrier GPS** | `LiveTrackingViewModel`, `CarrierLocationService` → [05-bookings-matches.md](05-bookings-matches.md) |
+
+---
+
+## Analytics mock data structures (no API — client-only)
+
+From [`AnalyticsViewModel.swift`](../../Pasabayan/Features/Analytics/ViewModels/AnalyticsViewModel.swift) and [`AnalyticsModels.swift`](../../Pasabayan/Features/Analytics/Models/AnalyticsModels.swift). All data is **mock/hardcoded** — no REST API calls.
+
+### Carrier analytics
+
+| Field | Type | Notes |
+|-------|------|-------|
+| Period | months, startDate, endDate | Time range |
+| Monthly performance | Array of `{month, monthName, tripsCreated, matchesReceived, deliveriesCompleted, earnings, successRate}` | Per-month stats |
+| Trends | `earningsTrend`, `deliveriesTrend` (strings), growth rates | Trend indicators |
+| Route analytics | Array of `{route, totalTrips, avgPricePerKg, monthlyData}` | Per-route breakdown |
+| Performance insights | String array | Text insights |
+
+### Shipper analytics
+
+| Field | Type | Notes |
+|-------|------|-------|
+| Monthly analysis | Similar structure to carrier | Per-month stats |
+| Budget tracking | `{totalBudgetAllocated, totalAmountSpent, totalSavings, overallEfficiency, spendingTrend, efficiencyByMonth}` | Spending analysis |
+| Preferred carriers | Array of `{carrierId, carrierName, carrierRating, totalDeliveries, averagePrice, successRate, reliabilityScore}` | Carrier comparison |
+| Delivery success | `{overallSuccessRate, successTrend, monthlySuccessRates, improvementSuggestions}` | Success metrics |
+| Cost optimization | `{recommendations, budgetAlerts}` | Suggestions |
+
+### Implementation note
+
+`AnalyticsViewModel.refreshData()` simulates a 1-second delay then reloads mock data. Mirror this on Android with `delay(1000)` + hardcoded data. Charts use the same data structures — implement with a Compose charting library or simple custom composables.
 
 ---
 

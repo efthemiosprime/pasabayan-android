@@ -124,6 +124,31 @@ Use the **same logical flags** on Android (`DataStore` / `SharedPreferences`); n
 
 **`OnboardingState.didJustCompleteConsent`:** in-memory only on iOS — replicate with a **one-shot** session flag in Android (e.g. `SavedStateHandle` or `Activity` scoped) so carrier UI matches.
 
+### Complete local storage keys (all features, for reference)
+
+These are all the `@AppStorage` / `UserDefaults` keys found in iOS that need Android equivalents:
+
+| Key | Type | Feature | Notes |
+|-----|------|---------|-------|
+| `hasCompletedOnboarding` | Bool | Onboarding | First-launch gate |
+| `hasCompletedCitySetup` | Bool | Onboarding | Post-auth city gate |
+| `hasCompletedConsentSetup` | Bool | Onboarding | Post-auth consent gate |
+| `hasViewedCarrierJourney` | Bool | Onboarding | Optional education tracking |
+| `hasViewedSenderJourney` | Bool | Onboarding | Optional education tracking |
+| `pendingHomeCityId` | Int | Onboarding/City | Retry UX |
+| `confirmedHomeCityId` | Int | HomeCityDetection | GPS-matched city |
+| `user_preferred_role` | String | Profile/Role | `"shipper"` or `"carrier"` |
+| `current_user` | JSON | Auth | JSON-encoded User model |
+| `fcm_device_token` | String | Notifications | Push token |
+| `push_notifications_api_consent_opt_in` | Bool | Consent | Push consent API state |
+| `hasSeenPackageTutorial` | Bool | Packages | One-time tutorial overlay |
+| `carrier_usual_transport_v1_{userId}` | String | Trips | TransportationMethod per user |
+| `shipper_disclaimer_ack_v1_{userId}` | Bool | Packages | Per-user disclaimer ack |
+| `shipper_disclaimer_pending_sync_v1_{userId}` | Bool | Packages | Offline sync tracking |
+| `saved_package_descriptions_v1` | JSON [String] | Packages | Max 15, FIFO |
+| `saved_pickup_templates_v1` | JSON array | Packages | Max 5, by date desc |
+| `saved_handoff_templates_v1` | JSON array | Packages | Max 5, by date desc |
+
 ---
 
 ## 6. Android implementation notes

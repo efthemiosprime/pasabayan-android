@@ -36,7 +36,9 @@ For parity work, read and cite Swift sources under that tree — especially `Pas
 
 0 Foundation → 1 Auth → 2 Trips/Packages/Explore → 3 Bookings/matches (incl. counter-offer) → 4 Payments/Stripe → 5 Chat + notifications → 6 Profile/verification/favorites/ratings → 7 Legal/support/misc + tab audit.
 
-**After each phase:** stop, suggest commit message(s) for manual commit — see **`.cursor/rules/phase-commit-workflow.mdc`**.
+**Chunking:** implement **within** each phase in **small slices** (API → repository → UI, or spec subsection by subsection) so diffs stay reviewable — not one monolithic feature dump. **After each completed chunk:** **stop** and output **suggested `git` commit message(s)** (user commits manually). Details: **`.cursor/rules/phase-commit-workflow.mdc`**.
+
+**After each full phase:** same stop + commits, plus exit-gate check and **IMPLEMENTATION-STATUS** — see **`.cursor/rules/phase-commit-workflow.mdc`**.
 
 ## Path note
 

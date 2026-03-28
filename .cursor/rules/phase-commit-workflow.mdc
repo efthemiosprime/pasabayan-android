@@ -1,5 +1,5 @@
 ---
-description: Stop at each android-spec phase; suggest conventional commits — user commits manually
+description: Stop after each phase chunk and at phase end; suggest conventional commits — user commits manually
 alwaysApply: true
 ---
 
@@ -10,6 +10,37 @@ alwaysApply: true
 - Implementation follows **phases** in `android-spec/PHASES-AND-FEATURES.md` (0–7).
 - **At the end of each completed phase** (exit gate met, or before starting the next phase): **stop** — do not start the next phase until the user confirms they are ready.
 - **Do not run `git commit`** unless the user explicitly asks the agent to commit. Default: output **suggested** commit message(s) only; the user commits manually.
+
+## Incremental implementation (default batch size)
+
+Work inside a phase should land as **small, reviewable slices**, not one large “whole feature” change. Phases are both **ordering** (what to build when) and **chunking** (how much to do before pausing).
+
+- **Stay in the active phase** until the user explicitly moves on. Do not pull in scope from later phases (e.g. don’t start trips/bookings while finishing Phase 1 auth) unless the user asks.
+- **Slice by layer or spec subsection**, in a sensible order for the phase — typical pattern:
+  1. **Contract / DTO / API** (Retrofit, serializers, tests that don’t need UI).
+  2. **Repository or session** (domain boundary, `Result` / errors).
+  3. **Presentation** (ViewModel, navigation hook).
+  4. **UI** (Compose screens, design tokens).
+  Prefer completing **one slice** (or two tightly coupled ones) before expanding scope.
+- **Avoid drive-by scope:** no unrelated refactors or “while we’re here” features from other phases in the same batch.
+
+If a request would span multiple phases, **call that out** and implement **only the current phase slice** unless the user confirms they want a larger jump.
+
+## After each chunk (slice) completes — required stop
+
+When a **chunk** is done (one slice from the list above, e.g. API layer only, or repository only, or UI only — whatever was in scope for this turn):
+
+1. **Stop** — do **not** start the next chunk in the same response unless the user explicitly asked for multiple sequential chunks in one go.
+2. Output **suggested `git commit` message(s)** using the format below (split by concern if needed: e.g. `feat` + `test` + `docs`).
+3. State clearly that the user should **commit manually** (do not run `git commit` unless they ask).
+4. Short summary of **what** was completed and **what** the next chunk would be (optional but recommended).
+5. If the chunk moved a spec row or exit gate, update **`android-spec/IMPLEMENTATION-STATUS.md`**; if not, skip.
+
+If the user asked for “everything” in one request, still **finish only one chunk**, then stop with commit message(s) and tell them to say **continue** (or similar) for the next chunk.
+
+## After each full phase completes
+
+Same as chunk stop, plus: confirm against **`PHASES-AND-FEATURES.md`** exit gate (met vs remaining), and do **not** begin the **next** phase until the user confirms they are ready.
 
 ## Commit message format (required)
 
@@ -46,11 +77,11 @@ type(what): short imperative description
 - `test(network): add auth header policy unit tests`
 - `ui(explore): mirror shipper explore tab structure per spec`
 
-## At each phase stop
+## At each phase stop (in addition to chunk checklist)
 
 1. Briefly note **what** satisfies the phase exit gate in `PHASES-AND-FEATURES.md` (or what remains).
-2. Provide **one or more** suggested commit lines (split by concern if needed: e.g. `feat` + `test` + `docs`).
-3. State that the user will **commit manually** using the suggested line(s).
-4. **Progress tracking:** Update `android-spec/IMPLEMENTATION-STATUS.md` — tick completed phase exit gates and spec rows, set **Current phase** / **Last updated**, and add short **Notes** (PR/commit) when a milestone is done. Do not skip this when implementation work completes a spec or phase.
+2. **Progress tracking:** Update `android-spec/IMPLEMENTATION-STATUS.md` — tick completed phase exit gates and spec rows, set **Current phase** / **Last updated**, and add short **Notes** when a phase milestone is done.
+
+Chunk stops use the same **commit message** rules as phase stops; phase stops add the **exit gate** + **IMPLEMENTATION-STATUS** phase-level updates above.
 
 Cross-reference: phase list and gates — `android-spec/PHASES-AND-FEATURES.md`; feature scope — `android-spec/FEATURE-COVERAGE-MATRIX.md`; done/pending — `android-spec/IMPLEMENTATION-STATUS.md`.
