@@ -1,0 +1,76 @@
+package com.efthemiosprime.pasabayan.features.packages.model
+
+import com.efthemiosprime.pasabayan.core.network.packages.AvailablePackageJson
+import com.efthemiosprime.pasabayan.core.network.packages.PackageImageJson
+import com.efthemiosprime.pasabayan.core.network.packages.PackageRequestJson
+
+fun PackageRequestJson.toDomain(): PackageRequest = PackageRequest(
+    id = id,
+    shipperId = shipperId,
+    pickupAddress = pickupAddress,
+    pickupCity = pickupCity,
+    pickupCountry = pickupCountry,
+    deliveryAddress = deliveryAddress,
+    deliveryCity = deliveryCity,
+    deliveryCountry = deliveryCountry,
+    packageWeightKg = packageWeightKg,
+    packageDimensions = packageDimensions,
+    packageType = packageType,
+    fragile = fragile,
+    packageValue = packageValue,
+    packageDescription = packageDescription,
+    urgencyLevel = urgencyLevel,
+    maxPriceBudget = maxPriceBudget,
+    pickupDatePreferred = pickupDatePreferred,
+    pickupTimePreferred = pickupTimePreferred,
+    pickupDateFlexible = pickupDateFlexible,
+    deliveryDateNeeded = deliveryDateNeeded,
+    deliveryTimeNeeded = deliveryTimeNeeded,
+    specialHandlingRequirements = specialHandlingRequirements,
+    requestStatus = requestStatus,
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+    compatibleTripsCount = compatibleTripsCount,
+    shipper = shipper,
+    images = images?.map { it.toDomain() },
+    imagesProcessing = imagesProcessing,
+    serviceType = serviceType,
+    shoppingList = shoppingList,
+    storeName = storeName,
+    storeAddress = storeAddress,
+    receiptRequired = receiptRequired,
+)
+
+fun PackageImageJson.toDomain(): PackageImage = PackageImage(
+    id = id,
+    packageRequestId = packageRequestId,
+    imagePath = imagePath,
+    displayOrder = displayOrder,
+    originalFilename = originalFilename,
+    url = url.ifBlank { imagePath },
+    createdAt = createdAt,
+)
+
+fun AvailablePackageJson.toDomain(): AvailablePackage = AvailablePackage(
+    id = id,
+    packageRequestId = packageRequestId,
+    pickupCity = pickupCity,
+    pickupCountry = pickupCountry,
+    deliveryCity = deliveryCity,
+    deliveryCountry = deliveryCountry,
+    packageWeightKg = packageWeightKg,
+    packageDimensions = packageDimensions,
+    urgencyLevel = urgencyLevel,
+    maxPriceBudget = maxPriceBudget,
+    pickupDatePreferred = pickupDatePreferred,
+    pickupDateFlexible = pickupDateFlexible,
+    deliveryDateNeeded = deliveryDateNeeded,
+    fragile = fragile,
+    packageType = packageType,
+    packageDescription = packageDescription,
+    createdAt = createdAt,
+    daysSincePosted = daysSincePosted,
+    distanceKm = distanceKm,
+    shipper = shipper,
+    serviceType = serviceType,
+)

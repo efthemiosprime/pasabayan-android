@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Package status -->
+    <string name="packages_status_open">Ouvert</string>
+    <string name="packages_status_pending_request">Demande en attente</string>
+    <string name="packages_status_matched">Jumel\u00e9</string>
+    <string name="packages_status_picked_up">R\u00e9cup\u00e9r\u00e9</string>
+    <string name="packages_status_delivered">Livr\u00e9</string>
+    <string name="packages_status_cancelled">Annul\u00e9</string>
+
+    <!-- Empty states -->
+    <string name="packages_empty_no_packages">Aucun colis</string>
+    <string name="packages_empty_no_packages_description">Cr\u00e9ez une demande de colis pour trouver des transporteurs.</string>
+    <string name="packages_empty_no_available">Aucun colis disponible</string>
+    <string name="packages_empty_no_available_description">Essayez d\'ajuster vos filtres de recherche.</string>
+
+    <!-- Actions -->
+    <string name="packages_create_package">Cr\u00e9er une demande de colis</string>
+    <string name="packages_edit_package">Modifier le colis</string>
+    <string name="packages_cancel_package">Annuler le colis</string>
+    <string name="packages_view_compatible_trips">Voir les trajets compatibles</string>
+
+    <!-- Details -->
+    <string name="packages_detail_pickup">R\u00e9cup\u00e9ration</string>
+    <string name="packages_detail_delivery">Livraison</string>
+    <string name="packages_detail_weight">Poids</string>
+    <string name="packages_detail_dimensions">Dimensions</string>
+    <string name="packages_detail_type">Type de colis</string>
+    <string name="packages_detail_urgency">Urgence</string>
+    <string name="packages_detail_budget">Budget max</string>
+    <string name="packages_detail_fragile">Fragile</string>
+    <string name="packages_detail_description">Description</string>
+    <string name="packages_detail_handling">Manutention sp\u00e9ciale</string>
+
+    <!-- Creation form -->
+    <string name="packages_create_title">Nouvelle demande de colis</string>
+    <string name="packages_create_pickup_address">Adresse de r\u00e9cup\u00e9ration</string>
+    <string name="packages_create_pickup_city">Ville de r\u00e9cup\u00e9ration</string>
+    <string name="packages_create_delivery_address">Adresse de livraison</string>
+    <string name="packages_create_delivery_city">Ville de livraison</string>
+    <string name="packages_create_weight">Poids (kg)</string>
+    <string name="packages_create_package_type">Type de colis</string>
+    <string name="packages_create_pickup_date">Date de r\u00e9cup\u00e9ration souhait\u00e9e</string>
+    <string name="packages_create_delivery_date">Date de livraison requise</string>
+
+    <!-- Browse -->
+    <string name="packages_browse_title">Parcourir les colis</string>
+    <string name="packages_browse_search">Rechercher des colis\u2026</string>
+</resources>

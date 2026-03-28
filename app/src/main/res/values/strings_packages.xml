@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Package status -->
+    <string name="packages_status_open">Open</string>
+    <string name="packages_status_pending_request">Pending Request</string>
+    <string name="packages_status_matched">Matched</string>
+    <string name="packages_status_picked_up">Picked Up</string>
+    <string name="packages_status_delivered">Delivered</string>
+    <string name="packages_status_cancelled">Cancelled</string>
+
+    <!-- Empty states -->
+    <string name="packages_empty_no_packages">No packages yet</string>
+    <string name="packages_empty_no_packages_description">Create a package request to find carriers for your delivery.</string>
+    <string name="packages_empty_no_available">No available packages found</string>
+    <string name="packages_empty_no_available_description">Try adjusting your search filters.</string>
+
+    <!-- Actions -->
+    <string name="packages_create_package">Create Package Request</string>
+    <string name="packages_edit_package">Edit Package</string>
+    <string name="packages_cancel_package">Cancel Package</string>
+    <string name="packages_view_compatible_trips">View Compatible Trips</string>
+
+    <!-- Details -->
+    <string name="packages_detail_pickup">Pickup</string>
+    <string name="packages_detail_delivery">Delivery</string>
+    <string name="packages_detail_weight">Weight</string>
+    <string name="packages_detail_dimensions">Dimensions</string>
+    <string name="packages_detail_type">Package Type</string>
+    <string name="packages_detail_urgency">Urgency</string>
+    <string name="packages_detail_budget">Max Budget</string>
+    <string name="packages_detail_fragile">Fragile</string>
+    <string name="packages_detail_description">Description</string>
+    <string name="packages_detail_handling">Special Handling</string>
+
+    <!-- Creation form -->
+    <string name="packages_create_title">New Package Request</string>
+    <string name="packages_create_pickup_address">Pickup Address</string>
+    <string name="packages_create_pickup_city">Pickup City</string>
+    <string name="packages_create_delivery_address">Delivery Address</string>
+    <string name="packages_create_delivery_city">Delivery City</string>
+    <string name="packages_create_weight">Weight (kg)</string>
+    <string name="packages_create_package_type">Package Type</string>
+    <string name="packages_create_pickup_date">Preferred Pickup Date</string>
+    <string name="packages_create_delivery_date">Delivery Date Needed</string>
+
+    <!-- Browse -->
+    <string name="packages_browse_title">Browse Packages</string>
+    <string name="packages_browse_search">Search packages\u2026</string>
+</resources>
