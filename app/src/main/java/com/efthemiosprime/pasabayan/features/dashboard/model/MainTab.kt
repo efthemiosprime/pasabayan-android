@@ -1,24 +1,18 @@
 package com.efthemiosprime.pasabayan.features.dashboard.model
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChatBubble
-import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.material.icons.outlined.LocalShipping
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.annotation.DrawableRes
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 
 /**
  * Tab definition for the main bottom navigation.
  * Tab order mirrors iOS: Explore (0), Matches (1), role-specific (2), Messages (3), Profile (4).
+ * Uses custom drawable icons matching iOS asset catalog.
  */
 data class MainTab(
     val route: String,
     val labelResId: Int,
-    val icon: ImageVector,
+    @DrawableRes val iconResId: Int,
 )
 
 object MainTabs {
@@ -26,34 +20,34 @@ object MainTabs {
         MainTab(
             route = "explore",
             labelResId = R.string.dashboard_tab_explore,
-            icon = Icons.Default.Explore,
+            iconResId = R.drawable.ic_tab_explore,
         ),
         MainTab(
             route = "matches",
             labelResId = R.string.dashboard_tab_matches,
-            icon = Icons.Default.SwapHoriz,
+            iconResId = R.drawable.ic_tab_matches,
         ),
         when (role) {
             UserRole.CARRIER -> MainTab(
                 route = "my_trips",
                 labelResId = R.string.dashboard_tab_my_trips,
-                icon = Icons.Outlined.LocalShipping,
+                iconResId = R.drawable.ic_tab_my_trips,
             )
             UserRole.SHIPPER -> MainTab(
                 route = "packages",
                 labelResId = R.string.dashboard_tab_packages,
-                icon = Icons.Default.Inventory2,
+                iconResId = R.drawable.ic_tab_packages,
             )
         },
         MainTab(
             route = "messages",
             labelResId = R.string.dashboard_tab_messages,
-            icon = Icons.Default.ChatBubble,
+            iconResId = R.drawable.ic_tab_messages,
         ),
         MainTab(
             route = "profile",
             labelResId = R.string.dashboard_tab_profile,
-            icon = Icons.Default.Person,
+            iconResId = R.drawable.ic_tab_profile,
         ),
     )
 }

@@ -8,6 +8,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.features.dashboard.model.MainTab
@@ -30,7 +31,7 @@ fun PasabayanBottomBar(
                 onClick = { onTabSelected(index) },
                 icon = {
                     Icon(
-                        imageVector = tab.icon,
+                        painter = painterResource(tab.iconResId),
                         contentDescription = stringResource(tab.labelResId),
                     )
                 },
