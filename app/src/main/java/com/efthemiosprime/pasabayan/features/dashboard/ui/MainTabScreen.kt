@@ -79,10 +79,9 @@ fun MainTabScreen(
                     onViewTripDetails = { /* TODO: navigate to trip details */ },
                     onCreateTrip = { /* TODO: navigate to trip creation */ },
                 )
-                "packages" -> StubTabContent(
-                    icon = Icons.Outlined.Inventory2,
-                    title = stringResource(R.string.dashboard_stub_packages_title),
-                    description = stringResource(R.string.dashboard_stub_packages_description),
+                "packages" -> com.efthemiosprime.pasabayan.features.packages.ui.PackageListScreen(
+                    onViewPackageDetails = { /* TODO: navigate to package details */ },
+                    onCreatePackage = { /* TODO: navigate to package creation */ },
                 )
                 "messages" -> StubTabContent(
                     icon = Icons.Outlined.Chat,
