@@ -24,6 +24,7 @@ playServicesIdentity = "18.1.0"
 facebookLogin = "17.0.2"
 firebaseBom = "33.7.0"
 securityCrypto = "1.1.0-alpha06"
+mockk = "1.13.16"
 
 [libraries]
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
@@ -64,6 +65,7 @@ play-services-auth = { group = "com.google.android.gms", name = "play-services-a
 play-services-identity = { group = "com.google.android.gms", name = "play-services-identity", version.ref = "playServicesIdentity" }
 facebook-login = { group = "com.facebook.android", name = "facebook-login", version.ref = "facebookLogin" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
