@@ -504,3 +504,52 @@ fun Modifier.dsTextSecondary() = this
 - [00-architecture.md](00-architecture.md) — MVI + UI parity overview
 - [13-ui-tab-explore.md](13-ui-tab-explore.md) — tab and Explore hierarchy
 - [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md) — Phase 0 includes this spec
+
+---
+
+## Canonical spec location
+
+All Android written specs for this repo live under **`android-spec/` in pasabayan-android**. Implementation and PRs reference **this** `14-design-system.md` as authoritative for tokens and Compose primitives (not copies under other repos).
+
+---
+
+## Compose `P*` primitives (implemented in `:core:designsystem`)
+
+Public composables use the **`P` prefix** (Pasabayan) for discoverability and parity with iOS naming:
+
+| Type / composable | Role |
+|-------------------|------|
+| `PButton`, `PButtonStyle`, `PButtonSize`, `PIconPosition` | Button system (primary, secondary, tertiary, destructive, filter, submit) |
+| `PCard`, `PCardVariant` | Flat bordered surface (no shadow) |
+| `PasabayanTheme` | Root Material 3 theme + tokens |
+
+**Planned next slices:** `POutlinedTextField`, `PScaffold` + snackbar host, `PModalBottomSheet`, pull-to-refresh / top bar helpers — see TDD slices below.
+
+### Android naming: sheet vs modal
+
+- **Bottom sheet** (iOS “sheet” for panels): use **`PModalBottomSheet`** / Material `ModalBottomSheet` — not a vague `PModal`.
+- **Popover / info (“i”):** prefer **bottom sheet or dialog** on phones; optional anchored `Popup` / `DropdownMenu` for dense menus.
+
+---
+
+## TDD and delivery slices (Phase 0)
+
+Work proceeds in **small slices** with tests in `:core:designsystem`:
+
+| Slice | Content |
+|-------|---------|
+| **DS-0** | Android test deps + `PasabayanTheme` smoke Compose test |
+| **DS-1** | Token objects (`PasabayanBorder`, `PasabayanLayout`, `PasabayanMotion`, `PasabayanTextStyles`) + JVM tests for invariants |
+| **DS-2** | Compose tests: light theme primary, typography spot checks |
+| **DS-3** | `PButton` + interaction tests |
+| **DS-4** | `PCard` + tests |
+| **DS-5** | `POutlinedTextField` + tests |
+| **DS-6** | `PScaffold` / snackbar + tests |
+| **DS-7** | `PModalBottomSheet` + popover guidance |
+
+**Policy:** add or extend **tests with each slice** (JVM for tokens; `src/androidTest` + `createComposeRule` for theme and `P*`). Optional screenshot tests (e.g. Paparazzi) are non-blocking for Phase 0.
+
+### Modifier extensions (`ds*`)
+
+Implemented in `PasabayanModifiers.kt`: `dsSpacing*`, `dsScreenPaddingHorizontal`, `dsCardStyle` / variant aliases, `dsShadowButton`.
+

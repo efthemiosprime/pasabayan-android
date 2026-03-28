@@ -8,10 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,6 +21,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
+import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
+import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
 import com.efthemiosprime.pasabayan.core.network.BuildConfig as NetworkBuildConfig
 
 @Composable
@@ -84,13 +84,13 @@ fun AuthScreen(
                     textAlign = TextAlign.Center,
                 )
                 Spacer(modifier = Modifier.height(PasabayanSpacing.lg))
-                OutlinedButton(
+                PButton(
+                    text = stringResource(R.string.auth_sign_out),
                     onClick = onLogout,
-                    enabled = !state.isBusy,
                     modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.auth_sign_out))
-                }
+                    style = PButtonStyle.Secondary,
+                    enabled = !state.isBusy,
+                )
             }
         }
 
@@ -125,19 +125,19 @@ private fun SignedOutContent(
         )
     }
 
-    Button(
+    PButton(
+        text = stringResource(R.string.auth_sign_in_google),
         onClick = onSignInWithGoogle,
-        enabled = !state.isBusy,
         modifier = Modifier.fillMaxWidth(),
-    ) {
-        Text(stringResource(R.string.auth_sign_in_google))
-    }
+        style = PButtonStyle.Primary,
+        enabled = !state.isBusy,
+    )
     Spacer(modifier = Modifier.height(PasabayanSpacing.itemSpacing))
-    Button(
+    PButton(
+        text = stringResource(R.string.auth_sign_in_facebook),
         onClick = onSignInWithFacebook,
-        enabled = !state.isBusy,
         modifier = Modifier.fillMaxWidth(),
-    ) {
-        Text(stringResource(R.string.auth_sign_in_facebook))
-    }
+        style = PButtonStyle.Primary,
+        enabled = !state.isBusy,
+    )
 }

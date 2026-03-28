@@ -44,7 +44,7 @@
 | Item | Status | Notes |
 |------|--------|--------|
 | Gradle **Version Catalog** (`gradle/libs.versions.toml`) | Done | AGP 8.8.2, Gradle 8.10.2, Kotlin 2.2.10, KSP, Compose |
-| **`:core:designsystem`** | Done | `PasabayanTheme`, spacing / radius / colors / typography per [14-design-system.md](14-design-system.md); Material3 DayNight XML theme in `:app` |
+| **`:core:designsystem`** | Partial | `PasabayanTheme`; tokens + `PasabayanBorder` / `PasabayanLayout` / `PasabayanMotion` / `PasabayanTextStyles`; `ds*` modifiers; **`PButton`** + **`PCard`**; JVM (`PasabayanTokensTest`) + androidTest (`PasabayanThemeAndroidTest`); `AuthScreen` uses `PButton`. Remaining per spec: snackbar/scaffold, sheet, text field, full token inventory. |
 | **`:core:domain-error`** | Done | `DomainError` + `ValidationError`; [01-error-taxonomy.md](01-error-taxonomy.md); **`userMessage()`** (iOS `userFriendlyMessage` parity) |
 | **`:core:network`** | Done | OkHttp + Retrofit + kotlinx-serialization; Hilt `NetworkModule`; `AuthInterceptor` (Bearer except `/auth/*` without `/auth/me`); **`ApiErrorMapper`** + error DTOs; **`Response.toDomainResult` / `foldDomainResult`**; `BuildConfig.API_BASE_URL` = production; `consumer-rules.pro` |
 | **`:app`** | Partial | `@HiltAndroidApp` `PasabayanApplication`; `@AndroidEntryPoint` `MainActivity`; Compose shell showing API base URL |
@@ -74,7 +74,7 @@
 | [16-project-bootstrap.md](16-project-bootstrap.md) | [x] | Modules, Hilt, Retrofit, theme, `assembleDebug` |
 | [00-architecture.md](00-architecture.md) | [x] | Core module split; lean stack documented in Gradle |
 | [01-error-taxonomy.md](01-error-taxonomy.md) | [x] | **HTTP status → `DomainError`** via `ApiErrorMapper`; **`userMessage()`** for UI copy; foreground/background **ErrorAlertPolicy** still TODO |
-| [14-design-system.md](14-design-system.md) | [x] | Baseline tokens + theme; iterate vs iOS as screens ship |
+| [14-design-system.md](14-design-system.md) | [x] | Tokens + `PButton`/`PCard`/tests + TDD slice table appended to spec; remaining checklist rows in 14 still open |
 | [API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md) | [ ] | Not audited for Android DTOs yet |
 | [contracts/api-contract-matrix.yaml](contracts/api-contract-matrix.yaml) | [x] | **Expanded** from ~25 to ~100 endpoints; 6 new groups (favorites, ratings, verification, stripe_connect, stripe_payment_methods, support) + expanded all existing groups |
 | [IMPLEMENTATION-GUIDE.md](IMPLEMENTATION-GUIDE.md) | — | Process doc; no “done” checkbox |

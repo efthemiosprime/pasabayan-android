@@ -23,4 +23,7 @@ object PasabayanColors {
 
     val Border = Color(0xFFC6C6C8)
     val OverlayScrim = Color(0x4D000000)
+
+    /** ~`systemGray4` (light) — disabled button fill per iOS `PButton`. */
+    val ButtonDisabled = Color(0xFFD1D1D6)
 }
