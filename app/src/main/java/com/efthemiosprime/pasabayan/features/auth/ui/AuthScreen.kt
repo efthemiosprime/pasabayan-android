@@ -55,7 +55,8 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
 import com.efthemiosprime.pasabayan.core.network.BuildConfig as NetworkBuildConfig
-import com.efthemiosprime.pasabayan.features.dashboard.ui.DashboardScreen
+import com.efthemiosprime.pasabayan.core.session.AuthUser
+import com.efthemiosprime.pasabayan.features.dashboard.ui.MainTabScreen
 import com.efthemiosprime.pasabayan.features.auth.viewmodel.AuthScreenState
 import com.efthemiosprime.pasabayan.features.auth.viewmodel.AuthViewModel
 import com.efthemiosprime.pasabayan.features.auth.viewmodel.CitySetupPhase
@@ -151,14 +152,9 @@ fun AuthScreen(
     ) {
         when (val s = state.session) {
             is SessionUiState.SignedIn -> {
-                DashboardScreen(
-                    userName = s.user.name,
-                    isBusy = state.isBusy,
+                MainTabScreen(
+                    user = s.user,
                     onLogout = onLogout,
-                    apiBaseUrl = apiBaseUrl,
-                    showApiFooter = showApiFooter,
-                    justCompletedConsent = state.didJustCompleteConsent,
-                    onConsumedJustCompletedConsent = onConsumeDidJustCompleteConsent,
                 )
             }
             SessionUiState.Checking,

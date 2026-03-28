@@ -1,4 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="dashboard_title">Home</string>
+    <string name="dashboard_greeting">Hi, %1$s</string>
+    <string name="dashboard_switch_role">Switch role</string>
+    <string name="dashboard_role_carrier">Carrier</string>
+    <string name="dashboard_role_shipper">Shipper</string>
+
+    <!-- Tab labels -->
+    <string name="dashboard_tab_explore">Explore</string>
+    <string name="dashboard_tab_matches">Matches</string>
+    <string name="dashboard_tab_my_trips">My Trips</string>
+    <string name="dashboard_tab_packages">Packages</string>
+    <string name="dashboard_tab_messages">Messages</string>
+    <string name="dashboard_tab_profile">Profile</string>
+
+    <!-- Stub tab content -->
+    <string name="dashboard_stub_explore_carrier_title">Carrier Dashboard</string>
+    <string name="dashboard_stub_explore_carrier_description">Your trips, earnings, and activity will appear here.</string>
+    <string name="dashboard_stub_explore_shipper_title">Shipper Dashboard</string>
+    <string name="dashboard_stub_explore_shipper_description">Find carriers, track packages, and manage deliveries here.</string>
+    <string name="dashboard_stub_matches_title">Matches</string>
+    <string name="dashboard_stub_matches_description">Your booking matches will appear here.</string>
+    <string name="dashboard_stub_my_trips_title">My Trips</string>
+    <string name="dashboard_stub_my_trips_description">Your trips will appear here once you create one.</string>
+    <string name="dashboard_stub_packages_title">My Packages</string>
+    <string name="dashboard_stub_packages_description">Your package requests will appear here.</string>
+    <string name="dashboard_stub_messages_title">Messages</string>
+    <string name="dashboard_stub_messages_description">Your conversations will appear here.</string>
+    <string name="dashboard_stub_profile_title">Profile</string>
+    <string name="dashboard_stub_profile_description">Your profile settings will appear here.</string>
 </resources>

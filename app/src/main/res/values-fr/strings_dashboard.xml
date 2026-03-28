@@ -1,4 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="dashboard_title">Accueil</string>
+    <string name="dashboard_greeting">Bonjour, %1$s</string>
+    <string name="dashboard_switch_role">Changer de r\u00f4le</string>
+    <string name="dashboard_role_carrier">Transporteur</string>
+    <string name="dashboard_role_shipper">Exp\u00e9diteur</string>
+
+    <!-- Tab labels -->
+    <string name="dashboard_tab_explore">Explorer</string>
+    <string name="dashboard_tab_matches">Correspondances</string>
+    <string name="dashboard_tab_my_trips">Mes trajets</string>
+    <string name="dashboard_tab_packages">Colis</string>
+    <string name="dashboard_tab_messages">Messages</string>
+    <string name="dashboard_tab_profile">Profil</string>
+
+    <!-- Stub tab content -->
+    <string name="dashboard_stub_explore_carrier_title">Tableau de bord transporteur</string>
+    <string name="dashboard_stub_explore_carrier_description">Vos trajets, revenus et activit\u00e9s appara\u00eetront ici.</string>
+    <string name="dashboard_stub_explore_shipper_title">Tableau de bord exp\u00e9diteur</string>
+    <string name="dashboard_stub_explore_shipper_description">Trouvez des transporteurs, suivez vos colis et g\u00e9rez vos livraisons ici.</string>
+    <string name="dashboard_stub_matches_title">Correspondances</string>
+    <string name="dashboard_stub_matches_description">Vos correspondances de r\u00e9servation appara\u00eetront ici.</string>
+    <string name="dashboard_stub_my_trips_title">Mes trajets</string>
+    <string name="dashboard_stub_my_trips_description">Vos trajets appara\u00eetront ici une fois cr\u00e9\u00e9s.</string>
+    <string name="dashboard_stub_packages_title">Mes colis</string>
+    <string name="dashboard_stub_packages_description">Vos demandes de colis appara\u00eetront ici.</string>
+    <string name="dashboard_stub_messages_title">Messages</string>
+    <string name="dashboard_stub_messages_description">Vos conversations appara\u00eetront ici.</string>
+    <string name="dashboard_stub_profile_title">Profil</string>
+    <string name="dashboard_stub_profile_description">Vos param\u00e8tres de profil appara\u00eetront ici.</string>
 </resources>
