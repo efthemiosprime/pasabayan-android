@@ -1,0 +1,130 @@
+package com.efthemiosprime.pasabayan.features.trips.model
+
+import com.efthemiosprime.pasabayan.core.domain.`enum`.PricingType
+import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
+import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
+import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
+import com.efthemiosprime.pasabayan.core.domain.util.DateTimeParsing
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
+
+/**
+ * Trip domain model — rich computed properties over the DTO.
+ * Parity with iOS `Trip.swift`.
+ */
+data class Trip(
+    val id: Int,
+    val carrierId: Int,
+    val originCity: String,
+    val originCountry: String,
+    val originLat: Double?,
+    val originLng: Double?,
+    val destinationCity: String,
+    val destinationCountry: String,
+    val destinationLat: Double?,
+    val destinationLng: Double?,
+    val departureDate: String?,
+    val arrivalDate: String?,
+    val availableWeightKg: Double?,
+    val availableSpaceLiters: Double?,
+    val pricePerKg: Double?,
+    val tripStatus: TripStatus,
+    val transportationMethod: TransportationMethod,
+    val specialNotes: String?,
+    val carrier: UserSummary?,
+    val createdAt: String?,
+    val updatedAt: String?,
+    // Land pricing
+    val pricingType: String?,
+    val pricingMethod: String?,
+    val flatTripPrice: Double?,
+    val basePrice: Double?,
+    val calculatedPrice: Double?,
+    // Addresses
+    val pickupAddress: String?,
+    val pickupLandmark: String?,
+    val dropoffAddress: String?,
+    val dropoffLandmark: String?,
+    // Earnings
+    val tripEarningsTotal: Double?,
+    val tripEarningsCurrency: String?,
+    val tripEarningsBreakdown: TripEarningsBreakdown?,
+    // Pending
+    val hasPendingRequests: Boolean?,
+    val pendingRequestCount: Int?,
+    val pendingRequests: List<PendingTripRequest>?,
+    val distanceKm: Double?,
+) {
+    val route: String
+        get() = "$originCity → $destinationCity"
+
+    val hasCapacity: Boolean
+        get() = (availableWeightKg ?: 0.0) > 0.0
+
+    val isBookable: Boolean
+        get() = tripStatus in listOf(TripStatus.PLANNING, TripStatus.ACTIVE) && hasCapacity
+
+    val effectivePricingType: PricingType
+        get() {
+            if (pricingType == "flat") return PricingType.FLAT
+            if (pricingType == "per_kg") return PricingType.PER_KG
+            return transportationMethod.defaultPricingType
+        }
+
+    val effectivePrice: Double
+        get() = when (effectivePricingType) {
+            PricingType.FLAT -> calculatedPrice ?: flatTripPrice ?: 0.0
+            PricingType.PER_KG -> pricePerKg ?: 0.0
+        }
+
+    val formattedPrice: String
+        get() = when (effectivePricingType) {
+            PricingType.PER_KG -> String.format("$%.2f/kg", effectivePrice)
+            PricingType.FLAT -> String.format("$%.2f flat", effectivePrice)
+        }
+
+    val formattedPriceCompact: String
+        get() = when (effectivePricingType) {
+            PricingType.PER_KG -> String.format("$%.2f/kg", effectivePrice)
+            PricingType.FLAT -> String.format("$%.2f", effectivePrice)
+        }
+
+    val formattedCapacity: String
+        get() = String.format("%.1f kg", availableWeightKg ?: 0.0)
+
+    val formattedDepartureDate: String
+        get() = DateTimeParsing.parseApiDateTime(departureDate)
+            ?.let { DateTimeParsing.formatDateTime(it) } ?: ""
+
+    val formattedArrivalDate: String
+        get() = DateTimeParsing.parseApiDateTime(arrivalDate)
+            ?.let { DateTimeParsing.formatDateTime(it) } ?: ""
+
+    val routeDistanceKm: Double
+        get() {
+            if (distanceKm != null && distanceKm > 0) return distanceKm
+            val oLat = originLat ?: return 0.0
+            val oLng = originLng ?: return 0.0
+            val dLat = destinationLat ?: return 0.0
+            val dLng = destinationLng ?: return 0.0
+            return haversineKm(oLat, oLng, dLat, dLng)
+        }
+
+    fun estimatedPrice(forWeightKg: Double): Double = when (effectivePricingType) {
+        PricingType.PER_KG -> effectivePrice * forWeightKg
+        PricingType.FLAT -> effectivePrice
+    }
+}
+
+private fun haversineKm(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Double {
+    val r = 6371.0
+    val dLat = Math.toRadians(lat2 - lat1)
+    val dLng = Math.toRadians(lng2 - lng1)
+    val a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+        sin(dLng / 2) * sin(dLng / 2)
+    val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    return r * c
+}

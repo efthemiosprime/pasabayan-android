@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Trip status -->
+    <string name="trips_status_planning">Planning</string>
+    <string name="trips_status_active">Active</string>
+    <string name="trips_status_in_transit">In Transit</string>
+    <string name="trips_status_completed">Completed</string>
+    <string name="trips_status_cancelled">Cancelled</string>
+
+    <!-- Transportation methods -->
+    <string name="trips_transport_flight">Flight</string>
+    <string name="trips_transport_bus">Bus</string>
+    <string name="trips_transport_car">Car</string>
+    <string name="trips_transport_truck">Truck</string>
+    <string name="trips_transport_van">Van</string>
+    <string name="trips_transport_motorcycle">Motorcycle</string>
+    <string name="trips_transport_ship">Ship</string>
+    <string name="trips_transport_train">Train</string>
+    <string name="trips_transport_other">Other</string>
+
+    <!-- Trip filters -->
+    <string name="trips_filter_all">All</string>
+    <string name="trips_filter_remaining">Remaining</string>
+    <string name="trips_filter_delivered">Delivered</string>
+
+    <!-- Trip empty states -->
+    <string name="trips_empty_no_trips">No trips yet</string>
+    <string name="trips_empty_no_trips_description">Create your first trip to start carrying packages.</string>
+    <string name="trips_empty_no_packages">No packages assigned</string>
+    <string name="trips_empty_no_remaining">No remaining packages</string>
+    <string name="trips_empty_no_delivered">No delivered packages yet</string>
+    <string name="trips_empty_no_available">No available trips found</string>
+    <string name="trips_empty_no_available_description">Try adjusting your search filters.</string>
+
+    <!-- Trip actions -->
+    <string name="trips_create_trip">Create Trip</string>
+    <string name="trips_edit_trip">Edit Trip</string>
+    <string name="trips_cancel_trip">Cancel Trip</string>
+    <string name="trips_view_compatible">View Compatible Packages</string>
+
+    <!-- Trip details -->
+    <string name="trips_detail_route">Route</string>
+    <string name="trips_detail_schedule">Schedule</string>
+    <string name="trips_detail_departure">Departure</string>
+    <string name="trips_detail_arrival">Arrival</string>
+    <string name="trips_detail_capacity">Capacity</string>
+    <string name="trips_detail_price">Price</string>
+    <string name="trips_detail_weight">Weight</string>
+    <string name="trips_detail_notes">Special Notes</string>
+    <string name="trips_detail_earnings">Earnings</string>
+    <string name="trips_detail_pending_requests">%1$d pending request(s)</string>
+
+    <!-- Trip creation -->
+    <string name="trips_create_title">Create New Trip</string>
+    <string name="trips_create_origin">Origin City</string>
+    <string name="trips_create_destination">Destination City</string>
+    <string name="trips_create_departure_date">Departure Date</string>
+    <string name="trips_create_arrival_date">Arrival Date</string>
+    <string name="trips_create_weight_capacity">Weight Capacity (kg)</string>
+    <string name="trips_create_space_capacity">Space (liters)</string>
+    <string name="trips_create_price_per_kg">Price per kg</string>
+    <string name="trips_create_flat_price">Flat Price</string>
+    <string name="trips_create_transport_method">Transportation Method</string>
+    <string name="trips_create_special_notes">Special Notes (optional)</string>
+
+    <!-- Browse -->
+    <string name="trips_browse_title">Browse Trips</string>
+    <string name="trips_browse_search">Search trips…</string>
+
+    <!-- Sort -->
+    <string name="trips_sort_departure_date">Departure Date</string>
+    <string name="trips_sort_price">Price</string>
+    <string name="trips_sort_capacity">Capacity</string>
+    <string name="trips_sort_distance">Distance</string>
+</resources>

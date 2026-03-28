@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Trip status -->
+    <string name="trips_status_planning">Planification</string>
+    <string name="trips_status_active">Actif</string>
+    <string name="trips_status_in_transit">En transit</string>
+    <string name="trips_status_completed">Termin\u00e9</string>
+    <string name="trips_status_cancelled">Annul\u00e9</string>
+
+    <!-- Transportation methods -->
+    <string name="trips_transport_flight">Vol</string>
+    <string name="trips_transport_bus">Autobus</string>
+    <string name="trips_transport_car">Voiture</string>
+    <string name="trips_transport_truck">Camion</string>
+    <string name="trips_transport_van">Fourgonnette</string>
+    <string name="trips_transport_motorcycle">Moto</string>
+    <string name="trips_transport_ship">Navire</string>
+    <string name="trips_transport_train">Train</string>
+    <string name="trips_transport_other">Autre</string>
+
+    <!-- Trip filters -->
+    <string name="trips_filter_all">Tout</string>
+    <string name="trips_filter_remaining">Restant</string>
+    <string name="trips_filter_delivered">Livr\u00e9</string>
+
+    <!-- Trip empty states -->
+    <string name="trips_empty_no_trips">Aucun trajet</string>
+    <string name="trips_empty_no_trips_description">Cr\u00e9ez votre premier trajet pour commencer \u00e0 transporter des colis.</string>
+    <string name="trips_empty_no_packages">Aucun colis assign\u00e9</string>
+    <string name="trips_empty_no_remaining">Aucun colis restant</string>
+    <string name="trips_empty_no_delivered">Aucun colis livr\u00e9</string>
+    <string name="trips_empty_no_available">Aucun trajet disponible</string>
+    <string name="trips_empty_no_available_description">Essayez d\'ajuster vos filtres de recherche.</string>
+
+    <!-- Trip actions -->
+    <string name="trips_create_trip">Cr\u00e9er un trajet</string>
+    <string name="trips_edit_trip">Modifier le trajet</string>
+    <string name="trips_cancel_trip">Annuler le trajet</string>
+    <string name="trips_view_compatible">Voir les colis compatibles</string>
+
+    <!-- Trip details -->
+    <string name="trips_detail_route">Itin\u00e9raire</string>
+    <string name="trips_detail_schedule">Horaire</string>
+    <string name="trips_detail_departure">D\u00e9part</string>
+    <string name="trips_detail_arrival">Arriv\u00e9e</string>
+    <string name="trips_detail_capacity">Capacit\u00e9</string>
+    <string name="trips_detail_price">Prix</string>
+    <string name="trips_detail_weight">Poids</string>
+    <string name="trips_detail_notes">Notes sp\u00e9ciales</string>
+    <string name="trips_detail_earnings">Revenus</string>
+    <string name="trips_detail_pending_requests">%1$d demande(s) en attente</string>
+
+    <!-- Trip creation -->
+    <string name="trips_create_title">Cr\u00e9er un nouveau trajet</string>
+    <string name="trips_create_origin">Ville d\'origine</string>
+    <string name="trips_create_destination">Ville de destination</string>
+    <string name="trips_create_departure_date">Date de d\u00e9part</string>
+    <string name="trips_create_arrival_date">Date d\'arriv\u00e9e</string>
+    <string name="trips_create_weight_capacity">Capacit\u00e9 de poids (kg)</string>
+    <string name="trips_create_space_capacity">Espace (litres)</string>
+    <string name="trips_create_price_per_kg">Prix par kg</string>
+    <string name="trips_create_flat_price">Prix forfaitaire</string>
+    <string name="trips_create_transport_method">M\u00e9thode de transport</string>
+    <string name="trips_create_special_notes">Notes sp\u00e9ciales (optionnel)</string>
+
+    <!-- Browse -->
+    <string name="trips_browse_title">Parcourir les trajets</string>
+    <string name="trips_browse_search">Rechercher des trajets\u2026</string>
+
+    <!-- Sort -->
+    <string name="trips_sort_departure_date">Date de d\u00e9part</string>
+    <string name="trips_sort_price">Prix</string>
+    <string name="trips_sort_capacity">Capacit\u00e9</string>
+    <string name="trips_sort_distance">Distance</string>
+</resources>
