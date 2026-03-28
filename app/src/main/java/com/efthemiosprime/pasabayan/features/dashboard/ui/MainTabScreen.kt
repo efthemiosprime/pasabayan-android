@@ -75,10 +75,9 @@ fun MainTabScreen(
                     title = stringResource(R.string.dashboard_stub_matches_title),
                     description = stringResource(R.string.dashboard_stub_matches_description),
                 )
-                "my_trips" -> StubTabContent(
-                    icon = Icons.Outlined.LocalShipping,
-                    title = stringResource(R.string.dashboard_stub_my_trips_title),
-                    description = stringResource(R.string.dashboard_stub_my_trips_description),
+                "my_trips" -> com.efthemiosprime.pasabayan.features.trips.ui.CarrierMyTripsScreen(
+                    onViewTripDetails = { /* TODO: navigate to trip details */ },
+                    onCreateTrip = { /* TODO: navigate to trip creation */ },
                 )
                 "packages" -> StubTabContent(
                     icon = Icons.Outlined.Inventory2,

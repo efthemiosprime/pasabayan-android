@@ -88,13 +88,41 @@ Cursor rule: `.cursor/rules/compose-ui-previews.mdc`.
 - **Key naming:** `<feature>_<section>_<element>` — e.g. `bookings_list_title`, `common_buttons_ok`.
 - **Enum display names** in `strings_enums.xml` — never `"Pending"` or `"Delivered"` as literals.
 - **Error messages:** `DomainError.userMessage()` must resolve `R.string.*` (pass Context or StringProvider).
+- **Format strings:** use Android positional args (`%1$s`, `%2$d`) — e.g. `<string name="bookings_empty_filtered">No %1$s deliveries found</string>`.
+- **HTML articles** in `assets/articles/` follow `-fr.html` suffix convention per `18-localization.md`.
+- **Catching violations:** flag any `Text("...")` with a literal English string, any `"Error"`/`"OK"`/`"Cancel"` used directly, any `Toast`/`Snackbar` with hardcoded text, any missing `values-fr/` counterpart.
 - Full spec: `android-spec/18-localization.md`. Cursor rule: `.cursor/rules/localization-enforcement.mdc`.
 
 ## Phases and commits
 
 - Work in **small slices** inside the active phase; **do not** jump phases without user confirmation.
-- After each slice: **stop**, suggest **conventional commit** message(s), user commits manually unless they ask you to commit.
+- **Slice by layer** in order: (1) Contract/DTO/API + tests → (2) Repository/session + tests → (3) ViewModel + tests → (4) UI + design tokens + previews.
+- After each slice: **stop** — do not start the next slice. Suggest **conventional commit** message(s), user commits manually unless they ask you to commit.
+- After each full phase: same stop + confirm exit gate from `PHASES-AND-FEATURES.md`. Do not begin next phase until user confirms.
 - Update **`android-spec/IMPLEMENTATION-STATUS.md`** when a gate or milestone moves.
+
+### Commit message format
+
+```
+type(scope): short imperative description
+```
+
+| Type | Use for |
+|------|---------|
+| `feat` | New capability or user-visible behavior |
+| `fix` | Bug fix |
+| `chore` | Maintenance, tooling, deps (no feature change) |
+| `perf` | Performance-only |
+| `ci` | CI / automation |
+| `test` | Tests only |
+| `docs` | Documentation / specs |
+| `refactor` | Behavior-preserving structure change |
+| `revert` | Revert a prior commit |
+| `build` | Gradle, packaging, codegen |
+| `ui` | Compose/UI behavior or layout (product-facing) |
+| `style` | Formatting, naming-only, non-functional polish |
+
+Examples: `feat(auth): add token storage and /auth/me session load`, `test(network): add auth header policy unit tests`, `docs(android-spec): sync api-contract-matrix for trips endpoints`.
 
 Rules: `.cursor/rules/phase-commit-workflow.mdc`, `.cursor/rules/pasabayan-android-spec-context.mdc`, `.cursor/rules/app-feature-package-layout.mdc`.
 
