@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.efthemiosprime.pasabayan.core.domain.error.ErrorAlertPolicyTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-28T00:54:57" hostname="efthemios-bong-suyat-MacBook-Pro.local" time="0.016">
-  <properties/>
-  <testcase name="background_presentsAuthPaymentConsent" classname="com.efthemiosprime.pasabayan.core.domain.error.ErrorAlertPolicyTest" time="0.004"/>
-  <testcase name="foreground_alwaysPresents" classname="com.efthemiosprime.pasabayan.core.domain.error.ErrorAlertPolicyTest" time="0.01"/>
-  <testcase name="background_suppressesNetworkValidationNotFound" classname="com.efthemiosprime.pasabayan.core.domain.error.ErrorAlertPolicyTest" time="0.002"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
