@@ -1,0 +1,98 @@
+---
+description: Concurrency, memory, lifecycle, and common Android bug patterns to avoid when writing code
+alwaysApply: true
+---
+
+# Android gotchas — bugs to avoid when writing code
+
+## Red — high priority (Android-specific, very common)
+
+### 1. Race conditions / TOCTOU
+- Never access or mutate shared state across threads without synchronization.
+- `SharedPreferences` reads/writes from multiple threads can race — prefer DataStore or synchronize access.
+- Guard `MutableStateFlow.update {}` with atomic compare-and-set (use the `update` lambda, not `.value = ...` from two coroutines).
+
+### 2. Memory leaks (Android's #1 crash cause)
+- Never hold `Activity`, `Fragment`, or `Context` in a singleton, companion object, or static field.
+- Anonymous inner classes / lambdas implicitly capture `this` — avoid passing `Activity` lambdas to long-lived objects (repositories, singletons).
+- Always unregister `BroadcastReceiver`, `LocationListener`, or `SensorListener` in the matching lifecycle callback (e.g., register in `onResume`, unregister in `onPause`).
+- Hilt `@ActivityScoped` or `@FragmentScoped` objects must never leak into `@Singleton` scope.
+
+### 3. Use-after-free / dangling references
+- Never access a destroyed `Activity` or `Fragment` after `onDestroy()`.
+- In coroutines, use `viewModelScope` or `lifecycleScope` — never `GlobalScope` — so work cancels when the owner is destroyed.
+- Callbacks from Retrofit/Room that fire after the lifecycle owner is gone: use `Lifecycle.repeatOnLifecycle` or `flowWithLifecycle` for collection.
+
+### 4. Null dereference
+- Use Kotlin null safety strictly — avoid `!!` except in tests.
+- `Bundle` extras are nullable; never assume `requireArguments().getString("key")` is non-null without a contract.
+- API responses: DTOs must use nullable types for any field the server may omit. Map to domain models with safe defaults.
+
+### 5. Atomicity violations
+- `MutableStateFlow` / `MutableLiveData` mutated from multiple coroutines without synchronization can lose updates.
+- Use `StateFlow.update { }` (atomic) instead of read-then-write patterns.
+- For complex shared state, use `Mutex` or confine mutation to a single coroutine dispatcher (`Dispatchers.Main` for UI state).
+
+## Yellow — medium priority
+
+### 6. Visibility / caching bugs
+- Non-`@Volatile` fields shared across threads may read stale values.
+- Compose state: ensure `mutableStateOf()` is read within composition — updates to backing state outside composition may not trigger recomposition if the reference is wrong.
+- ViewModel state: expose `StateFlow`, not plain mutable properties.
+
+### 7. Order-of-execution / initialization
+- In Compose: do not call suspend functions or trigger side effects during composition — use `LaunchedEffect`, `SideEffect`, or `rememberCoroutineScope`.
+- Hilt injection: fields are not available until after `super.onCreate()` in `Activity`/`Fragment`. Never access `@Inject` fields in `init {}` blocks.
+- Coroutines: do not launch in `init {}` of a class that may not have a ready scope yet.
+
+### 8. Async ordering assumptions
+- Never assume callback or coroutine completion order across multiple `launch` blocks.
+- Retrofit calls may return out of order — use `Flow` operators (`flatMapLatest`, `collectLatest`) to cancel stale requests.
+- `onResume()` logic must not depend on a result from a coroutine launched in `onCreate()` — the coroutine may not have completed yet.
+
+### 9. Starvation / ANR
+- **Never** perform network or disk I/O on `Dispatchers.Main`. Use `Dispatchers.IO` or `withContext(Dispatchers.IO)`.
+- Room queries, file reads, SharedPreferences `commit()` — all must be off the main thread.
+- Use `Dispatchers.Default` for CPU-heavy work (JSON parsing of large payloads, bitmap processing).
+
+### 10. Integer overflow
+- Bitmap size calculations: `width * height * 4` can overflow `Int` — use `Long`.
+- Timestamp arithmetic: always use `Long` for epoch millis. Kotlin `Int` overflows in ~25 days of millis.
+
+## Green — lower priority (still relevant)
+
+### 11. Reentrancy
+- Debounce click listeners — double-tap can trigger navigation or API calls twice. Use a `clickable` wrapper with a cooldown or `SingleClickHandler`.
+- Fragment transactions: guard against `IllegalStateException` by checking `isStateSaved` before `commit()`.
+
+### 12. Logic / state machine bugs
+- Multi-step flows (onboarding, checkout, booking): define explicit sealed-class states and validate transitions — do not rely on implicit boolean combinations.
+- `LazyColumn` / RecyclerView: ensure adapter/list state stays in sync with the data source. Use `key` parameter in `items()` for stable identity.
+
+### 13. Floating-point precision
+- Currency: use `BigDecimal` or `Long` cents for arithmetic. Never `Float` for money.
+- Geo-coordinates: `Double` is fine for lat/lng, but avoid equality checks — use epsilon comparison.
+
+## Quick reference
+
+| Bug class | Key defense |
+|-----------|------------|
+| Memory leaks | `viewModelScope`, `lifecycleScope`, LeakCanary in debug |
+| Null dereference | Kotlin null safety, no `!!` in prod code |
+| Main thread blocking | `Dispatchers.IO` for all I/O, StrictMode in debug |
+| Lifecycle violations | `repeatOnLifecycle`, `viewModelScope`, never `GlobalScope` |
+| Async ordering | Structured concurrency, `Flow`, `StateFlow`, `collectLatest` |
+| State atomicity | `StateFlow.update {}`, `Mutex`, single-writer principle |
+| Click reentrancy | Debounce / single-click wrappers |
+| Currency precision | `BigDecimal` or `Long` cents, never `Float` |
+
+## Recommended debug tools
+
+| Tool | Catches |
+|------|---------|
+| LeakCanary | Memory leaks |
+| StrictMode | Main thread I/O, resource misuse |
+| Firebase Crashlytics | Null crashes, ANRs in production |
+| Android Lint | Static analysis, common mistakes |
+| Detekt | Kotlin-specific code smells |
+| Coroutine Debugger | Async/coroutine issues |

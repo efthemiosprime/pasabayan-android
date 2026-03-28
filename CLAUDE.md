@@ -80,6 +80,20 @@ Cursor rule: `.cursor/rules/compose-ui-previews.mdc`.
 
 Rules: `.cursor/rules/phase-commit-workflow.mdc`, `.cursor/rules/pasabayan-android-spec-context.mdc`, `.cursor/rules/app-feature-package-layout.mdc`.
 
+## Android gotchas (strict — always apply when writing code)
+
+Avoid common Android bug patterns. Full reference: `.cursor/rules/android-gotchas.mdc`.
+
+- **Memory leaks:** Never hold `Activity`/`Fragment`/`Context` in singletons or static fields. Use `viewModelScope`/`lifecycleScope`, never `GlobalScope`. Unregister listeners in matching lifecycle callbacks.
+- **Null safety:** No `!!` in production code. DTOs use nullable types for any field the server may omit. Never assume `Bundle` extras are non-null.
+- **Main thread:** Never perform network or disk I/O on `Dispatchers.Main`. Use `Dispatchers.IO` or `withContext(Dispatchers.IO)`. Room queries, file reads, SharedPreferences — all off main thread.
+- **State atomicity:** Use `StateFlow.update {}` (atomic), not read-then-write. For complex shared state use `Mutex` or single-writer principle.
+- **Lifecycle:** Use `repeatOnLifecycle`/`flowWithLifecycle` for Flow collection. Never access destroyed Activity/Fragment. In Compose, side effects in `LaunchedEffect`/`SideEffect`, not during composition.
+- **Async ordering:** Never assume coroutine/callback completion order. Use `collectLatest`/`flatMapLatest` to cancel stale requests. Do not depend on `onCreate` coroutine completing before `onResume`.
+- **Click reentrancy:** Debounce click listeners — double-tap can trigger navigation or API calls twice.
+- **Currency:** Use `BigDecimal` or `Long` cents for money arithmetic. Never `Float`.
+- **Integer overflow:** Bitmap size calculations and timestamp arithmetic use `Long`, not `Int`.
+
 ## Build / IDE
 
 - **Gradle, Run, JDK, emulator:** use **Android Studio** as source of truth if terminal Gradle fails (e.g. `JAVA_HOME` / `jlink`). Cursor is for editing and AI-assisted coding.

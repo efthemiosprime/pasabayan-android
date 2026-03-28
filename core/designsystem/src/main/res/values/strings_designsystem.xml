@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ds_view_details">View Details</string>
+    <string name="ds_retry">Retry</string>
+    <string name="ds_no_items">No items found</string>
+    <string name="ds_error_generic">Something went wrong</string>
+    <string name="ds_expand">Expand</string>
+    <string name="ds_collapse">Collapse</string>
+    <string name="ds_more_options">More options</string>
+</resources>
