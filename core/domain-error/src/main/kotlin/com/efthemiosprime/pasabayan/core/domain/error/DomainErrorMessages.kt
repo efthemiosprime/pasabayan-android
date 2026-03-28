@@ -1,8 +1,9 @@
 package com.efthemiosprime.pasabayan.core.domain.error
 
 /**
- * User-visible copy aligned with iOS [APIError.userFriendlyMessage](https://github.com/pasabayan-ios).
- * Presentation layer can use this until a full ErrorAlertPolicy (foreground vs background) exists.
+ * English fallback for JVM / non-UI use. **Android UI** should resolve copy with string resources
+ * (e.g. `DomainError.localizedMessage` in the app module) so `en` / `fr` match [android-spec/18-localization.md].
+ * Aligned with iOS `APIError.userFriendlyMessage` semantics.
  */
 fun DomainError.userMessage(): String = when (this) {
     is DomainError.InvalidUrl -> "Invalid request URL"

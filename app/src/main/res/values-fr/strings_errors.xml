@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_generic">Une erreur s’est produite</string>
+    <string name="error_unknown_placeholder">Inconnu</string>
+
+    <string name="error_invalid_url">URL de requête non valide</string>
+    <string name="error_network">Erreur réseau</string>
+    <string name="error_network_with_detail">Erreur réseau : %1$s</string>
+    <string name="error_decoding">Impossible de traiter la réponse du serveur</string>
+    <string name="error_encoding">Impossible d’encoder la requête</string>
+    <string name="error_server">Erreur serveur : %1$s</string>
+    <string name="error_payment_required">Paiement requis</string>
+    <string name="error_payment_required_message">%1$s</string>
+    <string name="error_unauthorized">Non autorisé. Veuillez vous reconnecter.</string>
+    <string name="error_authentication">Échec de l’authentification. Veuillez vous reconnecter.</string>
+    <string name="error_http">Erreur HTTP (code %1$d)</string>
+    <string name="error_invalid_response">Réponse du serveur non valide</string>
+    <string name="error_not_found">Ressource introuvable</string>
+    <string name="error_trip_not_found">Trajet introuvable</string>
+    <string name="error_trip_not_found_message">%1$s</string>
+    <string name="error_unauthenticated">Veuillez vous connecter pour continuer</string>
+    <string name="error_user_not_carrier">Vous devez être inscrit comme transporteur pour cette action</string>
+    <string name="error_validation_with_lines">%1$s\n\n%2$s</string>
+    <string name="error_validation_line">%1$s : %2$s</string>
+    <string name="error_mixed_transport">Un trajet ne peut pas inclure à la fois du fret et des passagers.</string>
+    <string name="error_no_transport_type">Indiquez un transport de fret ou de passagers pour ce trajet.</string>
+    <string name="error_conflict">Cette action ne peut pas être effectuée</string>
+    <string name="error_conflict_message">%1$s</string>
+    <string name="error_rate_limited">Trop de requêtes. Patientez un instant puis réessayez.</string>
+    <string name="error_carrier_onboarding">Configuration transporteur requise</string>
+    <string name="error_carrier_onboarding_message">%1$s</string>
+    <string name="error_consent_required">Un consentement supplémentaire est requis pour continuer</string>
+    <string name="error_consent_message">%1$s</string>
+</resources>

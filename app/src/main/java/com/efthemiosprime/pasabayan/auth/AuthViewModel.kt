@@ -1,10 +1,12 @@
 package com.efthemiosprime.pasabayan.auth
 
 import android.app.Activity
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.efthemiosprime.pasabayan.core.domain.error.userMessage
+import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
+import com.efthemiosprime.pasabayan.error.localizedMessage
 import com.efthemiosprime.pasabayan.core.session.AuthRepository
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.core.session.TokenStore
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 sealed interface SessionUiState {
@@ -34,6 +37,7 @@ data class AuthScreenState(
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val authRepository: AuthRepository,
     private val tokenStore: TokenStore,
     private val googleSignInHelper: GoogleSignInHelper,
@@ -65,7 +69,7 @@ class AuthViewModel @Inject constructor(
                     _uiState.update { s ->
                         s.copy(
                             session = SessionUiState.SignedOut,
-                            transientError = e.toUserMessage(),
+                            transientError = e.toLocalizedUserMessage(),
                         )
                     }
                 },
@@ -81,7 +85,10 @@ class AuthViewModel @Inject constructor(
                 val idToken = account.idToken
                 if (idToken.isNullOrBlank()) {
                     _uiState.update {
-                        it.copy(isBusy = false, transientError = "Google did not return an ID token")
+                        it.copy(
+                            isBusy = false,
+                            transientError = appContext.getString(R.string.auth_error_google_no_id_token),
+                        )
                     }
                     return@launch
                 }
@@ -93,7 +100,7 @@ class AuthViewModel @Inject constructor(
                     },
                     onFailure = { e ->
                         _uiState.update {
-                            it.copy(isBusy = false, transientError = e.toUserMessage())
+                            it.copy(isBusy = false, transientError = e.toLocalizedUserMessage())
                         }
                     },
                 )
@@ -102,7 +109,11 @@ class AuthViewModel @Inject constructor(
                     _uiState.update { it.copy(isBusy = false) }
                 } else {
                     _uiState.update {
-                        it.copy(isBusy = false, transientError = e.message ?: "Google sign-in failed")
+                        it.copy(
+                            isBusy = false,
+                            transientError = e.message
+                                ?: appContext.getString(R.string.auth_error_google_sign_in_failed),
+                        )
                     }
                 }
             }
@@ -123,7 +134,7 @@ class AuthViewModel @Inject constructor(
                             },
                             onFailure = { e ->
                                 _uiState.update {
-                                    it.copy(isBusy = false, transientError = e.toUserMessage())
+                                    it.copy(isBusy = false, transientError = e.toLocalizedUserMessage())
                                 }
                             },
                         )
@@ -133,7 +144,10 @@ class AuthViewModel @Inject constructor(
                             _uiState.update { it.copy(transientError = null) }
                         } else {
                             _uiState.update {
-                                it.copy(transientError = e.message ?: "Facebook sign-in failed")
+                                it.copy(
+                                    transientError = e.message
+                                        ?: appContext.getString(R.string.auth_error_facebook_sign_in_failed),
+                                )
                             }
                         }
                     },
@@ -159,8 +173,8 @@ class AuthViewModel @Inject constructor(
 
     fun googleSignInIntent() = googleSignInHelper.signInIntent
 
-    private fun Throwable.toUserMessage(): String {
-        (this as? DomainErrorMapperException)?.domainError?.userMessage()?.let { return it }
-        return message ?: "Something went wrong"
+    private fun Throwable.toLocalizedUserMessage(): String {
+        (this as? DomainErrorMapperException)?.domainError?.let { return it.localizedMessage(appContext) }
+        return message ?: appContext.getString(R.string.error_generic)
     }
 }

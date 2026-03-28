@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_welcome_title">Pasabayan</string>
+    <string name="auth_tagline">Votre partenaire de livraison de confiance</string>
+    <string name="auth_feature_tracking_title">Suivi en temps réel</string>
+    <string name="auth_feature_tracking_description">Suivez vos livraisons en temps réel</string>
+    <string name="auth_feature_secure_title">Sécurisé et sûr</string>
+    <string name="auth_feature_secure_description">Transporteurs vérifiés et paiements sécurisés</string>
+    <string name="auth_feature_fast_title">Livraison rapide</string>
+    <string name="auth_feature_fast_description">Service de livraison rapide et fiable</string>
+    <string name="auth_signing_in">Connexion en cours…</string>
+    <string name="auth_signed_in_as">Connecté en tant que %1$s</string>
+    <string name="auth_sign_out">Se déconnecter</string>
+    <string name="auth_api_footer">API : %1$s</string>
+    <string name="auth_sign_in_google">Continuer avec Google</string>
+    <string name="auth_sign_in_facebook">Continuer avec Facebook</string>
+
+    <string name="auth_error_google_no_id_token">Google n’a pas renvoyé de jeton de connexion. Réessayez.</string>
+    <string name="auth_error_google_sign_in_failed">Échec de la connexion Google</string>
+    <string name="auth_error_facebook_sign_in_failed">Échec de la connexion Facebook</string>
+</resources>

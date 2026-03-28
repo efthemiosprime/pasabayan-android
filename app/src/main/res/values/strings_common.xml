@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Common / shell strings (parity: iOS Common.xcstrings).
+      Add shared labels, errors, and chrome here — not feature-specific copy.
+    -->
+    <string name="app_name">Pasabayan</string>
+</resources>

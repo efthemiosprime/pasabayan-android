@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Converted from iOS Pasabayan/Assets.xcassets/icons/google.imageset/google.svg -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path android:fillColor="#FF167EE6" android:pathData="M22.17,10.09h-8.97c-.4,0-.72.32-.72.72v2.87c0,.4.32.72.72.72h5.05c-.55,1.44-1.59,2.64-2.9,3.4l2.15,3.73c3.46-2,5.5-5.51,5.5-9.43,0-.56-.04-.96-.12-1.41-.06-.34-.36-.59-.71-.59Z" />
+    <path android:fillColor="#FF12B347" android:pathData="M12,18.7c-2.47,0-4.63-1.35-5.79-3.35l-3.73,2.15c1.9,3.29,5.45,5.51,9.52,5.51,2,0,3.88-.54,5.5-1.47h0s-2.15-3.74-2.15-3.74c-.99.57-2.13.9-3.35.9Z" />
+    <path android:fillColor="#FF0F993E" android:pathData="M17.5,21.53h0s-2.15-3.74-2.15-3.74c-.99.57-2.13.9-3.35.9v4.3c2,0,3.88-.54,5.5-1.47Z" />
+    <path android:fillColor="#FFFFD500" android:pathData="M5.3,12c0-1.22.33-2.36.9-3.34l-3.73-2.15c-.94,1.62-1.48,3.49-1.48,5.49s.54,3.88,1.48,5.49l3.73-2.15c-.57-.99-.9-2.13-.9-3.34Z" />
+    <path android:fillColor="#FFFF4B26" android:pathData="M12,5.3c1.61,0,3.09.57,4.25,1.53.29.24.7.22.96-.04l2.03-2.03c.3-.3.28-.78-.04-1.06-1.94-1.68-4.46-2.7-7.2-2.7C7.93,1,4.38,3.22,2.48,6.51l3.73,2.15c1.16-2,3.32-3.35,5.79-3.35Z" />
+    <path android:fillColor="#FFD93F21" android:pathData="M16.25,6.83c.29.24.7.22.96-.04l2.03-2.03c.3-.3.28-.78-.04-1.06-1.94-1.68-4.46-2.7-7.2-2.7v4.3c1.61,0,3.09.57,4.25,1.53Z" />
+</vector>
