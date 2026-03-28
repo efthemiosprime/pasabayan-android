@@ -8,4 +8,6 @@ kotlin {
 
 dependencies {
     implementation(kotlin("stdlib"))
+
+    testImplementation(libs.junit)
 }

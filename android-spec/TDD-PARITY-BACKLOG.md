@@ -8,9 +8,9 @@ Test order: **contract** (DTO decode) → **repository** (fake API) → **MVI re
 
 ## Phase 0 — Foundation
 
-- [ ] HTTP + auth header policy matches iOS (`/auth/*` except `/auth/me` skips Bearer).
-- [ ] Domain error mapping matches [01-error-taxonomy.md](01-error-taxonomy.md).
-- [ ] **Design system:** Compose `PasabayanTheme` (or equivalent) matches [14-design-system.md](14-design-system.md) — spacing scale, nav title **15 sp**, card 12 dp radius + 1 dp border, primary black-forward palette; no raw magic numbers in modules under test.
+- [x] HTTP + auth header policy matches iOS (`/auth/*` except `/auth/me` skips Bearer). *Tests:* `AuthInterceptorTest` in `:core:network` (incl. `/auth/google/login` without Bearer).
+- [x] Domain error mapping matches [01-error-taxonomy.md](01-error-taxonomy.md). *Tests:* `ApiErrorMapperTest`; foreground/background presentation: `ErrorAlertPolicy` + `ErrorAlertPolicyTest` in `:core:domain-error`.
+- [x] **Design system:** Compose `PasabayanTheme` (or equivalent) matches [14-design-system.md](14-design-system.md) — spacing scale, nav title **15 sp**, card 12 dp radius + 1 dp border, primary black-forward palette; no raw magic numbers in modules under test. *Tests:* JVM + androidTest in `:core:designsystem`.
 
 ## Phase 1 — Auth
 

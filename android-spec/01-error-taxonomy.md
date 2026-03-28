@@ -63,4 +63,4 @@ Endpoints containing `/auth/` **except** `/auth/me` are called **without** Beare
 
 - [ ] Unit tests: 401/404/402/409/422 branches produce expected domain errors.
 - [ ] Unit test: auth header omitted only for `/auth/*` excluding `/auth/me`.
-- [ ] `ErrorAlertPolicy`-equivalent: background sync vs foreground errors.
+- [x] `ErrorAlertPolicy`-equivalent: background sync vs foreground errors. (`ErrorAlertContext`, `ErrorAlertPolicy.shouldPresentToUser` in `:core:domain-error`; `ErrorAlertPolicyTest`.)

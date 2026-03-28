@@ -22,4 +22,9 @@ class AuthInterceptorTest {
         assertFalse(AuthInterceptor.shouldAttachBearer("/api/auth/login"))
         assertFalse(AuthInterceptor.shouldAttachBearer("/api/auth/register"))
     }
+
+    @Test
+    fun bearerSkipped_forAuthProviderLogin() {
+        assertFalse(AuthInterceptor.shouldAttachBearer("/api/auth/google/login"))
+    }
 }

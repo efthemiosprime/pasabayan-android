@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.efthemiosprime.pasabayan.core.session.AuthRepositoryIntegrationTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-28T00:55:07" hostname="efthemios-bong-suyat-MacBook-Pro.local" time="0.168">
+  <properties/>
+  <testcase name="logout_success_clearsToken" classname="com.efthemiosprime.pasabayan.core.session.AuthRepositoryIntegrationTest" time="0.15"/>
+  <testcase name="loginWithProvider_success_storesTokenAndMapsUser" classname="com.efthemiosprime.pasabayan.core.session.AuthRepositoryIntegrationTest" time="0.013"/>
+  <testcase name="loadCurrentUser_success" classname="com.efthemiosprime.pasabayan.core.session.AuthRepositoryIntegrationTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

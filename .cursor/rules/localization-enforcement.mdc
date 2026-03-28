@@ -1,0 +1,72 @@
+---
+description: Enforce localization — all user-visible strings must use string resources, never hardcoded literals
+alwaysApply: true
+---
+
+# Localization enforcement (English + French)
+
+Full spec: **`android-spec/18-localization.md`**. iOS reference: `Pasabayan/Localization/` (18 xcstrings files) + `Services/Localization/LanguageManager.swift`.
+
+## Hard rules (always apply)
+
+1. **Never hardcode user-visible strings in Kotlin/Compose.** Every `Text()`, button label, error message, title, placeholder, toast, snackbar, dialog, or any text a user can see **must** use:
+   - `stringResource(R.string.key_name)` in `@Composable` functions
+   - `context.getString(R.string.key_name)` in ViewModels or non-Compose code
+   - **Not** `"Login"`, `"Error"`, `"OK"`, `"Cancel"`, or any literal string
+
+2. **Both languages from the start.** When adding a new string:
+   - Add to `res/values/strings_<feature>.xml` (English)
+   - Add to `res/values-fr/strings_<feature>.xml` (French)
+   - If the French translation is unknown, use the English value as a placeholder with a `<!-- TODO: translate -->` comment — but **the key must exist in both files**.
+
+3. **Feature-organized string files.** Use `strings_<feature>.xml` naming (not one giant `strings.xml`):
+   - `strings_auth.xml`, `strings_bookings.xml`, `strings_chat.xml`, `strings_common.xml`, `strings_dashboard.xml`, `strings_enums.xml`, etc.
+   - Mirrors iOS xcstrings catalog organization (see mapping table in `18-localization.md`)
+
+4. **Key naming convention.** Use underscore-separated hierarchical keys matching iOS dot-separated keys:
+   - iOS: `"bookings.list.title".localized(table: "Bookings")` → Android: `R.string.bookings_list_title`
+   - iOS: `"common.buttons.ok".localized(table: "Common")` → Android: `R.string.common_buttons_ok`
+   - Pattern: `<feature>_<section>_<element>`
+
+5. **Format strings.** Use Android positional args (`%1$s`, `%2$d`):
+   ```xml
+   <string name="bookings_empty_filtered">No %1$s deliveries found</string>
+   ```
+   ```kotlin
+   stringResource(R.string.bookings_empty_filtered, filterName)
+   ```
+
+6. **Enum display names in `strings_enums.xml`.** Do not hardcode enum labels like `"Pending"`, `"Delivered"` — put them in string resources.
+
+7. **`DomainError.userMessage()`** must return localized strings. Pass `Context` or use a `StringProvider` interface to resolve `R.string.*` values.
+
+8. **HTML articles** in `assets/articles/` follow `-fr.html` suffix convention per `18-localization.md`.
+
+## Catching violations
+
+When writing or reviewing code, flag:
+- Any `Text("...")` with a literal English string
+- Any `"Error"`, `"Success"`, `"OK"`, `"Cancel"` used directly
+- Any `Toast.makeText(ctx, "...", ...)` with literals
+- Any `snackbarHostState.showSnackbar("...")` with literals
+- Any button/menu labels not using `stringResource()`
+- Any missing `values-fr/` counterpart when adding `values/` strings
+
+## When generating new UI code
+
+Always:
+1. Define the string resource key first
+2. Add to both `values/` and `values-fr/` string files
+3. Reference via `stringResource()` in the composable
+
+Example:
+```kotlin
+// strings_auth.xml (values/)
+// <string name="auth_login_title">Sign In</string>
+
+// strings_auth.xml (values-fr/)
+// <string name="auth_login_title">Se connecter</string>
+
+// AuthScreen.kt
+Text(text = stringResource(R.string.auth_login_title))
+```
