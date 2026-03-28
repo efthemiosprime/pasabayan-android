@@ -72,4 +72,14 @@
     <string name="trips_sort_price">Prix</string>
     <string name="trips_sort_capacity">Capacit\u00e9</string>
     <string name="trips_sort_distance">Distance</string>
+
+    <!-- Disclaimer -->
+    <string name="trips_disclaimer_title">Avis au transporteur</string>
+    <string name="trips_disclaimer_body">En cr\u00e9ant des trajets, vous acceptez de transporter les colis en toute s\u00e9curit\u00e9 et de les livrer tel que d\u00e9crit. Vous \u00eates responsable des colis sous votre garde pendant le transit.</string>
+    <string name="trips_disclaimer_acknowledge">Je comprends</string>
+
+    <!-- Tutorial -->
+    <string name="trips_tutorial_title">Bienvenue, transporteur !</string>
+    <string name="trips_tutorial_body">Cr\u00e9ez un trajet en d\u00e9finissant votre itin\u00e9raire, votre horaire et votre capacit\u00e9. Les exp\u00e9diteurs trouveront votre trajet et demanderont \u00e0 envoyer des colis sur votre route.</string>
+    <string name="trips_tutorial_dismiss">Compris</string>
 </resources>

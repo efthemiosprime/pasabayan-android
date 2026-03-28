@@ -2,17 +2,27 @@
 
 ## Project
 
-Kotlin, Jetpack Compose, Material 3, Hilt, Retrofit + OkHttp + kotlinx-serialization. Parity target: iOS app at `pasabayan-ios` (behavior and UI). **Written specs live in this repo under `android-spec/`** — treat them as canonical for Android work.
+Kotlin, Jetpack Compose, Material 3, Hilt, Retrofit + OkHttp (single HTTP stack) + kotlinx-serialization (single JSON strategy — do not mix with Moshi/Gson). Error handling: `kotlin.Result` + sealed domain errors. Parity target: iOS app at `pasabayan-ios` (behavior and UI). **Written specs live in this repo under `android-spec/`** — treat them as canonical for Android work.
 
-## Specs (read first)
+## Source of truth (read first)
+
+- **Product/API behavior:** mirror the iOS app at `pasabayan-ios` (`Features/*`, `Services/*`, `Views/*`). iOS is the **reference implementation** for endpoints, flows, and copy unless a spec documents an exception.
+- **Written specs:** `android-spec/` is canonical for Android work — start with `IMPLEMENTATION-GUIDE.md`, then phases in `PHASES-AND-FEATURES.md`.
+- **Coverage check:** `android-spec/FEATURE-COVERAGE-MATRIX.md` maps every iOS `Features/*` folder to a spec and phase — use it so nothing is orphaned.
+- **Tabs and shell:** `android-spec/15-platform-and-tab-index.md` + iOS `docs/tabs/` (shipper/carrier tab indices 0–4, shared Messages/Profile).
+- **Path note:** Specs may link to `../../Pasabayan/...` as if iOS repo sits next to `android-spec/`. Resolve against `/Users/efthemios/Documents/projects/pasabayan/pasabayan-ios/Pasabayan/`.
 
 | Doc | Purpose |
 |-----|---------|
 | `android-spec/IMPLEMENTATION-GUIDE.md` | How to implement by feature |
 | `android-spec/PHASES-AND-FEATURES.md` | Phases 0–7 and exit gates |
 | `android-spec/IMPLEMENTATION-STATUS.md` | What’s done / in progress |
+| `android-spec/FEATURE-COVERAGE-MATRIX.md` | iOS feature → spec → phase mapping |
 | `android-spec/00-architecture.md` | Stack, modules, DRY |
 | `android-spec/14-design-system.md` | **Tokens, `P*` components, strict UI rules, PR checklist** |
+| `android-spec/15-platform-and-tab-index.md` | Platform shell, tab indices |
+
+Cursor rule: `.cursor/rules/pasabayan-android-spec-context.mdc`.
 
 ## TDD (default)
 
@@ -30,23 +40,31 @@ Cursor rule: `.cursor/rules/tdd-and-ui-conformance.mdc`.
 
 The **`app`** module uses **`com.efthemiosprime.pasabayan`** with a **feature-first** tree (aligned with iOS **`Pasabayan/Features/<Name>/`**):
 
-- **`features/<feature>/model`** — types, preference interfaces, feature-only models  
-- **`features/<feature>/viewmodel`** — `ViewModel` + tightly coupled UI state  
-- **`features/<feature>/ui`** — Compose screens and routes  
-- **`features/<feature>/services`** — feature-owned repos, prefs impl, Hilt modules, **and** feature-scoped SDK glue (e.g. Google/Facebook sign-in under **`features/auth/services`**)  
-- **`features/<feature>/components`** — Compose building blocks **used only by that feature**  
+- **`features/<feature>/model`** — types, preference interfaces, feature-only models
+- **`features/<feature>/viewmodel`** — `ViewModel` + tightly coupled UI state
+- **`features/<feature>/ui`** — Compose screens and routes
+- **`features/<feature>/services`** — feature-owned repos, prefs impl, Hilt `@Module`s, **and** feature-scoped SDK glue (e.g. Google/Facebook sign-in under **`features/auth/services`**)
+- **`features/<feature>/components`** — Compose building blocks **used only by that feature**
 
-Use **`shared/`** for cross-feature shell (e.g. root entry, shared error helpers). Use top-level **`services/`** only for **multi-feature / infra** (e.g. FCM). **Do not** use a root **`components/`** package unless the UI is **shared across features**; prefer **`:core:designsystem`** for real design-system primitives.
+Other locations:
+- **`shared/root/`** — app entry (`AppEntryContent`, `RootViewModel`). **`shared/error/`** — app-layer error presentation (e.g. `DomainErrorLocalized`).
+- **Top-level `services/`** — only for **multi-feature / infra** (e.g. FCM). Feature-only services go under `features/<feature>/services/`.
+- **Module root** (`com.efthemiosprime.pasabayan`) — `MainActivity`, `PasabayanApplication`, and similar application entry types.
+- **`:core:*` Gradle modules** — `core:network`, `core:session`, `core:designsystem`, `core:domain-error` per `00-architecture.md`. Do not duplicate DTO stacks from `core` into `app`.
+- **Do not** use a root **`components/`** package unless the UI is **shared across features**; prefer **`:core:designsystem`** for real design-system primitives.
 
 **Full rules:** `.cursor/rules/app-feature-package-layout.mdc`.
 
 ## Lean files and thin classes (strict)
 
 - **Single responsibility per file.** One class/composable/interface per file. DTOs, domain models, and mappers in separate files.
-- **Small files:** aim < 200 lines; split at 400. Functions < 30 lines. Classes < 150 lines of logic.
-- **Thin ViewModels:** delegate to repositories and use cases — no inline API calls, mapping, or business logic. Extract a use case when ≥ 2 call sites share logic.
+- **Small files:** aim < 200 lines; split at 400. Functions < 30 lines. Classes < 150 lines of logic. Function parameters ≤ 5 (group into data class when more).
+- **Thin ViewModels:** delegate to repositories and use cases — no inline API calls, mapping, or business logic. One ViewModel per screen. Extract a use case when ≥ 2 call sites share logic. Use cases: one public `operator fun invoke()`, return `Result<T>`, no held state.
+- **Repositories:** one per domain aggregate, thin wrappers (call API → map DTO → return `Result`). Split at ~10 public methods.
+- **Retrofit API interfaces:** one `*Api` per feature. Split at ~15 endpoints.
+- **Hilt modules:** one `@Module` per feature. Split at > 10 bindings.
 - **No god objects:** avoid `Utils.kt`, `Helpers.kt`, `Manager.kt` catch-alls. Name by responsibility (`DateParser`, `PriceFormatter`).
-- **Compose screens** delegate to smaller composable components in `components/`; extract repeated blocks (≥ 2 uses or ≥ 30 lines).
+- **Compose screens** delegate to smaller composable components in `components/`; extract repeated blocks (≥ 2 uses or ≥ 30 lines). Previews live in the same file as the composable.
 - **Separate for testability:** if testing a piece of logic requires unrelated dependencies, extract it into its own file/class. Use cases, mappers, components, and DTOs should each be independently testable.
 
 Cursor rule: `.cursor/rules/lean-classes-separation.mdc`. Architecture: `android-spec/00-architecture.md` (Lean files and thin classes).

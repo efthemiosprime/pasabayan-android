@@ -72,4 +72,14 @@
     <string name="trips_sort_price">Price</string>
     <string name="trips_sort_capacity">Capacity</string>
     <string name="trips_sort_distance">Distance</string>
+
+    <!-- Disclaimer -->
+    <string name="trips_disclaimer_title">Carrier Disclaimer</string>
+    <string name="trips_disclaimer_body">By creating trips, you agree to carry packages safely and deliver them as described. You are responsible for packages in your care during transit.</string>
+    <string name="trips_disclaimer_acknowledge">I Understand</string>
+
+    <!-- Tutorial -->
+    <string name="trips_tutorial_title">Welcome, Carrier!</string>
+    <string name="trips_tutorial_body">Create a trip by setting your route, schedule, and capacity. Shippers will find your trip and request to send packages along your route.</string>
+    <string name="trips_tutorial_dismiss">Got it</string>
 </resources>
