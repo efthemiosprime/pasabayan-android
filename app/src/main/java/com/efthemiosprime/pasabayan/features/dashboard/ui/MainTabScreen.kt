@@ -107,28 +107,6 @@ fun MainTabScreen(
 }
 
 @Composable
-private fun ExploreStubContent(role: UserRole) {
-    val (title, description) = when (role) {
-        UserRole.CARRIER -> Pair(
-            stringResource(R.string.dashboard_stub_explore_carrier_title),
-            stringResource(R.string.dashboard_stub_explore_carrier_description),
-        )
-        UserRole.SHIPPER -> Pair(
-            stringResource(R.string.dashboard_stub_explore_shipper_title),
-            stringResource(R.string.dashboard_stub_explore_shipper_description),
-        )
-    }
-    PEmptyState(
-        icon = Icons.Outlined.Explore,
-        title = title,
-        description = description,
-        modifier = Modifier.padding(
-            com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing.lg,
-        ),
-    )
-}
-
-@Composable
 private fun StubTabContent(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
