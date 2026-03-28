@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.efthemiosprime.pasabayan.core.network.auth.AuthJsonModelsDecodeTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-03-28T00:49:16" hostname="efthemios-bong-suyat-MacBook-Pro.local" time="0.014">
+  <properties/>
+  <testcase name="POST auth logout decodes LogoutResponseJson" classname="com.efthemiosprime.pasabayan.core.network.auth.AuthJsonModelsDecodeTest" time="0.002"/>
+  <testcase name="POST auth provider login decodes BackendAuthResponseJson" classname="com.efthemiosprime.pasabayan.core.network.auth.AuthJsonModelsDecodeTest" time="0.008"/>
+  <testcase name="GET auth me decodes UserResponseJson" classname="com.efthemiosprime.pasabayan.core.network.auth.AuthJsonModelsDecodeTest" time="0.001"/>
+  <testcase name="ProviderLoginRequestJson encodes snake_case access_token" classname="com.efthemiosprime.pasabayan.core.network.auth.AuthJsonModelsDecodeTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

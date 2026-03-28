@@ -28,7 +28,7 @@
 
 | Phase | Exit gate | Status |
 |-------|-----------|--------|
-| **0** — Foundation | See [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md) § Phase 0 | **In progress** — `ApiErrorMapper` + `DomainError.userMessage()` + unit tests; **api-contract-matrix** + **API-SHAPES** row audit still TODO |
+| **0** — Foundation | See [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md) § Phase 0 | **Nearly complete** — API-SHAPES audit done for **implemented** DTOs (auth); optional **ErrorAlertPolicy** + [TDD-PARITY-BACKLOG.md](TDD-PARITY-BACKLOG.md) Phase 0 ticks remain |
 | **1** — Authentication | Login, token, `/auth/me`, logout | **In progress** — session + **Compose auth screen** (Google ID token + Facebook SDK → backend); onboarding / full **02-auth-session** polish still TODO |
 | **2** — Trips, packages, Explore | … | Not started |
 | **3** — Bookings & matches | … | Not started |
@@ -75,12 +75,12 @@
 | [00-architecture.md](00-architecture.md) | [x] | Core module split; lean stack documented in Gradle |
 | [01-error-taxonomy.md](01-error-taxonomy.md) | [x] | **HTTP status → `DomainError`** via `ApiErrorMapper`; **`userMessage()`** for UI copy; foreground/background **ErrorAlertPolicy** still TODO |
 | [14-design-system.md](14-design-system.md) | [x] | Core `P*` set + `ds*` + tokens + JVM/androidTest; DS-0–DS-7 done in TDD table. Large **14** inventory (every semantic color row, domain composites) grows with features. |
-| [API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md) | [ ] | Not audited for Android DTOs yet |
+| [API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md) | [x] | **Implemented auth DTOs** audited: golden JSON fixtures + `AuthJsonModelsDecodeTest` in `:core:network` (`src/test/resources/api-fixtures/auth/`). Re-audit when new Retrofit/DTO surfaces land (trips, packages, …). |
 | [contracts/api-contract-matrix.yaml](contracts/api-contract-matrix.yaml) | [x] | **Expanded** from ~25 to ~100 endpoints; 6 new groups (favorites, ratings, verification, stripe_connect, stripe_payment_methods, support) + expanded all existing groups |
 | [IMPLEMENTATION-GUIDE.md](IMPLEMENTATION-GUIDE.md) | — | Process doc; no “done” checkbox |
 | [TDD-PARITY-BACKLOG.md](TDD-PARITY-BACKLOG.md) | [ ] | Auth interceptor + **API error branch** tests; expand per backlog when features land |
 
-**Phase 0 exit gate (from [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md)):** **Error mapping + user-facing strings** are in place; **contract YAML audit complete** (expanded to ~100 endpoints); [API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md) still needs verification against Android DTOs; **ErrorAlertPolicy**-style presentation (foreground vs background) is optional for the gate but still TODO.
+**Phase 0 exit gate (from [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md)):** **Error mapping + user-facing strings** are in place; **contract YAML audit complete** (expanded to ~100 endpoints); **[API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md) verified for implemented Android DTOs** (auth — golden JSON tests in `:core:network`); extend fixtures as new DTO modules ship. **ErrorAlertPolicy**-style presentation (foreground vs background) remains optional; [TDD-PARITY-BACKLOG.md](TDD-PARITY-BACKLOG.md) Phase 0 rows can still be ticked independently.
 
 ---
 

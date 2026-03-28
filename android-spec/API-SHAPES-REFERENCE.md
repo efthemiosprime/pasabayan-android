@@ -4,6 +4,8 @@
 
 **Android:** For each row, implement matching DTOs (Kotlinx Serialization `@SerialName`) and map to domain models. When two methods share a path with different wrappers, match the **iOS method** used at the call site.
 
+**Android decode tests (auth):** `:core:network/src/test/resources/api-fixtures/auth/` + `AuthJsonModelsDecodeTest` — covers `POST /auth/{provider}/login`, `GET /auth/me`, `POST /auth/logout` DTOs. Extend fixtures when new endpoints get DTOs.
+
 **Package layout:** Keep DTOs and API interfaces in the **same feature module** as the iOS `Features/<Feature>/` that owns the `*APIService` (see [00-architecture.md](00-architecture.md) — iOS layout → Android mirror).
 
 ---

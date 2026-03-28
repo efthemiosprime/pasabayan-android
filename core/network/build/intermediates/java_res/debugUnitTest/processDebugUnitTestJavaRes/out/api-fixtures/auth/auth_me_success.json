@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": 7,
+      "name": "Me User",
+      "email": "me@example.com"
+    }
+  }
+}
