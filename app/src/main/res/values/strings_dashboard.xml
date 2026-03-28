@@ -30,20 +30,38 @@
     <string name="dashboard_stub_profile_title">Profile</string>
     <string name="dashboard_stub_profile_description">Your profile settings will appear here.</string>
 
+    <!-- Welcome messages -->
+    <string name="dashboard_carrier_welcome">Welcome back, Carrier!</string>
+    <string name="dashboard_shipper_welcome">Welcome back!</string>
+
+    <!-- Verification badges -->
+    <string name="dashboard_verification_basic">Basic</string>
+    <string name="dashboard_verification_verified">Verified</string>
+    <string name="dashboard_verification_premium">Premium</string>
+
     <!-- Carrier explore -->
-    <string name="dashboard_carrier_stats_title">Your Stats</string>
-    <string name="dashboard_carrier_active_trips">Active Trips</string>
-    <string name="dashboard_carrier_earnings">Monthly Earnings</string>
-    <string name="dashboard_carrier_deliveries">Total Deliveries</string>
-    <string name="dashboard_carrier_rating">Avg Rating</string>
-    <string name="dashboard_carrier_recent_trips">Recent Trips</string>
+    <string name="dashboard_carrier_find_packages">Find Packages</string>
+    <string name="dashboard_carrier_find_packages_subtitle">Browse available packages and errands</string>
+    <string name="dashboard_carrier_search_placeholder">Search by city or description\u2026</string>
+    <string name="dashboard_carrier_available_packages">Available Packages</string>
+    <string name="dashboard_carrier_not_nearby">No packages nearby \u2014 showing from other areas</string>
+    <string name="dashboard_carrier_post_trip">Post Trip Schedule</string>
+    <string name="dashboard_carrier_request_to_carry">Request to Carry</string>
+    <string name="dashboard_carrier_not_nearby_label">Not nearby</string>
 
     <!-- Shipper explore -->
-    <string name="dashboard_shipper_in_transit">In Transit</string>
-    <string name="dashboard_shipper_delivered">Delivered</string>
-    <string name="dashboard_shipper_pending">Pending</string>
     <string name="dashboard_shipper_find_carriers">Find Carriers</string>
-    <string name="dashboard_shipper_find_carriers_subtitle">Browse available trips and carriers near you</string>
-    <string name="dashboard_shipper_search_placeholder">Search trips or carriers\u2026</string>
-    <string name="dashboard_shipper_recent_activity">Recent Activity</string>
+    <string name="dashboard_shipper_find_carriers_subtitle">Ship packages with trusted carriers</string>
+    <string name="dashboard_shipper_search_placeholder">Search origin or destination\u2026</string>
+    <string name="dashboard_shipper_no_carriers_title">No carriers available right now</string>
+    <string name="dashboard_shipper_no_carriers_description">There are currently no active carriers available. Post your shipment request to get notified when carriers become available.</string>
+    <string name="dashboard_shipper_create_package_cta">Create Package Request</string>
+    <string name="dashboard_shipper_tip_demand_title">GET AHEAD OF DEMAND</string>
+    <string name="dashboard_shipper_tip_demand_body">Posting early means carriers can find you first. Most requests get 3\u20135 offers within 2 hours.</string>
+    <string name="dashboard_shipper_tip_peak_title">PEAK CARRIER HOURS</string>
+    <string name="dashboard_shipper_tip_peak_body">Carriers typically schedule trips between Thursday \u2013 Saturday for weekend deliveries.</string>
+    <string name="dashboard_shipper_tip_flexible_title">FLEXIBLE WINDOWS = MORE OPTIONS</string>
+    <string name="dashboard_shipper_tip_flexible_body">Offering 2\u20133 day delivery windows increases carrier matches by 60%.</string>
+    <string name="dashboard_shipper_sender_tip_title">Sender Tip</string>
+    <string name="dashboard_shipper_sender_tip_body">Flexible delivery windows increase your chances of finding carriers by 60%. Consider offering 2\u20133 day windows.</string>
 </resources>

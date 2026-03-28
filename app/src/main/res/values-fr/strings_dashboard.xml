@@ -30,20 +30,38 @@
     <string name="dashboard_stub_profile_title">Profil</string>
     <string name="dashboard_stub_profile_description">Vos param\u00e8tres de profil appara\u00eetront ici.</string>
 
+    <!-- Welcome messages -->
+    <string name="dashboard_carrier_welcome">Bienvenue, transporteur !</string>
+    <string name="dashboard_shipper_welcome">Bienvenue !</string>
+
+    <!-- Verification badges -->
+    <string name="dashboard_verification_basic">De base</string>
+    <string name="dashboard_verification_verified">V\u00e9rifi\u00e9</string>
+    <string name="dashboard_verification_premium">Premium</string>
+
     <!-- Carrier explore -->
-    <string name="dashboard_carrier_stats_title">Vos statistiques</string>
-    <string name="dashboard_carrier_active_trips">Trajets actifs</string>
-    <string name="dashboard_carrier_earnings">Revenus mensuels</string>
-    <string name="dashboard_carrier_deliveries">Livraisons totales</string>
-    <string name="dashboard_carrier_rating">Note moyenne</string>
-    <string name="dashboard_carrier_recent_trips">Trajets r\u00e9cents</string>
+    <string name="dashboard_carrier_find_packages">Trouver des colis</string>
+    <string name="dashboard_carrier_find_packages_subtitle">Parcourir les colis et courses disponibles</string>
+    <string name="dashboard_carrier_search_placeholder">Rechercher par ville ou description\u2026</string>
+    <string name="dashboard_carrier_available_packages">Colis disponibles</string>
+    <string name="dashboard_carrier_not_nearby">Aucun colis \u00e0 proximit\u00e9 \u2014 affichage d\'autres r\u00e9gions</string>
+    <string name="dashboard_carrier_post_trip">Publier un horaire de trajet</string>
+    <string name="dashboard_carrier_request_to_carry">Demande de transport</string>
+    <string name="dashboard_carrier_not_nearby_label">Pas \u00e0 proximit\u00e9</string>
 
     <!-- Shipper explore -->
-    <string name="dashboard_shipper_in_transit">En transit</string>
-    <string name="dashboard_shipper_delivered">Livr\u00e9</string>
-    <string name="dashboard_shipper_pending">En attente</string>
     <string name="dashboard_shipper_find_carriers">Trouver des transporteurs</string>
-    <string name="dashboard_shipper_find_carriers_subtitle">Parcourez les trajets et transporteurs pr\u00e8s de chez vous</string>
-    <string name="dashboard_shipper_search_placeholder">Rechercher des trajets ou transporteurs\u2026</string>
-    <string name="dashboard_shipper_recent_activity">Activit\u00e9 r\u00e9cente</string>
+    <string name="dashboard_shipper_find_carriers_subtitle">Exp\u00e9diez vos colis avec des transporteurs de confiance</string>
+    <string name="dashboard_shipper_search_placeholder">Rechercher origine ou destination\u2026</string>
+    <string name="dashboard_shipper_no_carriers_title">Aucun transporteur disponible</string>
+    <string name="dashboard_shipper_no_carriers_description">Il n\'y a actuellement aucun transporteur actif disponible. Publiez votre demande d\'exp\u00e9dition pour \u00eatre notifi\u00e9 lorsque des transporteurs seront disponibles.</string>
+    <string name="dashboard_shipper_create_package_cta">Cr\u00e9er une demande de colis</string>
+    <string name="dashboard_shipper_tip_demand_title">PRENEZ DE L\'AVANCE</string>
+    <string name="dashboard_shipper_tip_demand_body">Publier t\u00f4t permet aux transporteurs de vous trouver en premier. La plupart des demandes re\u00e7oivent 3 \u00e0 5 offres en 2 heures.</string>
+    <string name="dashboard_shipper_tip_peak_title">HEURES DE POINTE</string>
+    <string name="dashboard_shipper_tip_peak_body">Les transporteurs planifient g\u00e9n\u00e9ralement leurs trajets du jeudi au samedi pour les livraisons du week-end.</string>
+    <string name="dashboard_shipper_tip_flexible_title">FL\u00c9XIBILIT\u00c9 = PLUS D\'OPTIONS</string>
+    <string name="dashboard_shipper_tip_flexible_body">Offrir des fen\u00eatres de livraison de 2 \u00e0 3 jours augmente les correspondances de transporteurs de 60 %.</string>
+    <string name="dashboard_shipper_sender_tip_title">Conseil exp\u00e9diteur</string>
+    <string name="dashboard_shipper_sender_tip_body">Des fen\u00eatres de livraison flexibles augmentent vos chances de trouver des transporteurs de 60 %. Envisagez d\'offrir des fen\u00eatres de 2 \u00e0 3 jours.</string>
 </resources>
