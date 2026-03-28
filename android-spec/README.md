@@ -80,6 +80,7 @@ Then: [**PHASES-AND-FEATURES.md**](PHASES-AND-FEATURES.md) — phase table, exit
 | [**14-design-system.md**](14-design-system.md) | **Design tokens** (spacing, type, color, radii, cards) — **follow for all UI** |
 | [**15-platform-and-tab-index.md**](15-platform-and-tab-index.md) | **Tab docs index** + iOS feature audit (`docs/tabs/`, analytics mock, realtime) |
 | [**17-onboarding.md**](17-onboarding.md) | **Onboarding** — first-launch, city, consent, flags (`PasabayanApp`, `ContentView`) |
+| [**18-localization.md**](18-localization.md) | **Localization (i18n)** — 2 languages (en/fr), 18 string files, runtime switching, HTML articles |
 | [TDD-PARITY-BACKLOG.md](TDD-PARITY-BACKLOG.md) | TDD checklist **by phase** |
 | [contracts/api-contract-matrix.yaml](contracts/api-contract-matrix.yaml) | Endpoint matrix **by feature group** |
 

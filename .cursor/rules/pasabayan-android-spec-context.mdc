@@ -21,8 +21,9 @@ For parity work, read and cite Swift sources under that tree — especially `Pas
 ## Source of truth
 
 - **Product/API behavior:** mirror the iOS app at **`/Users/efthemios/Documents/projects/pasabayan/pasabayan-ios`** (`Pasabayan/Features/*`, `Pasabayan/Services/*`, `Pasabayan/Views/*`). iOS is the reference implementation for endpoints, flows, and copy unless a spec documents an exception.
-- **Written specs:** this repo’s `android-spec/` — start with `IMPLEMENTATION-GUIDE.md`, then phases in `PHASES-AND-FEATURES.md`. **Progress:** keep `android-spec/IMPLEMENTATION-STATUS.md` updated as phases and specs are completed.
-- **UI tokens:** `14-design-system.md` (derived from iOS `.../pasabayan-ios/Pasabayan/Views/Components/DesignSystem.swift`). No unstructured magic numbers in feature UI.
+- **Written specs:** this repo’s **`android-spec/`** (canonical for Android work) — start with `IMPLEMENTATION-GUIDE.md`, then phases in `PHASES-AND-FEATURES.md`. **Progress:** keep `android-spec/IMPLEMENTATION-STATUS.md` updated as phases and specs are completed.
+- **UI / design system:** `14-design-system.md` — **strict** use of **`:core:designsystem`** tokens, **`P*`** base components, and **`ds*`** modifiers; no parallel styling in feature modules (see **Mandatory rules** and **rule 5** in **14**). iOS `DesignSystem.swift` / `PButton` are **parity references**, not the Android spec source.
+- **TDD:** Default to **test-first or test-with** each slice (DTO/network/repo/ViewModel/UI per layer). Details: **`.cursor/rules/tdd-and-ui-conformance.mdc`**.
 - **Coverage check:** `FEATURE-COVERAGE-MATRIX.md` maps every iOS `Features/*` folder to a spec and phase; use it so nothing is orphaned.
 - **Tabs and shell:** `15-platform-and-tab-index.md` + **`/Users/efthemios/Documents/projects/pasabayan/pasabayan-ios/docs/tabs/`** (shipper/carrier tab indices 0–4, shared Messages/Profile).
 

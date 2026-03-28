@@ -1,0 +1,30 @@
+---
+description: TDD expectations and mandatory design-system / P* UI conformance for Pasabayan Android
+alwaysApply: true
+---
+
+# TDD and UI conformance
+
+## TDD (default)
+
+- **Order of work:** Prefer **tests before or with** production code for each slice — red → green → refactor. Do not land behavior-only changes without tests when the phase/spec expects them (see `android-spec/PHASES-AND-FEATURES.md` exit gates and `android-spec/TDD-PARITY-BACKLOG.md` if present).
+- **By layer:**
+  - **DTOs / serializers / mappers:** JVM unit tests (happy path + representative error or edge cases).
+  - **Network / `ApiErrorMapper` / interceptors:** JVM unit tests (existing pattern in `:core:network`).
+  - **Repositories / session:** JVM tests with fakes or coroutine tests where practical.
+  - **ViewModels:** `StateFlow` / reducer tests for critical state transitions.
+  - **Compose / design system:** `:core:designsystem` uses **JVM tests** for token invariants and **`src/androidTest`** + `createComposeRule` for `PasabayanTheme` and **`P*`** components; feature modules add UI tests for critical journeys when specs require it.
+- **Regression:** When fixing a bug, add a test that would have failed before the fix when feasible.
+
+## Design system and base components (strict)
+
+- **Authoritative doc:** `android-spec/14-design-system.md` — **Mandatory rules**, **rule 5 (strict conformance)**, and **PR review checklist (UI)**. All new or changed feature UI must comply.
+- **Required usage:** **`PasabayanTheme`** at the root; **`PasabayanSpacing`**, **`PasabayanRadius`**, **`PasabayanColors`** (where fixed tokens apply), **`PasabayanTextStyles`** / **`MaterialTheme.typography`**, **`PasabayanBorder`**, **`PasabayanLayout`**, **`PasabayanMotion`**; prefer **`P*`** composables (**`PButton`**, **`PCard`**, **`POutlinedTextField`**, **`PScaffold`** + **`PSnackbar`**, **`PModalBottomSheet`**, **`PTopBar`**, **`PDivider`**, **`PCircularProgress`**, and future primitives) and **`ds*`** modifiers from `:core:designsystem`.
+- **Gaps:** If a pattern is missing, **add tokens or `P*` in `:core:designsystem`**, update **`14-design-system.md`**, then use from features — **do not** duplicate styling in feature modules. Exceptions need an **Exception** subsection in the feature spec + PR justification (per **14**).
+- **Review:** UI PRs should be rejected for ad-hoc `Color(0x…)`, unexplained raw `dp`/`sp`, or bespoke `Button`/`Card` styling that bypasses **`P*`** when a primitive exists.
+
+## Cross-references
+
+- Phase chunking and commits: **`.cursor/rules/phase-commit-workflow.mdc`**
+- Spec anchors and iOS parity path: **`.cursor/rules/pasabayan-android-spec-context.mdc`**
+- Implementation steps: **`android-spec/IMPLEMENTATION-GUIDE.md`**

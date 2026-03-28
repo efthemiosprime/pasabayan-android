@@ -536,7 +536,7 @@ Public composables use the **`P` prefix** (Pasabayan) for discoverability and pa
 | `PCard`, `PCardVariant` | Flat bordered surface (no shadow) |
 | `PasabayanTheme` | Root Material 3 theme + tokens |
 
-**Planned next slices:** `POutlinedTextField`, `PScaffold` + snackbar host, `PModalBottomSheet`, pull-to-refresh / top bar helpers — see TDD slices below.
+**Implemented in `:core:designsystem`:** `POutlinedTextField`, `PScaffold`, `PSnackbar`/`PSnackbarHost`, `PModalBottomSheet`, `PTopBar`, `PDivider`, `PCircularProgress` (plus existing `PButton`, `PCard`, `ds*` modifiers). **Optional later:** pull-to-refresh wrapper when a screen needs it — see TDD slices below.
 
 ### Android naming: sheet vs modal
 
@@ -556,9 +556,9 @@ Work proceeds in **small slices** with tests in `:core:designsystem`:
 | **DS-2** | Compose tests: light theme primary, typography spot checks |
 | **DS-3** | `PButton` + interaction tests |
 | **DS-4** | `PCard` + tests |
-| **DS-5** | `POutlinedTextField` + tests |
-| **DS-6** | `PScaffold` / snackbar + tests |
-| **DS-7** | `PModalBottomSheet` + popover guidance |
+| **DS-5** | `POutlinedTextField` + tests (**done**) |
+| **DS-6** | `PScaffold` / snackbar + tests (**done**) |
+| **DS-7** | `PModalBottomSheet` + popover guidance (**done**; use sheet for phone help; menus use `DropdownMenu`/`Popup`) |
 
 **Policy:** add or extend **tests with each slice** (JVM for tokens; `src/androidTest` + `createComposeRule` for theme and `P*`). Optional screenshot tests (e.g. Paparazzi) are non-blocking for Phase 0.
 

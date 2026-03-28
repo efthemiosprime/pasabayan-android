@@ -41,6 +41,7 @@ This document is the **primary roadmap**: work **by phase**, and within each pha
 | Architecture, ROP, UI parity rules | [00-architecture.md](00-architecture.md) (includes **iOS `Features/` → Android module mirror**) |
 | Error mapping, auth header rules | [01-error-taxonomy.md](01-error-taxonomy.md) |
 | **Design tokens + mandatory theme rules** | [**14-design-system.md**](14-design-system.md) |
+| **Localization (i18n) — build with from day one** | [**18-localization.md**](18-localization.md) |
 | Endpoint + type catalog | [API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md) |
 | Endpoint inventory (living document) | [contracts/api-contract-matrix.yaml](contracts/api-contract-matrix.yaml) |
 

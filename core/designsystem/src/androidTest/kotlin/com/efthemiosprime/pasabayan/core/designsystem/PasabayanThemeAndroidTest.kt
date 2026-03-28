@@ -1,21 +1,42 @@
 package com.efthemiosprime.pasabayan.core.designsystem
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCardVariant
+import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
+import com.efthemiosprime.pasabayan.core.designsystem.component.PDivider
+import com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet
+import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
+import com.efthemiosprime.pasabayan.core.designsystem.component.PScaffold
+import com.efthemiosprime.pasabayan.core.designsystem.component.PTopBar
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 
+@OptIn(ExperimentalMaterial3Api::class)
 class PasabayanThemeAndroidTest {
 
     @get:Rule
@@ -115,5 +136,78 @@ class PasabayanThemeAndroidTest {
             }
         }
         composeRule.onNodeWithText("Secondary").assertExists()
+    }
+
+    @Test
+    fun pOutlinedTextField_shows_label_and_acceptsText() {
+        composeRule.setContent {
+            var value by remember { mutableStateOf("") }
+            PasabayanTheme {
+                POutlinedTextField(
+                    value = value,
+                    onValueChange = { value = it },
+                    label = { Text("EmailLabel") },
+                )
+            }
+        }
+        composeRule.onNodeWithText("EmailLabel").assertExists()
+        composeRule.onNode(hasSetTextAction()).performTextInput("hi")
+        composeRule.onNode(hasSetTextAction()).assertExists()
+    }
+
+    @Test
+    fun pScaffold_showsSnackbar_fromLaunchedEffect() {
+        composeRule.setContent {
+            val host = remember { SnackbarHostState() }
+            LaunchedEffect(Unit) {
+                host.showSnackbar("SnackOne")
+            }
+            PasabayanTheme {
+                PScaffold(snackbarHostState = host) { padding ->
+                    Text("Body", Modifier.padding(padding))
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        runBlocking { delay(400) }
+        composeRule.onNodeWithText("SnackOne").assertExists()
+    }
+
+    @Test
+    fun pModalBottomSheet_showsContent() {
+        composeRule.setContent {
+            PasabayanTheme {
+                PModalBottomSheet(onDismissRequest = {}) {
+                    Text("SheetLine")
+                }
+            }
+        }
+        composeRule.onNodeWithText("SheetLine").assertExists()
+    }
+
+    @Test
+    fun pTopBar_showsTitle() {
+        composeRule.setContent {
+            PasabayanTheme {
+                PTopBar(title = "NavTitle")
+            }
+        }
+        composeRule.onNodeWithText("NavTitle").assertExists()
+    }
+
+    @Test
+    fun pDivider_and_pCircularProgress_existInTree() {
+        composeRule.setContent {
+            PasabayanTheme {
+                Column {
+                    Text("Above")
+                    PDivider()
+                    Text("Below")
+                    PCircularProgress()
+                }
+            }
+        }
+        composeRule.onNodeWithText("Above").assertExists()
+        composeRule.onNodeWithText("Below").assertExists()
     }
 }

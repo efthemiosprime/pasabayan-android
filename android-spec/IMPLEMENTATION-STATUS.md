@@ -44,7 +44,7 @@
 | Item | Status | Notes |
 |------|--------|--------|
 | Gradle **Version Catalog** (`gradle/libs.versions.toml`) | Done | AGP 8.8.2, Gradle 8.10.2, Kotlin 2.2.10, KSP, Compose |
-| **`:core:designsystem`** | Partial | `PasabayanTheme`; tokens + `PasabayanBorder` / `PasabayanLayout` / `PasabayanMotion` / `PasabayanTextStyles`; `ds*` modifiers; **`PButton`** + **`PCard`**; JVM (`PasabayanTokensTest`) + androidTest (`PasabayanThemeAndroidTest`); `AuthScreen` uses `PButton`. Remaining per spec: snackbar/scaffold, sheet, text field, full token inventory. |
+| **`:core:designsystem`** | Done | Core primitives: `PasabayanTheme`, tokens (`PasabayanBorder`, `PasabayanLayout`, `PasabayanMotion`, `PasabayanTextStyles`), `ds*` modifiers, `PButton`, `PCard`, `POutlinedTextField`, `PScaffold`, `PSnackbar`/`PSnackbarHost`, `PModalBottomSheet`, `PTopBar`, `PDivider`, `PCircularProgress`; JVM + androidTest. Spec **14** full color inventory / domain composites (e.g. `EmptyStateView`) still optional as features land. |
 | **`:core:domain-error`** | Done | `DomainError` + `ValidationError`; [01-error-taxonomy.md](01-error-taxonomy.md); **`userMessage()`** (iOS `userFriendlyMessage` parity) |
 | **`:core:network`** | Done | OkHttp + Retrofit + kotlinx-serialization; Hilt `NetworkModule`; `AuthInterceptor` (Bearer except `/auth/*` without `/auth/me`); **`ApiErrorMapper`** + error DTOs; **`Response.toDomainResult` / `foldDomainResult`**; `BuildConfig.API_BASE_URL` = production; `consumer-rules.pro` |
 | **`:app`** | Partial | `@HiltAndroidApp` `PasabayanApplication`; `@AndroidEntryPoint` `MainActivity`; Compose shell showing API base URL |

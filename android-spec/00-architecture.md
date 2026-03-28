@@ -575,6 +575,21 @@ object EmptyResponse  // For endpoints with no body
 
 Use these across all features instead of per-feature wrapper types.
 
+## Localization (i18n) — build with from day one
+
+Full spec: [**18-localization.md**](18-localization.md).
+
+**Languages:** English (source) + French. **All user-visible strings** must use `stringResource()` in Compose — never hardcode literals.
+
+**Key decisions:**
+- **String files per feature** — mirror iOS's 18 xcstrings catalogs as `strings_<feature>.xml` in both `values/` and `values-fr/`
+- **Runtime language switching** — `LanguageManager` singleton with `StateFlow<AppLanguage>`, persist to SharedPreferences, apply via `AppCompatDelegate.setApplicationLocales()` (API 33+) or `createConfigurationContext()` (older)
+- **`locales_config.xml`** — declare `en` + `fr` in manifest
+- **HTML articles** — bundle in `assets/articles/` with `-fr.html` suffix convention
+- **Error messages** — `DomainError.userMessage()` should return localized strings via `context.getString()`
+
+**Rule:** New features must add strings to **both** English and French files from the start.
+
 ## Broadcasting / WebSocket
 
 - Base URL and paths: [`APIConfiguration`](../../Pasabayan/Services/APIConfiguration.swift) (`reverbWebSocketURL`, `broadcastingAuthURL` — note `/broadcasting/auth` is **without** `/api` prefix).
