@@ -37,6 +37,7 @@ android {
 dependencies {
     testImplementation(libs.junit)
 
+    implementation(project(":core:domain"))
     implementation(project(":core:domain-error"))
 
     implementation(libs.hilt.android)

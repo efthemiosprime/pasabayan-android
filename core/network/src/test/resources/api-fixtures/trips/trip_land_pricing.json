@@ -1,0 +1,19 @@
+{
+  "id": 2,
+  "carrier_id": 10,
+  "origin_city": "Montreal",
+  "origin_country": "Canada",
+  "destination_city": "Ottawa",
+  "destination_country": "Canada",
+  "departure_date": "2026-04-05T06:00:00Z",
+  "arrival_date": "2026-04-05T09:00:00Z",
+  "available_weight_kg": "50",
+  "available_space_liters": "100",
+  "trip_status": "planning",
+  "transportation_method": "car",
+  "pricing_type": "flat",
+  "pricing_method": "manual",
+  "flat_trip_price": 200.0,
+  "pickup_address": "789 Rue Sherbrooke",
+  "dropoff_address": "321 Wellington St"
+}
