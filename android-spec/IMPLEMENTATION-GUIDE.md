@@ -24,7 +24,7 @@ Then implement **by phase** using the numbered specs (`02`–`12`) and [13-ui-ta
 4. Find **API** in `*APIService.swift`, [API-SHAPES-REFERENCE.md](API-SHAPES-REFERENCE.md), or [FEATURE-COVERAGE-MATRIX.md](FEATURE-COVERAGE-MATRIX.md).
 5. Add or verify **YAML** rows for new endpoints.
 6. **DTO tests first** → repository fake → ViewModel (MVVM) → Compose; shared logic → use case with tests.
-7. Apply **only** [14-design-system.md](14-design-system.md) tokens for styling.
+7. Apply **only** [14-design-system.md](14-design-system.md) **tokens** and **`P*`** / **`ds*`** **base components** for UI; if something is missing, add it to **`:core:designsystem`** and the spec first — **never** invent styling only in a feature module.
 
 ## 3. Where iOS tests live (parity targets)
 

@@ -8,12 +8,25 @@ Android must implement a **single Compose theme** (Material 3) whose tokens **ma
 
 ## Mandatory rules
 
-1. **No ad-hoc styling:** Do not hardcode raw `dp`/`sp`/colors in feature composables. Use **`PasabayanTheme`** tokens.
+1. **No ad-hoc styling:** Do not hardcode raw `dp`/`sp`/colors in feature composables. Use **`PasabayanTheme`**, documented **tokens**, **`P*`** composables, and **`ds*`** modifiers (see rule 5).
 2. **Single source:** iOS remains [`DesignSystem.swift`](../../Pasabayan/Views/Components/DesignSystem.swift); Android theme values **must match** the tables below.
 3. **Changes:** Update iOS `DesignSystem.swift` first → then **this doc** → then Android theme. Keep in sync.
 4. **Review:** PRs that touch UI must confirm token usage (screenshots optional but recommended).
+5. **Strict design system and base components:** All new or changed feature UI **must** conform to this spec. **Do not** introduce buttons, cards, fields, sheets, snackbars, lists, or chrome that use ad-hoc colors, spacing, radii, or typography outside **`:core:designsystem`**. Prefer **`P*`** composables (**`PButton`**, **`PCard`**, and future primitives) and **`ds*`** modifiers; use **`MaterialTheme`** (from **`PasabayanTheme`**) plus **`PasabayanSpacing`**, **`PasabayanRadius`**, **`PasabayanColors`**, **`PasabayanTextStyles`**, **`PasabayanBorder`**, **`PasabayanLayout`**, **`PasabayanMotion`** for everything else. If a pattern does not exist yet, **add the token or `P*` in `:core:designsystem`**, update **this spec**, then use it from features — **never** duplicate styling in a feature module. One-off exceptions require an explicit **Exception** subsection in the relevant feature spec **and** PR justification.
+
+### PR review checklist (UI)
+
+| Gate | Requirement |
+|------|-------------|
+| Theme tree | Screen/content wrapped in **`PasabayanTheme`**. |
+| Spacing / radius | **`PasabayanSpacing`** / **`PasabayanRadius`** (or aliases such as `screenPadding`) — no unexplained raw `*.dp` / `*.sp`. |
+| Color | **`MaterialTheme.colorScheme`** for standard semantic roles; **`PasabayanColors`** only where this spec defines fixed/brand values — **no** feature-level **`Color(0x…)`**. |
+| Typography | **`MaterialTheme.typography`** or **`PasabayanTextStyles`** — no arbitrary `TextStyle(fontSize = …)` unless it matches a documented scale row. |
+| Components | **`P*`** when the pattern exists; raw Material **only** as a temporary gap with a tracked follow-up to add a **`P*`** or documented exception. |
+| Modifiers | Prefer **`ds*`** helpers for card borders, screen padding, and repeated elevation patterns defined in this module. |
 
 ---
+
 
 ## Spacing (`DesignSystem.Spacing`)
 

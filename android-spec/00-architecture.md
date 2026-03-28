@@ -6,7 +6,7 @@
 
 - **Parity** with iOS product behavior while improving **explicit** state and navigation (reduce reliance on implicit side effects).
 - **UI parity**: Android screens, navigation, hierarchy, and visible copy should **mirror and align** with the current iOS app unless a spec explicitly documents an intentional platform difference. See [13-ui-tab-explore.md](13-ui-tab-explore.md).
-- **Design system (mandatory):** All spacing, typography, colors, corner radii, card chrome, and layout constants **must follow** [**14-design-system.md**](14-design-system.md), derived from [`DesignSystem.swift`](../../Pasabayan/Views/Components/DesignSystem.swift). Feature composables must not introduce unstructured magic numbers.
+- **Design system (mandatory):** All spacing, typography, colors, corner radii, card chrome, and layout constants **must follow** [**14-design-system.md**](14-design-system.md), derived from [`DesignSystem.swift`](../../Pasabayan/Views/Components/DesignSystem.swift). Feature composables **must** use **`:core:designsystem`** tokens and **`P*`** base components where they exist; **do not** ship parallel styling or bespoke controls in feature modules (see **14** — strict conformance and PR checklist). Extend the design system when a pattern is missing.
 - **Spec-driven**: each feature has a markdown spec + YAML contract rows before implementation.
 - **TDD**: contract tests → repository fakes → MVI reducer tests → minimal Compose UI tests for critical journeys.
 - **Lean dependencies:** Prefer **Kotlin stdlib + AndroidX / Jetpack + Kotlinx Coroutines**; add other artifacts only when necessary and document why — see [Minimal third-party dependencies](#minimal-third-party-dependencies).
@@ -70,7 +70,7 @@ These rules sit **on top of** feature mirroring ([module layout](#module-layout-
 ### UI reuse (Compose)
 
 - **Stateless composables:** data + callbacks in, no hidden `ViewModel` lookups. Reusable pieces live under `.../presentation/components/` or `:core:designsystem` when used across features.
-- **Theme tokens only:** `MaterialTheme` / design-system extensions — **no** raw `Color(0xFF…)` or magic `dp` in feature code ([14-design-system.md](14-design-system.md)).
+- **Theme tokens and base UI:** `MaterialTheme` (under **`PasabayanTheme`**) plus **`Pasabayan*`** token objects, **`P*`** composables, and **`ds*`** modifiers — **no** raw `Color(0xFF…)` or unexplained magic `dp`/`sp` in feature code; **no** one-off `Button`/`Card` styling that bypasses **`P*`** when a primitive exists ([14-design-system.md](14-design-system.md) — strict rules).
 - **Strings:** `strings.xml` (or Compose `stringResource`) for product copy — not literals scattered in Kotlin (mirrors localization expectations).
 - **Prefer composition over inheritance** for UI; use small building blocks.
 
