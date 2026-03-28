@@ -15,72 +15,110 @@ Package requests CRUD, available packages browse, multipart image uploads, servi
 | Field | Type | Notes |
 |-------|------|-------|
 | `id` | Int | |
-| `userId` | Int | |
-| `pickupAddress` | String | |
-| `pickupCity` | String | |
-| `pickupCountry` | String | |
-| `deliveryAddress` | String | |
-| `deliveryCity` | String | |
-| `deliveryCountry` | String | |
+| `shipperId` | Int? | `shipper_id` on wire — iOS also extracts from nested `shipper.id` if direct field missing |
+| `pickupAddress` | String? | Optional — some partial-update endpoints omit it |
+| `pickupCity` | String? | |
+| `pickupCountry` | String? | |
+| `deliveryAddress` | String? | |
+| `deliveryCity` | String? | |
+| `deliveryCountry` | String? | |
 | `packageWeightKg` | Double? | Flexible decode: Double, Int, or String |
-| `packageDimensions` | PackageDimensions? | length, width, height (each flexible decode) |
-| `packageType` | String | See PackageType enum |
-| `fragile` | Bool? | Flexible decode: Bool, Int (0/1), String ("true"/"false") |
-| `packageValue` | Double? | |
+| `packageDimensions` | PackageDimensions? | length, width, height (each flexible decode); can arrive as JSON object **or JSON string** — see quirks |
+| `packageType` | PackageType? | See PackageType enum; iOS decodes flexibly (trim, lowercase, fallback) |
+| `fragile` | Bool? | Flexible decode: Bool, Int (0/1), String ("true"/"false"/"yes"/"no"/"1"/"0") |
+| `packageValue` | Double? | Flexible decode: Double or String |
 | `packageDescription` | String? | |
-| `urgencyLevel` | String? | See UrgencyLevel enum |
-| `maxPriceBudget` | Double? | |
-| `pickupDatePreferred` | Date? | 9 date format parsers — see quirks |
+| `urgencyLevel` | UrgencyLevel? | See UrgencyLevel enum; iOS decodes flexibly |
+| `maxPriceBudget` | Double? | Flexible decode: Double or String |
+| `pickupDatePreferred` | String? | Date string — see date parsing in quirks |
 | `pickupTimePreferred` | String? | |
 | `pickupDateFlexible` | Bool? | Flexible decode |
-| `deliveryDateNeeded` | Date? | |
+| `deliveryDateNeeded` | String? | |
 | `deliveryTimeNeeded` | String? | |
 | `specialHandlingRequirements` | String? | |
-| `requestStatus` | String | See PackageRequestStatus enum |
-| `createdAt` | Date? | |
-| `updatedAt` | Date? | |
+| `requestStatus` | PackageRequestStatus? | See PackageRequestStatus enum |
+| `createdAt` | String? | ISO8601 string |
+| `updatedAt` | String? | ISO8601 string |
 | `pickupCityId` | Int? | |
 | `deliveryCityId` | Int? | |
+
+#### Location coordinate fields
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `pickupLat` | String? | Backend sends as String; iOS decodes from Double or String → stores as String |
+| `pickupLng` | String? | Same |
+| `deliveryLat` | String? | Same |
+| `deliveryLng` | String? | Same |
 
 #### Image fields
 
 | Field | Type | Notes |
 |-------|------|-------|
 | `images` | [PackageImage]? | Array of uploaded images |
-| `imagesProcessing` | Bool? | `true` while backend processes uploads — poll until false |
+| `imagesProcessing` | Bool? | Flexible decode; `true` while backend processes uploads — poll until false |
 
 #### Service request fields (inline on PackageRequest)
 
 | Field | Type | Notes |
 |-------|------|-------|
 | `serviceType` | String? | See ServiceType enum |
-| `shoppingList` | String? | JSON string of shopping items |
+| `shoppingList` | String? | JSON string of shopping items; **can arrive as `[ShoppingItem]` array or String** — see quirks |
 | `storeName` | String? | |
 | `storeAddress` | String? | |
-| `storeLat` | Double? | |
-| `storeLng` | Double? | |
-| `estimatedCost` | Double? | |
-| `receiptRequired` | Bool? | |
+| `storeLat` | String? | Flexible: String, Double, or Int from backend |
+| `storeLng` | String? | Same |
+| `estimatedCost` | String? | Flexible: String, Double, or Int from backend |
+| `receiptRequired` | Bool? | Flexible decode |
+
+#### Related / nested data
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `shipper` | User? | Nested shipper object; also used to extract `shipperId` as fallback |
+| `compatibleTripsCount` | Int? | `compatible_trips_count` — number of matching trips |
+
+#### Compatibility fields (from compatible-packages endpoint)
+
+These fields appear on `PackageRequest` when returned by the `/trips/{tripId}/compatible-packages` endpoint:
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `compatibilityScore` | Int? | Flexible decode: Int, String, or Double |
+| `compatibilityDetails` | CompatibilityDetails? | Nested object |
+| `estimatedEarnings` | String? | Flexible: String, Double, or Int |
+| `distanceFromTripOrigin` | String? | Same |
+| `distanceToTripDestination` | String? | Same |
+| `distanceKm` | Double? | Flexible: Double or String |
 
 #### Computed properties
 
 | Property | Logic |
 |----------|-------|
-| `isServiceRequest` | `serviceType != nil` |
-| `shoppingItems` | Parse `shoppingList` JSON → `[ShoppingItem]` |
+| `title` | `packageDescription ?? "{packageType.displayName} Package"` |
+| `pickupLocation` | `[pickupAddress, pickupCity].filter { !empty }.joinedWith(", ")` |
+| `deliveryLocation` | `[deliveryAddress, deliveryCity].filter { !empty }.joinedWith(", ")` |
+| `isFragile` | `fragile ?? false` |
+| `status` | `requestStatus ?? .open` |
+| `packageSize` | Computed from weight — see PackageSize enum |
+| `isServiceRequest` | `serviceType != nil && serviceType != "delivery"` |
+| `shoppingItems` / `parsedShoppingList` | Parse `shoppingList` JSON string → `[ShoppingItem]` |
 | `hasStoreLocation` | `storeLat != nil && storeLng != nil` |
-| `parsedShoppingList` | Same as shoppingItems |
+| `pickupDatePreferredDate` | Parse via `parseAPIDate()` |
+| `pickupDateTimePreferred` | Combine date + time |
+| `deliveryDateNeededDate` | Parse via `parseAPIDate()` |
+| `deliveryDateTimeNeeded` | Combine date + time |
 
 ### `PackageImage`
 
 | Field | Type | Notes |
 |-------|------|-------|
 | `id` | Int | |
-| `packageRequestId` | Int? | |
+| `packageRequestId` | Int | Non-optional in iOS |
 | `imagePath` | String | May contain full URL from backend |
-| `displayOrder` | Int? | |
+| `displayOrder` | Int | Non-optional in iOS |
 | `originalFilename` | String? | |
-| `url` | String? | Resolved URL |
+| `url` | String | **Non-optional** — if `url` is missing in JSON, falls back to `imagePath` |
 | `createdAt` | String? | |
 | `updatedAt` | String? | |
 
@@ -88,15 +126,15 @@ Package requests CRUD, available packages browse, multipart image uploads, servi
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `length` | Double? | Flexible decode: Double, Int, or String |
-| `width` | Double? | Same |
-| `height` | Double? | Same |
+| `length` | Double | Non-optional; Flexible decode: Double, Int, or String |
+| `width` | Double | Same |
+| `height` | Double | Same |
 
 ### `ShoppingItem`
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `id` | UUID | Client-generated |
+| `id` | UUID | Client-generated; **not** included in JSON encoding |
 | `item` | String | Item name |
 | `quantity` | String | Quantity (flexible — "2", "1 kg", etc.) |
 | `notes` | String? | Special instructions |
@@ -113,11 +151,11 @@ Package requests CRUD, available packages browse, multipart image uploads, servi
 | `deliveryCountry` | String | |
 | `packageWeightKg` | Double | |
 | `packageDimensions` | PackageDimensions? | Optional nested object |
-| `packageType` | String | PackageType raw value |
+| `packageType` | PackageType | PackageType raw value |
 | `fragile` | Bool | |
 | `packageValue` | Double? | |
 | `packageDescription` | String? | |
-| `urgencyLevel` | String | UrgencyLevel raw value |
+| `urgencyLevel` | UrgencyLevel | UrgencyLevel raw value |
 | `maxPriceBudget` | Double? | |
 | `pickupDatePreferred` | String | Date string |
 | `pickupTimePreferred` | String? | |
@@ -135,8 +173,9 @@ Package requests CRUD, available packages browse, multipart image uploads, servi
 | `maxPriceBudget` | Double? | |
 | `urgencyLevel` | String? | |
 | `pickupDateFlexible` | Bool? | |
-| `deliveryDateNeeded` | String? | |
+| `deliveryDateNeeded` | String? | Date-only YYYY-MM-DD; must be today or future |
 | `specialHandlingRequirements` | String? | |
+| `clearSpecialHandlingRequirements` | Bool | **Not sent on wire** — controls encoding: when `true`, encodes `special_handling_requirements` as `null` so backend clears the value. Default `false`. |
 | `requestStatus` | String? | For cancel: `"cancelled"` |
 
 ### `CreateServiceRequestBody`
@@ -165,94 +204,174 @@ Package requests CRUD, available packages browse, multipart image uploads, servi
 
 | Type | Structure |
 |------|-----------|
-| `PackageRequestResponse` | `{ message: String, data: PackageRequest }` |
-| `PackageRequestsResponse` | `{ message: String, data: PaginatedResponse<PackageRequest> }` |
-| `AvailablePackagesResponse` | `{ data: PaginatedResponse<AvailablePackage> }` |
+| `PackageRequestResponse` | `{ success?: Bool, message: String, data: PackageRequest }` — `success` is optional (some endpoints omit it) |
+| `PackageRequestsResponse` | `{ message: String, data: PaginatedPackageRequests }` |
+| `AvailablePackagesResponse` | `{ success: Bool, message: String, nearby?: Bool, data: PaginatedResponse<AvailablePackage> }` |
+| `CompatibleTripsAPIResponse` | `{ success?: Bool, message: String, data: PaginatedResponse<CompatibleTrip> }` |
+| `CompatiblePackagesResponse` | `{ success?: Bool, message: String, data: CompatiblePackagesData }` — see flexible decoding note |
 
-### `AvailablePackage` (browse model — separate from `PackageRequest`)
+### `AvailablePackage` (browse model — **separate struct** from `PackageRequest`)
+
+`AvailablePackage` is **not** a subclass of `PackageRequest` — it is its own struct with a subset of fields plus browse-specific fields. iOS provides a `toPackageRequest()` converter for UI reuse.
 
 | Field | Type | Notes |
 |-------|------|-------|
-| All `PackageRequest` core fields | — | Inherits base fields |
-| `distanceKm` | Double? | Server-calculated distance from searcher |
-| `daysSincePosted` | Int? | |
+| `id` | Int | May differ from actual package request ID |
+| `packageRequestId` | Int? | The actual `PackageRequest.id` — use this for API calls |
+| `pickupCity` | String | |
+| `pickupCountry` | String? | |
+| `deliveryCity` | String | |
+| `deliveryCountry` | String? | |
+| `packageWeightKg` | Double | Flexible decode: Double or String |
+| `packageDimensions` | PackageDimensions? | Can be JSON object or string |
+| `volumeLiters` | Double? | Backend-calculated volume; flexible: Double or String |
+| `urgencyLevel` | UrgencyLevel | Non-optional on browse |
+| `urgencyDisplay` | String? | Backend-provided display string |
+| `maxPriceBudget` | Double? | Flexible: Double or String |
+| `pickupDatePreferred` | String | Defaults to `""` if missing |
+| `pickupTimePreferred` | String? | |
+| `pickupDateFlexible` | Bool | Defaults to `false` |
+| `deliveryDateNeeded` | String | Defaults to `""` if missing |
+| `deliveryTimeNeeded` | String? | |
+| `fragile` | Bool | Non-optional on browse |
+| `packageType` | PackageType | Non-optional on browse |
+| `packageDescription` | String? | |
+| `specialHandlingRequirements` | String? | |
+| `createdAt` | String | |
+| `daysSincePosted` | Double? | Flexible: Double or String |
 | `shipper` | AvailablePackageShipper? | Simplified shipper info |
-| Service fields | — | `serviceType`, `shoppingList`, `storeName`, etc. |
+| `serviceType` | String? | |
+| `shoppingList` | String? | Can be array or string — same as PackageRequest |
+| `storeName` | String? | |
+| `storeAddress` | String? | |
+| `storeLat` | String? | Flexible: String, Double, or Int |
+| `storeLng` | String? | Same |
+| `estimatedCost` | String? | Same |
+| `receiptRequired` | Bool? | |
+| `distanceKm` | Double? | Flexible: Double or String |
+
+**Computed:**
+- `shoppingItems` / `parsedShoppingList` — same as PackageRequest
+- `hasStoreLocation` — same as PackageRequest
+- `isServiceRequest` — same as PackageRequest
+- `toPackageRequest()` — converter for UI component reuse
+
+### `AvailablePackageShipper`
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | Int | |
+| `name` | String | |
+| `email` | String? | |
+| `avatar` | String? | |
+| `rating` | String | Backend sends as String |
+| `totalRatings` | Int? | |
+| `verificationLevel` | String? | Normalized via `VerificationLevel.normalized()` |
+| `phoneVerified` | Bool? | |
+
+**Computed:**
+- `effectiveVerificationLevel` — normalized to "basic" / "verified" / "premium"
+- `ratingValue: Double` — parsed from String
+- `formattedRating: String` — e.g. "4.5"
+- `isVerified: Bool` — verified or premium
+- `isPremium: Bool` — premium only
+
+### `AvailablePackagesResult` (client-side wrapper)
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `packages` | [AvailablePackage] | Extracted from paginated response |
+| `nearby` | Bool? | Response-level flag indicating GPS proximity filtering |
 
 ### Compatible trips models
 
 | Type | Fields | Notes |
 |------|--------|-------|
-| `CompatibleTrip` | carrierId, origin/dest city+country, dates, weight/space/pricing, tripStatus, transportationMethod, specialNotes, shipperRequestStatus, canRequest, requestMessage, distanceKm | Full trip for matching |
-| `CarrierInfo` | id, name, email, avatar, phone, phoneVerified, profileCompleted, userTypes, rating, totalRatings, verificationLevel, isActiveCarrier/Shipper | Extracted carrier details |
-| `CompatibilityDetails` | routeMatch, capacitySufficient, dateCompatible, priceCompatible, weightUsagePercentage, spaceUsagePercentage | Match metrics |
-| `CompatibilitySummary` | totalCompatible, perfectMatches, goodMatches, fairMatches, averageCompatibilityScore, totalPotentialEarnings, capacityUtilization | Aggregate stats |
-| `CompatiblePackagesData` | tripInfo, compatiblePackages (paginated), compatibilitySummary | Full response |
+| `CompatibleTrip` | id, carrierId, originCity, originCountry, destinationCity, destinationCountry, departureDate, arrivalDate, availableWeightKg (String), availableSpaceLiters (String), pricePerKg (String), **flatTripPrice** (String?), **calculatedPrice** (String?), **pricingType** (String?), **pricingMethod** (String?), tripStatus, transportationMethod, specialNotes, **createdAt**, **updatedAt**, carrier (CarrierInfo), shipperRequestStatus, canRequest, requestMessage, **requestedAt**, distanceKm | Full trip for matching |
+| `CarrierInfo` | id, name, email, avatar, phone, phoneVerified?, profileCompleted?, userTypes (array or dict), rating (String), totalRatings?, verificationLevel (normalized), isActiveCarrier?, isActiveShipper? | Extracted carrier details — handles `user_types` as both array and dictionary |
+| `CompatibilityDetails` | routeMatch (String), capacitySufficient, dateCompatible, priceCompatible, weightUsagePercentage, spaceUsagePercentage | Match metrics |
+| `CapacityUtilization` | weightKg (String), spaceLiters (String), weightPercentage (Double), spacePercentage (Double) | Nested in CompatibilitySummary |
+| `CompatibilitySummary` | totalCompatible, perfectMatches, goodMatches, fairMatches, averageCompatibilityScore, totalPotentialEarnings (String), capacityUtilization (CapacityUtilization) | Aggregate stats |
+| `CompatiblePackagesData` | tripInfo (CarrierTripInfo?), compatiblePackages (PaginatedResponse), compatibilitySummary? | Full response — **dual decode**: nested `compatible_packages` key OR direct pagination at data level |
+
+**CompatibleTrip computed properties:**
+- `usesFlatPricing: Bool` — checks `pricingType == "flat"` or fallback to `TransportationMethod.isLandTransport`
+- `effectiveFlatPrice: Double?` — prefers `calculatedPrice`, falls back to `flatTripPrice`
+- `canRequestTrip: Bool` — `canRequest ?? true`
+- `hasActiveRequest: Bool` — `shipperRequestStatus == "shipper_requested"`
+
+**CarrierInfo computed properties:**
+- `isVerified: Bool` — verified or premium
+- `isPremium: Bool` — premium only
+- `ratingValue: Double` — parsed from String
+- `formattedRating: String` — e.g. "4.5 ⭐ (12)"
 
 ## Enums (all raw values on wire — snake_case)
 
-### `PackageType` (21 cases)
+### `PackageType` (21 cases + 1 alias)
 
-| Case | Raw value | Icon |
-|------|-----------|------|
-| `general` | `"general"` | 📦 |
-| `electronics` | `"electronics"` | 💻 |
-| `clothing` | `"clothing"` | 👕 |
-| `books` | `"books"` | 📚 |
-| `food` | `"food"` | 🍕 |
-| `furniture` | `"furniture"` | 🪑 |
-| `medical` | `"medical"` | 💊 |
-| `documents` | `"documents"` | 📄 |
-| `fragile` | `"fragile"` | 🔮 |
-| `parcel` | `"parcel"` | 📮 |
-| `gifts` | `"gifts"` | 🎁 |
-| `automotive` | `"automotive"` | 🚗 |
-| `beauty` | `"beauty"` | 💄 |
-| `sports` | `"sports"` | ⚽ |
-| `toys` | `"toys"` | 🧸 |
-| `household` | `"household"` | 🏠 |
-| `jewelry` | `"jewelry"` | 💎 |
-| `art` | `"art"` | 🎨 |
-| `industrial` | `"industrial"` | 🏭 |
-| `equipment` | `"equipment"` | 🔧 |
-| `other` | `"other"` | 📋 |
+| Case | Raw value | Icon | Notes |
+|------|-----------|------|-------|
+| `general` | `"general"` | 📦 | |
+| `electronics` | `"electronics"` | 💻 | |
+| `clothing` | `"clothing"` | 👕 | |
+| `books` | `"books"` | 📚 | |
+| `food` | `"food"` | 🍕 | |
+| `furniture` | `"furniture"` | 🪑 | |
+| `medical` | `"medical"` | 💊 | |
+| `documents` | `"documents"` | 📄 | |
+| `fragile` | `"fragile"` | ⚠️ | iOS icon is ⚠️ not 🔮 |
+| `parcel` | `"parcel"` | 📦 | |
+| `gifts` | `"gifts"` | 🎁 | |
+| `automotive` | `"automotive"` | 🚗 | |
+| `beauty` | `"beauty"` | 💄 | |
+| `sports` | `"sports"` | ⚽ | |
+| `toys` | `"toys"` | 🧸 | |
+| `household` | `"household"` | 🏠 | |
+| `jewelry` | `"jewelry"` | 💎 | |
+| `art` | `"art"` | 🎨 | |
+| `industrial` | `"industrial"` | 🏭 | |
+| `equipment` | `"equipment"` | 🔧 | |
+| `other` | `"other"` | 📦 | iOS icon is 📦 not 📋 |
 
-Note: iOS also handles `"document"` (singular) → maps to `documents`.
+Note: iOS also handles `"document"` (singular) as a separate enum case mapping to the same icon as `documents`. Android should map both.
 
 ### `UrgencyLevel` (6 cases)
 
 | Case | Raw value | Color | Icon |
 |------|-----------|-------|------|
-| `low` | `"low"` | green | 🟢 |
-| `normal` | `"normal"` | blue | 🔵 |
-| `high` | `"high"` | orange | 🟠 |
-| `urgent` | `"urgent"` | red | 🔴 |
-| `express` | `"express"` | purple | ⚡ |
-| `flexible` | `"flexible"` | gray | 🕐 |
+| `low` | `"low"` | **gray** | 🐌 |
+| `normal` | `"normal"` | blue | 📦 |
+| `high` | `"high"` | orange | ⚡ |
+| `urgent` | `"urgent"` | red | 🚨 |
+| `express` | `"express"` | purple | 🚀 |
+| `flexible` | `"flexible"` | **teal** | 🔄 |
 
-### `PackageRequestStatus` (10 cases)
+### `PackageRequestStatus` (9 cases)
 
 | Case | Raw value | Color | Notes |
 |------|-----------|-------|-------|
 | `open` | `"open"` | blue | Available for requests |
 | `pendingRequest` | `"pending_request"` | orange | Has pending carrier/shipper request |
 | `matched` | `"matched"` | purple | Matched with carrier |
-| `pickedUp` | `"picked_up"` | indigo | Carrier picked up |
+| `pickedUp` | `"picked_up"` | orange | Carrier picked up |
 | `delivered` | `"delivered"` | green | Delivery complete |
 | `cancelled` | `"cancelled"` | red | Cancelled |
 | `pending` | `"pending"` | orange | Legacy |
 | `booked` | `"booked"` | purple | Legacy |
-| `inTransit` | `"in_transit"` | indigo | Legacy |
+| `inTransit` | `"in_transit"` | yellow | Legacy — iOS uses yellow not indigo |
 
 ### `ServiceType` (5 cases)
 
-| Case | Raw value | Icon | Badge color | Requires car/motorcycle |
-|------|-----------|------|-------------|------------------------|
-| `delivery` | `"delivery"` | 📦 | blue | No |
-| `groceryShopping` | `"grocery_shopping"` | 🛒 | green | No |
-| `foodDelivery` | `"food_delivery"` | 🍔 | orange | Yes |
-| `pharmacyPickup` | `"pharmacy_pickup"` | 💊 | red | No |
-| `generalErrand` | `"general_errand"` | 📋 | purple | No |
+| Case | Raw value | SF Symbol | Badge color | `requiresCarOrMotorcycle` |
+|------|-----------|-----------|-------------|--------------------------|
+| `delivery` | `"delivery"` | shippingbox.fill | blue | **No** (the only false case) |
+| `groceryShopping` | `"grocery_shopping"` | cart.fill | green | **Yes** |
+| `foodDelivery` | `"food_delivery"` | takeoutbag.and.cup.and.straw.fill | orange | **Yes** |
+| `pharmacyPickup` | `"pharmacy_pickup"` | cross.case.fill | red | **Yes** |
+| `generalErrand` | `"general_errand"` | bag.fill | purple | **Yes** |
+
+**Note:** iOS logic for `requiresCarOrMotorcycle` is `self != .delivery` — i.e. **all** non-delivery service types require it, not only `foodDelivery`.
 
 ### `PackageSize` (4 cases — computed from weight)
 
@@ -267,9 +386,11 @@ Note: iOS also handles `"document"` (singular) → maps to `documents`.
 
 | Case | maxDetailsPerRow | maxShoppingListItems |
 |------|-----------------|---------------------|
-| `standard` | 3 | 5 |
-| `compact` | 2 | 3 |
-| `package` | 3 | 4 |
+| `standard` | 2 | 3 |
+| `compact` | 2 | 2 |
+| `package` | 2 | 3 |
+
+Note: iOS has `maxDetailsPerRow = 2` for all variants (not 3 as previously documented).
 
 ## Endpoints
 
@@ -280,7 +401,8 @@ Note: iOS also handles `"document"` (singular) → maps to `documents`.
 | POST | `/packages` | JSON or **multipart** with `images[]` — see multipart fields below |
 | GET | `/packages/{id}` | Get detail; also used for **image polling** |
 | PUT | `/packages/{id}` | Update (JSON or multipart). Cancel: `{request_status: "cancelled"}` |
-| DELETE | `/packages/{id}` | Delete (deprecated — prefer cancel via PUT) |
+| POST | `/packages/{id}/cancel` | **Dedicated cancel endpoint** (iOS uses this) |
+| DELETE | `/packages/{id}` | Delete (deprecated — prefer cancel via POST) |
 | POST | `/services/request` | `CreateServiceRequestBody` → `PackageRequestResponse` |
 | GET | `/packages/{packageId}/trip-template` | Compatible trip template (in BookingsAPIService) |
 | GET | `/packages/{packageRequestId}/compatible-trips` | Compatible trips (in BookingsAPIService) |
@@ -359,14 +481,21 @@ From `PackagesAPIService.createPackageRequestWithImages`:
 - `updatePackageRequest(id:request:)` — full update
 - `updatePackageDetails(id:update:completion:)` — partial update (JSON)
 - `updatePackageDetailsWithImages(id:update:images:completion:)` — partial update with new images
-- `cancelPackageRequest(id:)` — sets status to `cancelled` via PUT
+- `cancelPackageRequest(id:)` — uses `POST /packages/{id}/cancel`
 - `deletePackageRequest(id:)` — deprecated, prefer cancel
 - `getPackageRequest(id:)` — single detail fetch
 - `getCompatibleTrips(for:)` — loads compatible trips for matching
 - `bookPackage(packageId:tripId:proposedPrice:)` — legacy booking
 - `requestTripForPackage(...)` — service request handling
 - `checkSimilarPackages(...)` — duplicate detection
+- `checkExistingShipperRequest(packageId:tripId:completion:)` — checks if shipper already requested a trip
+- `checkMatchForTripPackage(...)` — match compatibility check
 - `pollForProcessedImages(packageId:attempts:)` — see image polling below
+- `refreshData()` — refresh package data
+
+**Status filter methods:**
+- `packageRequests(with status:)` — filter by status
+- `getPendingRequests()`, `getMatchedRequests()`, `getBookedRequests()`, `getInTransitRequests()`, `getPickedUpRequests()`, `getDeliveredRequests()`
 
 **Special behaviors:**
 - **Post-creation shipper role auto-enable:** `enableShipperRoleIfNeeded()` — after creating a package, auto-enables shipper role if not already active
@@ -387,6 +516,8 @@ After creating a package with images, backend processes them asynchronously. The
 |----------|---------|------|
 | `PackageListView` | Lists shipper's own packages with pagination | Shipper |
 | `PackageDetailView` (Shipper/) | Full package details, images gallery, status, compatible trips | Shipper |
+| `PackageRequestView` (Shipper/) | Multi-step form for creating new package delivery requests with image upload and map | Shipper |
+| `PackageHistoryView` | Delivered packages with spending history and timeline | Shipper |
 | `EditPackageSheet` | Limited edits for open/pending packages (budget, urgency, dates, handling) | Shipper |
 | `CreateServiceRequestView` | Multi-step service request wizard (type → items → delivery → confirm) | Shipper |
 | `ReceiptUploadView` | Upload delivery receipt for completed service requests | Shipper |
@@ -398,19 +529,151 @@ After creating a package with images, backend processes them asynchronously. The
 |-----------|---------|
 | `PackageRequestCard` | Package summary card for lists |
 | `DeliveryCard` | Complex card with variant layouts (standard/compact/package) |
-| `RequestStatusBadge` | Status badge with colors per PackageRequestStatus |
+| `DeliveryCardSubComponents` | CardHeader, UserInfoSection, RouteSection, DetailsGrid, SpecialContentSection, ActionFooter |
+| `RequestStatusBadge` | Status badge with colors per PackageRequestStatus (standard, compact, icon-only variants) |
 | `ShipperRequestStatusBadge` | Shipper-specific request status display |
 | `PackageImagesSection` | Image gallery (up to 5 images) |
 | `PackageImagePreview` | Single image preview with zoom |
 | `PackageDetailsSection` | Weight, dimensions, type, fragile display |
 | `DeliveryInformationSection` | Delivery address, date, time |
 | `PickupInformationSection` | Pickup details |
+| `PackageDetailCards` | MatchInfoCard, CarrierDetailsCard, DeliveryRouteCard, TripDetailsCard, RouteRow, InfoRow |
+| `PackageDetailComponents` | Reusable detail component building blocks |
+| `PackageRequestFormState` | State management for package creation form |
+| `PackageRequestFormActions` | Submit/cancel action buttons |
 | `SavedPackageRouteSheet` | Display/reuse saved pickup + handoff templates |
 | `ServiceTypePicker` | Service type selection with icons |
 | `ShoppingListForm` | Add/edit shopping items |
 | `DeliveryCityCatalog` | City selection for delivery |
 | `ItemCatalog` | Browse items for shopping list |
 | `InteractiveMapView` | Store/delivery location picker |
+
+## Android component unification plan
+
+iOS has significant component duplication that Android should **avoid** by design. The following patterns consolidate iOS's scattered implementations.
+
+### 1. Unified status badge (Priority: Critical)
+
+iOS duplicates status → color/text mapping across `RequestStatusBadge` (3 variants × full switch), `ShipperRequestStatusBadge`, and inline switches. **Android approach:**
+
+```
+:core:designsystem  →  PStatusBadge(config: StatusDisplayConfig, variant: BadgeVariant)
+
+interface StatusDisplayConfig {
+    val displayText: String       // from stringResource
+    val backgroundColor: Color
+    val textColor: Color
+    val icon: String?
+}
+```
+
+All status enums (`PackageRequestStatus`, `ShipperRequestStatus`, `BookingStatus`, `TripStatus`, `MatchStatus`) implement `StatusDisplayConfig`. Single `PStatusBadge` composable with `BadgeVariant.Standard | Compact | IconOnly`.
+
+### 2. Unified card components (Priority: High)
+
+iOS has `DeliveryCard`, `PackageRequestCard`, and `PackageDetailCards` with overlapping row/section patterns. **Android approach:**
+
+| Unified component | Replaces iOS... | Location |
+|-------------------|-----------------|----------|
+| `PDetailRow(label, value, color?)` | `InfoRow`, inline HStack label+value patterns | `:core:designsystem` |
+| `PRouteSection(origin, destination, icons?)` | `RouteSection` in DeliveryCard, `RouteRow` in DetailCards | `:core:designsystem` |
+| `PUserInfoSection(avatar, name, rating?, verificationLevel?)` | `DeliveryCardUserInfoSection`, `CarrierDetailsCard` user block | `:core:designsystem` |
+| `PDetailsGrid(items, columns)` | `DetailsGrid` in DeliveryCard, inline grids in detail views | `:core:designsystem` |
+
+Feature-level cards (`PackageRequestCard`, `DeliveryCard`) compose from these shared primitives.
+
+### 3. Centralized date/time formatting (Priority: High)
+
+iOS has 5+ date formatting implementations scattered across form state, detail components, and card components. **Android approach:**
+
+```
+:core:common → DateTimeFormatting object
+  - parseApiDate(value: String): LocalDate?
+  - parseApiDateTime(value: String): LocalDateTime?
+  - combineDateAndTime(date: LocalDate, time: String?): LocalDateTime?
+  - formatDateOnly(date: LocalDate): String
+  - formatDateTime(dateTime: LocalDateTime): String
+  - parseTimeString(value: String): LocalTime?
+```
+
+Supports the same format fallback chain as iOS (ISO8601 with/without fractional, microseconds, date-only, timezone variants).
+
+### 4. Shared verification display logic (Priority: Medium)
+
+iOS repeats verification icon/color logic in `CarrierDetailsCard`, `CarrierInfo`, and `AvailablePackageShipper`. **Android approach:**
+
+```
+:core:designsystem → VerificationDisplay
+  - VerificationLevel.normalized(raw: String?): String  // "basic" | "verified" | "premium"
+  - VerificationLevel.icon: ImageVector
+  - VerificationLevel.color: Color
+```
+
+### 5. Shared transportation icon mapping (Priority: Low)
+
+iOS duplicates transport icon mapping in `DeliveryRouteCard` and `TripDetailsCard`. **Android approach:**
+
+```
+:core:common → TransportationMethod.icon: ImageVector
+```
+
+### 6. Service type badge colors (Priority: Low)
+
+Duplicated in `PackageRequestCard` and inline views. Belongs on the `ServiceType` enum's `badgeColor` property.
+
+### Component file structure (Android)
+
+```
+features/packages/
+├── model/
+│   ├── PackageRequest.kt          # Core model
+│   ├── AvailablePackage.kt        # Browse model + toPackageRequest()
+│   ├── AvailablePackageShipper.kt
+│   ├── CompatibleTrip.kt          # + CarrierInfo
+│   ├── CompatibilityModels.kt     # Details, Summary, CapacityUtilization
+│   ├── CreatePackageRequest.kt
+│   ├── PackageUpdateRequest.kt
+│   ├── CreateServiceRequestBody.kt
+│   ├── PackageImage.kt
+│   ├── ShoppingItem.kt
+│   ├── PackageEnums.kt            # PackageType, UrgencyLevel, PackageRequestStatus, ServiceType, PackageSize
+│   ├── DeliveryCardModels.kt      # UI-only: DeliveryCardData, variants, etc.
+│   └── PackageResponses.kt        # All response wrappers
+├── services/
+│   ├── PackagesApiService.kt      # Retrofit interface
+│   ├── PackagesRepository.kt      # Repository with caching
+│   ├── ShipperDisclaimerStore.kt
+│   ├── SavedPackageDescriptionsStore.kt
+│   └── SavedPackageRouteTemplatesStore.kt
+├── viewmodel/
+│   └── PackageViewModel.kt
+├── ui/
+│   ├── PackageListScreen.kt
+│   ├── PackageDetailScreen.kt
+│   ├── PackageRequestScreen.kt    # Create form
+│   ├── PackageHistoryScreen.kt
+│   ├── EditPackageSheet.kt
+│   ├── CreateServiceRequestScreen.kt
+│   ├── ReceiptUploadScreen.kt
+│   └── PackageTutorialOverlay.kt
+└── components/
+    ├── PackageRequestCard.kt       # Composes PDetailRow, PRouteSection, PStatusBadge
+    ├── DeliveryCard.kt             # Composes shared primitives per variant
+    ├── PackageImagesSection.kt
+    ├── PackageImagePreview.kt
+    ├── PackageDetailsSection.kt    # Form section
+    ├── PickupInformationSection.kt
+    ├── DeliveryInformationSection.kt
+    ├── PackageDetailCards.kt       # MatchInfoCard, CarrierDetailsCard, etc.
+    ├── SavedPackageRouteSheet.kt
+    ├── ServiceTypePicker.kt
+    ├── ShoppingListForm.kt
+    ├── DeliveryCityCatalog.kt
+    ├── ItemCatalog.kt
+    └── InteractiveMapView.kt
+```
+
+**Key difference from iOS:** No `DeliveryCardSubComponents` file — those become shared primitives in `:core:designsystem`. No duplicated `PackageDetailComponents` — use `PDetailRow` etc. directly.
 
 ## Local / client-only state
 
@@ -431,27 +694,45 @@ After creating a package with images, backend processes them asynchronously. The
 
 ## Quirks
 
-- **Flexible type decoding:** `packageWeightKg` decodes from Double, Int, or String. `fragile` decodes from Bool, Int (0/1), or String ("true"/"false"/"yes"/"no"). Android kotlinx.serialization custom deserializers needed.
-- **9 date format parsers** on iOS — try in order: ISO8601 with fractional, without fractional, backend microseconds (`yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'`), date-only (`yyyy-MM-dd`), plus timezone variants.
+- **Flexible type decoding:** `packageWeightKg` decodes from Double, Int, or String. `fragile` decodes from Bool, Int (0/1), or String ("true"/"false"/"yes"/"no"). `packageValue` and `maxPriceBudget` decode from Double or String. Android kotlinx.serialization custom deserializers needed.
+- **`packageDimensions` dual format:** Backend sends as JSON object **or** JSON string. If string, parse the string as JSON into the `PackageDimensions` struct. Android needs a custom serializer that tries object first, then string parse.
+- **`shoppingList` dual format:** Backend sends as `[ShoppingItem]` array **or** JSON string. iOS converts array to string on decode. Android should handle both.
+- **`storeLat`/`storeLng`/`estimatedCost` flexible types:** Backend sends as String, Double, or Int. iOS stores as String after conversion. Android should normalize to String.
+- **`shipperId` fallback:** If `shipper_id` field is missing, extract from nested `shipper.id` object.
+- **Date parsing (multiple formats):** try in order: date-only (`yyyy-MM-dd`), ISO8601 with fractional seconds, ISO8601 without fractional, microseconds (`yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'`), then extract date prefix from longer strings.
+- **Time string parsing:** supports `HH:mm`, `H:mm`, `HH:mm:ss`, `H:mm:ss`, `HH:mm:ss.SSSSSS`, `h:mm a`, `h:mm:ss a`, plus manual colon-split fallback.
 - **Image polling** after creation — see ViewModel section above.
-- **`deletePackageRequest`** is deprecated in iOS — prefer `cancelPackageRequest` (PUT with `request_status: cancelled`).
+- **Cancel endpoint:** iOS uses `POST /packages/{id}/cancel` as dedicated endpoint. PUT with `request_status: cancelled` also works but prefer the dedicated endpoint.
+- **`deletePackageRequest`** is deprecated in iOS — prefer `cancelPackageRequest`.
 - **Partial PUT updates** (`updatePackageDetailsWithImages`) sends only changed fields in multipart, not the full object.
+- **`clearSpecialHandlingRequirements` encoding:** When `true` on `PackageUpdateRequest`, `special_handling_requirements` is encoded as explicit `null` (not omitted) so backend clears the value.
 - **Activity logging** — ViewModel calls `ActivityLogger.shared.logPackageAction()` after create/cancel (see [12-legal-support-misc.md](12-legal-support-misc.md) for payload).
 - **Shipper role auto-enable** — after first package creation, `enableShipperRoleIfNeeded()` is called.
 - **`documents` enum** — iOS handles both `"document"` (singular) and `"documents"` (plural) raw values; map both.
+- **`AvailablePackage.id` vs `packageRequestId`** — the `id` field on `AvailablePackage` may differ from the actual package request ID. Always use `packageRequestId ?? id` for API calls.
+- **`AvailablePackagesResponse.nearby`** — optional Bool flag indicating results are filtered by GPS proximity. Pass to UI for display context.
+- **`CompatiblePackagesData` dual decode** — backend may return pagination nested under `compatible_packages` key, or directly at the data level. Handle both shapes.
+- **`user_types` dual format** — `CarrierInfo.userTypes` can be `["shipper"]` (array) or `{"0": "shipper"}` (dictionary from backend). Parse both.
 
 ## TDD checklist
 
-- [ ] `PackageRequest` JSON decode — all fields including images, service fields, flexible types.
+- [ ] `PackageRequest` JSON decode — all fields including images, service fields, flexible types, coordinate fields, compatibility fields.
+- [ ] `PackageRequest` — `shipperId` fallback from nested `shipper.id`.
 - [ ] `CreatePackageRequest` encode — all fields.
-- [ ] `PackageUpdateRequest` partial update — verify only changed fields sent.
+- [ ] `PackageUpdateRequest` partial update — verify only changed fields sent; verify `clearSpecialHandlingRequirements` encodes null.
 - [ ] `CreateServiceRequestBody` encode — all fields including shopping list.
-- [ ] All enums decode from raw string values (especially `PackageType` 21 cases, `PackageRequestStatus` 10 cases).
-- [ ] `AvailablePackage` decode with `distanceKm`, `daysSincePosted`, shipper.
-- [ ] `CompatibleTrip` + `CarrierInfo` + `CompatibilityDetails` decode.
+- [ ] All enums decode from raw string values (especially `PackageType` 21+1 cases, `PackageRequestStatus` 9 cases, `ServiceType` 5 cases).
+- [ ] `AvailablePackage` decode with `distanceKm`, `daysSincePosted`, shipper, `packageRequestId`, `volumeLiters`, service fields.
+- [ ] `AvailablePackage.toPackageRequest()` converter — all fields mapped correctly.
+- [ ] `AvailablePackageShipper` decode with computed properties (ratingValue, effectiveVerificationLevel).
+- [ ] `CompatibleTrip` + `CarrierInfo` + `CompatibilityDetails` decode — including pricing fields and `user_types` dual format.
+- [ ] `CapacityUtilization` decode.
+- [ ] `CompatiblePackagesData` — test both nested and direct pagination shapes.
 - [ ] Multipart field names match iOS (22 text fields + images array).
 - [ ] Browse query params: verify all 17 params serialize correctly as snake_case.
 - [ ] Image polling: mock 3-attempt poll until `imagesProcessing == false`.
-- [ ] Flexible type decoding: Double/Int/String for weight; Bool/Int/String for fragile.
+- [ ] Flexible type decoding: Double/Int/String for weight; Bool/Int/String for fragile; object/string for dimensions; array/string for shoppingList.
 - [ ] Local stores: descriptions (max 15, FIFO, dedup), templates (max 5), disclaimer (offline sync).
 - [ ] Service request ViewModel: type selection, shopping list, store location, validation.
+- [ ] Date parsing: all format variants (date-only, ISO8601, fractional, microseconds).
+- [ ] `AvailablePackagesResult.nearby` flag preserved through response parsing.

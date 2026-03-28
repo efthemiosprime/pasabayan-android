@@ -10,15 +10,15 @@ This spec ties **Android UI behavior** to the **current iOS app** so Compose scr
 
 | Topic | Document / code |
 |-------|------------------|
-| **All tab docs** | [docs/tabs/README.md](../tabs/README.md), [15-platform-and-tab-index.md](15-platform-and-tab-index.md) |
-| Shipper Explore tab | [SHIPPER_TAB_EXPLORE.md](../tabs/SHIPPER_TAB_EXPLORE.md) |
-| Shipper Matches (counter-offer chips, filters) | [SHIPPER_TAB_MATCHES.md](../tabs/SHIPPER_TAB_MATCHES.md) |
-| Shipper Packages | [SHIPPER_TAB_PACKAGES.md](../tabs/SHIPPER_TAB_PACKAGES.md) |
-| Carrier Explore tab | [CARRIER_TAB_EXPLORE.md](../tabs/CARRIER_TAB_EXPLORE.md) |
-| Carrier Matches | [CARRIER_TAB_MATCHES.md](../tabs/CARRIER_TAB_MATCHES.md) |
-| Carrier My Trips | [CARRIER_TAB_MYTRIPS.md](../tabs/CARRIER_TAB_MYTRIPS.md) |
-| Messages (shared) | [SHARED_TAB_MESSAGES.md](../tabs/SHARED_TAB_MESSAGES.md) |
-| Profile (shared) | [SHARED_TAB_PROFILE.md](../tabs/SHARED_TAB_PROFILE.md) |
+| **All tab docs** | [docs/tabs/README.md](../../pasabayan-ios/docs/tabs/README.md), [15-platform-and-tab-index.md](15-platform-and-tab-index.md) |
+| Shipper Explore tab | [SHIPPER_TAB_EXPLORE.md](../../pasabayan-ios/docs/tabs/SHIPPER_TAB_EXPLORE.md) |
+| Shipper Matches (counter-offer chips, filters) | [SHIPPER_TAB_MATCHES.md](../../pasabayan-ios/docs/tabs/SHIPPER_TAB_MATCHES.md) |
+| Shipper Packages | [SHIPPER_TAB_PACKAGES.md](../../pasabayan-ios/docs/tabs/SHIPPER_TAB_PACKAGES.md) |
+| Carrier Explore tab | [CARRIER_TAB_EXPLORE.md](../../pasabayan-ios/docs/tabs/CARRIER_TAB_EXPLORE.md) |
+| Carrier Matches | [CARRIER_TAB_MATCHES.md](../../pasabayan-ios/docs/tabs/CARRIER_TAB_MATCHES.md) |
+| Carrier My Trips | [CARRIER_TAB_MYTRIPS.md](../../pasabayan-ios/docs/tabs/CARRIER_TAB_MYTRIPS.md) |
+| Messages (shared) | [SHARED_TAB_MESSAGES.md](../../pasabayan-ios/docs/tabs/SHARED_TAB_MESSAGES.md) |
+| Profile (shared) | [SHARED_TAB_PROFILE.md](../../pasabayan-ios/docs/tabs/SHARED_TAB_PROFILE.md) |
 | **Design system (follow)** | [**14-design-system.md**](14-design-system.md) (tokens + rules); iOS source [`DesignSystem.swift`](../../Pasabayan/Views/Components/DesignSystem.swift) |
 | Shipper tab shell | [`ShipperDashboardContent.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/ShipperDashboardContent.swift) |
 | Shipper Explore root | [`ShipperHomeContent.swift`](../../Pasabayan/Views/Screens/Dashboard/DashboardComponents/ShipperHomeContent.swift) |

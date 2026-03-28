@@ -10,20 +10,20 @@
 
 ## `docs/tabs/` — tab documentation index
 
-Files on disk (see also [docs/tabs/README.md](../tabs/README.md); that README was corrected to match these names):
+Files on disk (see also [docs/tabs/README.md](../../pasabayan-ios/docs/tabs/README.md); that README was corrected to match these names):
 
 | File | Role | Tab index | Label (UI) | Root view(s) |
 |------|------|-----------|------------|----------------|
-| [SHIPPER_TAB_EXPLORE.md](../tabs/SHIPPER_TAB_EXPLORE.md) | Shipper | 0 | Explore | `ShipperHomeContent` |
-| [SHIPPER_TAB_MATCHES.md](../tabs/SHIPPER_TAB_MATCHES.md) | Shipper | 1 | Matches | `ShipperMatchesView` |
-| [SHIPPER_TAB_PACKAGES.md](../tabs/SHIPPER_TAB_PACKAGES.md) | Shipper | 2 | My Packages | `ShipperPackagesContent` |
-| [CARRIER_TAB_EXPLORE.md](../tabs/CARRIER_TAB_EXPLORE.md) | Carrier | 0 | Explore | `CarrierHomeContent` |
-| [CARRIER_TAB_MATCHES.md](../tabs/CARRIER_TAB_MATCHES.md) | Carrier | 1 | Matches | `CarrierBookingsContent` |
-| [CARRIER_TAB_MYTRIPS.md](../tabs/CARRIER_TAB_MYTRIPS.md) | Carrier | 2 | My Trips | `CarrierTripsContent` |
-| [SHARED_TAB_MESSAGES.md](../tabs/SHARED_TAB_MESSAGES.md) | Both | 3 | Messages | `ConversationsView` |
-| [SHARED_TAB_PROFILE.md](../tabs/SHARED_TAB_PROFILE.md) | Both | 4 | Profile | `ProfileView` |
+| [SHIPPER_TAB_EXPLORE.md](../../pasabayan-ios/docs/tabs/SHIPPER_TAB_EXPLORE.md) | Shipper | 0 | Explore | `ShipperHomeContent` |
+| [SHIPPER_TAB_MATCHES.md](../../pasabayan-ios/docs/tabs/SHIPPER_TAB_MATCHES.md) | Shipper | 1 | Matches | `ShipperMatchesView` |
+| [SHIPPER_TAB_PACKAGES.md](../../pasabayan-ios/docs/tabs/SHIPPER_TAB_PACKAGES.md) | Shipper | 2 | My Packages | `ShipperPackagesContent` |
+| [CARRIER_TAB_EXPLORE.md](../../pasabayan-ios/docs/tabs/CARRIER_TAB_EXPLORE.md) | Carrier | 0 | Explore | `CarrierHomeContent` |
+| [CARRIER_TAB_MATCHES.md](../../pasabayan-ios/docs/tabs/CARRIER_TAB_MATCHES.md) | Carrier | 1 | Matches | `CarrierBookingsContent` |
+| [CARRIER_TAB_MYTRIPS.md](../../pasabayan-ios/docs/tabs/CARRIER_TAB_MYTRIPS.md) | Carrier | 2 | My Trips | `CarrierTripsContent` |
+| [SHARED_TAB_MESSAGES.md](../../pasabayan-ios/docs/tabs/SHARED_TAB_MESSAGES.md) | Both | 3 | Messages | `ConversationsView` |
+| [SHARED_TAB_PROFILE.md](../../pasabayan-ios/docs/tabs/SHARED_TAB_PROFILE.md) | Both | 4 | Profile | `ProfileView` |
 
-**Related docs (outside `tabs/`):** [TAB_UI_FLOW_DIAGRAMS.md](../TAB_UI_FLOW_DIAGRAMS.md), [DASHBOARD_VIEW_STRUCTURE_CARRIER.md](../DASHBOARD_VIEW_STRUCTURE_CARRIER.md), [DASHBOARD_VIEW_STRUCTURE_SHIPPER.md](../DASHBOARD_VIEW_STRUCTURE_SHIPPER.md), [MATCH_CONFIRMATION_FLOW.md](../MATCH_CONFIRMATION_FLOW.md), [BRANDING_DESIGN_GUIDE.md](../BRANDING_DESIGN_GUIDE.md).
+**Related docs (outside `tabs/`):** [TAB_UI_FLOW_DIAGRAMS.md](../../pasabayan-ios/docs/TAB_UI_FLOW_DIAGRAMS.md), [DASHBOARD_VIEW_STRUCTURE_CARRIER.md](../../pasabayan-ios/docs/DASHBOARD_VIEW_STRUCTURE_CARRIER.md), [DASHBOARD_VIEW_STRUCTURE_SHIPPER.md](../../pasabayan-ios/docs/DASHBOARD_VIEW_STRUCTURE_SHIPPER.md), [MATCH_CONFIRMATION_FLOW.md](../../pasabayan-ios/docs/MATCH_CONFIRMATION_FLOW.md), [BRANDING_DESIGN_GUIDE.md](../../pasabayan-ios/docs/BRANDING_DESIGN_GUIDE.md).
 
 **Spec mapping:** Tab structure + Explore parity → [13-ui-tab-explore.md](13-ui-tab-explore.md); tokens → [14-design-system.md](14-design-system.md).
 
