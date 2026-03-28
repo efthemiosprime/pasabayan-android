@@ -3,6 +3,7 @@ package com.efthemiosprime.pasabayan.core.network.di
 import com.efthemiosprime.pasabayan.core.network.AuthInterceptor
 import com.efthemiosprime.pasabayan.core.network.UnauthorizedClearingInterceptor
 import com.efthemiosprime.pasabayan.core.network.BuildConfig
+import com.efthemiosprime.pasabayan.core.network.SupplementalApi
 import com.efthemiosprime.pasabayan.core.network.auth.AuthApi
 import dagger.Module
 import dagger.Provides
@@ -75,4 +76,9 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideAuthApi(retrofit: Retrofit): AuthApi = retrofit.create(AuthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideSupplementalApi(retrofit: Retrofit): SupplementalApi =
+        retrofit.create(SupplementalApi::class.java)
 }

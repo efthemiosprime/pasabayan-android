@@ -49,10 +49,19 @@ class SharedPreferencesOnboardingPreferences @Inject constructor(
         prefs.edit().putString(KEY_USER_PREFERRED_ROLE, roleWire).apply()
     }
 
+    override suspend fun hasCompletedCitySetup(): Boolean = withContext(Dispatchers.IO) {
+        prefs.getBoolean(KEY_HAS_COMPLETED_CITY_SETUP, false)
+    }
+
+    override suspend fun setHasCompletedCitySetup(completed: Boolean): Unit = withContext(Dispatchers.IO) {
+        prefs.edit().putBoolean(KEY_HAS_COMPLETED_CITY_SETUP, completed).apply()
+    }
+
     companion object {
         const val KEY_HAS_COMPLETED_ONBOARDING = "hasCompletedOnboarding"
         const val KEY_HAS_VIEWED_CARRIER_JOURNEY = "hasViewedCarrierJourney"
         const val KEY_HAS_VIEWED_SENDER_JOURNEY = "hasViewedSenderJourney"
         const val KEY_USER_PREFERRED_ROLE = "user_preferred_role"
+        const val KEY_HAS_COMPLETED_CITY_SETUP = "hasCompletedCitySetup"
     }
 }

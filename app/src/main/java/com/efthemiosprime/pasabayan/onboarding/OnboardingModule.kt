@@ -15,4 +15,10 @@ abstract class OnboardingModule {
     abstract fun bindOnboardingPreferences(
         impl: SharedPreferencesOnboardingPreferences,
     ): OnboardingPreferences
+
+    @Binds
+    @Singleton
+    abstract fun bindCityOnboardingRepository(
+        impl: CityOnboardingRepositoryImpl,
+    ): CityOnboardingRepository
 }

@@ -55,6 +55,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
 import com.efthemiosprime.pasabayan.core.network.BuildConfig as NetworkBuildConfig
+import com.efthemiosprime.pasabayan.onboarding.CityOnboardingRoute
 
 /** iOS `Color(red: 24/255, green: 119/255, blue: 242/255)` — Facebook brand. */
 private val FacebookBlue = Color(0xFF1877F2)
@@ -71,15 +72,44 @@ fun AuthRoute(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val activity = LocalContext.current as ComponentActivity
 
-    AuthScreen(
-        state = state,
-        apiBaseUrl = NetworkBuildConfig.API_BASE_URL,
-        showApiFooter = NetworkBuildConfig.DEBUG,
-        onSignInWithGoogle = onLaunchGoogleSignIn,
-        onSignInWithFacebook = { viewModel.signInWithFacebook(activity) },
-        onLogout = { viewModel.logout() },
-        modifier = modifier,
-    )
+    when (state.session) {
+        is SessionUiState.SignedIn -> {
+            when (state.citySetupPhase) {
+                CitySetupPhase.NeedsSetup -> {
+                    CityOnboardingRoute(
+                        onFinished = { viewModel.markCityOnboardingComplete() },
+                        modifier = modifier,
+                    )
+                }
+                CitySetupPhase.Complete,
+                null,
+                -> {
+                    AuthScreen(
+                        state = state,
+                        apiBaseUrl = NetworkBuildConfig.API_BASE_URL,
+                        showApiFooter = NetworkBuildConfig.DEBUG,
+                        onSignInWithGoogle = onLaunchGoogleSignIn,
+                        onSignInWithFacebook = { viewModel.signInWithFacebook(activity) },
+                        onLogout = { viewModel.logout() },
+                        modifier = modifier,
+                    )
+                }
+            }
+        }
+        SessionUiState.Checking,
+        SessionUiState.SignedOut,
+        -> {
+            AuthScreen(
+                state = state,
+                apiBaseUrl = NetworkBuildConfig.API_BASE_URL,
+                showApiFooter = NetworkBuildConfig.DEBUG,
+                onSignInWithGoogle = onLaunchGoogleSignIn,
+                onSignInWithFacebook = { viewModel.signInWithFacebook(activity) },
+                onLogout = { viewModel.logout() },
+                modifier = modifier,
+            )
+        }
+    }
 }
 
 @Composable

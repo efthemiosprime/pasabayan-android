@@ -38,6 +38,9 @@
     <string name="onboarding_city_sheettitle">Select City</string>
     <string name="onboarding_city_title">What\'s your city?</string>
     <string name="onboarding_city_usemylocation">Use My Location</string>
+    <string name="onboarding_city_retry">Retry</string>
+    <string name="onboarding_city_error_select">Please select a city to continue.</string>
+    <string name="onboarding_city_location_stub">Location-based selection will be available in a future update. Please choose a city from the list.</string>
     <string name="onboarding_completion_alldonedescription">You\'ve explored both journeys</string>
     <string name="onboarding_completion_alldonetitle">All Caught Up!</string>
     <string name="onboarding_completion_continuedescription">Start using the app now</string>

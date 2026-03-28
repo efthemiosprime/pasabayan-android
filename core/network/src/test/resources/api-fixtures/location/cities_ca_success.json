@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": 101,
+      "name": "Toronto",
+      "display": "Toronto, ON",
+      "state_code": "ON",
+      "lat": 43.6532,
+      "lng": -79.3832
+    },
+    {
+      "id": 102,
+      "name": "Montreal",
+      "display": "Montreal, QC",
+      "state_code": "QC",
+      "lat": "45.5017",
+      "lng": "-73.5673"
+    }
+  ]
+}

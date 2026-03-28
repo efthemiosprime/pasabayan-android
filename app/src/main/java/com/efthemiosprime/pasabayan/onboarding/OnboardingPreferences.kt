@@ -22,4 +22,9 @@ interface OnboardingPreferences {
     suspend fun getPreferredRoleWire(): String?
 
     suspend fun setPreferredRoleWire(roleWire: String)
+
+    /** iOS `@AppStorage("hasCompletedCitySetup")` in `ContentView`. */
+    suspend fun hasCompletedCitySetup(): Boolean
+
+    suspend fun setHasCompletedCitySetup(completed: Boolean)
 }

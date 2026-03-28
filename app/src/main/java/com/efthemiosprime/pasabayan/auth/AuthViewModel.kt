@@ -10,6 +10,7 @@ import com.efthemiosprime.pasabayan.error.localizedMessage
 import com.efthemiosprime.pasabayan.core.session.AuthRepository
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.core.session.TokenStore
+import com.efthemiosprime.pasabayan.onboarding.OnboardingPreferences
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
@@ -29,10 +30,18 @@ sealed interface SessionUiState {
     data class SignedIn(val user: AuthUser) : SessionUiState
 }
 
+/** Post-auth city onboarding gate (iOS `hasCompletedCitySetup` in `ContentView`). */
+enum class CitySetupPhase {
+    NeedsSetup,
+    Complete,
+}
+
 data class AuthScreenState(
     val session: SessionUiState = SessionUiState.Checking,
     val isBusy: Boolean = false,
     val transientError: String? = null,
+    /** Non-null only while [SessionUiState.SignedIn]; cleared when signed out. */
+    val citySetupPhase: CitySetupPhase? = null,
 )
 
 @HiltViewModel
@@ -42,6 +51,7 @@ class AuthViewModel @Inject constructor(
     private val tokenStore: TokenStore,
     private val googleSignInHelper: GoogleSignInHelper,
     private val facebookLoginStarter: FacebookLoginStarter,
+    private val onboardingPreferences: OnboardingPreferences,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthScreenState())
@@ -53,22 +63,23 @@ class AuthViewModel @Inject constructor(
 
     fun refreshSession() {
         viewModelScope.launch {
-            _uiState.update { it.copy(session = SessionUiState.Checking, transientError = null) }
+            _uiState.update {
+                it.copy(session = SessionUiState.Checking, transientError = null, citySetupPhase = null)
+            }
             val token = tokenStore.getToken()
             if (token.isNullOrBlank()) {
-                _uiState.update { it.copy(session = SessionUiState.SignedOut) }
+                _uiState.update { it.copy(session = SessionUiState.SignedOut, citySetupPhase = null) }
                 return@launch
             }
             authRepository.loadCurrentUser().fold(
-                onSuccess = { user ->
-                    _uiState.update { it.copy(session = SessionUiState.SignedIn(user)) }
-                },
+                onSuccess = { user -> applySignedInWithCityGate(user) },
                 onFailure = { e ->
                     tokenStore.clear()
                     googleSignInHelper.signOutGoogle()
                     _uiState.update { s ->
                         s.copy(
                             session = SessionUiState.SignedOut,
+                            citySetupPhase = null,
                             transientError = e.toLocalizedUserMessage(),
                         )
                     }
@@ -94,9 +105,7 @@ class AuthViewModel @Inject constructor(
                 }
                 authRepository.loginWithProviderAccessToken("google", idToken).fold(
                     onSuccess = { user ->
-                        _uiState.update {
-                            it.copy(session = SessionUiState.SignedIn(user), isBusy = false)
-                        }
+                        applySignedInWithCityGate(user)
                     },
                     onFailure = { e ->
                         _uiState.update {
@@ -128,9 +137,7 @@ class AuthViewModel @Inject constructor(
                         _uiState.update { it.copy(isBusy = true, transientError = null) }
                         authRepository.loginWithProviderAccessToken("facebook", accessToken).fold(
                             onSuccess = { user ->
-                                _uiState.update {
-                                    it.copy(session = SessionUiState.SignedIn(user), isBusy = false)
-                                }
+                                applySignedInWithCityGate(user)
                             },
                             onFailure = { e ->
                                 _uiState.update {
@@ -162,8 +169,26 @@ class AuthViewModel @Inject constructor(
             authRepository.logout()
             googleSignInHelper.signOutGoogle()
             _uiState.update {
-                it.copy(session = SessionUiState.SignedOut, isBusy = false)
+                it.copy(session = SessionUiState.SignedOut, isBusy = false, citySetupPhase = null)
             }
+        }
+    }
+
+    fun markCityOnboardingComplete() {
+        viewModelScope.launch {
+            onboardingPreferences.setHasCompletedCitySetup(true)
+            _uiState.update { it.copy(citySetupPhase = CitySetupPhase.Complete) }
+        }
+    }
+
+    private suspend fun applySignedInWithCityGate(user: AuthUser) {
+        val cityDone = onboardingPreferences.hasCompletedCitySetup()
+        _uiState.update {
+            it.copy(
+                session = SessionUiState.SignedIn(user),
+                isBusy = false,
+                citySetupPhase = if (cityDone) CitySetupPhase.Complete else CitySetupPhase.NeedsSetup,
+            )
         }
     }
 

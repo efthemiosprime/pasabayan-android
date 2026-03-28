@@ -54,6 +54,10 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:session"))
 
+    // [Json] + Retrofit [Response] for Hilt-injected repositories that call [ApiErrorMapper] (e.g. city onboarding).
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.retrofit)
+
     // XML theme (splash / window) — Material3 DayNight matches Compose MaterialTheme parity
     implementation(libs.google.material)
     implementation(libs.androidx.appcompat)

@@ -38,6 +38,9 @@
     <string name="onboarding_city_sheettitle">Sélectionner une ville</string>
     <string name="onboarding_city_title">Quelle est votre ville ?</string>
     <string name="onboarding_city_usemylocation">Utiliser ma position</string>
+    <string name="onboarding_city_retry">Réessayer</string>
+    <string name="onboarding_city_error_select">Veuillez sélectionner une ville pour continuer.</string>
+    <string name="onboarding_city_location_stub">La sélection basée sur la position sera disponible dans une prochaine mise à jour. Veuillez choisir une ville dans la liste.</string>
     <string name="onboarding_completion_alldonedescription">Vous avez exploré les deux parcours</string>
     <string name="onboarding_completion_alldonetitle">Tout est à jour !</string>
     <string name="onboarding_completion_continuedescription">Commencez à utiliser l\'application maintenant</string>

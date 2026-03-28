@@ -1,0 +1,8 @@
+{
+  "success": true,
+  "message": "Profile updated",
+  "data": {
+    "home_city_id": 101,
+    "is_complete": false
+  }
+}

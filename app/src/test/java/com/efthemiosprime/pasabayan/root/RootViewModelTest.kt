@@ -57,6 +57,14 @@ class RootViewModelTest {
         override suspend fun setPreferredRoleWire(roleWire: String) {
             preferredRole = roleWire
         }
+
+        var citySetupCompleted: Boolean = false
+
+        override suspend fun hasCompletedCitySetup(): Boolean = citySetupCompleted
+
+        override suspend fun setHasCompletedCitySetup(completed: Boolean) {
+            citySetupCompleted = completed
+        }
     }
 
     @Test
