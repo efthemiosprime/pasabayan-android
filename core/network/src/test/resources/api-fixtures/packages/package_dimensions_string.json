@@ -1,0 +1,10 @@
+{
+  "id": 30,
+  "pickup_city": "Calgary",
+  "delivery_city": "Edmonton",
+  "package_weight_kg": 5,
+  "package_dimensions": "{\"length\":10,\"width\":8,\"height\":5}",
+  "package_type": "parcel",
+  "fragile": "no",
+  "request_status": "pending_request"
+}

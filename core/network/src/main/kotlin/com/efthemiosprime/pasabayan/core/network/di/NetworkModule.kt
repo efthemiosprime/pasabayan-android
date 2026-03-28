@@ -5,6 +5,7 @@ import com.efthemiosprime.pasabayan.core.network.UnauthorizedClearingInterceptor
 import com.efthemiosprime.pasabayan.core.network.BuildConfig
 import com.efthemiosprime.pasabayan.core.network.SupplementalApi
 import com.efthemiosprime.pasabayan.core.network.auth.AuthApi
+import com.efthemiosprime.pasabayan.core.network.packages.PackagesApi
 import com.efthemiosprime.pasabayan.core.network.trips.TripsApi
 import dagger.Module
 import dagger.Provides
@@ -87,4 +88,9 @@ object NetworkModule {
     @Singleton
     fun provideTripsApi(retrofit: Retrofit): TripsApi =
         retrofit.create(TripsApi::class.java)
+
+    @Provides
+    @Singleton
+    fun providePackagesApi(retrofit: Retrofit): PackagesApi =
+        retrofit.create(PackagesApi::class.java)
 }
