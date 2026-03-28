@@ -1,0 +1,5 @@
+{
+  "id": 5,
+  "name": "DictUser",
+  "user_types": {"0": "shipper", "1": "carrier"}
+}

@@ -1,0 +1,15 @@
+{
+  "id": 42,
+  "name": "John Doe",
+  "email": "john@example.com",
+  "avatar": "https://example.com/avatar.jpg",
+  "phone": "+1234567890",
+  "phone_verified": true,
+  "profile_completed": 1,
+  "user_types": ["shipper", "carrier"],
+  "rating": "4.5",
+  "total_ratings": 25,
+  "verification_level": "verified",
+  "is_active_carrier": true,
+  "is_active_shipper": "yes"
+}
