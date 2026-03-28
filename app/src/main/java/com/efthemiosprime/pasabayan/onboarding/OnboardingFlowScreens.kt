@@ -45,8 +45,10 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -78,9 +80,11 @@ fun OnboardingRoleSelectionScreen(
             accentColor = accent,
             modifier = Modifier.matchParentSize(),
         )
+        // fillMaxSize + verticalScroll breaks measurement (IDE preview shows "Render problem").
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .align(Alignment.TopStart)
+                .fillMaxWidth()
                 .verticalScroll(rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(20.dp))
@@ -626,11 +630,13 @@ fun OnboardingCompletionScreen(
     modifier: Modifier = Modifier,
 ) {
     val other = completedRole.opposite
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-    ) {
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+        ) {
         Spacer(modifier = Modifier.height(40.dp))
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -703,6 +709,7 @@ fun OnboardingCompletionScreen(
             }
         }
         Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
 
@@ -819,11 +826,45 @@ private fun OnboardingAllCaughtUpBadge() {
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
                     .fillMaxSize()
                     .clip(RoundedCornerShape(999.dp))
                     .background(PasabayanColors.OnboardingPrimary),
             )
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Journey — carrier step 1", widthDp = 360, heightDp = 800)
+@Composable
+private fun OnboardingJourneyScreenPreview() {
+    PasabayanTheme {
+        OnboardingJourneyScreen(
+            definition = JourneyStepDefinitions.stepsFor(OnboardingRole.Carrier).first(),
+            role = OnboardingRole.Carrier,
+            stepIndex = 0,
+            totalSteps = 4,
+            isLastStep = false,
+            onBack = {},
+            onSkip = {},
+            onNext = {},
+            onSeeSummary = {},
+            onSkipToApp = {},
+            modifier = Modifier.fillMaxSize(),
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Completion — explore other role", widthDp = 360, heightDp = 800)
+@Composable
+private fun OnboardingCompletionScreenPreview() {
+    PasabayanTheme {
+        OnboardingCompletionScreen(
+            completedRole = OnboardingRole.Shipper,
+            hasViewedOppositeJourney = false,
+            hasViewedBothJourneys = false,
+            onContinueToApp = {},
+            onExploreOtherRole = {},
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }

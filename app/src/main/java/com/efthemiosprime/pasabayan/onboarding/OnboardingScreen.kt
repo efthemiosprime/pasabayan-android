@@ -1,11 +1,12 @@
 package com.efthemiosprime.pasabayan.onboarding
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
@@ -69,13 +70,23 @@ fun OnboardingRoute(
     }
 }
 
-@Preview(showBackground = true)
+private class OnboardingRolePreviewStateProvider : PreviewParameterProvider<Pair<Boolean, Boolean>> {
+    override val values = sequenceOf(
+        false to false,
+        false to true,
+        true to true,
+    )
+}
+
+@Preview(showBackground = true, name = "Role selection", widthDp = 360, heightDp = 800)
 @Composable
-private fun OnboardingRoleSelectionPreview() {
+private fun OnboardingRoleSelectionPreview(
+    @PreviewParameter(OnboardingRolePreviewStateProvider::class) flags: Pair<Boolean, Boolean>,
+) {
     PasabayanTheme {
         OnboardingRoleSelectionScreen(
-            hasViewedCarrier = false,
-            hasViewedSender = true,
+            hasViewedCarrier = flags.first,
+            hasViewedSender = flags.second,
             onSelectCarrier = {},
             onSelectSender = {},
             modifier = Modifier.fillMaxSize(),
