@@ -87,6 +87,9 @@ dependencies {
     // Facebook Login — meta-data + activities in AndroidManifest
     implementation(libs.facebook.login)
 
+    // Stripe — PaymentSheet, SetupIntent, Google Pay
+    implementation(libs.stripe.android)
+
     implementation(platform(libs.androidx.compose.bom))
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.compose.ui)

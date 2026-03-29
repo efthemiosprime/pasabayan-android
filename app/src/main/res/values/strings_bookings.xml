@@ -65,6 +65,17 @@
     <string name="bookings_rate_comment">Comment (optional)</string>
     <string name="bookings_rate_submit">Submit Rating</string>
 
+    <!-- Success -->
+    <string name="bookings_success_title">Success!</string>
+    <string name="bookings_success_done">Done</string>
+
+    <!-- Code screens -->
+    <string name="bookings_generate_pickup_code_title">Generate Pickup Code</string>
+    <string name="bookings_generate_pickup_code_description">Share this code with the carrier when they pick up your package.</string>
+    <string name="bookings_confirm_delivery_code_title">Confirm Delivery</string>
+    <string name="bookings_confirm_delivery_code_description">Enter the 6-digit delivery code from the shipper to confirm delivery.</string>
+    <string name="bookings_confirm_delivery_code_submit">Confirm Delivery</string>
+
     <!-- Trip status errors -->
     <string name="bookings_trip_not_ready">Trip Not Ready</string>
     <string name="bookings_trip_completed">Trip Completed</string>
