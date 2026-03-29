@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "pm_visa_4242",
+      "card": {
+        "brand": "visa",
+        "last4": "4242",
+        "exp_month": 12,
+        "exp_year": 2028
+      }
+    },
+    {
+      "id": "pm_mc_5555",
+      "card": {
+        "brand": "mastercard",
+        "last4": "5555",
+        "exp_month": 6,
+        "exp_year": 2027
+      }
+    }
+  ]
+}

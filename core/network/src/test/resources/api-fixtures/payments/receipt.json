@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "data": {
+    "id": 1000,
+    "receipt_number": "RCP-2026-001",
+    "receipt_url": "https://api.pasabayan.com/receipts/RCP-2026-001.pdf",
+    "date": "2026-03-29T10:00:00Z",
+    "date_formatted": "Mar 29, 2026",
+    "role": "shipper",
+    "other_party": {
+      "id": 42,
+      "name": "John Carrier",
+      "verification_level": "verified"
+    },
+    "amount": {
+      "total": 175.50,
+      "carrier_amount": 124.50,
+      "platform_fee": 25.50,
+      "tip": 5.0,
+      "currency": "cad"
+    },
+    "status": "completed",
+    "delivery": {
+      "pickup_city": "Toronto",
+      "delivery_city": "Montreal",
+      "package_title": "Laptop and accessories"
+    }
+  }
+}

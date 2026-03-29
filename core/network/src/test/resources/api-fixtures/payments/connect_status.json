@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "data": {
+    "has_stripe_account": true,
+    "stripe_account_id": "acct_abc123",
+    "onboarding_complete": true,
+    "onboarded_at": "2026-03-01T10:00:00Z",
+    "charges_enabled": true,
+    "payouts_enabled": true,
+    "can_receive_payouts": true
+  }
+}

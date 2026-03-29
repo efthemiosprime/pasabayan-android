@@ -8,7 +8,10 @@ import com.efthemiosprime.pasabayan.core.network.auth.AuthApi
 import com.efthemiosprime.pasabayan.core.network.bookings.BookingsApi
 import com.efthemiosprime.pasabayan.core.network.packages.PackagesApi
 import com.efthemiosprime.pasabayan.core.network.payments.PaymentApi
+import com.efthemiosprime.pasabayan.core.network.payments.PaymentMethodsApi
+import com.efthemiosprime.pasabayan.core.network.payments.ReceiptApi
 import com.efthemiosprime.pasabayan.core.network.payments.StripeConfigApi
+import com.efthemiosprime.pasabayan.core.network.payments.StripeConnectApi
 import com.efthemiosprime.pasabayan.core.network.trips.TripsApi
 import dagger.Module
 import dagger.Provides
@@ -111,4 +114,19 @@ object NetworkModule {
     @Singleton
     fun provideStripeConfigApi(retrofit: Retrofit): StripeConfigApi =
         retrofit.create(StripeConfigApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideStripeConnectApi(retrofit: Retrofit): StripeConnectApi =
+        retrofit.create(StripeConnectApi::class.java)
+
+    @Provides
+    @Singleton
+    fun providePaymentMethodsApi(retrofit: Retrofit): PaymentMethodsApi =
+        retrofit.create(PaymentMethodsApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideReceiptApi(retrofit: Retrofit): ReceiptApi =
+        retrofit.create(ReceiptApi::class.java)
 }
