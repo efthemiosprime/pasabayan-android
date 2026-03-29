@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Match status -->
+    <string name="bookings_status_pending">En attente</string>
+    <string name="bookings_status_confirmed">Confirm\u00e9</string>
+    <string name="bookings_status_picked_up">R\u00e9cup\u00e9r\u00e9</string>
+    <string name="bookings_status_in_transit">En transit</string>
+    <string name="bookings_status_delivered">Livr\u00e9</string>
+    <string name="bookings_status_cancelled">Annul\u00e9</string>
+    <string name="bookings_status_carrier_requested">Demand\u00e9 par transporteur</string>
+    <string name="bookings_status_shipper_requested">Demand\u00e9 par exp\u00e9diteur</string>
+
+    <!-- Actions -->
+    <string name="bookings_action_accept">Accepter</string>
+    <string name="bookings_action_decline">Refuser</string>
+    <string name="bookings_action_counter_offer">Contre-offre</string>
+    <string name="bookings_action_cancel">Annuler la r\u00e9servation</string>
+    <string name="bookings_action_mark_picked_up">Marquer r\u00e9cup\u00e9r\u00e9</string>
+    <string name="bookings_action_mark_in_transit">Marquer en transit</string>
+    <string name="bookings_action_mark_delivered">Marquer livr\u00e9</string>
+    <string name="bookings_action_track_live">Suivre en direct</string>
+    <string name="bookings_action_generate_code">G\u00e9n\u00e9rer un code</string>
+    <string name="bookings_action_enter_code">Entrer le code</string>
+
+    <!-- Detail labels -->
+    <string name="bookings_detail_agreed_price">Prix convenu</string>
+    <string name="bookings_detail_original_price">Prix original</string>
+    <string name="bookings_detail_counter_offer">Contre-offre</string>
+    <string name="bookings_detail_round">Tour %1$d</string>
+    <string name="bookings_detail_remaining_offers">%1$d contre-offres restantes</string>
+    <string name="bookings_detail_pickup_code">Code de r\u00e9cup\u00e9ration</string>
+    <string name="bookings_detail_delivery_code">Code de livraison</string>
+    <string name="bookings_detail_carrier">Transporteur</string>
+    <string name="bookings_detail_shipper">Exp\u00e9diteur</string>
+    <string name="bookings_detail_initiated_by">Initi\u00e9 par</string>
+
+    <!-- Empty states -->
+    <string name="bookings_empty_no_matches">Aucune correspondance</string>
+    <string name="bookings_empty_no_matches_description">Vos correspondances de r\u00e9servation appara\u00eetront ici.</string>
+    <string name="bookings_empty_no_pending">Aucune demande en attente</string>
+
+    <!-- Counter offer -->
+    <string name="bookings_counter_offer_title">Contre-offre</string>
+    <string name="bookings_counter_offer_propose_price">Proposer un nouveau prix</string>
+    <string name="bookings_counter_offer_message">Message (optionnel)</string>
+    <string name="bookings_counter_offer_submit">Soumettre la contre-offre</string>
+    <string name="bookings_counter_offer_price_increase">Prix augment\u00e9 de %1$.2f $</string>
+    <string name="bookings_counter_offer_price_decrease">Prix diminu\u00e9 de %1$.2f $</string>
+
+    <!-- Trip status errors -->
+    <string name="bookings_trip_not_ready">Trajet pas pr\u00eat</string>
+    <string name="bookings_trip_completed">Trajet termin\u00e9</string>
+    <string name="bookings_trip_cancelled">Trajet annul\u00e9</string>
+    <string name="bookings_trip_in_transit">Trajet en transit</string>
+    <string name="bookings_trip_departed">Trajet parti</string>
+    <string name="bookings_trip_unavailable">Trajet indisponible</string>
+</resources>

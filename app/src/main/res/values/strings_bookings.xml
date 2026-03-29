@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Match status -->
+    <string name="bookings_status_pending">Pending</string>
+    <string name="bookings_status_confirmed">Confirmed</string>
+    <string name="bookings_status_picked_up">Picked Up</string>
+    <string name="bookings_status_in_transit">In Transit</string>
+    <string name="bookings_status_delivered">Delivered</string>
+    <string name="bookings_status_cancelled">Cancelled</string>
+    <string name="bookings_status_carrier_requested">Carrier Requested</string>
+    <string name="bookings_status_shipper_requested">Shipper Requested</string>
+
+    <!-- Actions -->
+    <string name="bookings_action_accept">Accept</string>
+    <string name="bookings_action_decline">Decline</string>
+    <string name="bookings_action_counter_offer">Counter Offer</string>
+    <string name="bookings_action_cancel">Cancel Booking</string>
+    <string name="bookings_action_mark_picked_up">Mark Picked Up</string>
+    <string name="bookings_action_mark_in_transit">Mark In Transit</string>
+    <string name="bookings_action_mark_delivered">Mark Delivered</string>
+    <string name="bookings_action_track_live">Track Live</string>
+    <string name="bookings_action_generate_code">Generate Code</string>
+    <string name="bookings_action_enter_code">Enter Code</string>
+
+    <!-- Detail labels -->
+    <string name="bookings_detail_agreed_price">Agreed Price</string>
+    <string name="bookings_detail_original_price">Original Price</string>
+    <string name="bookings_detail_counter_offer">Counter Offer</string>
+    <string name="bookings_detail_round">Round %1$d</string>
+    <string name="bookings_detail_remaining_offers">%1$d counter-offers remaining</string>
+    <string name="bookings_detail_pickup_code">Pickup Code</string>
+    <string name="bookings_detail_delivery_code">Delivery Code</string>
+    <string name="bookings_detail_carrier">Carrier</string>
+    <string name="bookings_detail_shipper">Shipper</string>
+    <string name="bookings_detail_initiated_by">Initiated By</string>
+
+    <!-- Empty states -->
+    <string name="bookings_empty_no_matches">No matches yet</string>
+    <string name="bookings_empty_no_matches_description">Your booking matches will appear here.</string>
+    <string name="bookings_empty_no_pending">No pending requests</string>
+
+    <!-- Counter offer -->
+    <string name="bookings_counter_offer_title">Counter Offer</string>
+    <string name="bookings_counter_offer_propose_price">Propose a new price</string>
+    <string name="bookings_counter_offer_message">Message (optional)</string>
+    <string name="bookings_counter_offer_submit">Submit Counter Offer</string>
+    <string name="bookings_counter_offer_price_increase">Price increased by $%1$.2f</string>
+    <string name="bookings_counter_offer_price_decrease">Price decreased by $%1$.2f</string>
+
+    <!-- Trip status errors -->
+    <string name="bookings_trip_not_ready">Trip Not Ready</string>
+    <string name="bookings_trip_completed">Trip Completed</string>
+    <string name="bookings_trip_cancelled">Trip Cancelled</string>
+    <string name="bookings_trip_in_transit">Trip In Transit</string>
+    <string name="bookings_trip_departed">Trip Departed</string>
+    <string name="bookings_trip_unavailable">Trip Unavailable</string>
+</resources>
