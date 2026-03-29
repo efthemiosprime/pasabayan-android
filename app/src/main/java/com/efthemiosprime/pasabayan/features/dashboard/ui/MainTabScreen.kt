@@ -78,10 +78,10 @@ fun MainTabScreen(
                             onSwitchRole = { viewModel.switchRole() },
                         )
                 }
-                "matches" -> StubTabContent(
-                    icon = Icons.Outlined.SwapHoriz,
-                    title = stringResource(R.string.dashboard_stub_matches_title),
-                    description = stringResource(R.string.dashboard_stub_matches_description),
+                "matches" -> com.efthemiosprime.pasabayan.features.bookings.ui.MatchListScreen(
+                    isCarrier = state.currentRole == UserRole.CARRIER,
+                    currentUserId = user.id.toInt(),
+                    onAction = { action, matchId -> /* TODO: handle booking actions */ },
                 )
                 "my_trips" -> com.efthemiosprime.pasabayan.features.trips.ui.CarrierMyTripsScreen(
                     onViewTripDetails = { /* Handled by expandable card */ },
