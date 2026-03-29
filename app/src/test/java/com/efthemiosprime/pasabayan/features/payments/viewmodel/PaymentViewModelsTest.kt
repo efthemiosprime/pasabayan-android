@@ -1,0 +1,202 @@
+package com.efthemiosprime.pasabayan.features.payments.viewmodel
+
+import com.efthemiosprime.pasabayan.core.network.payments.CreatePaymentResponseJson
+import com.efthemiosprime.pasabayan.core.network.payments.RefundRequestDataJson
+import com.efthemiosprime.pasabayan.core.network.payments.SetupIntentDataJson
+import com.efthemiosprime.pasabayan.core.network.payments.TipResponseJson
+import com.efthemiosprime.pasabayan.core.network.payments.TransactionJson
+import com.efthemiosprime.pasabayan.features.payments.model.PaymentMethodDisplay
+import com.efthemiosprime.pasabayan.features.payments.model.PaymentReceipt
+import com.efthemiosprime.pasabayan.features.payments.model.StripeConfig
+import com.efthemiosprime.pasabayan.features.payments.model.Transaction
+import com.efthemiosprime.pasabayan.features.payments.model.toDomain
+import com.efthemiosprime.pasabayan.features.payments.services.PaymentMethodsRepository
+import com.efthemiosprime.pasabayan.features.payments.services.PaymentRepository
+import com.efthemiosprime.pasabayan.features.payments.services.ReceiptRepository
+import com.efthemiosprime.pasabayan.features.payments.services.StripeConfigRepository
+import com.efthemiosprime.pasabayan.features.payments.services.StripeConnectRepository
+import com.efthemiosprime.pasabayan.core.network.payments.StripeConnectStatusJson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class PaymentViewModelsTest {
+
+    private val testDispatcher = StandardTestDispatcher()
+    private lateinit var fakePaymentRepo: FakePaymentRepository
+    private lateinit var fakeMethodsRepo: FakePaymentMethodsRepository
+
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(testDispatcher)
+        fakePaymentRepo = FakePaymentRepository()
+        fakeMethodsRepo = FakePaymentMethodsRepository()
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    // -- PaymentViewModel --
+
+    @Test
+    fun `createPayment sets clientSecret on success`() = runTest {
+        fakePaymentRepo.createResult = Result.success(
+            CreatePaymentResponseJson(
+                success = true,
+                clientSecret = "pi_secret_123",
+                customerId = "cus_abc",
+                data = TransactionJson(id = 1, status = "pending"),
+            ),
+        )
+        val vm = PaymentViewModel(fakePaymentRepo)
+        vm.createPayment(100, 150.0)
+        advanceUntilIdle()
+
+        assertEquals("pi_secret_123", vm.uiState.value.clientSecret)
+        assertFalse(vm.uiState.value.isProcessing)
+    }
+
+    @Test
+    fun `createPayment sets error on failure`() = runTest {
+        fakePaymentRepo.createResult = Result.failure(Exception("Payment failed"))
+        val vm = PaymentViewModel(fakePaymentRepo)
+        vm.createPayment(100, 150.0)
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.errorMessage != null)
+        assertFalse(vm.uiState.value.isProcessing)
+    }
+
+    @Test
+    fun `confirmCapture sets paymentSuccess`() = runTest {
+        fakePaymentRepo.confirmCaptureResult = Result.success(
+            TransactionJson(id = 1, status = "completed").toDomain(),
+        )
+        val vm = PaymentViewModel(fakePaymentRepo)
+        vm.confirmCapture(100)
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.paymentSuccess)
+    }
+
+    @Test
+    fun `isMockClientSecret detects mock`() {
+        val vm = PaymentViewModel(fakePaymentRepo)
+        assertTrue(vm.isMockClientSecret("mock_pi_abc123"))
+        assertFalse(vm.isMockClientSecret("pi_real_abc123"))
+    }
+
+    // -- PaymentMethodsViewModel --
+
+    @Test
+    fun `loadPaymentMethods sets methods on success`() = runTest {
+        fakeMethodsRepo.loadResult = Result.success(
+            listOf(
+                PaymentMethodDisplay("pm_1", "visa", "4242", 12, 2028, true),
+                PaymentMethodDisplay("pm_2", "mastercard", "5555", 6, 2027, false),
+            ),
+        )
+        val vm = PaymentMethodsViewModel(fakeMethodsRepo)
+        vm.loadPaymentMethods()
+        advanceUntilIdle()
+
+        assertEquals(2, vm.uiState.value.paymentMethods.size)
+        assertFalse(vm.uiState.value.isLoading)
+    }
+
+    @Test
+    fun `loadPaymentMethods sets error on failure`() = runTest {
+        fakeMethodsRepo.loadResult = Result.failure(Exception("Network error"))
+        val vm = PaymentMethodsViewModel(fakeMethodsRepo)
+        vm.loadPaymentMethods()
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.errorMessage != null)
+    }
+
+    @Test
+    fun `removePaymentMethod removes from list`() = runTest {
+        fakeMethodsRepo.loadResult = Result.success(
+            listOf(
+                PaymentMethodDisplay("pm_1", "visa", "4242", 12, 2028, false),
+                PaymentMethodDisplay("pm_2", "mastercard", "5555", 6, 2027, false),
+            ),
+        )
+        fakeMethodsRepo.removeResult = Result.success(Unit)
+        val vm = PaymentMethodsViewModel(fakeMethodsRepo)
+        vm.loadPaymentMethods()
+        advanceUntilIdle()
+
+        vm.removePaymentMethod("pm_1")
+        advanceUntilIdle()
+
+        assertEquals(1, vm.uiState.value.paymentMethods.size)
+        assertEquals("pm_2", vm.uiState.value.paymentMethods[0].id)
+    }
+
+    @Test
+    fun `setDefaultPaymentMethod updates default`() = runTest {
+        fakeMethodsRepo.loadResult = Result.success(
+            listOf(PaymentMethodDisplay("pm_1", "visa", "4242", 12, 2028, false)),
+        )
+        fakeMethodsRepo.setDefaultResult = Result.success(Unit)
+        val vm = PaymentMethodsViewModel(fakeMethodsRepo)
+        vm.loadPaymentMethods()
+        advanceUntilIdle()
+
+        vm.setDefaultPaymentMethod("pm_1")
+        advanceUntilIdle()
+
+        assertEquals("pm_1", vm.uiState.value.defaultPaymentMethodId)
+    }
+}
+
+// -- Fakes --
+
+class FakePaymentRepository : PaymentRepository {
+    var createResult: Result<CreatePaymentResponseJson> = Result.failure(Exception("Not set"))
+    var listResult: Result<List<Transaction>> = Result.success(emptyList())
+    var getResult: Result<Transaction>? = null
+    var confirmCaptureResult: Result<Transaction>? = null
+    var cancelResult: Result<Transaction>? = null
+    var tipResult: Result<TipResponseJson> = Result.success(TipResponseJson(success = true))
+
+    override suspend fun createPayment(deliveryMatchId: Int, amount: Double, currency: String) = createResult
+    override suspend fun listTransactions(role: String?) = listResult
+    override suspend fun getTransaction(id: Int) = getResult ?: Result.failure(Exception("Not set"))
+    override suspend fun captureTransaction(id: Int) = getResult ?: Result.failure(Exception("Not set"))
+    override suspend fun confirmCapture(deliveryMatchId: Int) = confirmCaptureResult ?: Result.failure(Exception("Not set"))
+    override suspend fun releaseTransaction(id: Int) = getResult ?: Result.failure(Exception("Not set"))
+    override suspend fun requestRefund(transactionId: Int, amount: Double?, reason: String, description: String?) = Result.failure<RefundRequestDataJson>(Exception("Not set"))
+    override suspend fun getRefundStatus(transactionId: Int) = Result.failure<RefundRequestDataJson>(Exception("Not set"))
+    override suspend fun cancelTransaction(id: Int, reason: String?) = cancelResult ?: Result.failure(Exception("Not set"))
+    override suspend fun addTip(transactionId: Int, amount: Double) = tipResult
+}
+
+class FakePaymentMethodsRepository : PaymentMethodsRepository {
+    var loadResult: Result<List<PaymentMethodDisplay>> = Result.success(emptyList())
+    var defaultResult: Result<String?> = Result.success(null)
+    var setupResult: Result<SetupIntentDataJson> = Result.failure(Exception("Not set"))
+    var removeResult: Result<Unit> = Result.success(Unit)
+    var setDefaultResult: Result<Unit> = Result.success(Unit)
+
+    override suspend fun loadPaymentMethods() = loadResult
+    override suspend fun loadDefaultPaymentMethod() = defaultResult
+    override suspend fun createSetupIntent() = setupResult
+    override suspend fun removePaymentMethod(methodId: String) = removeResult
+    override suspend fun setDefaultPaymentMethod(methodId: String) = setDefaultResult
+}
