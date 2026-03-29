@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "message": "Payment created",
+  "data": {
+    "id": 501,
+    "status": "pending",
+    "amounts": {"total": 150.0, "currency": "cad"},
+    "client_secret": "pi_nested_secret_123"
+  },
+  "client_secret": "pi_top_level_secret_456",
+  "customer_id": "cus_abc123",
+  "ephemeral_key": "ek_def456",
+  "public_key": "pk_test_xyz"
+}

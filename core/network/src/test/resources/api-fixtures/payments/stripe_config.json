@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": {
+    "mode": "sandbox",
+    "public_key": "pk_test_abc123",
+    "currency": "cad",
+    "min_delivery_price": 5.0,
+    "tax_enabled": false,
+    "sender_fee_percentage": 10.0,
+    "carrier_fee_percentage": 5.0,
+    "platform_fee_percentage": 10.0
+  }
+}

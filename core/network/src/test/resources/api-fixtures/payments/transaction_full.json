@@ -1,0 +1,30 @@
+{
+  "id": 500,
+  "shipper": {"id": 5, "name": "Alice Shipper", "email": "alice@example.com"},
+  "carrier": {"id": 42, "name": "John Carrier", "email": "john@example.com"},
+  "delivery_match_id": 100,
+  "amounts": {
+    "total": "175.50",
+    "subtotal": 150.0,
+    "platform_fee": "25.50",
+    "carrier_receives": "124.50",
+    "currency": "cad",
+    "tip": 5.0,
+    "carrier_total": "129.50",
+    "base_amount": "150.00"
+  },
+  "stripe": {
+    "payment_intent_id": "pi_123abc",
+    "transfer_id": "tr_456def",
+    "charge_id": "ch_789ghi"
+  },
+  "status": "completed",
+  "description": "Package delivery payment",
+  "payout_status": "completed",
+  "tip": {
+    "amount": 5.0,
+    "paid_at": "2026-03-29T12:00:00Z"
+  },
+  "created_at": "2026-03-28T10:00:00Z",
+  "updated_at": "2026-03-29T10:00:00Z"
+}
