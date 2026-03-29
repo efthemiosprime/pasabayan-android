@@ -47,6 +47,24 @@
     <string name="bookings_counter_offer_price_increase">Prix augment\u00e9 de %1$.2f $</string>
     <string name="bookings_counter_offer_price_decrease">Prix diminu\u00e9 de %1$.2f $</string>
 
+    <!-- Request to carry -->
+    <string name="bookings_request_to_carry_title">Demande de transport</string>
+    <string name="bookings_request_to_carry_price">Votre prix propos\u00e9</string>
+    <string name="bookings_request_to_carry_message">Message \u00e0 l\'exp\u00e9diteur (optionnel)</string>
+    <string name="bookings_request_to_carry_submit">Envoyer la demande</string>
+
+    <!-- Auto-charge -->
+    <string name="bookings_auto_charge_title">Confirmer le paiement</string>
+    <string name="bookings_auto_charge_description">Votre m\u00e9thode de paiement par d\u00e9faut sera d\u00e9bit\u00e9e lors de la confirmation.</string>
+    <string name="bookings_auto_charge_amount">Montant</string>
+    <string name="bookings_auto_charge_confirm">Confirmer et payer</string>
+
+    <!-- Rating -->
+    <string name="bookings_rate_title">\u00c9valuer la livraison</string>
+    <string name="bookings_rate_description">Comment \u00e9tait votre exp\u00e9rience avec %1$s ?</string>
+    <string name="bookings_rate_comment">Commentaire (optionnel)</string>
+    <string name="bookings_rate_submit">Soumettre l\'\u00e9valuation</string>
+
     <!-- Trip status errors -->
     <string name="bookings_trip_not_ready">Trajet pas pr\u00eat</string>
     <string name="bookings_trip_completed">Trajet termin\u00e9</string>
