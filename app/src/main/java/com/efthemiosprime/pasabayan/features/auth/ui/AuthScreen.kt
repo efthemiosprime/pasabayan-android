@@ -55,6 +55,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
 import com.efthemiosprime.pasabayan.core.network.BuildConfig as NetworkBuildConfig
+import com.efthemiosprime.pasabayan.core.designsystem.component.PExpandableCardHost
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.dashboard.ui.MainTabScreen
 import com.efthemiosprime.pasabayan.features.auth.viewmodel.AuthScreenState
@@ -152,10 +153,12 @@ fun AuthScreen(
     ) {
         when (val s = state.session) {
             is SessionUiState.SignedIn -> {
-                MainTabScreen(
-                    user = s.user,
-                    onLogout = onLogout,
-                )
+                PExpandableCardHost {
+                    MainTabScreen(
+                        user = s.user,
+                        onLogout = onLogout,
+                    )
+                }
             }
             SessionUiState.Checking,
             SessionUiState.SignedOut,
