@@ -1,0 +1,45 @@
+{
+  "id": 100,
+  "trip_id": 1,
+  "package_request_id": 10,
+  "match_status": "confirmed",
+  "agreed_price": "150.50",
+  "initiated_by": "carrier",
+  "is_counter_offer": false,
+  "original_price": "120.00",
+  "counter_offer_round": 0,
+  "remaining_counter_offers": 3,
+  "can_counter_offer": true,
+  "carrier_message": "I can carry this safely",
+  "shipper_message": "Please handle with care",
+  "pickup_confirmation_code": "123456",
+  "code_expires_at": "2026-04-01T18:00:00Z",
+  "auto_charge": {
+    "status": "pending",
+    "amount": 150.50,
+    "currency": "CAD",
+    "payment_method_id": "pm_123"
+  },
+  "carrier_expected_price": "160.00",
+  "price_difference": "-9.50",
+  "is_below_rate": true,
+  "platform_fee_percent": 10,
+  "auto_cancel_after_days": 10,
+  "carrier": {
+    "id": 42,
+    "name": "John Carrier",
+    "email": "john@example.com",
+    "rating": "4.8",
+    "verification_level": "verified"
+  },
+  "shipper": {
+    "id": 5,
+    "name": "Alice Shipper",
+    "rating": "4.5",
+    "verification_level": "basic"
+  },
+  "chat_conversation_id": 77,
+  "confirmed_at": "2026-03-29T10:00:00Z",
+  "created_at": "2026-03-28T08:00:00Z",
+  "updated_at": "2026-03-29T10:00:00Z"
+}

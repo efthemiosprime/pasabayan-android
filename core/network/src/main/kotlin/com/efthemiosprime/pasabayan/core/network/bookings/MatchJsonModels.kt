@@ -1,0 +1,132 @@
+package com.efthemiosprime.pasabayan.core.network.bookings
+
+import com.efthemiosprime.pasabayan.core.domain.`enum`.InitiatedBy
+import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
+import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
+import com.efthemiosprime.pasabayan.core.domain.util.FlexibleBoolSerializer
+import com.efthemiosprime.pasabayan.core.domain.util.FlexibleDoubleSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+/**
+ * DeliveryMatch DTO — the central model for bookings/matches.
+ * Mirrors iOS `DeliveryMatch` from MatchingModels.swift.
+ */
+@Serializable
+data class DeliveryMatchJson(
+    val id: Int,
+    @SerialName("trip_id") val tripId: Int? = null,
+    @SerialName("package_request_id") val packageRequestId: Int? = null,
+    @SerialName("match_status") val matchStatus: MatchStatus = MatchStatus.PENDING,
+    @SerialName("agreed_price") @Serializable(with = FlexibleDoubleSerializer::class) val agreedPrice: Double? = null,
+    @SerialName("initiated_by") val initiatedBy: InitiatedBy = InitiatedBy.UNKNOWN,
+
+    // Counter-offer fields
+    @SerialName("is_counter_offer") val isCounterOffer: Boolean = false,
+    @SerialName("original_price") val originalPrice: String? = null,
+    @SerialName("counter_offerer_id") val counterOffererId: Int? = null,
+    @SerialName("counter_offerer_name") val counterOffererName: String? = null,
+    @SerialName("counter_offer_round") val counterOfferRound: Int? = null,
+    @SerialName("remaining_counter_offers") val remainingCounterOffers: Int? = null,
+    @SerialName("can_counter_offer") @Serializable(with = FlexibleBoolSerializer::class) val canCounterOffer: Boolean? = null,
+
+    // Messages
+    @SerialName("carrier_message") val carrierMessage: String? = null,
+    @SerialName("shipper_message") val shipperMessage: String? = null,
+    @SerialName("decline_reason") val declineReason: String? = null,
+
+    // Photos
+    @SerialName("pickup_photo") val pickupPhoto: String? = null,
+    @SerialName("delivery_photo") val deliveryPhoto: String? = null,
+    @SerialName("receipt_photo") val receiptPhoto: String? = null,
+
+    // Pickup codes
+    @SerialName("pickup_confirmation_code") val pickupConfirmationCode: String? = null,
+    @SerialName("delivery_confirmation_code") val deliveryConfirmationCode: String? = null,
+    @SerialName("shipper_generated_code") val shipperGeneratedCode: String? = null,
+    @SerialName("code_expires_at") val codeExpiresAt: String? = null,
+    @SerialName("code_generated_at") val codeGeneratedAt: String? = null,
+    @SerialName("code_used_at") val codeUsedAt: String? = null,
+
+    // Delivery codes
+    @SerialName("delivery_verification_code") val deliveryVerificationCode: String? = null,
+    @SerialName("delivery_code_expires_at") val deliveryCodeExpiresAt: String? = null,
+    @SerialName("delivery_code_generated_at") val deliveryCodeGeneratedAt: String? = null,
+    @SerialName("delivery_code_used_at") val deliveryCodeUsedAt: String? = null,
+
+    // Auto-charge & pricing
+    @SerialName("auto_charge") val autoCharge: AutoChargeInfoJson? = null,
+    @SerialName("carrier_expected_price") @Serializable(with = FlexibleDoubleSerializer::class) val carrierExpectedPrice: Double? = null,
+    @SerialName("price_difference") @Serializable(with = FlexibleDoubleSerializer::class) val priceDifference: Double? = null,
+    @SerialName("is_below_rate") @Serializable(with = FlexibleBoolSerializer::class) val isBelowRate: Boolean? = null,
+    @SerialName("platform_fee_percent") val platformFeePercent: Int? = null,
+    @SerialName("auto_cancel_after_days") val autoCancelAfterDays: Int? = null,
+    @SerialName("auto_cancelled_at") val autoCancelledAt: String? = null,
+    @SerialName("auto_cancelled") @Serializable(with = FlexibleBoolSerializer::class) val autoCancelled: Boolean? = null,
+
+    // Location tracking
+    @SerialName("carrier_current_lat") @Serializable(with = FlexibleDoubleSerializer::class) val carrierCurrentLat: Double? = null,
+    @SerialName("carrier_current_lng") @Serializable(with = FlexibleDoubleSerializer::class) val carrierCurrentLng: Double? = null,
+    @SerialName("location_last_updated_at") val locationLastUpdatedAt: String? = null,
+
+    // Related entities
+    val carrier: UserSummary? = null,
+    val shipper: UserSummary? = null,
+    @SerialName("chat_conversation_id") val chatConversationId: Int? = null,
+
+    // Timestamps
+    @SerialName("confirmed_at") val confirmedAt: String? = null,
+    @SerialName("picked_up_at") val pickedUpAt: String? = null,
+    @SerialName("delivered_at") val deliveredAt: String? = null,
+    @SerialName("carrier_requested_at") val carrierRequestedAt: String? = null,
+    @SerialName("shipper_requested_at") val shipperRequestedAt: String? = null,
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("updated_at") val updatedAt: String? = null,
+)
+
+@Serializable
+data class AutoChargeInfoJson(
+    val status: String? = null,
+    @Serializable(with = FlexibleDoubleSerializer::class) val amount: Double? = null,
+    val currency: String? = null,
+    @SerialName("payment_method_id") val paymentMethodId: String? = null,
+)
+
+@Serializable
+data class MatchCreationRequestJson(
+    @SerialName("trip_id") val tripId: Int,
+    @SerialName("package_request_id") val packageRequestId: Int,
+    @SerialName("agreed_price") val agreedPrice: Double,
+    @SerialName("carrier_message") val carrierMessage: String? = null,
+    @SerialName("shipper_message") val shipperMessage: String? = null,
+)
+
+// -- Response wrappers --
+
+@Serializable
+data class MatchResponseJson(
+    val success: Boolean = false,
+    val message: String = "",
+    val data: DeliveryMatchJson? = null,
+)
+
+@Serializable
+data class MatchListResponseJson(
+    val message: String = "",
+    val data: PaginatedMatchesJson? = null,
+)
+
+@Serializable
+data class PaginatedMatchesJson(
+    val data: List<DeliveryMatchJson> = emptyList(),
+    @SerialName("current_page") val currentPage: Int = 1,
+    @SerialName("last_page") val lastPage: Int = 1,
+    val total: Int = 0,
+    @SerialName("per_page") val perPage: Int = 15,
+)
+
+@Serializable
+data class CancelMatchResponseJson(
+    val success: Boolean = false,
+    val message: String = "",
+)
