@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -20,9 +24,9 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.CardMenuAction
-import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCardActionFooter
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailRow
+import com.efthemiosprime.pasabayan.core.designsystem.component.PExpandableCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PRouteSection
 import com.efthemiosprime.pasabayan.core.designsystem.component.PStatusBadge
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
@@ -38,88 +42,138 @@ fun TripCard(
 ) {
     val opacity = if (trip.tripStatus == TripStatus.CANCELLED) 0.5f else 1f
     val statusLabel = tripStatusLabel(trip.tripStatus)
+    var expanded by rememberSaveable { mutableStateOf(false) }
 
-    PCard(modifier = modifier.alpha(opacity)) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
-        ) {
-            // Header: route + transport + status badge
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "${trip.transportationMethod.icon} ${trip.route}",
-                    style = PasabayanTextStyles.Heading.h6,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
+    PExpandableCard(
+        expanded = expanded,
+        onExpandChange = { expanded = it },
+        modifier = modifier.alpha(opacity),
+        collapsedContent = {
+            // Summary view
+            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
+                // Header: route + transport + status badge
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "${trip.transportationMethod.icon} ${trip.route}",
+                        style = PasabayanTextStyles.Heading.h6,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    PStatusBadge(config = TripStatusBadgeConfig(trip.tripStatus, statusLabel))
+                }
+
+                // Route section
+                PRouteSection(
+                    origin = trip.originCity,
+                    destination = trip.destinationCity,
+                    originAddress = trip.pickupAddress,
+                    destinationAddress = trip.dropoffAddress,
                 )
-                PStatusBadge(config = TripStatusBadgeConfig(trip.tripStatus, statusLabel))
-            }
 
-            // Route section
-            PRouteSection(
-                origin = trip.originCity,
-                destination = trip.destinationCity,
-                originAddress = trip.pickupAddress,
-                destinationAddress = trip.dropoffAddress,
-            )
+                // Schedule
+                if (trip.formattedDepartureDate.isNotEmpty()) {
+                    PDetailRow(
+                        label = stringResource(R.string.trips_detail_departure),
+                        value = trip.formattedDepartureDate,
+                    )
+                }
 
-            // Schedule
-            if (trip.formattedDepartureDate.isNotEmpty()) {
+                // Capacity & price
                 PDetailRow(
-                    label = stringResource(R.string.trips_detail_departure),
-                    value = trip.formattedDepartureDate,
+                    label = stringResource(R.string.trips_detail_capacity),
+                    value = trip.formattedCapacity,
+                )
+
+                // Footer — "View Details" expands the card
+                PCardActionFooter(
+                    onViewDetails = { expanded = true },
+                    menuActions = menuActions,
                 )
             }
-            if (trip.formattedArrivalDate.isNotEmpty()) {
+        },
+        expandedContent = {
+            // Full detail view inside the expanded card
+            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "${trip.transportationMethod.icon} ${trip.route}",
+                        style = PasabayanTextStyles.Heading.h4,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f),
+                    )
+                    PStatusBadge(config = TripStatusBadgeConfig(trip.tripStatus, statusLabel))
+                }
+
+                // Route
+                PRouteSection(
+                    origin = trip.originCity,
+                    destination = trip.destinationCity,
+                    originAddress = trip.pickupAddress,
+                    destinationAddress = trip.dropoffAddress,
+                    originLandmark = trip.pickupLandmark,
+                    destinationLandmark = trip.dropoffLandmark,
+                )
+
+                // Schedule
+                if (trip.formattedDepartureDate.isNotEmpty()) {
+                    PDetailRow(
+                        label = stringResource(R.string.trips_detail_departure),
+                        value = trip.formattedDepartureDate,
+                    )
+                }
+                if (trip.formattedArrivalDate.isNotEmpty()) {
+                    PDetailRow(
+                        label = stringResource(R.string.trips_detail_arrival),
+                        value = trip.formattedArrivalDate,
+                    )
+                }
+
+                // Capacity & pricing
                 PDetailRow(
-                    label = stringResource(R.string.trips_detail_arrival),
-                    value = trip.formattedArrivalDate,
+                    label = stringResource(R.string.trips_detail_capacity),
+                    value = trip.formattedCapacity,
                 )
-            }
-
-            // Capacity & price
-            PDetailRow(
-                label = stringResource(R.string.trips_detail_capacity),
-                value = trip.formattedCapacity,
-            )
-            PDetailRow(
-                label = stringResource(R.string.trips_detail_price),
-                value = trip.formattedPrice,
-            )
-
-            // Pending requests
-            val pendingCount = trip.pendingRequestCount ?: 0
-            if (pendingCount > 0) {
-                Text(
-                    text = stringResource(R.string.trips_detail_pending_requests, pendingCount),
-                    style = PasabayanTextStyles.Caption.large,
-                    color = MaterialTheme.colorScheme.primary,
+                PDetailRow(
+                    label = stringResource(R.string.trips_detail_price),
+                    value = trip.formattedPrice,
                 )
-            }
 
-            // Special notes
-            trip.specialNotes?.let { notes ->
-                Text(
-                    text = notes,
-                    style = PasabayanTextStyles.Body.small,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+                // Pending requests
+                val pendingCount = trip.pendingRequestCount ?: 0
+                if (pendingCount > 0) {
+                    PDetailRow(
+                        label = stringResource(R.string.trips_detail_pending_requests, pendingCount),
+                        value = "",
+                    )
+                }
 
-            // Footer
-            PCardActionFooter(
-                onViewDetails = onViewDetails,
-                menuActions = menuActions,
-            )
-        }
-    }
+                // Special notes
+                trip.specialNotes?.let { notes ->
+                    Text(
+                        text = stringResource(R.string.trips_detail_notes),
+                        style = PasabayanTextStyles.Heading.h6,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = notes,
+                        style = PasabayanTextStyles.Body.regular,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        },
+    )
 }
 
 @Composable
@@ -140,18 +194,6 @@ private fun TripCardPreview() {
     PasabayanTheme {
         TripCard(
             trip = previewTrip(),
-            onViewDetails = {},
-            modifier = Modifier.padding(PasabayanSpacing.lg),
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "TripCard cancelled — light")
-@Composable
-private fun TripCardCancelledPreview() {
-    PasabayanTheme {
-        TripCard(
-            trip = previewTrip(status = TripStatus.CANCELLED),
             onViewDetails = {},
             modifier = Modifier.padding(PasabayanSpacing.lg),
         )

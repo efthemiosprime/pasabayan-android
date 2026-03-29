@@ -14,6 +14,8 @@ import javax.inject.Inject
 data class DashboardUiState(
     val currentRole: UserRole = UserRole.SHIPPER,
     val selectedTabIndex: Int = 0,
+    val selectedTripId: Int? = null,
+    val selectedPackageId: Int? = null,
 )
 
 @HiltViewModel
@@ -47,5 +49,17 @@ class DashboardViewModel @Inject constructor() : ViewModel() {
 
     fun selectTab(index: Int) {
         _uiState.update { it.copy(selectedTabIndex = index) }
+    }
+
+    fun selectTrip(tripId: Int) {
+        _uiState.update { it.copy(selectedTripId = tripId, selectedPackageId = null) }
+    }
+
+    fun selectPackage(packageId: Int) {
+        _uiState.update { it.copy(selectedPackageId = packageId, selectedTripId = null) }
+    }
+
+    fun clearSelection() {
+        _uiState.update { it.copy(selectedTripId = null, selectedPackageId = null) }
     }
 }

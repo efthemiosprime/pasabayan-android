@@ -48,6 +48,7 @@ fun CarrierExploreContent(
     user: AuthUser,
     onSwitchRole: () -> Unit,
     modifier: Modifier = Modifier,
+    onViewPackageDetails: (packageId: Int) -> Unit = {},
     packageViewModel: PackageViewModel = hiltViewModel(),
 ) {
     val state by packageViewModel.uiState.collectAsStateWithLifecycle()
@@ -133,7 +134,7 @@ fun CarrierExploreContent(
                 state.packageRequests.forEach { pkg ->
                     PackageRequestCard(
                         pkg = pkg,
-                        onViewDetails = { /* TODO: open detail */ },
+                        onViewDetails = { onViewPackageDetails(pkg.id) },
                     )
                 }
             }

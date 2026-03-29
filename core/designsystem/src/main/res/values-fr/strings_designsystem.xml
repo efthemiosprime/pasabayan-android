@@ -7,4 +7,5 @@
     <string name="ds_expand">D\u00e9plier</string>
     <string name="ds_collapse">Replier</string>
     <string name="ds_more_options">Plus d\'options</string>
+    <string name="ds_close">Fermer</string>
 </resources>

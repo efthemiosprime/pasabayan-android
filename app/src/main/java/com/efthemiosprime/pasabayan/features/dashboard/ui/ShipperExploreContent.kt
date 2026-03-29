@@ -63,6 +63,7 @@ fun ShipperExploreContent(
     user: AuthUser,
     onSwitchRole: () -> Unit,
     modifier: Modifier = Modifier,
+    onViewTripDetails: (tripId: Int) -> Unit = {},
     browseTripsViewModel: BrowseTripsViewModel = hiltViewModel(),
 ) {
     val state by browseTripsViewModel.uiState.collectAsStateWithLifecycle()
@@ -135,7 +136,7 @@ fun ShipperExploreContent(
                 state.availableTrips.forEach { trip ->
                     TripCard(
                         trip = trip,
-                        onViewDetails = { /* TODO: open trip details */ },
+                        onViewDetails = { onViewTripDetails(trip.id) },
                     )
                 }
             }

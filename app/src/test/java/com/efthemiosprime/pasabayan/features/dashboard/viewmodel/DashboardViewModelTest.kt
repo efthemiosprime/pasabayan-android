@@ -3,6 +3,7 @@ package com.efthemiosprime.pasabayan.features.dashboard.viewmodel
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 
@@ -71,6 +72,42 @@ class DashboardViewModelTest {
     fun `selectTab updates selectedTabIndex`() {
         viewModel.selectTab(2)
         assertEquals(2, viewModel.uiState.value.selectedTabIndex)
+    }
+
+    @Test
+    fun `selectTrip sets selectedTripId`() {
+        viewModel.selectTrip(42)
+        assertEquals(42, viewModel.uiState.value.selectedTripId)
+    }
+
+    @Test
+    fun `selectPackage sets selectedPackageId`() {
+        viewModel.selectPackage(10)
+        assertEquals(10, viewModel.uiState.value.selectedPackageId)
+    }
+
+    @Test
+    fun `clearSelection resets both to null`() {
+        viewModel.selectTrip(42)
+        viewModel.clearSelection()
+        assertNull(viewModel.uiState.value.selectedTripId)
+        assertNull(viewModel.uiState.value.selectedPackageId)
+    }
+
+    @Test
+    fun `selectTrip clears selectedPackageId`() {
+        viewModel.selectPackage(10)
+        viewModel.selectTrip(42)
+        assertEquals(42, viewModel.uiState.value.selectedTripId)
+        assertNull(viewModel.uiState.value.selectedPackageId)
+    }
+
+    @Test
+    fun `selectPackage clears selectedTripId`() {
+        viewModel.selectTrip(42)
+        viewModel.selectPackage(10)
+        assertEquals(10, viewModel.uiState.value.selectedPackageId)
+        assertNull(viewModel.uiState.value.selectedTripId)
     }
 
     private fun testUser(

@@ -7,4 +7,5 @@
     <string name="ds_expand">Expand</string>
     <string name="ds_collapse">Collapse</string>
     <string name="ds_more_options">More options</string>
+    <string name="ds_close">Close</string>
 </resources>

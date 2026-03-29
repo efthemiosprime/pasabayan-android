@@ -5,9 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Chat
-import androidx.compose.material.icons.outlined.Explore
-import androidx.compose.material.icons.outlined.Inventory2
-import androidx.compose.material.icons.outlined.LocalShipping
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.runtime.Composable
@@ -70,12 +67,12 @@ fun MainTabScreen(
             val currentTab = tabs.getOrNull(state.selectedTabIndex)
             when (currentTab?.route) {
                 "explore" -> when (state.currentRole) {
-                    com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole.CARRIER ->
+                    UserRole.CARRIER ->
                         CarrierExploreContent(
                             user = user,
                             onSwitchRole = { viewModel.switchRole() },
                         )
-                    com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole.SHIPPER ->
+                    UserRole.SHIPPER ->
                         ShipperExploreContent(
                             user = user,
                             onSwitchRole = { viewModel.switchRole() },
@@ -87,11 +84,11 @@ fun MainTabScreen(
                     description = stringResource(R.string.dashboard_stub_matches_description),
                 )
                 "my_trips" -> com.efthemiosprime.pasabayan.features.trips.ui.CarrierMyTripsScreen(
-                    onViewTripDetails = { /* TODO: navigate to trip details */ },
+                    onViewTripDetails = { /* Handled by expandable card */ },
                     onCreateTrip = { /* TODO: navigate to trip creation */ },
                 )
                 "packages" -> com.efthemiosprime.pasabayan.features.packages.ui.PackageListScreen(
-                    onViewPackageDetails = { /* TODO: navigate to package details */ },
+                    onViewPackageDetails = { /* Handled by expandable card */ },
                     onCreatePackage = { /* TODO: navigate to package creation */ },
                 )
                 "messages" -> StubTabContent(
