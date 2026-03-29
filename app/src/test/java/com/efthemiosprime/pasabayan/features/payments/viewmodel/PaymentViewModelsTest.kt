@@ -181,8 +181,9 @@ class FakePaymentRepository : PaymentRepository {
     override suspend fun captureTransaction(id: Int) = getResult ?: Result.failure(Exception("Not set"))
     override suspend fun confirmCapture(deliveryMatchId: Int) = confirmCaptureResult ?: Result.failure(Exception("Not set"))
     override suspend fun releaseTransaction(id: Int) = getResult ?: Result.failure(Exception("Not set"))
-    override suspend fun requestRefund(transactionId: Int, amount: Double?, reason: String, description: String?) = Result.failure<RefundRequestDataJson>(Exception("Not set"))
-    override suspend fun getRefundStatus(transactionId: Int) = Result.failure<RefundRequestDataJson>(Exception("Not set"))
+    var refundResult: Result<RefundRequestDataJson> = Result.failure(Exception("Not set"))
+    override suspend fun requestRefund(transactionId: Int, amount: Double?, reason: String, description: String?) = refundResult
+    override suspend fun getRefundStatus(transactionId: Int) = refundResult
     override suspend fun cancelTransaction(id: Int, reason: String?) = cancelResult ?: Result.failure(Exception("Not set"))
     override suspend fun addTip(transactionId: Int, amount: Double) = tipResult
 }
