@@ -1,0 +1,36 @@
+{
+  "id": 200,
+  "package_request_id": 10,
+  "trip_id": 1,
+  "carrier_id": 42,
+  "shipper_id": 5,
+  "pickup_location": "123 Main St, Toronto",
+  "delivery_location": "456 Oak Ave, Montreal",
+  "scheduled_pickup_date": "2026-04-05",
+  "scheduled_pickup_time": "10:00",
+  "agreed_price": "150.50",
+  "status": "confirmed",
+  "notes": "Handle with care",
+  "tracking_number": "TRK-123456",
+  "created_at": "2026-03-28T10:00:00Z",
+  "updated_at": "2026-03-29T10:00:00Z",
+  "auto_cancel_after_days": 10,
+  "platform_fee_percent": 10,
+  "raw_match_status": "confirmed",
+  "chat_conversation_id": 77,
+  "carrier": {
+    "id": 42,
+    "name": "John Carrier",
+    "rating": "4.8"
+  },
+  "shipper": {
+    "id": 5,
+    "name": "Alice Shipper",
+    "rating": "4.5"
+  },
+  "is_counter_offer": false,
+  "counter_offer_round": 0,
+  "remaining_counter_offers": 3,
+  "can_counter_offer": true,
+  "initiated_by": "carrier"
+}
