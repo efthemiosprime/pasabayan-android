@@ -6,6 +6,8 @@ import android.content.res.Configuration
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -21,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.R
@@ -57,6 +60,12 @@ import com.stripe.android.PaymentConfiguration
 import com.stripe.android.paymentsheet.PaymentSheet
 import com.stripe.android.paymentsheet.PaymentSheetResult
 
+private enum class PaymentsRoute {
+    PROFILE,
+    TRANSACTIONS,
+    TRANSACTION_DETAIL,
+}
+
 @Composable
 fun PaymentsProfileScreen(
     onLogout: () -> Unit,
@@ -79,6 +88,9 @@ fun PaymentsProfileScreen(
     val receiptState by receiptListViewModel.uiState.collectAsStateWithLifecycle()
     val connectState by stripeConnectViewModel.uiState.collectAsStateWithLifecycle()
     var currentDeliveryMatchId by remember { mutableStateOf<Int?>(null) }
+    var route by remember { mutableStateOf(PaymentsRoute.PROFILE) }
+    var selectedTransaction by remember { mutableStateOf<Transaction?>(null) }
+    var selectedTransactionFilter by remember { mutableStateOf(TransactionFilter.ALL) }
 
     val paymentSheet = remember(activity) {
         activity?.let { hostActivity ->
@@ -108,52 +120,97 @@ fun PaymentsProfileScreen(
         }
     }
 
-    PaymentsProfileContent(
-        paymentState = paymentState,
-        methodsState = methodsState,
-        tippingState = tippingState,
-        refundState = refundState,
-        historyState = historyState,
-        receiptState = receiptState,
-        connectState = connectState,
-        onCreatePayment = { id, amount ->
-            currentDeliveryMatchId = id
-            paymentViewModel.createPayment(id, amount)
-        },
-        onConfirmCapture = { id -> paymentViewModel.confirmCapture(id) },
-        onPresentPaymentSheet = {
-            val secret = paymentState.clientSecret ?: return@PaymentsProfileContent
-            val sheet = paymentSheet ?: return@PaymentsProfileContent
-            if (paymentViewModel.isMockClientSecret(secret)) {
-                val deliveryMatchId = currentDeliveryMatchId ?: return@PaymentsProfileContent
-                paymentViewModel.confirmCapture(deliveryMatchId)
-                return@PaymentsProfileContent
+    when (route) {
+        PaymentsRoute.PROFILE -> {
+            PaymentsProfileContent(
+                paymentState = paymentState,
+                methodsState = methodsState,
+                tippingState = tippingState,
+                refundState = refundState,
+                historyState = historyState,
+                receiptState = receiptState,
+                connectState = connectState,
+                onCreatePayment = { id, amount ->
+                    currentDeliveryMatchId = id
+                    paymentViewModel.createPayment(id, amount)
+                },
+                onConfirmCapture = { id -> paymentViewModel.confirmCapture(id) },
+                onPresentPaymentSheet = {
+                    val secret = paymentState.clientSecret ?: return@PaymentsProfileContent
+                    val sheet = paymentSheet ?: return@PaymentsProfileContent
+                    if (paymentViewModel.isMockClientSecret(secret)) {
+                        val deliveryMatchId = currentDeliveryMatchId ?: return@PaymentsProfileContent
+                        paymentViewModel.confirmCapture(deliveryMatchId)
+                        return@PaymentsProfileContent
+                    }
+                    val configuration = buildPaymentSheetConfiguration(paymentState)
+                    sheet.presentWithPaymentIntent(secret, configuration)
+                },
+                onAddTip = { transactionId, amount ->
+                    tippingViewModel.setCustomTipAmount(amount.toString())
+                    tippingViewModel.addTip(transactionId)
+                },
+                onRequestRefund = { transactionId, reason ->
+                    refundViewModel.selectReason(RefundReason.OTHER)
+                    refundViewModel.setCustomReason(reason)
+                    refundViewModel.submitRefundRequest(transactionId)
+                },
+                onSetDefaultMethod = { methodId -> paymentMethodsViewModel.setDefaultPaymentMethod(methodId) },
+                onLoadMoreReceipts = { receiptListViewModel.loadMore() },
+                onOpenTransactionList = { route = PaymentsRoute.TRANSACTIONS },
+                onOpenTransaction = { transaction ->
+                    selectedTransaction = transaction
+                    route = PaymentsRoute.TRANSACTION_DETAIL
+                },
+                onStartOnboarding = { stripeConnectViewModel.startOnboarding() },
+                onOpenDashboard = { stripeConnectViewModel.openDashboard() },
+                onRefresh = {
+                    paymentMethodsViewModel.loadPaymentMethods()
+                    transactionHistoryViewModel.refreshTransactions()
+                    receiptListViewModel.refresh()
+                    stripeConnectViewModel.loadStatus(forceRefresh = true)
+                },
+                onLogout = onLogout,
+                modifier = modifier,
+            )
+        }
+
+        PaymentsRoute.TRANSACTIONS -> {
+            TransactionHistoryScreen(
+                onBack = { route = PaymentsRoute.PROFILE },
+                onOpenTransaction = { transaction, filter ->
+                    selectedTransaction = transaction
+                    selectedTransactionFilter = filter
+                    route = PaymentsRoute.TRANSACTION_DETAIL
+                },
+                modifier = modifier,
+                viewModel = transactionHistoryViewModel,
+            )
+        }
+
+        PaymentsRoute.TRANSACTION_DETAIL -> {
+            val transaction = selectedTransaction
+            if (transaction == null) {
+                route = PaymentsRoute.TRANSACTIONS
+            } else {
+                TransactionDetailScreen(
+                    transactionId = transaction.id,
+                    filter = selectedTransactionFilter,
+                    onBack = { route = PaymentsRoute.TRANSACTIONS },
+                    onRequestRefund = { transactionId ->
+                        refundViewModel.selectReason(RefundReason.OTHER)
+                        refundViewModel.setCustomReason("Requesting refund for transaction issue")
+                        refundViewModel.submitRefundRequest(transactionId)
+                    },
+                    onAddTip = { transactionId ->
+                        tippingViewModel.selectPresetTip(TippingUiState.PRESET_TIPS[1])
+                        tippingViewModel.addTip(transactionId)
+                    },
+                    modifier = modifier,
+                )
             }
-            val configuration = buildPaymentSheetConfiguration(paymentState)
-            sheet.presentWithPaymentIntent(secret, configuration)
-        },
-        onAddTip = { transactionId, amount ->
-            tippingViewModel.setCustomTipAmount(amount.toString())
-            tippingViewModel.addTip(transactionId)
-        },
-        onRequestRefund = { transactionId, reason ->
-            refundViewModel.selectReason(RefundReason.OTHER)
-            refundViewModel.setCustomReason(reason)
-            refundViewModel.submitRefundRequest(transactionId)
-        },
-        onSetDefaultMethod = { methodId -> paymentMethodsViewModel.setDefaultPaymentMethod(methodId) },
-        onLoadMoreReceipts = { receiptListViewModel.loadMore() },
-        onStartOnboarding = { stripeConnectViewModel.startOnboarding() },
-        onOpenDashboard = { stripeConnectViewModel.openDashboard() },
-        onRefresh = {
-            paymentMethodsViewModel.loadPaymentMethods()
-            transactionHistoryViewModel.refreshTransactions()
-            receiptListViewModel.refresh()
-            stripeConnectViewModel.loadStatus(forceRefresh = true)
-        },
-        onLogout = onLogout,
-        modifier = modifier,
-    )
+        }
+    }
 }
 
 @Composable
@@ -172,6 +229,8 @@ private fun PaymentsProfileContent(
     onRequestRefund: (Int, String) -> Unit,
     onSetDefaultMethod: (String) -> Unit,
     onLoadMoreReceipts: () -> Unit,
+    onOpenTransactionList: () -> Unit,
+    onOpenTransaction: (Transaction) -> Unit,
     onStartOnboarding: () -> Unit,
     onOpenDashboard: () -> Unit,
     onRefresh: () -> Unit,
@@ -224,6 +283,8 @@ private fun PaymentsProfileContent(
         PaymentsActivitySection(
             historyState = historyState,
             receiptState = receiptState,
+            onOpenTransactionList = onOpenTransactionList,
+            onOpenTransaction = onOpenTransaction,
             onLoadMoreReceipts = onLoadMoreReceipts,
         )
         StripeConnectSection(
@@ -306,10 +367,13 @@ private fun PaymentsProfilePreview() {
             onRequestRefund = { _, _ -> },
             onSetDefaultMethod = {},
             onLoadMoreReceipts = {},
+            onOpenTransactionList = {},
+            onOpenTransaction = {},
             onStartOnboarding = {},
             onOpenDashboard = {},
             onRefresh = {},
             onLogout = {},
+            modifier = Modifier.fillMaxSize().padding(8.dp),
         )
     }
 }

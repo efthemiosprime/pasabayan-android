@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -15,6 +16,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
+import com.efthemiosprime.pasabayan.features.payments.model.Transaction
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.ReceiptListUiState
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.TransactionHistoryUiState
 
@@ -22,6 +24,8 @@ import com.efthemiosprime.pasabayan.features.payments.viewmodel.TransactionHisto
 fun PaymentsActivitySection(
     historyState: TransactionHistoryUiState,
     receiptState: ReceiptListUiState,
+    onOpenTransactionList: () -> Unit,
+    onOpenTransaction: (Transaction) -> Unit,
     onLoadMoreReceipts: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -46,6 +50,25 @@ fun PaymentsActivitySection(
                 ),
                 style = PasabayanTextStyles.Body.small,
             )
+            PButton(
+                text = stringResource(R.string.payments_transactions_open_list),
+                onClick = onOpenTransactionList,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            historyState.transactions.take(3).forEach { transaction ->
+                Text(
+                    text = "${transaction.id} • ${transaction.formattedTotal}",
+                    style = PasabayanTextStyles.Body.small,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = PasabayanSpacing.xs),
+                )
+                PButton(
+                    text = transaction.description ?: stringResource(R.string.payments_transactions_default_description),
+                    onClick = { onOpenTransaction(transaction) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
             if (receiptState.hasMore) {
                 PButton(
                     text = stringResource(R.string.payments_profile_load_more_receipts),
@@ -63,8 +86,33 @@ fun PaymentsActivitySection(
 private fun PaymentsActivitySectionPreview() {
     PasabayanTheme {
         PaymentsActivitySection(
-            historyState = TransactionHistoryUiState(transactions = emptyList()),
+            historyState = TransactionHistoryUiState(
+                transactions = listOf(
+                    Transaction(
+                        id = 9,
+                        transactionStatus = com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionStatus.COMPLETED,
+                        deliveryMatchId = 22,
+                        description = "Delivery payment",
+                        shipperName = "Shipper",
+                        carrierName = "Carrier",
+                        totalAmount = 100.0,
+                        subtotal = null,
+                        platformFee = null,
+                        carrierReceives = null,
+                        currency = "cad",
+                        tipAmount = null,
+                        clientSecret = null,
+                        customerId = null,
+                        ephemeralKey = null,
+                        payoutStatus = null,
+                        createdAt = null,
+                        updatedAt = null,
+                    ),
+                ),
+            ),
             receiptState = ReceiptListUiState(hasMore = true, totalCount = 2),
+            onOpenTransactionList = {},
+            onOpenTransaction = {},
             onLoadMoreReceipts = {},
         )
     }
