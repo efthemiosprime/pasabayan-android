@@ -96,6 +96,17 @@ class PaymentJsonModelsDecodeTest {
         assertEquals("pending", response.data!!.status)
     }
 
+    @Test
+    fun `CreatePaymentResponseJson falls back to nested clientSecret`() {
+        val raw = fixture("create_payment_response_nested_secret.json")
+        val response = json.decodeFromString<CreatePaymentResponseJson>(raw)
+
+        assertTrue(response.success)
+        assertNotNull(response.data)
+        assertEquals("pi_nested_secret_789", response.data!!.clientSecret)
+        assertEquals("pi_nested_secret_789", response.clientSecret)
+    }
+
     // -- StripeConfigResponseJson --
 
     @Test
@@ -144,6 +155,20 @@ class PaymentJsonModelsDecodeTest {
         )
         assertEquals("Package was damaged", decoded.reason)
         assertEquals(50.0, decoded.amount!!, 0.001)
+    }
+
+    @Test
+    fun `RefundStatusResponseJson decodes reviewed and processed timestamps`() {
+        val raw = fixture("refund_status_response.json")
+        val response = json.decodeFromString<RefundStatusResponseJson>(raw)
+
+        assertTrue(response.success)
+        assertNotNull(response.data)
+        assertEquals(901, response.data!!.id)
+        assertEquals(500, response.data!!.transactionId)
+        assertEquals("approved", response.data!!.status)
+        assertEquals("2026-03-30T10:00:00Z", response.data!!.reviewedAt)
+        assertEquals("2026-03-30T10:05:00Z", response.data!!.processedAt)
     }
 
     @Test

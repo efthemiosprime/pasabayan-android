@@ -1,0 +1,7 @@
+{
+  "success": true,
+  "message": "Default payment method updated",
+  "data": {
+    "payment_method_id": "pm_visa_4242"
+  }
+}

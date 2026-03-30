@@ -1,0 +1,14 @@
+{
+  "success": false,
+  "message": "Validation failed",
+  "error": "validation_failed",
+  "errors": {
+    "amount": [
+      "Amount is required"
+    ]
+  },
+  "client_secret": "pi_requires_action_secret",
+  "customer_id": "cus_error_001",
+  "ephemeral_key": "ek_error_001",
+  "public_key": "pk_test_error"
+}

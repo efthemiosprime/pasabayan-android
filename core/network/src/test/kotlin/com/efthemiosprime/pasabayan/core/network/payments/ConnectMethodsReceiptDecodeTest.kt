@@ -76,6 +76,25 @@ class ConnectMethodsReceiptDecodeTest {
         assertEquals("pm_visa_4242", response.data!!.paymentMethodId)
     }
 
+    @Test
+    fun `SetDefaultPaymentMethodResponseJson decodes data payload`() {
+        val raw = fixture("set_default_payment_method_response.json")
+        val response = json.decodeFromString<SetDefaultPaymentMethodResponseJson>(raw)
+
+        assertTrue(response.success)
+        assertNotNull(response.data)
+        assertEquals("pm_visa_4242", response.data!!.paymentMethodId)
+    }
+
+    @Test
+    fun `SetDefaultPaymentMethodRequestJson encodes`() {
+        val request = SetDefaultPaymentMethodRequestJson(paymentMethodId = "pm_visa_4242")
+        val decoded = json.decodeFromString<SetDefaultPaymentMethodRequestJson>(
+            json.encodeToString(SetDefaultPaymentMethodRequestJson.serializer(), request),
+        )
+        assertEquals("pm_visa_4242", decoded.paymentMethodId)
+    }
+
     // -- Receipts --
 
     @Test
@@ -113,5 +132,17 @@ class ConnectMethodsReceiptDecodeTest {
         assertTrue(response.success)
         assertEquals("https://connect.stripe.com/onboard", response.data!!.onboardingUrl)
         assertEquals("acct_new", response.data!!.stripeAccountId)
+    }
+
+    @Test
+    fun `PaymentApiErrorResponseJson decodes structured validation errors`() {
+        val raw = fixture("payment_error_response.json")
+        val response = json.decodeFromString<PaymentApiErrorResponseJson>(raw)
+
+        assertTrue(response.success.not())
+        assertEquals("validation_failed", response.error)
+        assertNotNull(response.errors)
+        assertEquals("Amount is required", response.errors!!["amount"]!!.first())
+        assertEquals("pi_requires_action_secret", response.clientSecret)
     }
 }

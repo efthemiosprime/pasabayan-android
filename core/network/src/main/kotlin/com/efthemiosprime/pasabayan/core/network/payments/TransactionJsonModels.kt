@@ -1,8 +1,15 @@
 package com.efthemiosprime.pasabayan.core.network.payments
 
 import com.efthemiosprime.pasabayan.core.domain.util.FlexibleDoubleSerializer
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.jsonObject
 
 @Serializable
 data class TransactionJson(
@@ -87,7 +94,7 @@ data class CreatePaymentRequestJson(
     val currency: String = "cad",
 )
 
-@Serializable
+@Serializable(with = CreatePaymentResponseJsonSerializer::class)
 data class CreatePaymentResponseJson(
     val success: Boolean = false,
     val message: String? = null,
@@ -98,6 +105,61 @@ data class CreatePaymentResponseJson(
     @SerialName("public_key") val publicKey: String? = null,
     @SerialName("default_payment_method_id") val defaultPaymentMethodId: String? = null,
 )
+
+@Serializable
+private data class CreatePaymentResponseJsonSurrogate(
+    val success: Boolean = false,
+    val message: String? = null,
+    val data: TransactionJson? = null,
+    @SerialName("client_secret") val clientSecret: String? = null,
+    @SerialName("customer_id") val customerId: String? = null,
+    @SerialName("ephemeral_key") val ephemeralKey: String? = null,
+    @SerialName("public_key") val publicKey: String? = null,
+    @SerialName("default_payment_method_id") val defaultPaymentMethodId: String? = null,
+)
+
+/**
+ * iOS parity: read `client_secret` from top-level first, then `data.client_secret`.
+ */
+object CreatePaymentResponseJsonSerializer : KSerializer<CreatePaymentResponseJson> {
+    override val descriptor: SerialDescriptor =
+        CreatePaymentResponseJsonSurrogate.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): CreatePaymentResponseJson {
+        val jsonDecoder = decoder as? JsonDecoder
+            ?: throw SerializationException("CreatePaymentResponseJson supports JSON only")
+        val element = jsonDecoder.decodeJsonElement()
+        val surrogate = jsonDecoder.json.decodeFromJsonElement(
+            CreatePaymentResponseJsonSurrogate.serializer(),
+            element.jsonObject,
+        )
+        val resolvedClientSecret = surrogate.clientSecret ?: surrogate.data?.clientSecret
+        return CreatePaymentResponseJson(
+            success = surrogate.success,
+            message = surrogate.message,
+            data = surrogate.data,
+            clientSecret = resolvedClientSecret,
+            customerId = surrogate.customerId,
+            ephemeralKey = surrogate.ephemeralKey,
+            publicKey = surrogate.publicKey,
+            defaultPaymentMethodId = surrogate.defaultPaymentMethodId,
+        )
+    }
+
+    override fun serialize(encoder: Encoder, value: CreatePaymentResponseJson) {
+        val surrogate = CreatePaymentResponseJsonSurrogate(
+            success = value.success,
+            message = value.message,
+            data = value.data,
+            clientSecret = value.clientSecret ?: value.data?.clientSecret,
+            customerId = value.customerId,
+            ephemeralKey = value.ephemeralKey,
+            publicKey = value.publicKey,
+            defaultPaymentMethodId = value.defaultPaymentMethodId,
+        )
+        encoder.encodeSerializableValue(CreatePaymentResponseJsonSurrogate.serializer(), surrogate)
+    }
+}
 
 @Serializable
 data class TransactionListResponseJson(
@@ -134,12 +196,14 @@ data class RefundRequestBodyJson(
 @Serializable
 data class RefundRequestDataJson(
     val id: Int = 0,
-    @SerialName("transaction_id") val transactionId: Int? = null,
+    @SerialName("transaction_id") val transactionId: Int = 0,
     @Serializable(with = FlexibleDoubleSerializer::class) val amount: Double? = null,
     val reason: String? = null,
     val description: String? = null,
-    val status: String? = null,
+    val status: String = "",
     @SerialName("admin_notes") val adminNotes: String? = null,
+    @SerialName("reviewed_at") val reviewedAt: String? = null,
+    @SerialName("processed_at") val processedAt: String? = null,
     @SerialName("created_at") val createdAt: String? = null,
 )
 

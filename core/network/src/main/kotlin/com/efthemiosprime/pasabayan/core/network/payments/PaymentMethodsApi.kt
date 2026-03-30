@@ -22,7 +22,7 @@ interface PaymentMethodsApi {
 
     @PUT("stripe/default-payment-method")
     suspend fun setDefaultPaymentMethod(
-        @Body body: Map<String, String>,
+        @Body body: SetDefaultPaymentMethodRequestJson,
     ): Response<SetDefaultPaymentMethodResponseJson>
 
     @DELETE("stripe/payment-methods/{methodId}")

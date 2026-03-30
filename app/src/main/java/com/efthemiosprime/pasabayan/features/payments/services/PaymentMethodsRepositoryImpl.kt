@@ -4,6 +4,7 @@ import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.network.ApiErrorMapper
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.network.payments.PaymentMethodsApi
+import com.efthemiosprime.pasabayan.core.network.payments.SetDefaultPaymentMethodRequestJson
 import com.efthemiosprime.pasabayan.core.network.payments.SetupIntentDataJson
 import com.efthemiosprime.pasabayan.features.payments.model.PaymentMethodDisplay
 import com.efthemiosprime.pasabayan.features.payments.model.toDomain
@@ -70,7 +71,7 @@ class PaymentMethodsRepositoryImpl @Inject constructor(
 
     override suspend fun setDefaultPaymentMethod(methodId: String): Result<Unit> {
         return try {
-            val res = methodsApi.setDefaultPaymentMethod(mapOf("payment_method_id" to methodId))
+            val res = methodsApi.setDefaultPaymentMethod(SetDefaultPaymentMethodRequestJson(methodId))
             if (!res.isSuccessful) return Result.failure(
                 DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
             )

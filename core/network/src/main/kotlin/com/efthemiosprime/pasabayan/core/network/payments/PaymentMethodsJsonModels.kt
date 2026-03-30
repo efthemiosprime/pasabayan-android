@@ -51,10 +51,21 @@ data class DefaultPaymentMethodDataJson(
 data class SetDefaultPaymentMethodResponseJson(
     val success: Boolean = false,
     val message: String? = null,
+    val data: SetDefaultPaymentMethodDataJson? = null,
+)
+
+@Serializable
+data class SetDefaultPaymentMethodDataJson(
+    @SerialName("payment_method_id") val paymentMethodId: String? = null,
 )
 
 @Serializable
 data class DeletePaymentMethodResponseJson(
     val success: Boolean = false,
     val message: String? = null,
+)
+
+@Serializable
+data class SetDefaultPaymentMethodRequestJson(
+    @SerialName("payment_method_id") val paymentMethodId: String,
 )

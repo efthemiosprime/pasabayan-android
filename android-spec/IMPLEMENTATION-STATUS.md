@@ -19,7 +19,7 @@
 | Field | Value |
 |-------|--------|
 | **Current phase** | Phase 4 — Payments & Stripe (Phase 3 complete) |
-| **Last updated** | 2026-03-29 |
+| **Last updated** | 2026-03-30 |
 | **Spec audit** | **Complete** — YAML expanded from ~25 to ~100 endpoint rows; all feature specs updated with query params, multipart fields, WebSocket protocol, local storage keys, activity logs, cache policy, GPS services, badge rules, analytics mock structures |
 
 ---
@@ -30,9 +30,9 @@
 |-------|-----------|--------|
 | **0** — Foundation | See [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md) § Phase 0 | **Complete** — foundation modules, API-SHAPES (auth), **ErrorAlertPolicy**, TDD Phase 0 backlog ticked; app shell polish remains in later phases |
 | **1** — Authentication | Login, token, `/auth/me`, logout | **Complete** — OAuth UI (Google/Facebook → backend); cold-start onboarding → auth; post-login city → consent → dashboard shell; **`UnauthorizedSessionNotifier`** + **`AuthViewModel`** signed-out on **401**; `didJustCompleteConsent` one-shot; auth DTO tests + **`AuthRepositoryIntegrationTest`** + **`TokenClearingHandlerTest`**. Optional: Credential Manager / One Tap, extra `AuthViewModel` tests. |
-| **2** — Trips, packages, Explore | Browse/list/create flows + role tabs | **Complete** — `:core:domain` (15 enums, 4 shared models, FlexibleDecoders, DateTimeParsing); 12 new `P*` design system components; tab shell with role switcher; **Trips**: TripsApi + DTOs, Trip domain model + mapper, TripsRepository + local stores, CarrierTripsVM + BrowseTripsVM, TripCard + progress widget + filter + disclaimer + tutorial, CarrierMyTripsScreen + BrowseTripsScreen + TripDetailsScreen + TripCreationScreen, TripFormValidator (24 tests); **Packages**: PackagesApi + DTOs, PackageRequest + AvailablePackage + mapper, PackagesRepository + local stores, PackageViewModel, PackageRequestCard + details + tutorial, PackageListScreen + PackageDetailScreen + PackageRequestScreen, PackageFormValidator (14 tests); **Explore**: CarrierExploreContent + ShipperExploreContent + UserHeaderCard + StatCard; full i18n (EN+FR). |
+| **2** — Trips, packages, Explore | Browse/list/create flows + role tabs | **Complete** — `:core:domain` (15 enums, 4 shared models, FlexibleDecoders, DateTimeParsing); 12 new `P*` design system components; tab shell with role switcher; **Trips**: TripsApi + DTOs, Trip domain model + mapper, TripsRepository + local stores, CarrierTripsVM + BrowseTripsVM, TripCard + progress widget + filter + disclaimer + tutorial, CarrierMyTripsScreen + BrowseTripsScreen + TripDetailsScreen + TripCreationScreen, TripFormValidator (24 tests); **Packages**: PackagesApi + DTOs, PackageRequest + AvailablePackage + mapper, PackagesRepository + local stores, PackageViewModel, PackageRequestCard + details + tutorial, PackageListScreen + PackageDetailScreen + PackageRequestScreen, PackageFormValidator (14 tests); **Explore**: CarrierExploreContent + ShipperExploreContent + UserHeaderCard + StatCard, with carrier empty-state content aligned to iOS structure; full i18n (EN+FR). |
 | **3** — Bookings & matches | Core marketplace loop + counter-offer parity | **Complete** — BookingsApi (20+ endpoints), DeliveryMatch (60+ fields) + BookingAction (10 cases) + BookingMapper + computed props (availableActions, pricing, codes); BookingType enum; 9 nested info types; 10 supporting models (CounterOfferContext, codes, tracking, stats); BookingsRepository (15 methods); MatchingViewModel + LiveTrackingViewModel + AutoChargeConfirmationViewModel; unified MatchCard (replaces 4 iOS cards) + MatchStatusBadge + PriceComparison + CounterOfferBanner + code views; RequestToCarrySheet + CounterOfferPromptSheet + AutoChargeSheet + RateDeliverySheet; unified MatchListScreen wired to tab; BookingSuccessScreen + code screens; 60+ tests; full i18n (EN+FR). |
-| **4** — Payments & Stripe | … | Not started |
+| **4** — Payments & Stripe | … | In progress — contract layer aligned in `:core:network` (Payments/Stripe APIs + DTO updates + decode fixtures/tests) |
 | **5** — Chat & notifications | … | Not started (FCM **service stub** + **firebase-messaging** dep only) |
 | **6** — Profile, verification, favorites & ratings | … | Not started |
 | **7** — Legal, support, misc | … | Not started |
@@ -97,7 +97,7 @@
 | [04-packages.md](04-packages.md) | [x] | API + DTOs, domain models, repository, ViewModel, UI screens, form validation (14 tests) |
 | [13-ui-tab-explore.md](13-ui-tab-explore.md) | [x] | Tab shell, role switcher, carrier + shipper explore content, stats grids; Matches/Messages/Profile stubs |
 | [05-bookings-matches.md](05-bookings-matches.md) | [x] | Unified MatchCard + MatchListScreen, 3 ViewModels, counter-offer flows, code screens, 60+ tests |
-| [06-payments-stripe.md](06-payments-stripe.md) | [ ] |
+| [06-payments-stripe.md](06-payments-stripe.md) | [ ] | Phase 4 slice 1 in progress: contract layer (Retrofit + DTO + decode tests/fixtures) aligned; repositories/ViewModels/UI remain for next slices |
 | [07-chat-broadcasting.md](07-chat-broadcasting.md) | [ ] |
 | [08-notifications-device-tokens.md](08-notifications-device-tokens.md) | [ ] |
 | [09-profile-carrier-consent.md](09-profile-carrier-consent.md) | [ ] |
