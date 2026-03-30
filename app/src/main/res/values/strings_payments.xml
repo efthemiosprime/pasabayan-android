@@ -28,4 +28,9 @@
     <string name="payments_profile_connect_not_ready">Onboarding required</string>
     <string name="payments_profile_start_onboarding">Start Onboarding</string>
     <string name="payments_profile_open_dashboard">Open Dashboard</string>
+    <string name="payments_profile_status_processing">Processing payment...</string>
+    <string name="payments_profile_status_sheet_ready">Payment sheet ready</string>
+    <string name="payments_profile_status_canceled">Payment canceled</string>
+    <string name="payments_profile_status_paid">Payment successful</string>
+    <string name="payments_profile_status_already_paid">Payment already completed</string>
 </resources>

@@ -6,8 +6,6 @@ import android.content.res.Configuration
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -32,11 +30,15 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
-import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
-import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
+import com.efthemiosprime.pasabayan.features.payments.components.PaymentMethodsSection
+import com.efthemiosprime.pasabayan.features.payments.components.PaymentProcessingSection
+import com.efthemiosprime.pasabayan.features.payments.components.PaymentsActivitySection
+import com.efthemiosprime.pasabayan.features.payments.components.StripeConnectSection
+import com.efthemiosprime.pasabayan.features.payments.components.TippingRefundSection
 import com.efthemiosprime.pasabayan.features.payments.model.PaymentMethodDisplay
 import com.efthemiosprime.pasabayan.features.payments.model.PaymentReceipt
 import com.efthemiosprime.pasabayan.features.payments.model.Transaction
+import com.efthemiosprime.pasabayan.features.payments.viewmodel.PaymentFlowStatus
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.PaymentMethodsUiState
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.PaymentMethodsViewModel
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.PaymentUiState
@@ -86,8 +88,8 @@ fun PaymentsProfileScreen(
                         val deliveryMatchId = currentDeliveryMatchId ?: return@PaymentSheet
                         paymentViewModel.confirmCapture(deliveryMatchId)
                     }
-                    is PaymentSheetResult.Canceled -> Unit
-                    is PaymentSheetResult.Failed -> Unit
+                    is PaymentSheetResult.Canceled -> paymentViewModel.onPaymentSheetCanceled()
+                    is PaymentSheetResult.Failed -> paymentViewModel.onPaymentSheetFailed(result.error.localizedMessage)
                 }
             }
         }
@@ -127,19 +129,7 @@ fun PaymentsProfileScreen(
                 paymentViewModel.confirmCapture(deliveryMatchId)
                 return@PaymentsProfileContent
             }
-            val customerId = paymentState.customerId
-            val ephemeralKey = paymentState.ephemeralKey
-            val configuration = if (!customerId.isNullOrBlank() && !ephemeralKey.isNullOrBlank()) {
-                PaymentSheet.Configuration(
-                    merchantDisplayName = "Pasabayan",
-                    customer = PaymentSheet.CustomerConfiguration(
-                        id = customerId,
-                        ephemeralKeySecret = ephemeralKey,
-                    ),
-                )
-            } else {
-                PaymentSheet.Configuration(merchantDisplayName = "Pasabayan")
-            }
+            val configuration = buildPaymentSheetConfiguration(paymentState)
             sheet.presentWithPaymentIntent(secret, configuration)
         },
         onAddTip = { transactionId, amount ->
@@ -188,12 +178,7 @@ private fun PaymentsProfileContent(
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var paymentMatchId by remember { mutableStateOf("0") }
-    var paymentAmount by remember { mutableStateOf("0.0") }
-    var tipTransactionId by remember { mutableStateOf("0") }
-    var tipAmount by remember { mutableStateOf("0.0") }
-    var refundTransactionId by remember { mutableStateOf("0") }
-    var refundReason by remember { mutableStateOf("") }
+    val paymentStatusText = paymentStatusText(paymentState)
 
     Column(
         modifier = modifier
@@ -219,177 +204,33 @@ private fun PaymentsProfileContent(
             )
         }
 
-        PCard {
-            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                Text(stringResource(R.string.payments_profile_payment_section), style = PasabayanTextStyles.Heading.h5)
-                POutlinedTextField(
-                    value = paymentMatchId,
-                    onValueChange = { paymentMatchId = it },
-                    label = { Text(stringResource(R.string.payments_profile_delivery_match_id)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                POutlinedTextField(
-                    value = paymentAmount,
-                    onValueChange = { paymentAmount = it },
-                    label = { Text(stringResource(R.string.payments_profile_amount)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                    PButton(
-                        text = stringResource(R.string.payments_profile_create_payment),
-                        onClick = {
-                            val id = paymentMatchId.toIntOrNull() ?: return@PButton
-                            val amount = paymentAmount.toDoubleOrNull() ?: return@PButton
-                            onCreatePayment(id, amount)
-                        },
-                        modifier = Modifier.weight(1f),
-                    )
-                    PButton(
-                        text = stringResource(R.string.payments_profile_present_sheet),
-                        onClick = onPresentPaymentSheet,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                    PButton(
-                        text = stringResource(R.string.payments_profile_confirm_capture),
-                        onClick = {
-                            val id = paymentMatchId.toIntOrNull() ?: return@PButton
-                            onConfirmCapture(id)
-                        },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                Text(
-                    text = paymentState.errorMessage ?: if (paymentState.paymentSuccess) {
-                        stringResource(R.string.payments_profile_success)
-                    } else {
-                        stringResource(R.string.payments_profile_idle)
-                    },
-                    style = PasabayanTextStyles.Body.small,
-                )
-            }
-        }
-
-        PCard {
-            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                Text(stringResource(R.string.payments_profile_methods_section), style = PasabayanTextStyles.Heading.h5)
-                methodsState.paymentMethods.take(3).forEach { method ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                        Text(
-                            text = method.displayName,
-                            modifier = Modifier.weight(1f),
-                            style = PasabayanTextStyles.Body.medium,
-                        )
-                        if (!method.isDefault) {
-                            PButton(
-                                text = stringResource(R.string.payments_profile_set_default),
-                                onClick = { onSetDefaultMethod(method.id) },
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        PCard {
-            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                Text(stringResource(R.string.payments_profile_tipping_refund_section), style = PasabayanTextStyles.Heading.h5)
-                POutlinedTextField(
-                    value = tipTransactionId,
-                    onValueChange = { tipTransactionId = it },
-                    label = { Text(stringResource(R.string.payments_profile_transaction_id)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                POutlinedTextField(
-                    value = tipAmount,
-                    onValueChange = { tipAmount = it },
-                    label = { Text(stringResource(R.string.payments_profile_tip_amount)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                PButton(
-                    text = stringResource(R.string.payments_profile_add_tip),
-                    onClick = {
-                        val id = tipTransactionId.toIntOrNull() ?: return@PButton
-                        val amount = tipAmount.toDoubleOrNull() ?: return@PButton
-                        onAddTip(id, amount)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                POutlinedTextField(
-                    value = refundTransactionId,
-                    onValueChange = { refundTransactionId = it },
-                    label = { Text(stringResource(R.string.payments_profile_refund_transaction_id)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                POutlinedTextField(
-                    value = refundReason,
-                    onValueChange = { refundReason = it },
-                    label = { Text(stringResource(R.string.payments_profile_refund_reason)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                PButton(
-                    text = stringResource(R.string.payments_profile_request_refund),
-                    onClick = {
-                        val id = refundTransactionId.toIntOrNull() ?: return@PButton
-                        if (refundReason.isBlank()) return@PButton
-                        onRequestRefund(id, refundReason)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    text = tippingState.errorMessage ?: refundState.errorMessage ?: stringResource(R.string.payments_profile_idle),
-                    style = PasabayanTextStyles.Body.small,
-                )
-            }
-        }
-
-        PCard {
-            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                Text(stringResource(R.string.payments_profile_activity_section), style = PasabayanTextStyles.Heading.h5)
-                Text(
-                    text = stringResource(R.string.payments_profile_transactions_count, historyState.transactions.size),
-                    style = PasabayanTextStyles.Body.small,
-                )
-                Text(
-                    text = stringResource(R.string.payments_profile_receipts_count, receiptState.receipts.size, receiptState.totalCount),
-                    style = PasabayanTextStyles.Body.small,
-                )
-                if (receiptState.hasMore) {
-                    PButton(
-                        text = stringResource(R.string.payments_profile_load_more_receipts),
-                        onClick = onLoadMoreReceipts,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            }
-        }
-
-        PCard {
-            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                Text(stringResource(R.string.payments_profile_connect_section), style = PasabayanTextStyles.Heading.h5)
-                Text(
-                    text = if (connectState.status?.onboardingComplete == true) {
-                        stringResource(R.string.payments_profile_connect_ready)
-                    } else {
-                        stringResource(R.string.payments_profile_connect_not_ready)
-                    },
-                    style = PasabayanTextStyles.Body.small,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                    PButton(
-                        text = stringResource(R.string.payments_profile_start_onboarding),
-                        onClick = onStartOnboarding,
-                        modifier = Modifier.weight(1f),
-                    )
-                    PButton(
-                        text = stringResource(R.string.payments_profile_open_dashboard),
-                        onClick = onOpenDashboard,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-            }
-        }
+        PaymentProcessingSection(
+            paymentState = paymentState,
+            statusText = paymentStatusText,
+            onCreatePayment = onCreatePayment,
+            onPresentPaymentSheet = onPresentPaymentSheet,
+            onConfirmCapture = onConfirmCapture,
+        )
+        PaymentMethodsSection(
+            methodsState = methodsState,
+            onSetDefaultMethod = onSetDefaultMethod,
+        )
+        TippingRefundSection(
+            tippingState = tippingState,
+            refundState = refundState,
+            onAddTip = onAddTip,
+            onRequestRefund = onRequestRefund,
+        )
+        PaymentsActivitySection(
+            historyState = historyState,
+            receiptState = receiptState,
+            onLoadMoreReceipts = onLoadMoreReceipts,
+        )
+        StripeConnectSection(
+            connectState = connectState,
+            onStartOnboarding = onStartOnboarding,
+            onOpenDashboard = onOpenDashboard,
+        )
     }
 }
 
@@ -471,6 +312,48 @@ private fun PaymentsProfilePreview() {
             onLogout = {},
         )
     }
+}
+
+@Composable
+private fun paymentStatusText(paymentState: PaymentUiState): String {
+    return when {
+        paymentState.isProcessing -> stringResource(R.string.payments_profile_status_processing)
+        paymentState.flowStatus == PaymentFlowStatus.SHEET_READY -> stringResource(R.string.payments_profile_status_sheet_ready)
+        paymentState.flowStatus == PaymentFlowStatus.PAYMENT_CANCELED -> stringResource(R.string.payments_profile_status_canceled)
+        paymentState.flowStatus == PaymentFlowStatus.PAYMENT_SUCCESS -> stringResource(R.string.payments_profile_status_paid)
+        paymentState.flowStatus == PaymentFlowStatus.ALREADY_PAID -> stringResource(R.string.payments_profile_status_already_paid)
+        else -> stringResource(R.string.payments_profile_idle)
+    }
+}
+
+private fun buildPaymentSheetConfiguration(paymentState: PaymentUiState): PaymentSheet.Configuration {
+    val customerId = paymentState.customerId
+    val ephemeralKey = paymentState.ephemeralKey
+    val customerConfig =
+        if (!customerId.isNullOrBlank() && !ephemeralKey.isNullOrBlank()) {
+            PaymentSheet.CustomerConfiguration(
+                id = customerId,
+                ephemeralKeySecret = ephemeralKey,
+            )
+        } else {
+            null
+        }
+    val googlePayConfig = PaymentSheet.GooglePayConfiguration(
+        environment = if (paymentState.stripeIsSandbox) {
+            PaymentSheet.GooglePayConfiguration.Environment.Test
+        } else {
+            PaymentSheet.GooglePayConfiguration.Environment.Production
+        },
+        countryCode = "CA",
+        currencyCode = paymentState.stripeCurrencyCode,
+    )
+    return PaymentSheet.Configuration(
+        merchantDisplayName = "Pasabayan",
+        customer = customerConfig,
+        googlePay = googlePayConfig,
+        allowsDelayedPaymentMethods = false,
+        returnURL = "pasabayan://stripe-redirect",
+    )
 }
 
 private tailrec fun Context.findActivity(): ComponentActivity? {

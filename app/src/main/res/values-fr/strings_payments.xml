@@ -26,6 +26,11 @@
     <string name="payments_profile_connect_section">Stripe Connect</string>
     <string name="payments_profile_connect_ready">Onboarding terminé</string>
     <string name="payments_profile_connect_not_ready">Onboarding requis</string>
-    <string name="payments_profile_start_onboarding">Commencer l'onboarding</string>
+    <string name="payments_profile_start_onboarding">Commencer l’onboarding</string>
     <string name="payments_profile_open_dashboard">Ouvrir le tableau de bord</string>
+    <string name="payments_profile_status_processing">Traitement du paiement...</string>
+    <string name="payments_profile_status_sheet_ready">Feuille de paiement prête</string>
+    <string name="payments_profile_status_canceled">Paiement annulé</string>
+    <string name="payments_profile_status_paid">Paiement réussi</string>
+    <string name="payments_profile_status_already_paid">Paiement déjà terminé</string>
 </resources>

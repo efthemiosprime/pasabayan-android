@@ -37,12 +37,14 @@ class PaymentViewModelsTest {
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var fakePaymentRepo: FakePaymentRepository
     private lateinit var fakeMethodsRepo: FakePaymentMethodsRepository
+    private lateinit var fakeStripeConfigRepo: FakeStripeConfigRepository
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakePaymentRepo = FakePaymentRepository()
         fakeMethodsRepo = FakePaymentMethodsRepository()
+        fakeStripeConfigRepo = FakeStripeConfigRepository()
     }
 
     @After
@@ -62,18 +64,20 @@ class PaymentViewModelsTest {
                 data = TransactionJson(id = 1, status = "pending"),
             ),
         )
-        val vm = PaymentViewModel(fakePaymentRepo)
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
         vm.createPayment(100, 150.0)
         advanceUntilIdle()
 
         assertEquals("pi_secret_123", vm.uiState.value.clientSecret)
+        assertTrue(vm.uiState.value.isSheetReady)
+        assertEquals(PaymentFlowStatus.SHEET_READY, vm.uiState.value.flowStatus)
         assertFalse(vm.uiState.value.isProcessing)
     }
 
     @Test
     fun `createPayment sets error on failure`() = runTest {
         fakePaymentRepo.createResult = Result.failure(Exception("Payment failed"))
-        val vm = PaymentViewModel(fakePaymentRepo)
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
         vm.createPayment(100, 150.0)
         advanceUntilIdle()
 
@@ -90,7 +94,7 @@ class PaymentViewModelsTest {
                 data = TransactionJson(id = 1, status = "pending", clientSecret = null),
             ),
         )
-        val vm = PaymentViewModel(fakePaymentRepo)
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
         vm.createPayment(100, 150.0)
         advanceUntilIdle()
 
@@ -103,18 +107,67 @@ class PaymentViewModelsTest {
         fakePaymentRepo.confirmCaptureResult = Result.success(
             TransactionJson(id = 1, status = "completed").toDomain(),
         )
-        val vm = PaymentViewModel(fakePaymentRepo)
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
         vm.confirmCapture(100)
         advanceUntilIdle()
 
         assertTrue(vm.uiState.value.paymentSuccess)
+        assertEquals(PaymentFlowStatus.PAYMENT_SUCCESS, vm.uiState.value.flowStatus)
     }
 
     @Test
     fun `isMockClientSecret detects mock`() {
-        val vm = PaymentViewModel(fakePaymentRepo)
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
         assertTrue(vm.isMockClientSecret("mock_pi_abc123"))
         assertFalse(vm.isMockClientSecret("pi_real_abc123"))
+    }
+
+    @Test
+    fun `createPayment marks already paid statuses`() {
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
+
+        vm.createPayment(deliveryMatchId = 100, amount = 150.0, transactionStatus = "completed")
+
+        assertEquals(PaymentFlowStatus.ALREADY_PAID, vm.uiState.value.flowStatus)
+        assertFalse(vm.uiState.value.isSheetReady)
+    }
+
+    @Test
+    fun `createPayment handles mock client secret without sheet`() = runTest {
+        fakePaymentRepo.createResult = Result.success(
+            CreatePaymentResponseJson(
+                success = true,
+                clientSecret = "mock_pi_local_test",
+                data = TransactionJson(id = 2, status = "pending"),
+            ),
+        )
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
+
+        vm.createPayment(101, 155.0)
+        advanceUntilIdle()
+
+        assertEquals(PaymentFlowStatus.PAYMENT_SUCCESS, vm.uiState.value.flowStatus)
+        assertFalse(vm.uiState.value.isSheetReady)
+    }
+
+    @Test
+    fun `sheet canceled updates state`() {
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
+
+        vm.onPaymentSheetCanceled()
+
+        assertEquals(PaymentFlowStatus.PAYMENT_CANCELED, vm.uiState.value.flowStatus)
+        assertNull(vm.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `sheet failed updates state and clears readiness`() {
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
+
+        vm.onPaymentSheetFailed("stripe failure")
+
+        assertEquals("stripe failure", vm.uiState.value.errorMessage)
+        assertFalse(vm.uiState.value.isSheetReady)
     }
 
     // -- PaymentMethodsViewModel --
@@ -228,4 +281,20 @@ class FakePaymentMethodsRepository : PaymentMethodsRepository {
     override suspend fun createSetupIntent() = setupResult
     override suspend fun removePaymentMethod(methodId: String) = removeResult
     override suspend fun setDefaultPaymentMethod(methodId: String) = setDefaultResult
+}
+
+class FakeStripeConfigRepository : StripeConfigRepository {
+    var fetchResult: Result<StripeConfig> = Result.success(
+        StripeConfig(
+            mode = "sandbox",
+            publicKey = "pk_test_123",
+            currency = "cad",
+            minDeliveryPrice = 5.0,
+            senderFeePercentage = 10.0,
+            carrierFeePercentage = 5.0,
+            platformFeePercentage = 10.0,
+        ),
+    )
+
+    override suspend fun fetchConfig(): Result<StripeConfig> = fetchResult
 }
