@@ -115,6 +115,71 @@ class PaymentRepositoryImplTest {
     }
 
     @Test
+    fun `captureTransaction returns success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "data": {"id": 500, "status": "captured"}}""",
+            ),
+        )
+        val result = paymentRepo.captureTransaction(500)
+        assertTrue(result.isSuccess)
+        assertEquals(500, result.getOrThrow().id)
+    }
+
+    @Test
+    fun `confirmCapture returns success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "data": {"id": 501, "status": "completed"}}""",
+            ),
+        )
+        val result = paymentRepo.confirmCapture(100)
+        assertTrue(result.isSuccess)
+        assertEquals(501, result.getOrThrow().id)
+    }
+
+    @Test
+    fun `releaseTransaction returns success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "data": {"id": 502, "status": "completed"}}""",
+            ),
+        )
+        val result = paymentRepo.releaseTransaction(502)
+        assertTrue(result.isSuccess)
+        assertEquals(502, result.getOrThrow().id)
+    }
+
+    @Test
+    fun `requestRefund returns data on success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "data": {"id": 91, "transaction_id": 500, "status": "pending", "reason": "Damaged"}}""",
+            ),
+        )
+        val result = paymentRepo.requestRefund(
+            transactionId = 500,
+            amount = 10.0,
+            reason = "Damaged",
+            description = "Packaging issue",
+        )
+        assertTrue(result.isSuccess)
+        assertEquals(91, result.getOrThrow().id)
+    }
+
+    @Test
+    fun `getRefundStatus returns data on success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "data": {"id": 91, "transaction_id": 500, "status": "approved", "reason": "Damaged"}}""",
+            ),
+        )
+        val result = paymentRepo.getRefundStatus(500)
+        assertTrue(result.isSuccess)
+        assertEquals(91, result.getOrThrow().id)
+    }
+
+    @Test
     fun `addTip returns response`() = runBlocking {
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(

@@ -85,6 +85,18 @@ class ConnectMethodsReceiptRepoTest {
         assertTrue(result.isFailure)
     }
 
+    @Test
+    fun `getDashboardUrl returns url on success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "data": {"dashboard_url": "https://dashboard.stripe.com"}}""",
+            ),
+        )
+        val result = connectRepo.getDashboardUrl()
+        assertTrue(result.isSuccess)
+        assertEquals("https://dashboard.stripe.com", result.getOrThrow())
+    }
+
     // -- PaymentMethods --
 
     @Test
@@ -116,6 +128,29 @@ class ConnectMethodsReceiptRepoTest {
     fun `removePaymentMethod returns success`() = runBlocking {
         server.enqueue(MockResponse().setResponseCode(200).setBody("""{"success": true, "message": "Removed"}"""))
         val result = methodsRepo.removePaymentMethod("pm_1")
+        assertTrue(result.isSuccess)
+    }
+
+    @Test
+    fun `loadDefaultPaymentMethod returns id`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "data": {"payment_method_id": "pm_1"}}""",
+            ),
+        )
+        val result = methodsRepo.loadDefaultPaymentMethod()
+        assertTrue(result.isSuccess)
+        assertEquals("pm_1", result.getOrThrow())
+    }
+
+    @Test
+    fun `setDefaultPaymentMethod returns success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Default updated"}""",
+            ),
+        )
+        val result = methodsRepo.setDefaultPaymentMethod("pm_1")
         assertTrue(result.isSuccess)
     }
 

@@ -144,6 +144,39 @@ class RemainingViewModelsTest {
         assertEquals("https://dashboard.stripe.com", vm.uiState.value.dashboardUrl)
     }
 
+    @Test
+    fun `handleOnboardingReturn clears onboarding and reloads status`() = runTest {
+        fakeConnectRepo.statusResult = Result.success(
+            StripeConnectStatusJson(onboardingComplete = true),
+        )
+        val vm = StripeConnectViewModel(fakeConnectRepo)
+        fakeConnectRepo.onboardResult = Result.success("https://connect.stripe.com/onboard")
+        vm.startOnboarding()
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.showOnboarding)
+
+        vm.handleOnboardingReturn()
+        advanceUntilIdle()
+
+        assertFalse(vm.uiState.value.showOnboarding)
+        assertNull(vm.uiState.value.onboardingUrl)
+        assertTrue(vm.uiState.value.status?.onboardingComplete == true)
+    }
+
+    @Test
+    fun `handleDashboardDismiss clears dashboard state`() = runTest {
+        val vm = StripeConnectViewModel(fakeConnectRepo)
+        fakeConnectRepo.dashboardResult = Result.success("https://dashboard.stripe.com")
+        vm.openDashboard()
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.showDashboard)
+
+        vm.handleDashboardDismiss()
+
+        assertFalse(vm.uiState.value.showDashboard)
+        assertNull(vm.uiState.value.dashboardUrl)
+    }
+
     // -- ReceiptListViewModel --
 
     @Test
