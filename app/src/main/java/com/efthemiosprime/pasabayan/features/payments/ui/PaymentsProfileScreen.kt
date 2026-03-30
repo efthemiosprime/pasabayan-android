@@ -1,6 +1,9 @@
 package com.efthemiosprime.pasabayan.features.payments.ui
 
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.res.Configuration
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,6 +51,9 @@ import com.efthemiosprime.pasabayan.features.payments.viewmodel.TippingUiState
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.TippingViewModel
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.TransactionHistoryUiState
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.TransactionHistoryViewModel
+import com.stripe.android.PaymentConfiguration
+import com.stripe.android.paymentsheet.PaymentSheet
+import com.stripe.android.paymentsheet.PaymentSheetResult
 
 @Composable
 fun PaymentsProfileScreen(
@@ -60,6 +67,8 @@ fun PaymentsProfileScreen(
     receiptListViewModel: ReceiptListViewModel = hiltViewModel(),
     stripeConnectViewModel: StripeConnectViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+    val activity = context.findActivity()
     val paymentState by paymentViewModel.uiState.collectAsStateWithLifecycle()
     val methodsState by paymentMethodsViewModel.uiState.collectAsStateWithLifecycle()
     val tippingState by tippingViewModel.uiState.collectAsStateWithLifecycle()
@@ -67,12 +76,34 @@ fun PaymentsProfileScreen(
     val historyState by transactionHistoryViewModel.uiState.collectAsStateWithLifecycle()
     val receiptState by receiptListViewModel.uiState.collectAsStateWithLifecycle()
     val connectState by stripeConnectViewModel.uiState.collectAsStateWithLifecycle()
+    var currentDeliveryMatchId by remember { mutableStateOf<Int?>(null) }
+
+    val paymentSheet = remember(activity) {
+        activity?.let { hostActivity ->
+            PaymentSheet(hostActivity) { result ->
+                when (result) {
+                    is PaymentSheetResult.Completed -> {
+                        val deliveryMatchId = currentDeliveryMatchId ?: return@PaymentSheet
+                        paymentViewModel.confirmCapture(deliveryMatchId)
+                    }
+                    is PaymentSheetResult.Canceled -> Unit
+                    is PaymentSheetResult.Failed -> Unit
+                }
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         paymentMethodsViewModel.loadPaymentMethods()
         transactionHistoryViewModel.loadTransactions()
         receiptListViewModel.loadReceipts()
         stripeConnectViewModel.loadStatus()
+    }
+    LaunchedEffect(paymentState.publicKey) {
+        val key = paymentState.publicKey
+        if (!key.isNullOrBlank()) {
+            PaymentConfiguration.init(context, key)
+        }
     }
 
     PaymentsProfileContent(
@@ -83,8 +114,34 @@ fun PaymentsProfileScreen(
         historyState = historyState,
         receiptState = receiptState,
         connectState = connectState,
-        onCreatePayment = { id, amount -> paymentViewModel.createPayment(id, amount) },
+        onCreatePayment = { id, amount ->
+            currentDeliveryMatchId = id
+            paymentViewModel.createPayment(id, amount)
+        },
         onConfirmCapture = { id -> paymentViewModel.confirmCapture(id) },
+        onPresentPaymentSheet = {
+            val secret = paymentState.clientSecret ?: return@PaymentsProfileContent
+            val sheet = paymentSheet ?: return@PaymentsProfileContent
+            if (paymentViewModel.isMockClientSecret(secret)) {
+                val deliveryMatchId = currentDeliveryMatchId ?: return@PaymentsProfileContent
+                paymentViewModel.confirmCapture(deliveryMatchId)
+                return@PaymentsProfileContent
+            }
+            val customerId = paymentState.customerId
+            val ephemeralKey = paymentState.ephemeralKey
+            val configuration = if (!customerId.isNullOrBlank() && !ephemeralKey.isNullOrBlank()) {
+                PaymentSheet.Configuration(
+                    merchantDisplayName = "Pasabayan",
+                    customer = PaymentSheet.CustomerConfiguration(
+                        id = customerId,
+                        ephemeralKeySecret = ephemeralKey,
+                    ),
+                )
+            } else {
+                PaymentSheet.Configuration(merchantDisplayName = "Pasabayan")
+            }
+            sheet.presentWithPaymentIntent(secret, configuration)
+        },
         onAddTip = { transactionId, amount ->
             tippingViewModel.setCustomTipAmount(amount.toString())
             tippingViewModel.addTip(transactionId)
@@ -120,6 +177,7 @@ private fun PaymentsProfileContent(
     connectState: StripeConnectUiState,
     onCreatePayment: (Int, Double) -> Unit,
     onConfirmCapture: (Int) -> Unit,
+    onPresentPaymentSheet: () -> Unit,
     onAddTip: (Int, Double) -> Unit,
     onRequestRefund: (Int, String) -> Unit,
     onSetDefaultMethod: (String) -> Unit,
@@ -186,6 +244,13 @@ private fun PaymentsProfileContent(
                         },
                         modifier = Modifier.weight(1f),
                     )
+                    PButton(
+                        text = stringResource(R.string.payments_profile_present_sheet),
+                        onClick = onPresentPaymentSheet,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
                     PButton(
                         text = stringResource(R.string.payments_profile_confirm_capture),
                         onClick = {
@@ -395,6 +460,7 @@ private fun PaymentsProfilePreview() {
             connectState = StripeConnectUiState(),
             onCreatePayment = { _, _ -> },
             onConfirmCapture = {},
+            onPresentPaymentSheet = {},
             onAddTip = { _, _ -> },
             onRequestRefund = { _, _ -> },
             onSetDefaultMethod = {},
@@ -404,5 +470,13 @@ private fun PaymentsProfilePreview() {
             onRefresh = {},
             onLogout = {},
         )
+    }
+}
+
+private tailrec fun Context.findActivity(): ComponentActivity? {
+    return when (this) {
+        is ComponentActivity -> this
+        is ContextWrapper -> baseContext.findActivity()
+        else -> null
     }
 }

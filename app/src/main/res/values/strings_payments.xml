@@ -6,6 +6,7 @@
     <string name="payments_profile_delivery_match_id">Delivery Match ID</string>
     <string name="payments_profile_amount">Amount</string>
     <string name="payments_profile_create_payment">Create Payment</string>
+    <string name="payments_profile_present_sheet">Present Sheet</string>
     <string name="payments_profile_confirm_capture">Confirm Capture</string>
     <string name="payments_profile_success">Success</string>
     <string name="payments_profile_idle">Idle</string>

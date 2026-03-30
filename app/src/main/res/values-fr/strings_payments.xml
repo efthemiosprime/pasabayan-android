@@ -6,6 +6,7 @@
     <string name="payments_profile_delivery_match_id">ID de correspondance de livraison</string>
     <string name="payments_profile_amount">Montant</string>
     <string name="payments_profile_create_payment">Créer un paiement</string>
+    <string name="payments_profile_present_sheet">Afficher la feuille</string>
     <string name="payments_profile_confirm_capture">Confirmer la capture</string>
     <string name="payments_profile_success">Succès</string>
     <string name="payments_profile_idle">Inactif</string>

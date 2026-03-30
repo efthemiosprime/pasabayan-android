@@ -20,6 +20,7 @@ data class PaymentUiState(
     val clientSecret: String? = null,
     val customerId: String? = null,
     val ephemeralKey: String? = null,
+    val publicKey: String? = null,
 )
 
 @HiltViewModel
@@ -51,6 +52,7 @@ class PaymentViewModel @Inject constructor(
                                 clientSecret = null,
                                 customerId = null,
                                 ephemeralKey = null,
+                                publicKey = null,
                             )
                         }
                         return@fold
@@ -61,6 +63,7 @@ class PaymentViewModel @Inject constructor(
                             clientSecret = resolvedClientSecret,
                             customerId = response.customerId,
                             ephemeralKey = response.ephemeralKey,
+                            publicKey = response.publicKey,
                         )
                     }
                 },
@@ -72,6 +75,7 @@ class PaymentViewModel @Inject constructor(
                             clientSecret = null,
                             customerId = null,
                             ephemeralKey = null,
+                            publicKey = null,
                         )
                     }
                 },
@@ -81,16 +85,29 @@ class PaymentViewModel @Inject constructor(
 
     fun confirmCapture(deliveryMatchId: Int) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isProcessing = true, errorMessage = null, paymentSuccess = false) }
+            _uiState.update {
+                it.copy(
+                    isProcessing = true,
+                    errorMessage = null,
+                    paymentSuccess = false,
+                )
+            }
             paymentRepository.confirmCapture(deliveryMatchId).fold(
                 onSuccess = { tx ->
                     _uiState.update {
-                        it.copy(isProcessing = false, paymentSuccess = true, transaction = tx)
+                        it.copy(
+                            isProcessing = false,
+                            paymentSuccess = true,
+                            transaction = tx,
+                        )
                     }
                 },
                 onFailure = { e ->
                     _uiState.update {
-                        it.copy(isProcessing = false, errorMessage = e.message ?: "Confirmation failed")
+                        it.copy(
+                            isProcessing = false,
+                            errorMessage = e.message ?: "Confirmation failed",
+                        )
                     }
                 },
             )
