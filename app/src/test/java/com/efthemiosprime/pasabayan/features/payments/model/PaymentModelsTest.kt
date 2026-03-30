@@ -52,6 +52,17 @@ class PaymentModelsTest {
     }
 
     @Test
+    fun `Transaction mapper prefers transaction_status when present`() {
+        val json = TransactionJson(
+            id = 1,
+            status = "pending",
+            transactionStatus = "captured",
+        )
+        val tx = json.toDomain()
+        assertEquals(TransactionStatus.CAPTURED, tx.transactionStatus)
+    }
+
+    @Test
     fun `Transaction isTerminal delegates to TransactionStatus`() {
         val completed = TransactionJson(id = 1, status = "completed").toDomain()
         assertTrue(completed.isTerminal)

@@ -74,6 +74,17 @@ class ConnectMethodsReceiptRepoTest {
         assertEquals("https://connect.stripe.com/onboard", result.getOrThrow())
     }
 
+    @Test
+    fun `startOnboarding returns failure when success false`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": false, "message": "onboarding blocked"}""",
+            ),
+        )
+        val result = connectRepo.startOnboarding()
+        assertTrue(result.isFailure)
+    }
+
     // -- PaymentMethods --
 
     @Test
@@ -108,6 +119,17 @@ class ConnectMethodsReceiptRepoTest {
         assertTrue(result.isSuccess)
     }
 
+    @Test
+    fun `createSetupIntent returns failure when success false`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": false, "message": "intent failed"}""",
+            ),
+        )
+        val result = methodsRepo.createSetupIntent()
+        assertTrue(result.isFailure)
+    }
+
     // -- Receipts --
 
     @Test
@@ -135,5 +157,30 @@ class ConnectMethodsReceiptRepoTest {
         val result = receiptRepo.fetchReceipt(1000)
         assertTrue(result.isSuccess)
         assertEquals("RCP-001", result.getOrThrow().receiptNumber)
+    }
+
+    @Test
+    fun `fetchReceipts handles null meta with no pagination`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "data": [{"id": 1, "receipt_number": "RCP-001", "role": "shipper", "amount": {"total": 100.0, "currency": "cad"}, "status": "completed", "date": "2026-03-29"}], "meta": null}""",
+            ),
+        )
+        val result = receiptRepo.fetchReceipts(page = 1)
+        assertTrue(result.isSuccess)
+        val (_, hasMore, total) = result.getOrThrow()
+        assertTrue(!hasMore)
+        assertEquals(1, total)
+    }
+
+    @Test
+    fun `fetchReceipt returns failure when success false`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": false, "message": "receipt unavailable"}""",
+            ),
+        )
+        val result = receiptRepo.fetchReceipt(1000)
+        assertTrue(result.isFailure)
     }
 }

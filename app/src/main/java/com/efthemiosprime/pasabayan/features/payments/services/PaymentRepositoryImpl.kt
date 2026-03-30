@@ -30,6 +30,7 @@ class PaymentRepositoryImpl @Inject constructor(
             val res = paymentApi.createPayment(CreatePaymentRequestJson(deliveryMatchId, amount, currency))
             if (!res.isSuccessful) return Result.failure(mapError(res))
             val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(body.message))
             Result.success(body)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
@@ -40,7 +41,9 @@ class PaymentRepositoryImpl @Inject constructor(
         return try {
             val res = paymentApi.listTransactions(role)
             if (!res.isSuccessful) return Result.failure(mapError(res))
-            val transactions = res.body()?.data?.map { it.toDomain() } ?: emptyList()
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(null))
+            val transactions = body.data.map { it.toDomain() }
             Result.success(transactions)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
@@ -55,7 +58,9 @@ class PaymentRepositoryImpl @Inject constructor(
         return try {
             val res = paymentApi.confirmCapture(ConfirmCaptureRequestJson(deliveryMatchId))
             if (!res.isSuccessful) return Result.failure(mapError(res))
-            val tx = res.body()?.data?.toDomain() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(body.message))
+            val tx = body.data?.toDomain() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             Result.success(tx)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
@@ -68,7 +73,9 @@ class PaymentRepositoryImpl @Inject constructor(
         return try {
             val res = paymentApi.requestRefund(transactionId, RefundRequestBodyJson(reason, amount, description))
             if (!res.isSuccessful) return Result.failure(mapError(res))
-            val data = res.body()?.data ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(body.message))
+            val data = body.data ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             Result.success(data)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
@@ -79,7 +86,9 @@ class PaymentRepositoryImpl @Inject constructor(
         return try {
             val res = paymentApi.getRefundStatus(transactionId)
             if (!res.isSuccessful) return Result.failure(mapError(res))
-            val data = res.body()?.data ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(body.message))
+            val data = body.data ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             Result.success(data)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
@@ -90,7 +99,9 @@ class PaymentRepositoryImpl @Inject constructor(
         return try {
             val res = paymentApi.cancelTransaction(id, CancelRequestJson(reason))
             if (!res.isSuccessful) return Result.failure(mapError(res))
-            val tx = res.body()?.data?.toDomain() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(body.message))
+            val tx = body.data?.toDomain() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             Result.success(tx)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
@@ -102,6 +113,7 @@ class PaymentRepositoryImpl @Inject constructor(
             val res = paymentApi.addTip(transactionId, TipRequestJson(amount))
             if (!res.isSuccessful) return Result.failure(mapError(res))
             val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(body.message))
             Result.success(body)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
@@ -116,8 +128,14 @@ class PaymentRepositoryImpl @Inject constructor(
             val body = res.body()
             // Extract Transaction from response data field via reflection-free approach
             val txJson = when (body) {
-                is com.efthemiosprime.pasabayan.core.network.payments.TransactionResponseJson -> body.data
-                is com.efthemiosprime.pasabayan.core.network.payments.PaymentActionResponseJson -> body.data
+                is com.efthemiosprime.pasabayan.core.network.payments.TransactionResponseJson -> {
+                    if (!body.success) return Result.failure(mapBusinessError(body.message))
+                    body.data
+                }
+                is com.efthemiosprime.pasabayan.core.network.payments.PaymentActionResponseJson -> {
+                    if (!body.success) return Result.failure(mapBusinessError(body.message))
+                    body.data
+                }
                 else -> null
             }
             val tx = txJson?.toDomain() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
@@ -129,4 +147,7 @@ class PaymentRepositoryImpl @Inject constructor(
 
     private fun mapError(res: Response<*>): DomainErrorMapperException =
         DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json))
+
+    private fun mapBusinessError(message: String?): DomainErrorMapperException =
+        DomainErrorMapperException(DomainError.ServerError(message ?: "Payment request failed"))
 }

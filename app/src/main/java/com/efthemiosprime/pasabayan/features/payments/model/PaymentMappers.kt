@@ -7,8 +7,9 @@ import com.efthemiosprime.pasabayan.core.network.payments.StripeConfigJson
 import com.efthemiosprime.pasabayan.core.network.payments.TransactionJson
 
 fun TransactionJson.toDomain(): Transaction {
+    val rawStatus = transactionStatus ?: status
     val parsedStatus = try {
-        TransactionStatus.valueOf(status.uppercase())
+        TransactionStatus.valueOf(rawStatus.uppercase())
     } catch (_: Exception) {
         TransactionStatus.UNKNOWN
     }

@@ -93,6 +93,17 @@ class PaymentRepositoryImplTest {
     }
 
     @Test
+    fun `createPayment returns failure when success is false`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": false, "message": "Payment failed"}""",
+            ),
+        )
+        val result = paymentRepo.createPayment(100, 150.0, "cad")
+        assertTrue(result.isFailure)
+    }
+
+    @Test
     fun `cancelTransaction returns success`() = runBlocking {
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(
@@ -114,6 +125,33 @@ class PaymentRepositoryImplTest {
         assertTrue(result.isSuccess)
     }
 
+    @Test
+    fun `getTransaction returns failure when body success is false`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": false, "message": "Transaction unavailable"}""",
+            ),
+        )
+        val result = paymentRepo.getTransaction(500)
+        assertTrue(result.isFailure)
+    }
+
+    @Test
+    fun `requestRefund returns failure when data missing`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "data": null}""",
+            ),
+        )
+        val result = paymentRepo.requestRefund(
+            transactionId = 500,
+            amount = 10.0,
+            reason = "reason",
+            description = "desc",
+        )
+        assertTrue(result.isFailure)
+    }
+
     // -- StripeConfigRepository --
 
     @Test
@@ -133,6 +171,17 @@ class PaymentRepositoryImplTest {
     @Test
     fun `fetchConfig returns failure on error`() = runBlocking {
         server.enqueue(MockResponse().setResponseCode(500).setBody("""{"message":"Server error"}"""))
+        val result = configRepo.fetchConfig()
+        assertTrue(result.isFailure)
+    }
+
+    @Test
+    fun `fetchConfig returns failure when success is false`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": false, "message": "Config unavailable"}""",
+            ),
+        )
         val result = configRepo.fetchConfig()
         assertTrue(result.isFailure)
     }

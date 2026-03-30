@@ -21,7 +21,9 @@ class StripeConnectRepositoryImpl @Inject constructor(
             if (!res.isSuccessful) return Result.failure(
                 DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
             )
-            val url = res.body()?.data?.onboardingUrl
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(body.message))
+            val url = body.data?.onboardingUrl
                 ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             Result.success(url)
         } catch (e: Exception) {
@@ -35,7 +37,9 @@ class StripeConnectRepositoryImpl @Inject constructor(
             if (!res.isSuccessful) return Result.failure(
                 DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
             )
-            val status = res.body()?.data
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(body.message))
+            val status = body.data
                 ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             Result.success(status)
         } catch (e: Exception) {
@@ -49,11 +53,16 @@ class StripeConnectRepositoryImpl @Inject constructor(
             if (!res.isSuccessful) return Result.failure(
                 DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
             )
-            val url = res.body()?.data?.dashboardUrl
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(body.message))
+            val url = body.data?.dashboardUrl
                 ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             Result.success(url)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }
     }
+
+    private fun mapBusinessError(message: String?): DomainErrorMapperException =
+        DomainErrorMapperException(DomainError.ServerError(message ?: "Stripe connect request failed"))
 }

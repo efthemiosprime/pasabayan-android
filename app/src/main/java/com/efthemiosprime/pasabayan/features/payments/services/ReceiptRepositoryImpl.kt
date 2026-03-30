@@ -23,6 +23,11 @@ class ReceiptRepositoryImpl @Inject constructor(
                 DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
             )
             val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) {
+                return Result.failure(
+                    DomainErrorMapperException(DomainError.ServerError(body.message ?: "Failed to fetch receipts")),
+                )
+            }
             val receipts = body.data.map { it.toDomain() }
             val meta = body.meta
             val hasMore = meta != null && meta.currentPage < meta.lastPage
@@ -39,7 +44,13 @@ class ReceiptRepositoryImpl @Inject constructor(
             if (!res.isSuccessful) return Result.failure(
                 DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
             )
-            val receipt = res.body()?.data?.toDomain()
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) {
+                return Result.failure(
+                    DomainErrorMapperException(DomainError.ServerError(body.message ?: "Failed to fetch receipt")),
+                )
+            }
+            val receipt = body.data?.toDomain()
                 ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             Result.success(receipt)
         } catch (e: Exception) {

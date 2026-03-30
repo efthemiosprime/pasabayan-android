@@ -24,7 +24,9 @@ class PaymentMethodsRepositoryImpl @Inject constructor(
             if (!res.isSuccessful) return Result.failure(
                 DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
             )
-            val methods = res.body()?.data?.map { it.toDomain() } ?: emptyList()
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(null))
+            val methods = body.data.map { it.toDomain() }
             Result.success(methods)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
@@ -37,7 +39,9 @@ class PaymentMethodsRepositoryImpl @Inject constructor(
             if (!res.isSuccessful) return Result.failure(
                 DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
             )
-            Result.success(res.body()?.data?.paymentMethodId)
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(null))
+            Result.success(body.data?.paymentMethodId)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }
@@ -49,7 +53,9 @@ class PaymentMethodsRepositoryImpl @Inject constructor(
             if (!res.isSuccessful) return Result.failure(
                 DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
             )
-            val data = res.body()?.data
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(null))
+            val data = body.data
                 ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             Result.success(data)
         } catch (e: Exception) {
@@ -63,6 +69,8 @@ class PaymentMethodsRepositoryImpl @Inject constructor(
             if (!res.isSuccessful) return Result.failure(
                 DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
             )
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(body.message))
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
@@ -75,9 +83,14 @@ class PaymentMethodsRepositoryImpl @Inject constructor(
             if (!res.isSuccessful) return Result.failure(
                 DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
             )
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) return Result.failure(mapBusinessError(body.message))
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }
     }
+
+    private fun mapBusinessError(message: String?): DomainErrorMapperException =
+        DomainErrorMapperException(DomainError.ServerError(message ?: "Payment method request failed"))
 }

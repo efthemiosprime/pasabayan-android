@@ -24,7 +24,13 @@ class StripeConfigRepositoryImpl @Inject constructor(
                     DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
                 )
             }
-            val config = res.body()?.data?.toDomain()
+            val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            if (!body.success) {
+                return Result.failure(
+                    DomainErrorMapperException(DomainError.ServerError(body.message ?: "Stripe config unavailable")),
+                )
+            }
+            val config = body.data?.toDomain()
                 ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             Result.success(config)
         } catch (e: Exception) {
