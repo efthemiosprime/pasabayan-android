@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.bookings.components
 
 import android.content.res.Configuration
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,7 +28,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonSize
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCardActionFooter
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailRow
-import com.efthemiosprime.pasabayan.core.designsystem.component.PExpandableCard
+import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PStatusBadge
 import com.efthemiosprime.pasabayan.core.designsystem.component.PUserInfoSection
 import com.efthemiosprime.pasabayan.core.domain.`enum`.InitiatedBy
@@ -37,7 +38,7 @@ import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 
 /**
  * Unified match card — replaces iOS's 4 separate card components.
- * Uses PExpandableCard to expand in-place for full detail view.
+ * Expands inline in the list to keep item order stable while viewing details.
  */
 @Composable
 fun MatchCard(
@@ -51,124 +52,98 @@ fun MatchCard(
     var expanded by rememberSaveable { mutableStateOf(false) }
     val actions = match.availableActions(isCarrier, currentUserId)
 
-    PExpandableCard(
-        expanded = expanded,
-        onExpandChange = { expanded = it },
-        modifier = modifier,
-        collapsedContent = {
-            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                // Header: other party info + status
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    val otherParty = if (isCarrier) match.shipper else match.carrier
-                    otherParty?.let { user ->
-                        PUserInfoSection(
-                            name = user.name,
-                            rating = user.formattedRating.takeIf { it != "No rating" },
-                            verificationLevel = user.verificationLevel,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
-                    PStatusBadge(config = MatchStatusBadgeConfig(match.matchStatus, statusLabel))
-                }
-
-                // Price
-                PDetailRow(
-                    label = stringResource(R.string.bookings_detail_agreed_price),
-                    value = String.format("$%.2f", match.agreedPrice),
-                )
-
-                // Counter-offer indicator
-                if (match.isCounterOffer) {
-                    Text(
-                        text = stringResource(R.string.bookings_detail_counter_offer),
-                        style = PasabayanTextStyles.Caption.large,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-
-                // Footer
-                PCardActionFooter(onViewDetails = { expanded = true })
-            }
-        },
-        expandedContent = {
-            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = stringResource(R.string.bookings_detail_agreed_price),
-                        style = PasabayanTextStyles.Heading.h4,
-                        modifier = Modifier.weight(1f),
-                    )
-                    PStatusBadge(config = MatchStatusBadgeConfig(match.matchStatus, statusLabel))
-                }
-
-                // Other party info
+    PCard(modifier = modifier) {
+        Column(
+            modifier = Modifier.animateContentSize(),
+            verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+        ) {
+            // Header: other party info + status
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 val otherParty = if (isCarrier) match.shipper else match.carrier
                 otherParty?.let { user ->
                     PUserInfoSection(
                         name = user.name,
                         rating = user.formattedRating.takeIf { it != "No rating" },
                         verificationLevel = user.verificationLevel,
+                        modifier = Modifier.weight(1f),
                     )
                 }
+                PStatusBadge(config = MatchStatusBadgeConfig(match.matchStatus, statusLabel))
+            }
 
-                // Price details
-                PDetailRow(
-                    label = stringResource(R.string.bookings_detail_agreed_price),
-                    value = String.format("$%.2f", match.agreedPrice),
+            // Price
+            PDetailRow(
+                label = stringResource(R.string.bookings_detail_agreed_price),
+                value = String.format("$%.2f", match.agreedPrice),
+            )
+
+            // Counter-offer indicator
+            if (match.isCounterOffer) {
+                Text(
+                    text = stringResource(R.string.bookings_detail_counter_offer),
+                    style = PasabayanTextStyles.Caption.large,
+                    color = MaterialTheme.colorScheme.primary,
                 )
-                match.originalPriceValue?.let { original ->
-                    PDetailRow(
-                        label = stringResource(R.string.bookings_detail_original_price),
-                        value = String.format("$%.2f", original),
-                    )
-                }
+            }
 
-                // Counter-offer details
-                if (match.isCounterOffer) {
-                    match.counterOfferRound?.let { round ->
+            if (expanded) {
+                Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
+                    // Price details
+                    match.originalPriceValue?.let { original ->
                         PDetailRow(
-                            label = stringResource(R.string.bookings_detail_counter_offer),
-                            value = stringResource(R.string.bookings_detail_round, round),
+                            label = stringResource(R.string.bookings_detail_original_price),
+                            value = String.format("$%.2f", original),
                         )
                     }
-                    PDetailRow(
-                        label = "",
-                        value = stringResource(R.string.bookings_detail_remaining_offers, match.remainingCounterOffers),
-                    )
-                }
 
-                // Messages
-                match.carrierMessage?.let { msg ->
-                    Text(
-                        text = "${stringResource(R.string.bookings_detail_carrier)}: $msg",
-                        style = PasabayanTextStyles.Body.small,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                match.shipperMessage?.let { msg ->
-                    Text(
-                        text = "${stringResource(R.string.bookings_detail_shipper)}: $msg",
-                        style = PasabayanTextStyles.Body.small,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+                    // Counter-offer details
+                    if (match.isCounterOffer) {
+                        match.counterOfferRound?.let { round ->
+                            PDetailRow(
+                                label = stringResource(R.string.bookings_detail_counter_offer),
+                                value = stringResource(R.string.bookings_detail_round, round),
+                            )
+                        }
+                        PDetailRow(
+                            label = "",
+                            value = stringResource(
+                                R.string.bookings_detail_remaining_offers,
+                                match.remainingCounterOffers,
+                            ),
+                        )
+                    }
 
-                // Action buttons
-                if (actions.isNotEmpty()) {
-                    MatchActionButtons(actions = actions, onAction = onAction)
+                    // Messages
+                    match.carrierMessage?.let { msg ->
+                        Text(
+                            text = "${stringResource(R.string.bookings_detail_carrier)}: $msg",
+                            style = PasabayanTextStyles.Body.small,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    match.shipperMessage?.let { msg ->
+                        Text(
+                            text = "${stringResource(R.string.bookings_detail_shipper)}: $msg",
+                            style = PasabayanTextStyles.Body.small,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    // Action buttons
+                    if (actions.isNotEmpty()) {
+                        MatchActionButtons(actions = actions, onAction = onAction)
+                    }
                 }
             }
-        },
-    )
+
+            // Footer
+            PCardActionFooter(onViewDetails = { expanded = !expanded })
+        }
+    }
 }
 
 @Composable

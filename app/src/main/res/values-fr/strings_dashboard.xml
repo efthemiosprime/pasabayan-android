@@ -48,6 +48,17 @@
     <string name="dashboard_carrier_post_trip">Publier un horaire de trajet</string>
     <string name="dashboard_carrier_request_to_carry">Demande de transport</string>
     <string name="dashboard_carrier_not_nearby_label">Pas \u00e0 proximit\u00e9</string>
+    <string name="dashboard_carrier_no_packages_title">Recherche de colis en cours</string>
+    <string name="dashboard_carrier_no_packages_description">Aucun colis n\'est disponible pour le moment. Publiez votre horaire de trajet pour que les exp\u00e9diteurs puissent vous trouver et vous proposer des correspondances plus rapidement.</string>
+    <string name="dashboard_carrier_create_trip_cta">Cr\u00e9er un horaire de trajet</string>
+    <string name="dashboard_carrier_tip_demand_title">SURVEILLEZ LES PICS DE DEMANDE</string>
+    <string name="dashboard_carrier_tip_demand_body">Les nouvelles demandes de colis augmentent souvent avant le week-end. V\u00e9rifier r\u00e9guli\u00e8rement am\u00e9liore vos chances d\'obtenir des correspondances en premier.</string>
+    <string name="dashboard_carrier_tip_earning_title">AUGMENTEZ VOS OPPORTUNIT\u00c9S DE GAIN</string>
+    <string name="dashboard_carrier_tip_earning_body">Publier votre itin\u00e9raire et votre espace disponible am\u00e9liore votre visibilit\u00e9 et aide les exp\u00e9diteurs \u00e0 vous trouver plus vite.</string>
+    <string name="dashboard_carrier_tip_proactive_title">SOYEZ PROACTIF</string>
+    <string name="dashboard_carrier_tip_proactive_body">Gardez vos d\u00e9tails d\'itin\u00e9raire et votre profil \u00e0 jour afin que les exp\u00e9diteurs puissent vous faire confiance et choisir votre trajet rapidement.</string>
+    <string name="dashboard_carrier_card_tip_title">Conseil transporteur</string>
+    <string name="dashboard_carrier_card_tip_body">Des d\u00e9tails d\'itin\u00e9raire complets et des horaires clairs aident les exp\u00e9diteurs \u00e0 d\u00e9cider plus vite et augmentent les demandes de qualit\u00e9.</string>
 
     <!-- Shipper explore -->
     <string name="dashboard_shipper_find_carriers">Trouver des transporteurs</string>

@@ -48,6 +48,17 @@
     <string name="dashboard_carrier_post_trip">Post Trip Schedule</string>
     <string name="dashboard_carrier_request_to_carry">Request to Carry</string>
     <string name="dashboard_carrier_not_nearby_label">Not nearby</string>
+    <string name="dashboard_carrier_no_packages_title">Still scanning for packages</string>
+    <string name="dashboard_carrier_no_packages_description">No packages are available right now. Post your trip schedule so shippers can find and match with you faster.</string>
+    <string name="dashboard_carrier_create_trip_cta">Create Trip Schedule</string>
+    <string name="dashboard_carrier_tip_demand_title">WATCH DEMAND PEAKS</string>
+    <string name="dashboard_carrier_tip_demand_body">New package requests often spike near weekends. Checking frequently improves your chance of getting early matches.</string>
+    <string name="dashboard_carrier_tip_earning_title">BOOST EARNING OPPORTUNITIES</string>
+    <string name="dashboard_carrier_tip_earning_body">Publishing your route and available space can improve visibility and help shippers discover you sooner.</string>
+    <string name="dashboard_carrier_tip_proactive_title">TAKE A PROACTIVE STEP</string>
+    <string name="dashboard_carrier_tip_proactive_body">Keep your route details and profile updated so package owners can trust and choose your trip quickly.</string>
+    <string name="dashboard_carrier_card_tip_title">Carrier Tip</string>
+    <string name="dashboard_carrier_card_tip_body">Complete route details and clear trip schedules help package owners decide faster and increase quality match requests.</string>
 
     <!-- Shipper explore -->
     <string name="dashboard_shipper_find_carriers">Find Carriers</string>

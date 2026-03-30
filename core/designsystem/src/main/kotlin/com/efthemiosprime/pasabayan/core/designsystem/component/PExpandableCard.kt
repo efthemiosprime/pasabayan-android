@@ -233,8 +233,6 @@ fun PExpandableCard(
             expandedCardState.show {
                 Column { expandedContent() }
             }
-        } else if (expandedCardState.isExpanded) {
-            expandedCardState.dismiss()
         }
     }
 
@@ -245,8 +243,9 @@ fun PExpandableCard(
         }
     }
 
-    // Collapsed card in the list (only when not expanded)
-    if (!expanded) {
+    // Keep the collapsed card visible until host expansion is active.
+    // This avoids list jump/reorder while expansion transition is starting.
+    if (!expanded || !expandedCardState.isExpanded) {
         PCard(
             modifier = modifier,
             variant = variant,
