@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="payments_profile_title">Paiements</string>
+    <string name="payments_profile_refresh">Actualiser</string>
+    <string name="payments_profile_payment_section">Traitement des paiements</string>
+    <string name="payments_profile_delivery_match_id">ID de correspondance de livraison</string>
+    <string name="payments_profile_amount">Montant</string>
+    <string name="payments_profile_create_payment">Créer un paiement</string>
+    <string name="payments_profile_confirm_capture">Confirmer la capture</string>
+    <string name="payments_profile_success">Succès</string>
+    <string name="payments_profile_idle">Inactif</string>
+    <string name="payments_profile_methods_section">Méthodes de paiement</string>
+    <string name="payments_profile_set_default">Définir par défaut</string>
+    <string name="payments_profile_tipping_refund_section">Pourboire et remboursement</string>
+    <string name="payments_profile_transaction_id">ID de transaction</string>
+    <string name="payments_profile_tip_amount">Montant du pourboire</string>
+    <string name="payments_profile_add_tip">Ajouter un pourboire</string>
+    <string name="payments_profile_refund_transaction_id">ID de transaction de remboursement</string>
+    <string name="payments_profile_refund_reason">Raison du remboursement</string>
+    <string name="payments_profile_request_refund">Demander un remboursement</string>
+    <string name="payments_profile_activity_section">Activité</string>
+    <string name="payments_profile_transactions_count">Transactions chargées : %1$d</string>
+    <string name="payments_profile_receipts_count">Reçus chargés : %1$d / %2$d</string>
+    <string name="payments_profile_load_more_receipts">Charger plus de reçus</string>
+    <string name="payments_profile_connect_section">Stripe Connect</string>
+    <string name="payments_profile_connect_ready">Onboarding terminé</string>
+    <string name="payments_profile_connect_not_ready">Onboarding requis</string>
+    <string name="payments_profile_start_onboarding">Commencer l'onboarding</string>
+    <string name="payments_profile_open_dashboard">Ouvrir le tableau de bord</string>
+</resources>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="payments_profile_title">Payments</string>
+    <string name="payments_profile_refresh">Refresh</string>
+    <string name="payments_profile_payment_section">Payment Processing</string>
+    <string name="payments_profile_delivery_match_id">Delivery Match ID</string>
+    <string name="payments_profile_amount">Amount</string>
+    <string name="payments_profile_create_payment">Create Payment</string>
+    <string name="payments_profile_confirm_capture">Confirm Capture</string>
+    <string name="payments_profile_success">Success</string>
+    <string name="payments_profile_idle">Idle</string>
+    <string name="payments_profile_methods_section">Payment Methods</string>
+    <string name="payments_profile_set_default">Set default</string>
+    <string name="payments_profile_tipping_refund_section">Tipping and Refund</string>
+    <string name="payments_profile_transaction_id">Transaction ID</string>
+    <string name="payments_profile_tip_amount">Tip Amount</string>
+    <string name="payments_profile_add_tip">Add Tip</string>
+    <string name="payments_profile_refund_transaction_id">Refund Transaction ID</string>
+    <string name="payments_profile_refund_reason">Refund Reason</string>
+    <string name="payments_profile_request_refund">Request Refund</string>
+    <string name="payments_profile_activity_section">Activity</string>
+    <string name="payments_profile_transactions_count">Transactions loaded: %1$d</string>
+    <string name="payments_profile_receipts_count">Receipts loaded: %1$d / %2$d</string>
+    <string name="payments_profile_load_more_receipts">Load More Receipts</string>
+    <string name="payments_profile_connect_section">Stripe Connect</string>
+    <string name="payments_profile_connect_ready">Onboarding complete</string>
+    <string name="payments_profile_connect_not_ready">Onboarding required</string>
+    <string name="payments_profile_start_onboarding">Start Onboarding</string>
+    <string name="payments_profile_open_dashboard">Open Dashboard</string>
+</resources>

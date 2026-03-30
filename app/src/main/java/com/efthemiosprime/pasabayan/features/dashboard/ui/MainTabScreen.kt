@@ -96,7 +96,9 @@ fun MainTabScreen(
                     title = stringResource(R.string.dashboard_stub_messages_title),
                     description = stringResource(R.string.dashboard_stub_messages_description),
                 )
-                "profile" -> ProfileStubContent(onLogout = onLogout)
+                "profile" -> com.efthemiosprime.pasabayan.features.payments.ui.PaymentsProfileScreen(
+                    onLogout = onLogout,
+                )
                 else -> {}
             }
         }
@@ -119,26 +121,3 @@ private fun StubTabContent(
     )
 }
 
-@Composable
-private fun ProfileStubContent(onLogout: () -> Unit) {
-    androidx.compose.foundation.layout.Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing.lg),
-        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(
-            com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing.lg,
-        ),
-    ) {
-        PEmptyState(
-            icon = Icons.Outlined.Person,
-            title = stringResource(R.string.dashboard_stub_profile_title),
-            description = stringResource(R.string.dashboard_stub_profile_description),
-        )
-        com.efthemiosprime.pasabayan.core.designsystem.component.PButton(
-            text = stringResource(R.string.auth_sign_out),
-            onClick = onLogout,
-            style = com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle.Secondary,
-        )
-    }
-}
