@@ -402,22 +402,24 @@ private fun buildPaymentSheetConfiguration(paymentState: PaymentUiState): Paymen
         } else {
             null
         }
-    val googlePayConfig = PaymentSheet.GooglePayConfiguration(
-        environment = if (paymentState.stripeIsSandbox) {
-            PaymentSheet.GooglePayConfiguration.Environment.Test
-        } else {
-            PaymentSheet.GooglePayConfiguration.Environment.Production
-        },
-        countryCode = "CA",
-        currencyCode = paymentState.stripeCurrencyCode,
-    )
-    return PaymentSheet.Configuration(
-        merchantDisplayName = "Pasabayan",
-        customer = customerConfig,
-        googlePay = googlePayConfig,
-        allowsDelayedPaymentMethods = false,
-        returnURL = "pasabayan://stripe-redirect",
-    )
+    return if (customerConfig != null) {
+        val googlePayConfig = PaymentSheet.GooglePayConfiguration(
+            environment = if (paymentState.stripeIsSandbox) {
+                PaymentSheet.GooglePayConfiguration.Environment.Test
+            } else {
+                PaymentSheet.GooglePayConfiguration.Environment.Production
+            },
+            countryCode = "CA",
+            currencyCode = paymentState.stripeCurrencyCode,
+        )
+        PaymentSheet.Configuration(
+            "Pasabayan",
+            customerConfig,
+            googlePayConfig,
+        )
+    } else {
+        PaymentSheet.Configuration("Pasabayan")
+    }
 }
 
 private tailrec fun Context.findActivity(): ComponentActivity? {
