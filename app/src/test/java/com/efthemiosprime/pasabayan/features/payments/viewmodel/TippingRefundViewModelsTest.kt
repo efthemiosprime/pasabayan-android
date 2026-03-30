@@ -116,6 +116,17 @@ class TippingRefundViewModelsTest {
         assertFalse(vm.uiState.value.showSuccess)
     }
 
+    @Test
+    fun `addTip rejects invalid amount before repository call`() = runTest {
+        val vm = TippingViewModel(fakePaymentRepo)
+        vm.setCustomTipAmount("0.5")
+        vm.addTip(500)
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.errorMessage != null)
+        assertFalse(vm.uiState.value.isLoading)
+    }
+
     // -- RefundViewModel --
 
     @Test
@@ -166,6 +177,31 @@ class TippingRefundViewModelsTest {
         advanceUntilIdle()
 
         assertTrue(vm.uiState.value.refundSuccess)
+        assertFalse(vm.uiState.value.isProcessing)
+    }
+
+    @Test
+    fun `submitRefund fails fast when reason invalid`() = runTest {
+        val vm = RefundViewModel(fakePaymentRepo)
+        vm.selectReason(RefundReason.OTHER)
+        vm.setCustomReason("short")
+        vm.submitRefundRequest(500)
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.errorMessage != null)
+        assertFalse(vm.uiState.value.isProcessing)
+    }
+
+    @Test
+    fun `submitRefund fails fast when partial amount invalid`() = runTest {
+        val vm = RefundViewModel(fakePaymentRepo)
+        vm.selectReason(RefundReason.DAMAGED)
+        vm.setPartialRefund(true)
+        vm.setPartialAmount("abc")
+        vm.submitRefundRequest(500)
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.errorMessage != null)
         assertFalse(vm.uiState.value.isProcessing)
     }
 

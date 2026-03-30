@@ -30,14 +30,27 @@ class PaymentMethodsViewModel @Inject constructor(
 
     fun loadPaymentMethods() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null, successMessage = null) }
             paymentMethodsRepository.loadPaymentMethods().fold(
                 onSuccess = { methods ->
-                    _uiState.update { it.copy(paymentMethods = methods, isLoading = false) }
+                    val defaultId = paymentMethodsRepository.loadDefaultPaymentMethod().getOrNull()
+                    val sorted = applyDefaultAndSort(methods, defaultId)
+                    _uiState.update {
+                        it.copy(
+                            paymentMethods = sorted,
+                            defaultPaymentMethodId = defaultId,
+                            isLoading = false,
+                        )
+                    }
                 },
                 onFailure = { e ->
                     _uiState.update {
-                        it.copy(isLoading = false, errorMessage = e.message ?: "Failed to load payment methods")
+                        it.copy(
+                            isLoading = false,
+                            paymentMethods = emptyList(),
+                            defaultPaymentMethodId = null,
+                            errorMessage = e.message ?: "Failed to load payment methods",
+                        )
                     }
                 },
             )
@@ -48,7 +61,12 @@ class PaymentMethodsViewModel @Inject constructor(
         viewModelScope.launch {
             paymentMethodsRepository.loadDefaultPaymentMethod().fold(
                 onSuccess = { id ->
-                    _uiState.update { it.copy(defaultPaymentMethodId = id) }
+                    _uiState.update {
+                        it.copy(
+                            defaultPaymentMethodId = id,
+                            paymentMethods = applyDefaultAndSort(it.paymentMethods, id),
+                        )
+                    }
                 },
                 onFailure = { /* silent */ },
             )
@@ -62,7 +80,9 @@ class PaymentMethodsViewModel @Inject constructor(
                     _uiState.update { state ->
                         state.copy(
                             paymentMethods = state.paymentMethods.filter { it.id != methodId },
+                            defaultPaymentMethodId = state.defaultPaymentMethodId.takeUnless { it == methodId },
                             successMessage = "Payment method removed",
+                            errorMessage = null,
                         )
                     }
                 },
@@ -77,7 +97,14 @@ class PaymentMethodsViewModel @Inject constructor(
         viewModelScope.launch {
             paymentMethodsRepository.setDefaultPaymentMethod(methodId).fold(
                 onSuccess = {
-                    _uiState.update { it.copy(defaultPaymentMethodId = methodId) }
+                    _uiState.update {
+                        it.copy(
+                            defaultPaymentMethodId = methodId,
+                            paymentMethods = applyDefaultAndSort(it.paymentMethods, methodId),
+                            successMessage = null,
+                            errorMessage = null,
+                        )
+                    }
                 },
                 onFailure = { e ->
                     _uiState.update { it.copy(errorMessage = e.message ?: "Failed to set default") }
@@ -88,5 +115,15 @@ class PaymentMethodsViewModel @Inject constructor(
 
     fun clearMessages() {
         _uiState.update { it.copy(errorMessage = null, successMessage = null) }
+    }
+
+    private fun applyDefaultAndSort(
+        methods: List<PaymentMethodDisplay>,
+        defaultId: String?,
+    ): List<PaymentMethodDisplay> {
+        val updated = methods.map { method ->
+            method.copy(isDefault = defaultId != null && method.id == defaultId)
+        }
+        return updated.sortedByDescending { it.isDefault }
     }
 }

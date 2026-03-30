@@ -27,7 +27,7 @@ class ReceiptDetailViewModel @Inject constructor(
 
     fun loadReceipt(transactionId: Int) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null, receiptUrl = null) }
             receiptRepository.fetchReceipt(transactionId).fold(
                 onSuccess = { receipt ->
                     _uiState.update { it.copy(receiptUrl = receipt.receiptUrl, isLoading = false) }

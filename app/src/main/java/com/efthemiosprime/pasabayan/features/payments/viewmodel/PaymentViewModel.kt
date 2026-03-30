@@ -32,13 +32,33 @@ class PaymentViewModel @Inject constructor(
 
     fun createPayment(deliveryMatchId: Int, amount: Double, currency: String = "cad") {
         viewModelScope.launch {
-            _uiState.update { it.copy(isProcessing = true, errorMessage = null) }
+            _uiState.update {
+                it.copy(
+                    isProcessing = true,
+                    errorMessage = null,
+                    paymentSuccess = false,
+                    transaction = null,
+                )
+            }
             paymentRepository.createPayment(deliveryMatchId, amount, currency).fold(
                 onSuccess = { response ->
+                    val resolvedClientSecret = response.clientSecret ?: response.data?.clientSecret
+                    if (resolvedClientSecret.isNullOrBlank()) {
+                        _uiState.update {
+                            it.copy(
+                                isProcessing = false,
+                                errorMessage = "Payment initialization failed",
+                                clientSecret = null,
+                                customerId = null,
+                                ephemeralKey = null,
+                            )
+                        }
+                        return@fold
+                    }
                     _uiState.update {
                         it.copy(
                             isProcessing = false,
-                            clientSecret = response.clientSecret ?: response.data?.clientSecret,
+                            clientSecret = resolvedClientSecret,
                             customerId = response.customerId,
                             ephemeralKey = response.ephemeralKey,
                         )
@@ -46,7 +66,13 @@ class PaymentViewModel @Inject constructor(
                 },
                 onFailure = { e ->
                     _uiState.update {
-                        it.copy(isProcessing = false, errorMessage = e.message ?: "Payment failed")
+                        it.copy(
+                            isProcessing = false,
+                            errorMessage = e.message ?: "Payment failed",
+                            clientSecret = null,
+                            customerId = null,
+                            ephemeralKey = null,
+                        )
                     }
                 },
             )
@@ -55,7 +81,7 @@ class PaymentViewModel @Inject constructor(
 
     fun confirmCapture(deliveryMatchId: Int) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isProcessing = true, errorMessage = null) }
+            _uiState.update { it.copy(isProcessing = true, errorMessage = null, paymentSuccess = false) }
             paymentRepository.confirmCapture(deliveryMatchId).fold(
                 onSuccess = { tx ->
                     _uiState.update {

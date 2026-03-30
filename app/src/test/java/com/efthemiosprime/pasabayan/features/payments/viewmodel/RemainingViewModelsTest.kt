@@ -87,6 +87,20 @@ class RemainingViewModelsTest {
         assertTrue(vm.uiState.value.cancelSuccess)
     }
 
+    @Test
+    fun `loadTransaction clears previous cancelSuccess`() = runTest {
+        fakePaymentRepo.cancelResult = Result.success(testTransaction(500, "cancelled"))
+        fakePaymentRepo.getResult = Result.success(testTransaction(500))
+        val vm = TransactionDetailViewModel(fakePaymentRepo)
+        vm.cancelTransaction(500)
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.cancelSuccess)
+
+        vm.loadTransaction(500)
+        advanceUntilIdle()
+        assertFalse(vm.uiState.value.cancelSuccess)
+    }
+
     // -- StripeConnectViewModel --
 
     @Test
@@ -117,6 +131,17 @@ class RemainingViewModelsTest {
 
         assertEquals("https://connect.stripe.com/onboard", vm.uiState.value.onboardingUrl)
         assertTrue(vm.uiState.value.showOnboarding)
+    }
+
+    @Test
+    fun `openDashboard sets url on success`() = runTest {
+        fakeConnectRepo.dashboardResult = Result.success("https://dashboard.stripe.com")
+        val vm = StripeConnectViewModel(fakeConnectRepo)
+        vm.openDashboard()
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.showDashboard)
+        assertEquals("https://dashboard.stripe.com", vm.uiState.value.dashboardUrl)
     }
 
     // -- ReceiptListViewModel --
@@ -154,6 +179,21 @@ class RemainingViewModelsTest {
         assertFalse(vm.uiState.value.hasMore)
     }
 
+    @Test
+    fun `loadReceipts failure clears stale list`() = runTest {
+        fakeReceiptRepo.listResult = Result.success(Triple(listOf(testReceipt(1)), false, 1))
+        val vm = ReceiptListViewModel(fakeReceiptRepo)
+        vm.loadReceipts()
+        advanceUntilIdle()
+        assertEquals(1, vm.uiState.value.receipts.size)
+
+        fakeReceiptRepo.listResult = Result.failure(Exception("Failed"))
+        vm.loadReceipts()
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.receipts.isEmpty())
+        assertTrue(vm.uiState.value.error != null)
+    }
+
     // -- ReceiptDetailViewModel --
 
     @Test
@@ -166,6 +206,23 @@ class RemainingViewModelsTest {
         advanceUntilIdle()
 
         assertEquals("https://example.com/receipt.pdf", vm.uiState.value.receiptUrl)
+    }
+
+    @Test
+    fun `loadReceipt failure clears stale url`() = runTest {
+        fakeReceiptRepo.singleResult = Result.success(
+            testReceipt(1000, "https://example.com/receipt.pdf"),
+        )
+        val vm = ReceiptDetailViewModel(fakeReceiptRepo)
+        vm.loadReceipt(1000)
+        advanceUntilIdle()
+        assertEquals("https://example.com/receipt.pdf", vm.uiState.value.receiptUrl)
+
+        fakeReceiptRepo.singleResult = Result.failure(Exception("Unavailable"))
+        vm.loadReceipt(1001)
+        advanceUntilIdle()
+        assertNull(vm.uiState.value.receiptUrl)
+        assertTrue(vm.uiState.value.errorMessage != null)
     }
 
     // -- Helpers --

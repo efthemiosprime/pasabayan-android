@@ -35,7 +35,14 @@ class StripeConnectViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             connectRepository.checkStatus().fold(
                 onSuccess = { status ->
-                    _uiState.update { it.copy(status = status, isLoading = false) }
+                    _uiState.update {
+                        it.copy(
+                            status = status,
+                            isLoading = false,
+                            showOnboarding = false,
+                            onboardingUrl = null,
+                        )
+                    }
                 },
                 onFailure = { e ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "Failed to load status") }
@@ -46,7 +53,7 @@ class StripeConnectViewModel @Inject constructor(
 
     fun startOnboarding() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null, showOnboarding = false) }
             connectRepository.startOnboarding().fold(
                 onSuccess = { url ->
                     _uiState.update { it.copy(isLoading = false, onboardingUrl = url, showOnboarding = true) }
@@ -60,7 +67,7 @@ class StripeConnectViewModel @Inject constructor(
 
     fun openDashboard() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null, showDashboard = false) }
             connectRepository.getDashboardUrl().fold(
                 onSuccess = { url ->
                     _uiState.update { it.copy(isLoading = false, dashboardUrl = url, showDashboard = true) }

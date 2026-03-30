@@ -113,23 +113,17 @@ fun CarrierExploreContent(
 
         PDivider()
 
-        // Available packages section
-        Text(
-            text = stringResource(R.string.dashboard_carrier_available_packages),
-            style = PasabayanTextStyles.Heading.h5,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-
+        // Browse content
         when {
             state.isLoading -> {
-                androidx.compose.foundation.layout.Box(
+                Box(
                     modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = androidx.compose.ui.Alignment.Center,
+                    contentAlignment = Alignment.Center,
                 ) {
                     PCircularProgress()
                 }
             }
-            state.packageRequests.isEmpty() -> {
+            state.hasLoadedPackages && state.packageRequests.isEmpty() -> {
                 CarrierBrowseEmptyState(
                     onPostTrip = { /* TODO: switch to My Trips tab */ },
                 )
@@ -146,6 +140,9 @@ fun CarrierExploreContent(
     }
 }
 
+/**
+ * Carrier empty state — iOS parity: CTA + tips section.
+ */
 @Composable
 private fun CarrierBrowseEmptyState(
     onPostTrip: () -> Unit,
@@ -192,17 +189,17 @@ private fun CarrierBrowseEmptyState(
 
         PDivider()
 
-        CarrierTipRow(
+        TipRow(
             color = Color(0xFF3B82F6),
             title = stringResource(R.string.dashboard_carrier_tip_demand_title),
             body = stringResource(R.string.dashboard_carrier_tip_demand_body),
         )
-        CarrierTipRow(
+        TipRow(
             color = Color(0xFFF59E0B),
             title = stringResource(R.string.dashboard_carrier_tip_earning_title),
             body = stringResource(R.string.dashboard_carrier_tip_earning_body),
         )
-        CarrierTipRow(
+        TipRow(
             color = Color(0xFF9EC5FF),
             title = stringResource(R.string.dashboard_carrier_tip_proactive_title),
             body = stringResource(R.string.dashboard_carrier_tip_proactive_body),
@@ -216,14 +213,8 @@ private fun CarrierBrowseEmptyState(
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                            shape = CircleShape,
-                        )
-                        .padding(2.dp),
-                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp),
+                    tint = Color(0xFF2A8CFF),
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
                     Text(
@@ -244,7 +235,7 @@ private fun CarrierBrowseEmptyState(
 }
 
 @Composable
-private fun CarrierTipRow(
+private fun TipRow(
     color: Color,
     title: String,
     body: String,
@@ -275,14 +266,15 @@ private fun CarrierTipRow(
     }
 }
 
-@Preview(showBackground = true, name = "CarrierExplore — light", heightDp = 900)
-@Preview(showBackground = true, name = "CarrierExplore — dark", heightDp = 900, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(showBackground = true, name = "CarrierExplore — light", heightDp = 1200)
+@Preview(showBackground = true, name = "CarrierExplore — dark", heightDp = 1200, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun CarrierExplorePreview() {
     PasabayanTheme {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(PasabayanSpacing.screenPadding),
             verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
         ) {
@@ -296,6 +288,10 @@ private fun CarrierExplorePreview() {
             Text(
                 text = stringResource(R.string.dashboard_carrier_find_packages),
                 style = PasabayanTextStyles.Heading.h4,
+            )
+            Text(
+                text = stringResource(R.string.dashboard_carrier_find_packages_subtitle),
+                style = PasabayanTextStyles.Body.small,
             )
             CarrierBrowseEmptyState(onPostTrip = {})
         }

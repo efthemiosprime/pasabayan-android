@@ -78,8 +78,16 @@ class RefundViewModel @Inject constructor(
 
     fun submitRefundRequest(transactionId: Int) {
         val state = _uiState.value
+        if (!state.isValidRequest) {
+            _uiState.update { it.copy(errorMessage = state.reasonValidationMessage ?: "Invalid refund reason") }
+            return
+        }
+        if (state.isPartialRefund && state.refundAmount == null) {
+            _uiState.update { it.copy(errorMessage = "Enter a valid partial refund amount") }
+            return
+        }
         viewModelScope.launch {
-            _uiState.update { it.copy(isProcessing = true, errorMessage = null) }
+            _uiState.update { it.copy(isProcessing = true, errorMessage = null, refundSuccess = false) }
             paymentRepository.requestRefund(
                 transactionId = transactionId,
                 amount = state.refundAmount,

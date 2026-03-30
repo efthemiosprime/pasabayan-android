@@ -82,6 +82,23 @@ class PaymentViewModelsTest {
     }
 
     @Test
+    fun `createPayment sets error when client secret is missing`() = runTest {
+        fakePaymentRepo.createResult = Result.success(
+            CreatePaymentResponseJson(
+                success = true,
+                clientSecret = null,
+                data = TransactionJson(id = 1, status = "pending", clientSecret = null),
+            ),
+        )
+        val vm = PaymentViewModel(fakePaymentRepo)
+        vm.createPayment(100, 150.0)
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.errorMessage != null)
+        assertNull(vm.uiState.value.clientSecret)
+    }
+
+    @Test
     fun `confirmCapture sets paymentSuccess`() = runTest {
         fakePaymentRepo.confirmCaptureResult = Result.success(
             TransactionJson(id = 1, status = "completed").toDomain(),
@@ -106,15 +123,19 @@ class PaymentViewModelsTest {
     fun `loadPaymentMethods sets methods on success`() = runTest {
         fakeMethodsRepo.loadResult = Result.success(
             listOf(
-                PaymentMethodDisplay("pm_1", "visa", "4242", 12, 2028, true),
+                PaymentMethodDisplay("pm_1", "visa", "4242", 12, 2028, false),
                 PaymentMethodDisplay("pm_2", "mastercard", "5555", 6, 2027, false),
             ),
         )
+        fakeMethodsRepo.defaultResult = Result.success("pm_2")
         val vm = PaymentMethodsViewModel(fakeMethodsRepo)
         vm.loadPaymentMethods()
         advanceUntilIdle()
 
         assertEquals(2, vm.uiState.value.paymentMethods.size)
+        assertEquals("pm_2", vm.uiState.value.defaultPaymentMethodId)
+        assertEquals("pm_2", vm.uiState.value.paymentMethods.first().id)
+        assertTrue(vm.uiState.value.paymentMethods.first().isDefault)
         assertFalse(vm.uiState.value.isLoading)
     }
 
@@ -132,10 +153,11 @@ class PaymentViewModelsTest {
     fun `removePaymentMethod removes from list`() = runTest {
         fakeMethodsRepo.loadResult = Result.success(
             listOf(
-                PaymentMethodDisplay("pm_1", "visa", "4242", 12, 2028, false),
+                PaymentMethodDisplay("pm_1", "visa", "4242", 12, 2028, true),
                 PaymentMethodDisplay("pm_2", "mastercard", "5555", 6, 2027, false),
             ),
         )
+        fakeMethodsRepo.defaultResult = Result.success("pm_1")
         fakeMethodsRepo.removeResult = Result.success(Unit)
         val vm = PaymentMethodsViewModel(fakeMethodsRepo)
         vm.loadPaymentMethods()
@@ -146,22 +168,28 @@ class PaymentViewModelsTest {
 
         assertEquals(1, vm.uiState.value.paymentMethods.size)
         assertEquals("pm_2", vm.uiState.value.paymentMethods[0].id)
+        assertNull(vm.uiState.value.defaultPaymentMethodId)
     }
 
     @Test
     fun `setDefaultPaymentMethod updates default`() = runTest {
         fakeMethodsRepo.loadResult = Result.success(
-            listOf(PaymentMethodDisplay("pm_1", "visa", "4242", 12, 2028, false)),
+            listOf(
+                PaymentMethodDisplay("pm_1", "visa", "4242", 12, 2028, false),
+                PaymentMethodDisplay("pm_2", "mastercard", "5555", 6, 2027, false),
+            ),
         )
         fakeMethodsRepo.setDefaultResult = Result.success(Unit)
         val vm = PaymentMethodsViewModel(fakeMethodsRepo)
         vm.loadPaymentMethods()
         advanceUntilIdle()
 
-        vm.setDefaultPaymentMethod("pm_1")
+        vm.setDefaultPaymentMethod("pm_2")
         advanceUntilIdle()
 
-        assertEquals("pm_1", vm.uiState.value.defaultPaymentMethodId)
+        assertEquals("pm_2", vm.uiState.value.defaultPaymentMethodId)
+        assertEquals("pm_2", vm.uiState.value.paymentMethods.first().id)
+        assertTrue(vm.uiState.value.paymentMethods.first().isDefault)
     }
 }
 

@@ -29,7 +29,7 @@ class TransactionDetailViewModel @Inject constructor(
 
     fun loadTransaction(id: Int) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null, cancelSuccess = false) }
             paymentRepository.getTransaction(id).fold(
                 onSuccess = { tx ->
                     _uiState.update { it.copy(transaction = tx, isLoading = false) }
@@ -43,7 +43,7 @@ class TransactionDetailViewModel @Inject constructor(
 
     fun cancelTransaction(id: Int, reason: String? = null) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null, cancelSuccess = false) }
             paymentRepository.cancelTransaction(id, reason).fold(
                 onSuccess = { tx ->
                     _uiState.update { it.copy(isLoading = false, cancelSuccess = true, transaction = tx) }

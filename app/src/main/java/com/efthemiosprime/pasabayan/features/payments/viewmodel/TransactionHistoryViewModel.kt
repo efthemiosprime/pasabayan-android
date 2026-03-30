@@ -34,7 +34,7 @@ class TransactionHistoryViewModel @Inject constructor(
                     _uiState.update { it.copy(transactions = txs, isLoading = false) }
                 },
                 onFailure = { e ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "Failed to load") }
+                    _uiState.update { it.copy(isLoading = false, transactions = emptyList(), errorMessage = e.message ?: "Failed to load") }
                 },
             )
         }

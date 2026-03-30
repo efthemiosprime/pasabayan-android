@@ -55,8 +55,20 @@ class TippingViewModel @Inject constructor(
 
     fun addTip(transactionId: Int) {
         val amount = _uiState.value.effectiveTipAmount
+        if (!_uiState.value.isValidTip) {
+            _uiState.update { it.copy(errorMessage = "Tip amount must be between 1 and 500") }
+            return
+        }
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    errorMessage = null,
+                    showSuccess = false,
+                    showPaymentSheet = false,
+                    clientSecret = null,
+                )
+            }
             paymentRepository.addTip(transactionId, amount).fold(
                 onSuccess = { response ->
                     if (response.clientSecret != null) {

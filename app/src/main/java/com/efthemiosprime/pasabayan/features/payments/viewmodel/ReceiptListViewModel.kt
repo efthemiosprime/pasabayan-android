@@ -33,7 +33,16 @@ class ReceiptListViewModel @Inject constructor(
     fun loadReceipts() {
         currentPage = 1
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    isLoadingMore = false,
+                    error = null,
+                    receipts = emptyList(),
+                    hasMore = false,
+                    totalCount = 0,
+                )
+            }
             receiptRepository.fetchReceipts(page = 1).fold(
                 onSuccess = { (receipts, hasMore, total) ->
                     _uiState.update {
@@ -41,7 +50,15 @@ class ReceiptListViewModel @Inject constructor(
                     }
                 },
                 onFailure = { e ->
-                    _uiState.update { it.copy(isLoading = false, error = e.message ?: "Failed to load") }
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            receipts = emptyList(),
+                            hasMore = false,
+                            totalCount = 0,
+                            error = e.message ?: "Failed to load",
+                        )
+                    }
                 },
             )
         }
