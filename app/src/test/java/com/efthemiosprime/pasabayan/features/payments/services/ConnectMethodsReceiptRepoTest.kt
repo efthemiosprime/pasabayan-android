@@ -86,6 +86,17 @@ class ConnectMethodsReceiptRepoTest {
     }
 
     @Test
+    fun `startOnboarding returns mapped failure on 403`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(403).setBody(
+                """{"message":"Permission denied"}""",
+            ),
+        )
+        val result = connectRepo.startOnboarding()
+        assertTrue(result.isFailure)
+    }
+
+    @Test
     fun `getDashboardUrl returns url on success`() = runBlocking {
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(
@@ -152,6 +163,17 @@ class ConnectMethodsReceiptRepoTest {
         )
         val result = methodsRepo.setDefaultPaymentMethod("pm_1")
         assertTrue(result.isSuccess)
+    }
+
+    @Test
+    fun `setDefaultPaymentMethod returns failure on non-success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": false, "message": "invalid default"}""",
+            ),
+        )
+        val result = methodsRepo.setDefaultPaymentMethod("pm_1")
+        assertTrue(result.isFailure)
     }
 
     @Test

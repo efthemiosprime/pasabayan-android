@@ -1589,25 +1589,25 @@ All display strings must use `stringResource(R.string.key)`. Add to `res/values/
 
 ## TDD checklist
 
-- [ ] **`TransactionModelsTest`** — decode `Transaction`, `TransactionAmounts` (flexible double), `CreatePaymentResponse` (top-level vs nested `clientSecret`)
-- [ ] **`PaymentReceiptModelsTest`** — decode receipt with nested objects, computed properties
-- [ ] **`StripeConfigModelsTest`** — decode config, computed `isSandbox`/`isLive`, fee calculations (`totalToPay`, `serviceFeeAmount`, `carrierReceives`)
-- [ ] **`StripeConnectModelsTest`** — decode status, computed `isOnboarded`/`canPayout`
-- [ ] **`PaymentMethodModelsTest`** — decode `PaymentMethodsResponse`, `SetupIntentResponse`, `DefaultPaymentMethodResponse`
-- [ ] **`PaymentRepositoryTest`** — MockWebServer; create payment, list, get, capture, confirm-capture, release, refund, refund-status, cancel, tip
-- [ ] **`StripeConfigRepositoryTest`** — fetch config, fee calculations with defaults vs server values, price validation
-- [ ] **`StripeConnectRepositoryTest`** — onboard, status, dashboard; error message → enum mapping
-- [ ] **`ReceiptRepositoryTest`** — fetch paginated list, single receipt, `hasMore` computation
-- [ ] **`PaymentMethodsRepositoryTest`** — list, setup-intent, default, set-default, delete
-- [ ] **`PaymentViewModelTest`** — payment flow states, mock secret handling, confirm-capture, cancel
-- [ ] **`PaymentMethodsViewModelTest`** — load, add (setup intent), remove, set default, sort with default first
-- [ ] **`TippingViewModelTest`** — preset selection, custom amount, validation ($1–$500), tip with/without clientSecret, reset
-- [ ] **`RefundViewModelTest`** — reason selection, validation (10–500 chars), partial vs full, submit, status check, reset
-- [ ] **`TransactionHistoryViewModelTest`** — load with role filter, refresh
-- [ ] **`TransactionDetailViewModelTest`** — load, cancel
-- [ ] **`StripeConnectViewModelTest`** — debounced loadStatus, single-flight, onboarding flow, dashboard, return handling
-- [ ] **`ReceiptListViewModelTest`** — load, loadMore pagination, refresh
-- [ ] **`ReceiptDetailViewModelTest`** — load receipt URL
-- [ ] **`TransactionStatusTest`** — enum parsing, displayName, color, icon for all cases + unknown fallback
-- [ ] **`RefundReasonTest`** — displayText, requiresCustomInput for each case
-- [ ] **`PaymentErrorMappingTest`** — HTTP 403 → PERMISSION_DENIED, requires_authentication extraction, validation errors extraction
+- [x] **`TransactionModelsTest`** — decode `Transaction`, `TransactionAmounts` (flexible double), `CreatePaymentResponse` (top-level vs nested `clientSecret`)
+- [x] **`PaymentReceiptModelsTest`** — decode receipt with nested objects, computed properties
+- [x] **`StripeConfigModelsTest`** — decode config, computed `isSandbox`/`isLive`, fee calculations (`totalToPay`, `serviceFeeAmount`, `carrierReceives`)
+- [x] **`StripeConnectModelsTest`** — decode status, computed `isOnboarded`/`canPayout`
+- [x] **`PaymentMethodModelsTest`** — decode `PaymentMethodsResponse`, `SetupIntentResponse`, `DefaultPaymentMethodResponse`
+- [x] **`PaymentRepositoryTest`** — MockWebServer; create payment, list, get, capture, confirm-capture, release, refund, refund-status, cancel, tip
+- [x] **`StripeConfigRepositoryTest`** — fetch config, fee calculations with defaults vs server values, price validation
+- [x] **`StripeConnectRepositoryTest`** — onboard, status, dashboard; error message → enum mapping
+- [x] **`ReceiptRepositoryTest`** — fetch paginated list, single receipt, `hasMore` computation
+- [x] **`PaymentMethodsRepositoryTest`** — list, setup-intent, default, set-default, delete
+- [x] **`PaymentViewModelTest`** — payment flow states, mock secret handling, confirm-capture, cancel
+- [x] **`PaymentMethodsViewModelTest`** — load, add (setup intent), remove, set default, sort with default first
+- [x] **`TippingViewModelTest`** — preset selection, custom amount, validation ($1–$500), tip with/without clientSecret, reset
+- [x] **`RefundViewModelTest`** — reason selection, validation (10–500 chars), partial vs full, submit, status check, reset
+- [x] **`TransactionHistoryViewModelTest`** — load with role filter, refresh
+- [x] **`TransactionDetailViewModelTest`** — load, cancel
+- [x] **`StripeConnectViewModelTest`** — debounced loadStatus, single-flight, onboarding flow, dashboard, return handling
+- [x] **`ReceiptListViewModelTest`** — load, loadMore pagination, refresh
+- [x] **`ReceiptDetailViewModelTest`** — load receipt URL
+- [x] **`TransactionStatusTest`** — enum parsing, displayName, color, icon for all cases + unknown fallback
+- [x] **`RefundReasonTest`** — displayText, requiresCustomInput for each case
+- [x] **`PaymentErrorMappingTest`** — HTTP 403 → PERMISSION_DENIED, requires_authentication extraction, validation errors extraction
