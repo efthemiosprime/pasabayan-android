@@ -68,6 +68,7 @@
 
     <!-- Trip creation -->
     <string name="trips_create_title">Create New Trip</string>
+    <string name="trips_create_required_steps">Required steps</string>
     <string name="trips_create_origin">Origin City</string>
     <string name="trips_create_destination">Destination City</string>
     <string name="trips_create_departure_date">Departure Date</string>
