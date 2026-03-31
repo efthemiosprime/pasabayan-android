@@ -33,4 +33,11 @@ interface BookingsRepository {
     suspend fun confirmPickupWithCode(matchId: Int, code: String): Result<DeliveryMatch>
 
     suspend fun confirmDeliveryWithCode(matchId: Int, code: String): Result<DeliveryMatch>
+
+    suspend fun shipperRequestTrip(
+        packageId: Int,
+        tripId: Int,
+        offeredPrice: Double,
+        message: String?,
+    ): Result<DeliveryMatch>
 }

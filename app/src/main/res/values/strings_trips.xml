@@ -37,18 +37,33 @@
     <string name="trips_edit_trip">Edit Trip</string>
     <string name="trips_cancel_trip">Cancel Trip</string>
     <string name="trips_view_compatible">View Compatible Packages</string>
+    <string name="trips_action_request_book">Request Book</string>
 
     <!-- Trip details -->
     <string name="trips_detail_route">Route</string>
+    <string name="trips_detail_route_information">Route Information</string>
+    <string name="trips_detail_start_location">Start Location</string>
+    <string name="trips_detail_end_location">End Location</string>
     <string name="trips_detail_schedule">Schedule</string>
     <string name="trips_detail_departure">Departure</string>
     <string name="trips_detail_arrival">Arrival</string>
     <string name="trips_detail_capacity">Capacity</string>
+    <string name="trips_detail_available_capacity">Available Capacity</string>
     <string name="trips_detail_price">Price</string>
+    <string name="trips_detail_pricing_title">Pricing</string>
+    <string name="trips_detail_price_per_kg_label">Price per kg</string>
+    <string name="trips_detail_flat_rate_label">Flat rate</string>
     <string name="trips_detail_weight">Weight</string>
     <string name="trips_detail_notes">Special Notes</string>
     <string name="trips_detail_earnings">Earnings</string>
     <string name="trips_detail_pending_requests">%1$d pending request(s)</string>
+    <string name="trips_detail_title">Trip Details</string>
+    <string name="trips_detail_done">Done</string>
+    <string name="trips_detail_request_to_book">Request to Book</string>
+    <string name="trips_detail_unavailable_fully_booked">This trip is fully booked and can no longer accept new package requests.</string>
+    <string name="trips_detail_unavailable_in_transit">This trip is already in transit and no longer accepts new package requests.</string>
+    <string name="trips_detail_unavailable_completed">This trip is completed and no longer accepts new package requests.</string>
+    <string name="trips_detail_unavailable_cancelled">This trip was cancelled and can no longer accept new package requests.</string>
 
     <!-- Trip creation -->
     <string name="trips_create_title">Create New Trip</string>
@@ -66,6 +81,7 @@
     <!-- Browse -->
     <string name="trips_browse_title">Browse Trips</string>
     <string name="trips_browse_search">Search trips…</string>
+    <string name="trips_card_distance_from_you">%1$.0f km from you</string>
 
     <!-- Sort -->
     <string name="trips_sort_departure_date">Departure Date</string>

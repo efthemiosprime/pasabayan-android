@@ -52,6 +52,9 @@
     <string name="bookings_request_to_carry_price">Votre prix propos\u00e9</string>
     <string name="bookings_request_to_carry_message">Message \u00e0 l\'exp\u00e9diteur (optionnel)</string>
     <string name="bookings_request_to_carry_submit">Envoyer la demande</string>
+    <string name="bookings_match_creation_title">Demander la livraison</string>
+    <string name="bookings_match_creation_choose_package">Choisir un colis</string>
+    <string name="bookings_match_creation_no_packages">Aucun colis en attente disponible. Cr\u00e9ez d\'abord une demande de colis.</string>
 
     <!-- Auto-charge -->
     <string name="bookings_auto_charge_title">Confirmer le paiement</string>

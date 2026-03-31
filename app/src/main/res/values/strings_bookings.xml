@@ -52,6 +52,9 @@
     <string name="bookings_request_to_carry_price">Your proposed price</string>
     <string name="bookings_request_to_carry_message">Message to shipper (optional)</string>
     <string name="bookings_request_to_carry_submit">Send Request</string>
+    <string name="bookings_match_creation_title">Request Delivery</string>
+    <string name="bookings_match_creation_choose_package">Choose package</string>
+    <string name="bookings_match_creation_no_packages">No pending packages available. Create a package request first.</string>
 
     <!-- Auto-charge -->
     <string name="bookings_auto_charge_title">Confirm Payment</string>

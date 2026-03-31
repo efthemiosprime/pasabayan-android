@@ -5,6 +5,7 @@ import com.efthemiosprime.pasabayan.core.network.ApiErrorMapper
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.network.bookings.BookingsApi
 import com.efthemiosprime.pasabayan.core.network.bookings.MatchResponseJson
+import com.efthemiosprime.pasabayan.core.network.bookings.ShipperCounterOfferRequestJson
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.toDomain
 import kotlinx.serialization.json.Json
@@ -116,6 +117,31 @@ class BookingsRepositoryImpl @Inject constructor(
     override suspend fun confirmDeliveryWithCode(matchId: Int, code: String): Result<DeliveryMatch> {
         return try {
             val res = bookingsApi.confirmDeliveryWithCode(matchId, code)
+            if (!res.isSuccessful) return Result.failure(mapError(res))
+            val match = res.body()?.data?.toDomain()
+                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            Result.success(match)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun shipperRequestTrip(
+        packageId: Int,
+        tripId: Int,
+        offeredPrice: Double,
+        message: String?,
+    ): Result<DeliveryMatch> {
+        return try {
+            val res = bookingsApi.shipperRequestTrip(
+                packageId = packageId,
+                tripId = tripId,
+                body = ShipperCounterOfferRequestJson(
+                    proposedPrice = offeredPrice,
+                    message = message,
+                    isCounterOffer = false,
+                ),
+            )
             if (!res.isSuccessful) return Result.failure(mapError(res))
             val match = res.body()?.data?.toDomain()
                 ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))

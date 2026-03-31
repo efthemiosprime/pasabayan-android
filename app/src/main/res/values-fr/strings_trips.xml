@@ -37,18 +37,33 @@
     <string name="trips_edit_trip">Modifier le trajet</string>
     <string name="trips_cancel_trip">Annuler le trajet</string>
     <string name="trips_view_compatible">Voir les colis compatibles</string>
+    <string name="trips_action_request_book">Demander la r\u00e9servation</string>
 
     <!-- Trip details -->
     <string name="trips_detail_route">Itin\u00e9raire</string>
+    <string name="trips_detail_route_information">Informations sur l\'itin\u00e9raire</string>
+    <string name="trips_detail_start_location">Lieu de d\u00e9part</string>
+    <string name="trips_detail_end_location">Lieu d\'arriv\u00e9e</string>
     <string name="trips_detail_schedule">Horaire</string>
     <string name="trips_detail_departure">D\u00e9part</string>
     <string name="trips_detail_arrival">Arriv\u00e9e</string>
     <string name="trips_detail_capacity">Capacit\u00e9</string>
+    <string name="trips_detail_available_capacity">Capacit\u00e9 disponible</string>
     <string name="trips_detail_price">Prix</string>
+    <string name="trips_detail_pricing_title">Tarification</string>
+    <string name="trips_detail_price_per_kg_label">Prix par kg</string>
+    <string name="trips_detail_flat_rate_label">Tarif forfaitaire</string>
     <string name="trips_detail_weight">Poids</string>
     <string name="trips_detail_notes">Notes sp\u00e9ciales</string>
     <string name="trips_detail_earnings">Revenus</string>
     <string name="trips_detail_pending_requests">%1$d demande(s) en attente</string>
+    <string name="trips_detail_title">D\u00e9tails du trajet</string>
+    <string name="trips_detail_done">Termin\u00e9</string>
+    <string name="trips_detail_request_to_book">Demander \u00e0 r\u00e9server</string>
+    <string name="trips_detail_unavailable_fully_booked">Ce trajet est complet et n\'accepte plus de nouvelles demandes de colis.</string>
+    <string name="trips_detail_unavailable_in_transit">Ce trajet est d\u00e9j\u00e0 en transit et n\'accepte plus de nouvelles demandes de colis.</string>
+    <string name="trips_detail_unavailable_completed">Ce trajet est termin\u00e9 et n\'accepte plus de nouvelles demandes de colis.</string>
+    <string name="trips_detail_unavailable_cancelled">Ce trajet a \u00e9t\u00e9 annul\u00e9 et n\'accepte plus de nouvelles demandes de colis.</string>
 
     <!-- Trip creation -->
     <string name="trips_create_title">Cr\u00e9er un nouveau trajet</string>
@@ -66,6 +81,7 @@
     <!-- Browse -->
     <string name="trips_browse_title">Parcourir les trajets</string>
     <string name="trips_browse_search">Rechercher des trajets\u2026</string>
+    <string name="trips_card_distance_from_you">\u00c0 %1$.0f km de vous</string>
 
     <!-- Sort -->
     <string name="trips_sort_departure_date">Date de d\u00e9part</string>

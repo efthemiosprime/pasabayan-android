@@ -21,10 +21,14 @@ import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -50,8 +54,12 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.session.AuthUser
+import com.efthemiosprime.pasabayan.features.bookings.ui.ShipperMatchCreationSheet
+import com.efthemiosprime.pasabayan.features.dashboard.components.ShipperExploreTripCard
 import com.efthemiosprime.pasabayan.features.dashboard.components.UserHeaderCard
-import com.efthemiosprime.pasabayan.features.trips.components.TripCard
+import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
+import com.efthemiosprime.pasabayan.features.trips.ui.TripDetailsScreen
+import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.BrowseTripsViewModel
 
 /**
@@ -59,14 +67,19 @@ import com.efthemiosprime.pasabayan.features.trips.viewmodel.BrowseTripsViewMode
  * Parity with iOS `ShipperHomeContent.swift` → `ShipperDashboardView`.
  */
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun ShipperExploreContent(
     user: AuthUser,
     onSwitchRole: () -> Unit,
     modifier: Modifier = Modifier,
     onViewTripDetails: (tripId: Int) -> Unit = {},
     browseTripsViewModel: BrowseTripsViewModel = hiltViewModel(),
+    packageViewModel: PackageViewModel = hiltViewModel(),
 ) {
     val state by browseTripsViewModel.uiState.collectAsStateWithLifecycle()
+    val packageState by packageViewModel.uiState.collectAsStateWithLifecycle()
+    var detailTrip by remember { mutableStateOf<Trip?>(null) }
+    var requestBookTrip by remember { mutableStateOf<Trip?>(null) }
 
     LaunchedEffect(Unit) { browseTripsViewModel.loadAvailableTrips() }
 
@@ -134,13 +147,70 @@ fun ShipperExploreContent(
             }
             else -> {
                 state.availableTrips.forEach { trip ->
-                    TripCard(
+                    ShipperExploreTripCard(
                         trip = trip,
-                        onViewDetails = { onViewTripDetails(trip.id) },
+                        onViewDetails = {
+                            onViewTripDetails(trip.id)
+                            detailTrip = trip
+                        },
+                        onRequestBook = { requestBookTrip = trip },
                     )
                 }
             }
         }
+    }
+
+    detailTrip?.let { selectedTrip ->
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { detailTrip = null },
+        ) {
+            TripDetailsScreen(
+                trip = selectedTrip,
+                isCarrier = false,
+                onEdit = {},
+                onCancel = {},
+                onBack = { detailTrip = null },
+                onRequestBook = {
+                    detailTrip = null
+                    requestBookTrip = selectedTrip
+                },
+            )
+        }
+    }
+
+    requestBookTrip?.let { selectedTrip ->
+        LaunchedEffect(selectedTrip.id) {
+            packageViewModel.loadPackages()
+            packageViewModel.clearTripRequestState()
+        }
+        ShipperMatchCreationSheet(
+            trip = selectedTrip,
+            pendingPackages = packageViewModel.getPendingRequests(),
+            isSubmitting = packageState.isSubmittingTripRequest,
+            requestErrorMessage = packageState.tripRequestErrorMessage,
+            requestSuccessMessage = packageState.tripRequestSuccessMessage,
+            onSubmit = { packageId, offeredPrice, message ->
+                packageViewModel.requestTripForPackage(
+                    packageId = packageId,
+                    tripId = selectedTrip.id,
+                    offeredPrice = offeredPrice,
+                    message = message,
+                ) { result ->
+                    if (result.isSuccess) {
+                        browseTripsViewModel.loadAvailableTrips()
+                        packageViewModel.refreshPackages()
+                    }
+                }
+            },
+            onSuccessDone = {
+                requestBookTrip = null
+                packageViewModel.clearTripRequestState()
+            },
+            onDismiss = {
+                requestBookTrip = null
+                packageViewModel.clearTripRequestState()
+            },
+        )
     }
 }
 

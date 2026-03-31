@@ -37,12 +37,30 @@ import com.efthemiosprime.pasabayan.features.trips.model.Trip
 fun TripCard(
     trip: Trip,
     onViewDetails: () -> Unit,
+    onRequestBook: (() -> Unit)? = null,
+    showDistanceFromUser: Boolean = false,
+    showCompactPriceInCollapsed: Boolean = false,
+    renderSingleMenuActionDirectly: Boolean = false,
     modifier: Modifier = Modifier,
     menuActions: List<CardMenuAction> = emptyList(),
 ) {
     val opacity = if (trip.tripStatus == TripStatus.CANCELLED) 0.5f else 1f
     val statusLabel = tripStatusLabel(trip.tripStatus)
     var expanded by rememberSaveable { mutableStateOf(false) }
+    val cardMenuActions = if (trip.isBookable && onRequestBook != null) {
+        menuActions + CardMenuAction(
+            title = stringResource(R.string.trips_action_request_book),
+            onClick = onRequestBook,
+        )
+    } else {
+        menuActions
+    }
+    val directTrailingAction = if (renderSingleMenuActionDirectly && cardMenuActions.size == 1) {
+        cardMenuActions.first()
+    } else {
+        null
+    }
+    val overflowActions = if (directTrailingAction != null) emptyList() else cardMenuActions
 
     PExpandableCard(
         expanded = expanded,
@@ -76,6 +94,14 @@ fun TripCard(
                     destinationAddress = trip.dropoffAddress,
                 )
 
+                if (showDistanceFromUser && trip.routeDistanceKm > 0) {
+                    Text(
+                        text = stringResource(R.string.trips_card_distance_from_you, trip.routeDistanceKm),
+                        style = PasabayanTextStyles.Caption.regular,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
                 // Schedule
                 if (trip.formattedDepartureDate.isNotEmpty()) {
                     PDetailRow(
@@ -89,11 +115,18 @@ fun TripCard(
                     label = stringResource(R.string.trips_detail_capacity),
                     value = trip.formattedCapacity,
                 )
+                if (showCompactPriceInCollapsed) {
+                    PDetailRow(
+                        label = stringResource(R.string.trips_detail_price),
+                        value = trip.formattedPriceCompact,
+                    )
+                }
 
                 // Footer — "View Details" expands the card
                 PCardActionFooter(
-                    onViewDetails = { expanded = true },
-                    menuActions = menuActions,
+                    onViewDetails = onViewDetails,
+                    menuActions = overflowActions,
+                    directTrailingAction = directTrailingAction,
                 )
             }
         },
