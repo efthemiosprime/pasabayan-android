@@ -18,14 +18,9 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material3.Icon
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -39,6 +34,9 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
+import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSectionTitle
+import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetCard
+import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetScaffold
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDivider
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PricingType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
@@ -56,39 +54,15 @@ fun TripDetailsScreen(
     modifier: Modifier = Modifier,
 ) {
     val statusLabel = tripDetailStatusLabel(trip.tripStatus)
-    val sheetBackgroundColor = Color(0xFFF2F2F7)
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(sheetBackgroundColor)
-            .verticalScroll(rememberScrollState())
-            .padding(PasabayanSpacing.screenPadding),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+    PDetailSheetScaffold(
+        title = stringResource(R.string.trips_detail_title),
+        doneLabel = stringResource(R.string.trips_detail_done),
+        onDone = onBack,
+        modifier = modifier,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(R.string.trips_detail_title),
-                style = PasabayanTextStyles.Heading.h5,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.SemiBold,
-            )
-            TextButton(onClick = onBack) {
-                Text(
-                    text = stringResource(R.string.trips_detail_done),
-                    style = PasabayanTextStyles.Body.medium,
-                    color = PasabayanColors.Info,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
-        }
 
         // Header card
-        TripDetailsCard(modifier = Modifier.fillMaxWidth()) {
+        PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
                 Text(
                     text = trip.route,
@@ -103,9 +77,9 @@ fun TripDetailsScreen(
         }
 
         // Route information card
-        TripDetailsCard(modifier = Modifier.fillMaxWidth()) {
+        PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
-                SectionTitle(text = stringResource(R.string.trips_detail_route_information))
+                PDetailSectionTitle(text = stringResource(R.string.trips_detail_route_information))
                 LabeledIconRow(
                     icon = {
                         Icon(
@@ -137,9 +111,9 @@ fun TripDetailsScreen(
         }
 
         // Schedule card
-        TripDetailsCard(modifier = Modifier.fillMaxWidth()) {
+        PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
-                SectionTitle(text = stringResource(R.string.trips_detail_schedule))
+                PDetailSectionTitle(text = stringResource(R.string.trips_detail_schedule))
                 LabeledIconRow(
                     icon = {
                         Icon(
@@ -168,9 +142,9 @@ fun TripDetailsScreen(
         }
 
         // Capacity card
-        TripDetailsCard(modifier = Modifier.fillMaxWidth()) {
+        PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
-                SectionTitle(text = stringResource(R.string.trips_detail_available_capacity))
+                PDetailSectionTitle(text = stringResource(R.string.trips_detail_available_capacity))
                 LabeledIconRow(
                     icon = {
                         Icon(
@@ -187,9 +161,9 @@ fun TripDetailsScreen(
         }
 
         // Pricing card
-        TripDetailsCard(modifier = Modifier.fillMaxWidth()) {
+        PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
-                SectionTitle(text = stringResource(R.string.trips_detail_pricing_title))
+                PDetailSectionTitle(text = stringResource(R.string.trips_detail_pricing_title))
                 LabeledIconRow(
                     icon = {
                         Icon(
@@ -214,7 +188,7 @@ fun TripDetailsScreen(
 
         // Special notes
         trip.specialNotes?.let { notes ->
-            TripDetailsCard(modifier = Modifier.fillMaxWidth()) {
+            PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
                 Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
                     Text(
                         text = stringResource(R.string.trips_detail_notes),
@@ -265,35 +239,6 @@ fun TripDetailsScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-    }
-}
-
-@Composable
-private fun SectionTitle(text: String) {
-    Text(
-        text = text,
-        style = PasabayanTextStyles.Heading.h4,
-        color = MaterialTheme.colorScheme.onSurface,
-        fontWeight = FontWeight.SemiBold,
-    )
-}
-
-@Composable
-private fun TripDetailsCard(
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    Surface(
-        modifier = modifier,
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(20.dp),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(PasabayanSpacing.md),
-            content = content,
-        )
     }
 }
 
