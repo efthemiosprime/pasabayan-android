@@ -58,6 +58,7 @@
     <string name="trips_detail_earnings">Revenus</string>
     <string name="trips_detail_pending_requests">%1$d demande(s) en attente</string>
     <string name="trips_detail_title">D\u00e9tails du trajet</string>
+    <string name="trips_detail_close">Fermer les d\u00e9tails</string>
     <string name="trips_detail_done">Termin\u00e9</string>
     <string name="trips_detail_request_to_book">Demander \u00e0 r\u00e9server</string>
     <string name="trips_detail_unavailable_fully_booked">Ce trajet est complet et n\'accepte plus de nouvelles demandes de colis.</string>

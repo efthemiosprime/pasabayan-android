@@ -56,8 +56,8 @@ fun TripDetailsScreen(
     val statusLabel = tripDetailStatusLabel(trip.tripStatus)
     PDetailSheetScaffold(
         title = stringResource(R.string.trips_detail_title),
-        doneLabel = stringResource(R.string.trips_detail_done),
-        onDone = onBack,
+        closeContentDescription = stringResource(R.string.trips_detail_close),
+        onClose = onBack,
         modifier = modifier,
     ) {
 

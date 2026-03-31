@@ -12,10 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,8 +37,8 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 @Composable
 fun PDetailSheetScaffold(
     title: String,
-    doneLabel: String,
-    onDone: () -> Unit,
+    closeContentDescription: String,
+    onClose: () -> Unit,
     modifier: Modifier = Modifier,
     backgroundColor: Color = Color(0xFFF2F2F7),
     contentSpacing: androidx.compose.ui.unit.Dp = 12.dp,
@@ -60,12 +63,11 @@ fun PDetailSheetScaffold(
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
             )
-            TextButton(onClick = onDone) {
-                Text(
-                    text = doneLabel,
-                    style = PasabayanTextStyles.Body.medium,
-                    color = PasabayanColors.Info,
-                    fontWeight = FontWeight.SemiBold,
+            IconButton(onClick = onClose) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = closeContentDescription,
+                    tint = PasabayanColors.Info,
                 )
             }
         }
@@ -114,8 +116,8 @@ private fun PDetailSheetPreview() {
     PasabayanTheme {
         PDetailSheetScaffold(
             title = "Trip Details",
-            doneLabel = "Done",
-            onDone = {},
+            closeContentDescription = "Close details",
+            onClose = {},
         ) {
             PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
                 PDetailSectionTitle(text = "Route Information")
