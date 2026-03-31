@@ -1,0 +1,25 @@
+---
+description: Enforce PDetailSheetScaffold for all detail/info sheet UIs
+alwaysApply: true
+---
+
+# Detail sheet scaffold conformance
+
+Use `PDetailSheetScaffold` from `:core:designsystem` as the required base scaffold for every detail sheet / info sheet UI.
+
+## Hard rule
+
+- Any screen, bottom sheet, modal, or panel that presents "details" or "info" content must be built on `PDetailSheetScaffold`.
+- Do not create feature-local sheet scaffolds that duplicate title row, close affordance, spacing, scroll container, or background behavior.
+- If a detail/info sheet needs new layout behavior, add the capability to `PDetailSheetScaffold` (or a tightly related `PDetail*` primitive in `:core:designsystem`) first, then consume it from feature modules.
+
+## Implementation guidance
+
+- Keep detail sections inside `PDetailSheetCard` / related `PDetail*` components where applicable.
+- Keep all user-facing copy localized via `stringResource(...)` / `R.string.*`.
+- Keep previews in the same file and include both light + dark mode.
+
+## PR/review checks
+
+- Reject UI code that builds a custom detail/info sheet scaffold when `PDetailSheetScaffold` can be used.
+- Allow exceptions only if documented in the feature spec with clear rationale, and with a follow-up plan to migrate to design-system primitives.

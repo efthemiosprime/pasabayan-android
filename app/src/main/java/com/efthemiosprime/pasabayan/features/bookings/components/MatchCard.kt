@@ -1,7 +1,6 @@
 package com.efthemiosprime.pasabayan.features.bookings.components
 
 import android.content.res.Configuration
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,19 +9,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
+import com.efthemiosprime.pasabayan.core.designsystem.component.CardMenuAction
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonSize
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
@@ -44,17 +39,26 @@ import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 fun MatchCard(
     match: DeliveryMatch,
     isCarrier: Boolean,
-    currentUserId: Int,
-    onAction: (BookingAction) -> Unit,
+    onViewDetails: () -> Unit,
+    onAction: (BookingAction) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val statusLabel = matchStatusLabel(match.matchStatus)
-    var expanded by rememberSaveable { mutableStateOf(false) }
-    val actions = match.availableActions(isCarrier, currentUserId)
+    val menuActions = rememberMatchMenuActions(
+        match = match,
+        isCarrier = isCarrier,
+        onAction = onAction,
+    )
+    val directTrailingAction = if (menuActions.size == 1) menuActions.first() else null
+    val overflowActions = if (directTrailingAction != null) emptyList() else menuActions
+    val routeSummary = match.carrierTrip?.route ?: run {
+        val fromCity = match.packageRequest?.pickupCity
+        val toCity = match.packageRequest?.deliveryCity
+        if (!fromCity.isNullOrBlank() && !toCity.isNullOrBlank()) "$fromCity → $toCity" else null
+    }
 
     PCard(modifier = modifier) {
         Column(
-            modifier = Modifier.animateContentSize(),
             verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
         ) {
             // Header: other party info + status
@@ -75,6 +79,22 @@ fun MatchCard(
                 PStatusBadge(config = MatchStatusBadgeConfig(match.matchStatus, statusLabel))
             }
 
+            routeSummary?.let { route ->
+                Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
+                    Text(
+                        text = stringResource(R.string.bookings_detail_route),
+                        style = PasabayanTextStyles.Caption.regular,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = route,
+                        style = PasabayanTextStyles.Body.medium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                    )
+                }
+            }
+
             // Price
             PDetailRow(
                 label = stringResource(R.string.bookings_detail_agreed_price),
@@ -90,60 +110,42 @@ fun MatchCard(
                 )
             }
 
-            if (expanded) {
-                Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
-                    // Price details
-                    match.originalPriceValue?.let { original ->
-                        PDetailRow(
-                            label = stringResource(R.string.bookings_detail_original_price),
-                            value = String.format("$%.2f", original),
-                        )
-                    }
-
-                    // Counter-offer details
-                    if (match.isCounterOffer) {
-                        match.counterOfferRound?.let { round ->
-                            PDetailRow(
-                                label = stringResource(R.string.bookings_detail_counter_offer),
-                                value = stringResource(R.string.bookings_detail_round, round),
-                            )
-                        }
-                        PDetailRow(
-                            label = "",
-                            value = stringResource(
-                                R.string.bookings_detail_remaining_offers,
-                                match.remainingCounterOffers,
-                            ),
-                        )
-                    }
-
-                    // Messages
-                    match.carrierMessage?.let { msg ->
-                        Text(
-                            text = "${stringResource(R.string.bookings_detail_carrier)}: $msg",
-                            style = PasabayanTextStyles.Body.small,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    match.shipperMessage?.let { msg ->
-                        Text(
-                            text = "${stringResource(R.string.bookings_detail_shipper)}: $msg",
-                            style = PasabayanTextStyles.Body.small,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-
-                    // Action buttons
-                    if (actions.isNotEmpty()) {
-                        MatchActionButtons(actions = actions, onAction = onAction)
-                    }
-                }
-            }
-
             // Footer
-            PCardActionFooter(onViewDetails = { expanded = !expanded })
+            PCardActionFooter(
+                onViewDetails = onViewDetails,
+                menuActions = overflowActions,
+                directTrailingAction = directTrailingAction,
+            )
         }
     }
+}
+
+@Composable
+private fun rememberMatchMenuActions(
+    match: DeliveryMatch,
+    isCarrier: Boolean,
+    onAction: (BookingAction) -> Unit,
+): List<CardMenuAction> {
+    return match.availableActions(isCarrier = isCarrier, currentUserId = -1).map { action ->
+        CardMenuAction(
+            title = bookingActionLabel(action),
+            onClick = { onAction(action) },
+        )
+    }
+}
+
+@Composable
+private fun bookingActionLabel(action: BookingAction): String = when (action) {
+    BookingAction.AcceptBooking -> stringResource(R.string.bookings_action_accept)
+    BookingAction.DeclineBooking -> stringResource(R.string.bookings_action_decline)
+    BookingAction.CounterOffer -> stringResource(R.string.bookings_action_counter_offer)
+    BookingAction.CancelBooking -> stringResource(R.string.bookings_action_cancel)
+    BookingAction.MarkPickedUp -> stringResource(R.string.bookings_action_mark_picked_up)
+    BookingAction.MarkInTransit -> stringResource(R.string.bookings_action_mark_in_transit)
+    BookingAction.MarkDelivered -> stringResource(R.string.bookings_action_mark_delivered)
+    BookingAction.TrackLive -> stringResource(R.string.bookings_action_track_live)
+    BookingAction.EnterPickupCode -> stringResource(R.string.bookings_action_generate_code)
+    BookingAction.EnterDeliveryCode -> stringResource(R.string.bookings_action_enter_code)
 }
 
 @Composable
@@ -216,8 +218,7 @@ private fun MatchCardPreview() {
                 deliveryVerificationCode = null, deliveryCodeExpiresAt = null,
             ),
             isCarrier = false,
-            currentUserId = 5,
-            onAction = {},
+            onViewDetails = {},
             modifier = Modifier.padding(PasabayanSpacing.lg),
         )
     }

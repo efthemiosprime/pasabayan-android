@@ -5,6 +5,7 @@ import com.efthemiosprime.pasabayan.core.domain.model.PackageDimensions
 /** Projection of PackageRequest — not the full domain model. */
 data class PackageRequestInfo(
     val id: Int,
+    val title: String? = null,
     val description: String? = null,
     val weightKg: Double? = null,
     val dimensions: PackageDimensions? = null,

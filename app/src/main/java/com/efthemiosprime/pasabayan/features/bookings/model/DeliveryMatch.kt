@@ -3,6 +3,8 @@ package com.efthemiosprime.pasabayan.features.bookings.model
 import com.efthemiosprime.pasabayan.core.domain.`enum`.InitiatedBy
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
+import com.efthemiosprime.pasabayan.features.bookings.model.nested.CarrierTripInfo
+import com.efthemiosprime.pasabayan.features.bookings.model.nested.PackageRequestInfo
 
 /**
  * DeliveryMatch domain model — the central model for bookings/matches.
@@ -44,6 +46,9 @@ data class DeliveryMatch(
     val codeExpiresAt: String?,
     val deliveryVerificationCode: String?,
     val deliveryCodeExpiresAt: String?,
+    // Expanded nested details (used by shipper match details sheet)
+    val carrierTrip: CarrierTripInfo? = null,
+    val packageRequest: PackageRequestInfo? = null,
 ) {
     val originalPriceValue: Double?
         get() = originalPrice?.toDoubleOrNull()

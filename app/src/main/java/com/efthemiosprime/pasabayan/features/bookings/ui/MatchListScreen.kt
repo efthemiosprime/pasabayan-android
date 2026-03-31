@@ -15,9 +15,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.SwapHoriz
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,6 +36,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
 import com.efthemiosprime.pasabayan.core.designsystem.component.PFilterChip
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.features.bookings.components.MatchCard
+import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.BookingAction
 import com.efthemiosprime.pasabayan.features.bookings.viewmodel.MatchingViewModel
 
@@ -40,15 +45,16 @@ import com.efthemiosprime.pasabayan.features.bookings.viewmodel.MatchingViewMode
  * Parity with iOS BookingListView + ShipperMatchesView combined.
  */
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun MatchListScreen(
     isCarrier: Boolean,
-    currentUserId: Int,
     onAction: (BookingAction, matchId: Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MatchingViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val role = if (isCarrier) "carrier" else "shipper"
+    var selectedMatch by remember { mutableStateOf<DeliveryMatch?>(null) }
 
     LaunchedEffect(role) { viewModel.loadMatches(role) }
 
@@ -94,13 +100,78 @@ fun MatchListScreen(
                         MatchCard(
                             match = match,
                             isCarrier = isCarrier,
-                            currentUserId = currentUserId,
-                            onAction = { action -> onAction(action, match.id) },
+                            onViewDetails = { selectedMatch = match },
+                            onAction = { action ->
+                                onAction(action, match.id)
+                                when (action) {
+                                    BookingAction.CounterOffer,
+                                    BookingAction.TrackLive,
+                                    BookingAction.EnterPickupCode,
+                                    BookingAction.EnterDeliveryCode -> {
+                                        selectedMatch = match
+                                    }
+                                    else -> {
+                                        handleMatchAction(
+                                            action = action,
+                                            isCarrier = isCarrier,
+                                            matchId = match.id,
+                                            viewModel = viewModel,
+                                        )
+                                    }
+                                }
+                            },
                         )
                     }
                 }
             }
         }
+    }
+
+    selectedMatch?.let { match ->
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { selectedMatch = null },
+        ) {
+            ShipperMatchDetailsSheetContent(
+                match = match,
+                isCarrier = isCarrier,
+                onClose = { selectedMatch = null },
+                onAction = { action ->
+                    onAction(action, match.id)
+                    handleMatchAction(
+                        action = action,
+                        isCarrier = isCarrier,
+                        matchId = match.id,
+                        viewModel = viewModel,
+                    )
+                    if (action == BookingAction.DeclineBooking ||
+                        action == BookingAction.CancelBooking ||
+                        action == BookingAction.MarkDelivered
+                    ) {
+                        selectedMatch = null
+                    }
+                },
+            )
+        }
+    }
+}
+
+private fun handleMatchAction(
+    action: BookingAction,
+    isCarrier: Boolean,
+    matchId: Int,
+    viewModel: MatchingViewModel,
+) {
+    when (action) {
+        BookingAction.AcceptBooking -> viewModel.acceptMatch(matchId = matchId, isCarrier = isCarrier)
+        BookingAction.DeclineBooking -> viewModel.declineMatch(matchId = matchId, isCarrier = isCarrier)
+        BookingAction.MarkPickedUp -> viewModel.updateMatchStatus(matchId = matchId, newStatus = MatchStatus.PICKED_UP)
+        BookingAction.MarkInTransit -> viewModel.updateMatchStatus(matchId = matchId, newStatus = MatchStatus.IN_TRANSIT)
+        BookingAction.MarkDelivered -> viewModel.updateMatchStatus(matchId = matchId, newStatus = MatchStatus.DELIVERED)
+        BookingAction.CancelBooking -> viewModel.cancelMatch(matchId = matchId)
+        BookingAction.CounterOffer,
+        BookingAction.TrackLive,
+        BookingAction.EnterPickupCode,
+        BookingAction.EnterDeliveryCode -> Unit
     }
 }
 

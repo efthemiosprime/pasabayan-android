@@ -70,6 +70,8 @@ data class DeliveryMatchJson(
     @SerialName("location_last_updated_at") val locationLastUpdatedAt: String? = null,
 
     // Related entities
+    @SerialName("carrier_trip") val carrierTrip: CarrierTripInfoJson? = null,
+    @SerialName("package_request") val packageRequest: PackageRequestInfoJson? = null,
     val carrier: UserSummary? = null,
     val shipper: UserSummary? = null,
     @SerialName("chat_conversation_id") val chatConversationId: Int? = null,
@@ -82,6 +84,43 @@ data class DeliveryMatchJson(
     @SerialName("shipper_requested_at") val shipperRequestedAt: String? = null,
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("updated_at") val updatedAt: String? = null,
+)
+
+@Serializable
+data class CarrierTripInfoJson(
+    val id: Int,
+    @SerialName("origin_city") val originCity: String,
+    @SerialName("destination_city") val destinationCity: String,
+    @SerialName("departure_date") val departureDate: String? = null,
+    @SerialName("arrival_date") val arrivalDate: String? = null,
+    @SerialName("transportation_method") val transportationMethod: String? = null,
+    @SerialName("available_weight_kg")
+    @Serializable(with = FlexibleDoubleSerializer::class)
+    val availableWeightKg: Double? = null,
+    @SerialName("price_per_kg")
+    @Serializable(with = FlexibleDoubleSerializer::class)
+    val pricePerKg: Double? = null,
+    @SerialName("flat_trip_price")
+    @Serializable(with = FlexibleDoubleSerializer::class)
+    val flatTripPrice: Double? = null,
+    @SerialName("pricing_type") val pricingType: String? = null,
+)
+
+@Serializable
+data class PackageRequestInfoJson(
+    val id: Int,
+    val title: String? = null,
+    @SerialName("package_description") val description: String? = null,
+    @SerialName("package_weight_kg")
+    @Serializable(with = FlexibleDoubleSerializer::class)
+    val weightKg: Double? = null,
+    @SerialName("pickup_city") val pickupCity: String? = null,
+    @SerialName("delivery_city") val deliveryCity: String? = null,
+    @SerialName("pickup_address") val pickupAddress: String? = null,
+    @SerialName("delivery_address") val deliveryAddress: String? = null,
+    @SerialName("package_type") val packageType: String? = null,
+    @SerialName("urgency_level") val urgencyLevel: String? = null,
+    val fragile: Boolean = false,
 )
 
 @Serializable

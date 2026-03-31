@@ -10,11 +10,13 @@ import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.R
+import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
 import com.efthemiosprime.pasabayan.core.designsystem.component.PScaffold
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
@@ -80,7 +82,6 @@ fun MainTabScreen(
                 }
                 "matches" -> com.efthemiosprime.pasabayan.features.bookings.ui.MatchListScreen(
                     isCarrier = state.currentRole == UserRole.CARRIER,
-                    currentUserId = user.id.toInt(),
                     onAction = { action, matchId -> /* TODO: handle booking actions */ },
                 )
                 "my_trips" -> com.efthemiosprime.pasabayan.features.trips.ui.CarrierMyTripsScreen(
@@ -107,7 +108,7 @@ fun MainTabScreen(
 
 @Composable
 private fun StubTabContent(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     title: String,
     description: String,
 ) {
@@ -115,9 +116,7 @@ private fun StubTabContent(
         icon = icon,
         title = title,
         description = description,
-        modifier = Modifier.padding(
-            com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing.lg,
-        ),
+        modifier = Modifier.padding(PasabayanSpacing.lg),
     )
 }
 
