@@ -4,6 +4,9 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.res.Configuration
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +39,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -92,6 +96,13 @@ fun PackageRequestScreen(
     var packageType by remember(packageTypeOptions) { mutableStateOf(packageTypeOptions.first()) }
     var urgencyLevel by remember(urgencyOptions) { mutableStateOf(urgencyOptions[1]) }
     var pickupDateFlexible by remember { mutableStateOf(false) }
+    val selectedPhotoUris = remember { mutableStateListOf<Uri>() }
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents(),
+    ) { uris ->
+        selectedPhotoUris.clear()
+        selectedPhotoUris.addAll(uris)
+    }
 
     var pickupDate by remember { mutableStateOf(LocalDate.now().plusDays(1)) }
     var pickupTime by remember { mutableStateOf(LocalTime.of(10, 0)) }
@@ -219,7 +230,10 @@ fun PackageRequestScreen(
                             title = stringResource(R.string.packages_create_step_what_it_is),
                             subtitle = stringResource(R.string.packages_create_what_it_is_hint),
                         )
-                        UploadPhotosBlock()
+                        UploadPhotosBlock(
+                            selectedPhotoUris = selectedPhotoUris,
+                            onPickPhotos = { photoPickerLauncher.launch("image/*") },
+                        )
                     }
 
                     1 -> {
@@ -367,7 +381,10 @@ fun PackageRequestScreen(
 }
 
 @Composable
-private fun UploadPhotosBlock() {
+private fun UploadPhotosBlock(
+    selectedPhotoUris: List<Uri>,
+    onPickPhotos: () -> Unit,
+) {
     PCard {
         Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
             Column(
@@ -393,9 +410,19 @@ private fun UploadPhotosBlock() {
                 )
                 PButton(
                     text = stringResource(R.string.packages_create_choose_files),
-                    onClick = {},
+                    onClick = onPickPhotos,
                     size = com.efthemiosprime.pasabayan.core.designsystem.component.PButtonSize.Small,
                 )
+                if (selectedPhotoUris.isNotEmpty()) {
+                    Text(
+                        text = stringResource(
+                            R.string.packages_create_selected_photos_count,
+                            selectedPhotoUris.size,
+                        ),
+                        style = PasabayanTextStyles.Caption.regular,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
                 Text(
                     text = stringResource(R.string.packages_create_upload_formats),
                     style = PasabayanTextStyles.Caption.regular,

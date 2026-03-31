@@ -7,9 +7,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SwapHoriz
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -25,12 +29,17 @@ import com.efthemiosprime.pasabayan.features.dashboard.components.DashboardTopBa
 import com.efthemiosprime.pasabayan.features.dashboard.components.PasabayanBottomBar
 import com.efthemiosprime.pasabayan.features.dashboard.model.MainTabs
 import com.efthemiosprime.pasabayan.features.dashboard.viewmodel.DashboardViewModel
+import com.efthemiosprime.pasabayan.features.packages.components.CreatePackageOptionsSheet
+import com.efthemiosprime.pasabayan.features.packages.ui.PackageErrandRequestScreen
+import com.efthemiosprime.pasabayan.features.packages.ui.PackageRequestScreen
+import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 
 /**
  * Main tabbed dashboard shell — replaces the Phase 1 placeholder.
  * 5 tabs per role, matching iOS tab order.
  */
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun MainTabScreen(
     user: AuthUser,
     onLogout: () -> Unit,
@@ -38,7 +47,11 @@ fun MainTabScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val packageViewModel: PackageViewModel = hiltViewModel()
     val tabs = MainTabs.forRole(state.currentRole)
+    var showCreateOptionsSheet by remember { mutableStateOf(false) }
+    var showPackageRequestSheet by remember { mutableStateOf(false) }
+    var showErrandRequestSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(user) {
         viewModel.initializeRole(user)
@@ -90,7 +103,8 @@ fun MainTabScreen(
                 )
                 "packages" -> com.efthemiosprime.pasabayan.features.packages.ui.PackageListScreen(
                     onViewPackageDetails = { /* Handled by expandable card */ },
-                    onCreatePackage = { /* TODO: navigate to package creation */ },
+                    onCreatePackage = { showCreateOptionsSheet = true },
+                    viewModel = packageViewModel,
                 )
                 "messages" -> StubTabContent(
                     icon = Icons.Outlined.Chat,
@@ -102,6 +116,52 @@ fun MainTabScreen(
                 )
                 else -> {}
             }
+        }
+    }
+
+    if (showCreateOptionsSheet) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showCreateOptionsSheet = false },
+        ) {
+            CreatePackageOptionsSheet(
+                onClose = { showCreateOptionsSheet = false },
+                onShipPackage = {
+                    showCreateOptionsSheet = false
+                    showPackageRequestSheet = true
+                },
+                onErrandService = {
+                    showCreateOptionsSheet = false
+                    showErrandRequestSheet = true
+                },
+            )
+        }
+    }
+
+    if (showPackageRequestSheet) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showPackageRequestSheet = false },
+        ) {
+            PackageRequestScreen(
+                onSave = {
+                    showPackageRequestSheet = false
+                    packageViewModel.refreshPackages()
+                },
+                onCancel = { showPackageRequestSheet = false },
+            )
+        }
+    }
+
+    if (showErrandRequestSheet) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showErrandRequestSheet = false },
+        ) {
+            PackageErrandRequestScreen(
+                onSave = {
+                    showErrandRequestSheet = false
+                    packageViewModel.refreshPackages()
+                },
+                onCancel = { showErrandRequestSheet = false },
+            )
         }
     }
 }

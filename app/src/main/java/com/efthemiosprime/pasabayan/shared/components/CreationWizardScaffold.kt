@@ -223,7 +223,10 @@ private fun CreationRequirementsPrompt(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.lg),
+                horizontalArrangement = Arrangement.spacedBy(
+                    PasabayanSpacing.lg,
+                    Alignment.CenterHorizontally,
+                ),
             ) {
                 requirementChips.forEach { chip ->
                     CreationRequirementChip(chip)

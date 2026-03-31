@@ -17,6 +17,8 @@ fun PackageRequestBaseScaffold(
     totalRequirements: Int,
     requirementChips: List<PackageRequirementChipUi>,
     onClose: () -> Unit,
+    closeContentDescription: String = stringResource(R.string.packages_create_close),
+    requiredStepsLabel: String = stringResource(R.string.packages_create_required_steps),
     showPagination: Boolean = false,
     currentStep: Int = 0,
     totalSteps: Int = 0,
@@ -26,8 +28,8 @@ fun PackageRequestBaseScaffold(
 ) {
     CreationWizardScaffold(
         title = title,
-        closeContentDescription = stringResource(R.string.packages_create_close),
-        requiredStepsLabel = stringResource(R.string.packages_create_required_steps),
+        closeContentDescription = closeContentDescription,
+        requiredStepsLabel = requiredStepsLabel,
         completedRequirements = completedRequirements,
         totalRequirements = totalRequirements,
         requirementChips = requirementChips,

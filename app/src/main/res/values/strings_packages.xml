@@ -78,12 +78,57 @@
     <string name="packages_create_upload_photos_title">Upload photos</string>
     <string name="packages_create_upload_photos_hint">Drag and drop or click to browse</string>
     <string name="packages_create_choose_files">Choose Files</string>
+    <string name="packages_create_selected_photos_count">%1$d photo(s) selected</string>
     <string name="packages_create_upload_formats">Supported formats: JPG, PNG, HEIC - Max 10MB per file</string>
     <string name="packages_create_photo_tips_title">PHOTO TIPS</string>
     <string name="packages_create_photo_tip_1">Take photos in good lighting</string>
     <string name="packages_create_photo_tip_2">Show all sides of the package</string>
     <string name="packages_create_photo_tip_3">Include any damage or special markings</string>
     <string name="packages_create_photo_tip_4">Capture labels and barcodes clearly</string>
+
+    <!-- Service request form -->
+    <string name="packages_service_title">Create Service Request</string>
+    <string name="packages_service_close">Close service request</string>
+    <string name="packages_service_required_steps">Required steps</string>
+    <string name="packages_service_chip_items">Items</string>
+    <string name="packages_service_chip_handoff">Handoff</string>
+    <string name="packages_service_section_service_needed">Service Needed</string>
+    <string name="packages_service_section_items_list">Items List</string>
+    <string name="packages_service_section_handoff_details">Handoff Details</string>
+    <string name="packages_service_section_optional_details">Optional Details</string>
+    <string name="packages_service_field_service_type">Service Type</string>
+    <string name="packages_service_type_grocery_shopping">Grocery Shopping</string>
+    <string name="packages_service_type_food_delivery">Food Delivery</string>
+    <string name="packages_service_type_pharmacy_pickup">Pharmacy Pickup</string>
+    <string name="packages_service_type_general_errand">General Errand</string>
+    <string name="packages_service_direction_label">Direction</string>
+    <string name="packages_service_direction_receive">Receive items</string>
+    <string name="packages_service_direction_send">Send items</string>
+    <string name="packages_service_field_delivery_address">Handoff Address</string>
+    <string name="packages_service_field_delivery_city">Handoff City</string>
+    <string name="packages_service_field_recipient_name">Recipient Name</string>
+    <string name="packages_service_field_recipient_phone">Recipient Phone</string>
+    <string name="packages_service_field_store_name">Preferred Store Name</string>
+    <string name="packages_service_field_store_address">Preferred Store Address</string>
+    <string name="packages_service_field_estimated_total">Estimated Total ($)</string>
+    <string name="packages_service_field_max_budget">Max Budget ($)</string>
+    <string name="packages_service_field_needed_by_date">Needed By Date</string>
+    <string name="packages_service_field_special_instructions">Special Instructions</string>
+    <string name="packages_service_action_add_item">Add Item</string>
+    <string name="packages_service_action_remove_item">Remove</string>
+    <string name="packages_service_action_send_request">Send Request</string>
+    <string name="packages_service_item_name">Item</string>
+    <string name="packages_service_item_quantity">Quantity</string>
+    <string name="packages_service_item_notes">Notes (optional)</string>
+    <string name="packages_service_hint_optional">Each item needs a name and quantity.</string>
+
+    <!-- Create options sheet -->
+    <string name="packages_create_options_title">Create</string>
+    <string name="packages_create_options_close">Close</string>
+    <string name="packages_create_options_ship_package_title">Ship a Package</string>
+    <string name="packages_create_options_ship_package_subtitle">Standard package delivery</string>
+    <string name="packages_create_options_errand_service_title">Shopping / Errand Service</string>
+    <string name="packages_create_options_errand_service_subtitle">Ask for help with errands</string>
 
     <!-- Package request pickers -->
     <string name="packages_country_canada">Canada</string>

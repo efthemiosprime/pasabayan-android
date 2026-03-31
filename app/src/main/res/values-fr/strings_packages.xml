@@ -78,12 +78,57 @@
     <string name="packages_create_upload_photos_title">T\u00e9l\u00e9verser des photos</string>
     <string name="packages_create_upload_photos_hint">Glissez-d\u00e9posez ou cliquez pour parcourir</string>
     <string name="packages_create_choose_files">Choisir des fichiers</string>
+    <string name="packages_create_selected_photos_count">%1$d photo(s) s\u00e9lectionn\u00e9e(s)</string>
     <string name="packages_create_upload_formats">Formats pris en charge\u00a0: JPG, PNG, HEIC - 10\u00a0Mo max par fichier</string>
     <string name="packages_create_photo_tips_title">CONSEILS PHOTO</string>
     <string name="packages_create_photo_tip_1">Prenez les photos avec un bon \u00e9clairage</string>
     <string name="packages_create_photo_tip_2">Montrez tous les c\u00f4t\u00e9s du colis</string>
     <string name="packages_create_photo_tip_3">Incluez les dommages ou marquages sp\u00e9ciaux</string>
     <string name="packages_create_photo_tip_4">Capturez clairement les \u00e9tiquettes et codes-barres</string>
+
+    <!-- Service request form -->
+    <string name="packages_service_title">Cr\u00e9er une demande de service</string>
+    <string name="packages_service_close">Fermer la demande de service</string>
+    <string name="packages_service_required_steps">\u00c9tapes requises</string>
+    <string name="packages_service_chip_items">Articles</string>
+    <string name="packages_service_chip_handoff">Remise</string>
+    <string name="packages_service_section_service_needed">Service n\u00e9cessaire</string>
+    <string name="packages_service_section_items_list">Liste d\'articles</string>
+    <string name="packages_service_section_handoff_details">D\u00e9tails de remise</string>
+    <string name="packages_service_section_optional_details">D\u00e9tails optionnels</string>
+    <string name="packages_service_field_service_type">Type de service</string>
+    <string name="packages_service_type_grocery_shopping">Courses</string>
+    <string name="packages_service_type_food_delivery">Livraison de repas</string>
+    <string name="packages_service_type_pharmacy_pickup">Ramassage en pharmacie</string>
+    <string name="packages_service_type_general_errand">Course g\u00e9n\u00e9rale</string>
+    <string name="packages_service_direction_label">Direction</string>
+    <string name="packages_service_direction_receive">Recevoir des articles</string>
+    <string name="packages_service_direction_send">Envoyer des articles</string>
+    <string name="packages_service_field_delivery_address">Adresse de remise</string>
+    <string name="packages_service_field_delivery_city">Ville de remise</string>
+    <string name="packages_service_field_recipient_name">Nom du destinataire</string>
+    <string name="packages_service_field_recipient_phone">T\u00e9l\u00e9phone du destinataire</string>
+    <string name="packages_service_field_store_name">Nom du magasin pr\u00e9f\u00e9r\u00e9</string>
+    <string name="packages_service_field_store_address">Adresse du magasin pr\u00e9f\u00e9r\u00e9</string>
+    <string name="packages_service_field_estimated_total">Total estim\u00e9 ($)</string>
+    <string name="packages_service_field_max_budget">Budget max ($)</string>
+    <string name="packages_service_field_needed_by_date">Date souhait\u00e9e</string>
+    <string name="packages_service_field_special_instructions">Instructions sp\u00e9ciales</string>
+    <string name="packages_service_action_add_item">Ajouter un article</string>
+    <string name="packages_service_action_remove_item">Supprimer</string>
+    <string name="packages_service_action_send_request">Envoyer la demande</string>
+    <string name="packages_service_item_name">Article</string>
+    <string name="packages_service_item_quantity">Quantit\u00e9</string>
+    <string name="packages_service_item_notes">Notes (optionnel)</string>
+    <string name="packages_service_hint_optional">Chaque article a besoin d\'un nom et d\'une quantit\u00e9.</string>
+
+    <!-- Create options sheet -->
+    <string name="packages_create_options_title">Cr\u00e9er</string>
+    <string name="packages_create_options_close">Fermer</string>
+    <string name="packages_create_options_ship_package_title">Exp\u00e9dier un colis</string>
+    <string name="packages_create_options_ship_package_subtitle">Livraison de colis standard</string>
+    <string name="packages_create_options_errand_service_title">Service de courses</string>
+    <string name="packages_create_options_errand_service_subtitle">Demander de l\'aide pour des courses</string>
 
     <!-- Package request pickers -->
     <string name="packages_country_canada">Canada</string>
