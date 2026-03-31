@@ -131,9 +131,6 @@
     <string name="packages_create_options_errand_service_subtitle">Demander de l\'aide pour des courses</string>
 
     <!-- Package request pickers -->
-    <string name="packages_country_canada">Canada</string>
-    <string name="packages_country_philippines">Philippines</string>
-    <string name="packages_country_india">Inde</string>
     <string name="packages_type_general">G\u00e9n\u00e9ral</string>
     <string name="packages_type_electronics">\u00c9lectronique</string>
     <string name="packages_type_clothing">V\u00eatements</string>

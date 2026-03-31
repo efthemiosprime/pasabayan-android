@@ -131,9 +131,6 @@
     <string name="packages_create_options_errand_service_subtitle">Ask for help with errands</string>
 
     <!-- Package request pickers -->
-    <string name="packages_country_canada">Canada</string>
-    <string name="packages_country_philippines">Philippines</string>
-    <string name="packages_country_india">India</string>
     <string name="packages_type_general">General</string>
     <string name="packages_type_electronics">Electronics</string>
     <string name="packages_type_clothing">Clothing</string>

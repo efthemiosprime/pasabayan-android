@@ -3,4 +3,7 @@
     <string name="app_name">Pasabayan</string>
     <string name="common_role_carrier">Transporteur</string>
     <string name="common_role_sender">Expéditeur</string>
+    <string name="common_country_canada">Canada</string>
+    <string name="common_country_philippines">Philippines</string>
+    <string name="common_country_india">Inde</string>
 </resources>

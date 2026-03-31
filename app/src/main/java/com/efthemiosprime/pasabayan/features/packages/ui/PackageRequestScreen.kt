@@ -61,6 +61,8 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PExpandableSecti
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequestBaseScaffold
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequirementChipUi
+import com.efthemiosprime.pasabayan.shared.model.CityCatalog
+import com.efthemiosprime.pasabayan.shared.model.CountryCatalog
 import com.efthemiosprime.pasabayan.shared.components.CreationWizardStepHeader
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -74,7 +76,9 @@ fun PackageRequestScreen(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val countryOptions = packageCountryOptions()
+    val countryOptions = CountryCatalog.supportedCountries
+    val countryLabelsByCode = countryOptions.associate { it.code to stringResource(it.labelRes) }
+    val countryOptionLabels = countryOptions.map { option -> countryLabelsByCode.getValue(option.code) }
     val packageTypeOptions = packageTypeOptions()
     val urgencyOptions = urgencyOptions()
 
@@ -84,9 +88,11 @@ fun PackageRequestScreen(
     var pickupCity by remember { mutableStateOf("") }
     var pickupCountry by remember(countryOptions) { mutableStateOf(countryOptions.first()) }
     var pickupAddress by remember { mutableStateOf("") }
+    var pickupCitySuggestions by remember { mutableStateOf(emptyList<String>()) }
     var deliveryCity by remember { mutableStateOf("") }
     var deliveryCountry by remember(countryOptions) { mutableStateOf(countryOptions.first()) }
     var deliveryAddress by remember { mutableStateOf("") }
+    var deliveryCitySuggestions by remember { mutableStateOf(emptyList<String>()) }
     var description by remember { mutableStateOf("") }
     var weight by remember { mutableStateOf("") }
     var packageValue by remember { mutableStateOf("") }
@@ -244,12 +250,35 @@ fun PackageRequestScreen(
                         )
                         CountryAndAddressFields(
                             countryLabel = stringResource(R.string.packages_create_pickup_country),
-                            countryValue = pickupCountry,
-                            countryOptions = countryOptions,
-                            onCountrySelected = { pickupCountry = it },
+                            countryValue = countryLabelsByCode.getValue(pickupCountry.code),
+                            countryOptions = countryOptionLabels,
+                            onCountrySelected = { label ->
+                                val selectedCode = countryLabelsByCode.entries
+                                    .firstOrNull { it.value == label }
+                                    ?.key
+                                    ?: countryOptions.first().code
+                                val selected = CountryCatalog.byCode(selectedCode)
+                                pickupCountry = selected
+                                if (!CityCatalog.containsInCountry(pickupCity, selected.code)) {
+                                    pickupCity = ""
+                                }
+                                pickupCitySuggestions = emptyList()
+                            },
                             cityLabel = stringResource(R.string.packages_create_pickup_city),
                             cityValue = pickupCity,
-                            onCityChange = { pickupCity = it },
+                            citySuggestions = pickupCitySuggestions,
+                            onCityChange = {
+                                pickupCity = it
+                                pickupCitySuggestions = if (CityCatalog.containsInCountry(it, pickupCountry.code)) {
+                                    emptyList()
+                                } else {
+                                    CityCatalog.suggestionsForCountry(it, pickupCountry.code)
+                                }
+                            },
+                            onCitySuggestionSelected = {
+                                pickupCity = it
+                                pickupCitySuggestions = emptyList()
+                            },
                             addressLabel = stringResource(R.string.packages_create_pickup_address),
                             addressValue = pickupAddress,
                             onAddressChange = { pickupAddress = it },
@@ -289,12 +318,35 @@ fun PackageRequestScreen(
                         )
                         CountryAndAddressFields(
                             countryLabel = stringResource(R.string.packages_create_delivery_country),
-                            countryValue = deliveryCountry,
-                            countryOptions = countryOptions,
-                            onCountrySelected = { deliveryCountry = it },
+                            countryValue = countryLabelsByCode.getValue(deliveryCountry.code),
+                            countryOptions = countryOptionLabels,
+                            onCountrySelected = { label ->
+                                val selectedCode = countryLabelsByCode.entries
+                                    .firstOrNull { it.value == label }
+                                    ?.key
+                                    ?: countryOptions.first().code
+                                val selected = CountryCatalog.byCode(selectedCode)
+                                deliveryCountry = selected
+                                if (!CityCatalog.containsInCountry(deliveryCity, selected.code)) {
+                                    deliveryCity = ""
+                                }
+                                deliveryCitySuggestions = emptyList()
+                            },
                             cityLabel = stringResource(R.string.packages_create_delivery_city),
                             cityValue = deliveryCity,
-                            onCityChange = { deliveryCity = it },
+                            citySuggestions = deliveryCitySuggestions,
+                            onCityChange = {
+                                deliveryCity = it
+                                deliveryCitySuggestions = if (CityCatalog.containsInCountry(it, deliveryCountry.code)) {
+                                    emptyList()
+                                } else {
+                                    CityCatalog.suggestionsForCountry(it, deliveryCountry.code)
+                                }
+                            },
+                            onCitySuggestionSelected = {
+                                deliveryCity = it
+                                deliveryCitySuggestions = emptyList()
+                            },
                             addressLabel = stringResource(R.string.packages_create_delivery_address),
                             addressValue = deliveryAddress,
                             onAddressChange = { deliveryAddress = it },
@@ -476,7 +528,9 @@ private fun CountryAndAddressFields(
     onCountrySelected: (String) -> Unit,
     cityLabel: String,
     cityValue: String,
+    citySuggestions: List<String>,
     onCityChange: (String) -> Unit,
+    onCitySuggestionSelected: (String) -> Unit,
     addressLabel: String,
     addressValue: String,
     onAddressChange: (String) -> Unit,
@@ -493,6 +547,39 @@ private fun CountryAndAddressFields(
         label = { Text(cityLabel) },
         modifier = Modifier.fillMaxWidth(),
     )
+    if (citySuggestions.isNotEmpty()) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = PasabayanSpacing.xs,
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                citySuggestions.forEachIndexed { index, suggestion ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onCitySuggestionSelected(suggestion) }
+                            .padding(horizontal = PasabayanSpacing.md, vertical = PasabayanSpacing.sm),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(modifier = Modifier.width(PasabayanSpacing.sm))
+                        Text(
+                            text = suggestion,
+                            style = PasabayanTextStyles.Body.regular,
+                        )
+                    }
+                    if (index < citySuggestions.lastIndex) {
+                        androidx.compose.material3.HorizontalDivider()
+                    }
+                }
+            }
+        }
+    }
     POutlinedTextField(
         value = addressValue,
         onValueChange = onAddressChange,
@@ -612,13 +699,6 @@ private fun isDatesValid(
 
 private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy")
 private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a")
-
-@Composable
-private fun packageCountryOptions(): List<String> = listOf(
-    stringResource(R.string.packages_country_canada),
-    stringResource(R.string.packages_country_philippines),
-    stringResource(R.string.packages_country_india),
-)
 
 @Composable
 private fun packageTypeOptions(): List<String> = listOf(

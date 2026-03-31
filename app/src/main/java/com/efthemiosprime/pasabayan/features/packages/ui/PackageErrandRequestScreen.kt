@@ -48,6 +48,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PExpandableSecti
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequestBaseScaffold
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequirementChipUi
+import com.efthemiosprime.pasabayan.shared.model.CityCatalog
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -83,6 +84,7 @@ fun PackageErrandRequestScreen(
     var direction by remember { mutableStateOf(ErrandDirection.Receive) }
     var deliveryAddress by remember { mutableStateOf("") }
     var deliveryCity by remember { mutableStateOf("") }
+    var deliveryCitySuggestions by remember { mutableStateOf(emptyList<String>()) }
     var recipientName by remember { mutableStateOf("") }
     var recipientPhone by remember { mutableStateOf("") }
     var storeName by remember { mutableStateOf("") }
@@ -188,10 +190,56 @@ fun PackageErrandRequestScreen(
                 )
                 POutlinedTextField(
                     value = deliveryCity,
-                    onValueChange = { deliveryCity = it },
+                    onValueChange = {
+                        deliveryCity = it
+                        deliveryCitySuggestions = if (CityCatalog.containsInPopularCanada(it)) {
+                            emptyList()
+                        } else {
+                            CityCatalog.popularCanadaSuggestions(it)
+                        }
+                    },
                     label = { Text(stringResource(R.string.packages_service_field_delivery_city)) },
                     modifier = Modifier.fillMaxWidth(),
                 )
+                if (deliveryCitySuggestions.isNotEmpty()) {
+                    Surface(
+                        shape = MaterialTheme.shapes.medium,
+                        color = MaterialTheme.colorScheme.surface,
+                        tonalElevation = PasabayanSpacing.xs,
+                    ) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            deliveryCitySuggestions.forEachIndexed { index, suggestion ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            deliveryCity = suggestion
+                                            deliveryCitySuggestions = emptyList()
+                                        }
+                                        .padding(
+                                            horizontal = PasabayanSpacing.md,
+                                            vertical = PasabayanSpacing.sm,
+                                        ),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.LocationOn,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Spacer(modifier = Modifier.width(PasabayanSpacing.sm))
+                                    Text(
+                                        text = suggestion,
+                                        style = PasabayanTextStyles.Body.regular,
+                                    )
+                                }
+                                if (index < deliveryCitySuggestions.lastIndex) {
+                                    androidx.compose.material3.HorizontalDivider()
+                                }
+                            }
+                        }
+                    }
+                }
                 if (requireRecipient) {
                     POutlinedTextField(
                         value = recipientName,
