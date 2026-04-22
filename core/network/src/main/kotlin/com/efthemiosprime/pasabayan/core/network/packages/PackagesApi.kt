@@ -1,10 +1,15 @@
 package com.efthemiosprime.pasabayan.core.network.packages
 
 import retrofit2.Response
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
+import retrofit2.http.PartMap
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.QueryMap
@@ -20,6 +25,13 @@ interface PackagesApi {
 
     @POST("packages")
     suspend fun createPackage(@Body body: CreatePackageRequestJson): Response<PackageRequestResponseJson>
+
+    @Multipart
+    @POST("packages")
+    suspend fun createPackageMultipart(
+        @PartMap fields: Map<String, @JvmSuppressWildcards RequestBody>,
+        @Part images: List<MultipartBody.Part>,
+    ): Response<PackageRequestResponseJson>
 
     @GET("packages/{id}")
     suspend fun getPackage(@Path("id") id: Int): Response<PackageRequestResponseJson>

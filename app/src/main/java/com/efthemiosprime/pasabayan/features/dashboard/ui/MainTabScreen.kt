@@ -48,6 +48,7 @@ fun MainTabScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val packageViewModel: PackageViewModel = hiltViewModel()
+    val packageUiState by packageViewModel.uiState.collectAsStateWithLifecycle()
     val tabs = MainTabs.forRole(state.currentRole)
     var showCreateOptionsSheet by remember { mutableStateOf(false) }
     var showPackageRequestSheet by remember { mutableStateOf(false) }
@@ -142,11 +143,19 @@ fun MainTabScreen(
             onDismissRequest = { showPackageRequestSheet = false },
         ) {
             PackageRequestScreen(
-                onSave = {
-                    showPackageRequestSheet = false
-                    packageViewModel.refreshPackages()
+                onSave = { payload, imageUris ->
+                    packageViewModel.createPackageRequest(
+                        payload = payload,
+                        imageUris = imageUris,
+                    ) { result ->
+                        if (result.isSuccess) {
+                            showPackageRequestSheet = false
+                            packageViewModel.refreshPackages()
+                        }
+                    }
                 },
                 onCancel = { showPackageRequestSheet = false },
+                isSubmitting = packageUiState.isSubmittingPackageRequest,
             )
         }
     }
@@ -156,11 +165,16 @@ fun MainTabScreen(
             onDismissRequest = { showErrandRequestSheet = false },
         ) {
             PackageErrandRequestScreen(
-                onSave = {
-                    showErrandRequestSheet = false
-                    packageViewModel.refreshPackages()
+                onSave = { payload ->
+                    packageViewModel.createServiceRequest(payload) { result ->
+                        if (result.isSuccess) {
+                            showErrandRequestSheet = false
+                            packageViewModel.refreshPackages()
+                        }
+                    }
                 },
                 onCancel = { showErrandRequestSheet = false },
+                isSubmitting = packageUiState.isSubmittingServiceRequest,
             )
         }
     }

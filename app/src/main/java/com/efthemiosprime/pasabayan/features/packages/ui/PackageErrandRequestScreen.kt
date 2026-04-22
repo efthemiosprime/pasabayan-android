@@ -48,20 +48,22 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PExpandableSecti
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequestBaseScaffold
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequirementChipUi
+import com.efthemiosprime.pasabayan.features.packages.model.ServiceRequestShoppingItem
+import com.efthemiosprime.pasabayan.features.packages.model.ServiceRequestSubmitPayload
 import com.efthemiosprime.pasabayan.shared.model.CityCatalog
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-private enum class ErrandServiceType(val labelRes: Int) {
-    GroceryShopping(R.string.packages_service_type_grocery_shopping),
-    FoodDelivery(R.string.packages_service_type_food_delivery),
-    PharmacyPickup(R.string.packages_service_type_pharmacy_pickup),
-    GeneralErrand(R.string.packages_service_type_general_errand),
+private enum class ErrandServiceType(val code: String, val labelRes: Int) {
+    GroceryShopping("grocery_shopping", R.string.packages_service_type_grocery_shopping),
+    FoodDelivery("food_delivery", R.string.packages_service_type_food_delivery),
+    PharmacyPickup("pharmacy_pickup", R.string.packages_service_type_pharmacy_pickup),
+    GeneralErrand("general_errand", R.string.packages_service_type_general_errand),
 }
 
-private enum class ErrandDirection(val labelRes: Int) {
-    Receive(R.string.packages_service_direction_receive),
-    Send(R.string.packages_service_direction_send),
+private enum class ErrandDirection(val code: String, val labelRes: Int) {
+    Receive("receive", R.string.packages_service_direction_receive),
+    Send("send", R.string.packages_service_direction_send),
 }
 
 private data class ShoppingItemInput(
@@ -72,8 +74,9 @@ private data class ShoppingItemInput(
 
 @Composable
 fun PackageErrandRequestScreen(
-    onSave: () -> Unit,
+    onSave: (ServiceRequestSubmitPayload) -> Unit,
     onCancel: () -> Unit,
+    isSubmitting: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -124,9 +127,36 @@ fun PackageErrandRequestScreen(
         footer = {
             PButton(
                 text = stringResource(R.string.packages_service_action_send_request),
-                onClick = onSave,
+                onClick = {
+                    val requestItems = shoppingItems
+                        .filter { it.name.isNotBlank() && it.quantity.isNotBlank() }
+                        .map { item ->
+                            ServiceRequestShoppingItem(
+                                item = item.name,
+                                quantity = item.quantity,
+                                notes = item.notes,
+                            )
+                        }
+                    onSave(
+                        ServiceRequestSubmitPayload(
+                            serviceTypeCode = serviceType.code,
+                            shoppingItems = requestItems,
+                            deliveryCity = deliveryCity,
+                            deliveryAddress = deliveryAddress,
+                            storeName = storeName,
+                            storeAddress = storeAddress,
+                            estimatedCost = estimatedCost.toDoubleOrNull(),
+                            maxPriceBudget = maxBudget.toDoubleOrNull(),
+                            deliveryDateNeeded = deliveryDate,
+                            urgencyLevelCode = "normal",
+                            directionCode = if (serviceType == ErrandServiceType.GeneralErrand) direction.code else null,
+                            recipientName = if (requireRecipient) recipientName else null,
+                            recipientPhone = if (requireRecipient) recipientPhone else null,
+                        ),
+                    )
+                },
                 style = PButtonStyle.Submit,
-                enabled = canSubmit,
+                enabled = canSubmit && !isSubmitting,
                 modifier = Modifier.padding(PasabayanSpacing.lg),
             )
         },
@@ -536,7 +566,7 @@ private val errandDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern
 private fun PackageErrandRequestPreview() {
     PasabayanTheme {
         PackageErrandRequestScreen(
-            onSave = {},
+            onSave = { _ -> },
             onCancel = {},
         )
     }

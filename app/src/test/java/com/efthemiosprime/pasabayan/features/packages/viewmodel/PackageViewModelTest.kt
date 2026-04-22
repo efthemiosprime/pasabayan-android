@@ -1,13 +1,22 @@
 package com.efthemiosprime.pasabayan.features.packages.viewmodel
 
+import android.net.Uri
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageRequestStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UrgencyLevel
 import com.efthemiosprime.pasabayan.core.network.packages.CreatePackageRequestJson
+import com.efthemiosprime.pasabayan.core.network.packages.CreateServiceRequestBodyJson
 import com.efthemiosprime.pasabayan.core.network.packages.PackageUpdateRequestJson
+import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
+import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepository
 import com.efthemiosprime.pasabayan.features.packages.model.AvailablePackage
 import com.efthemiosprime.pasabayan.features.packages.model.PackageRequest
+import com.efthemiosprime.pasabayan.features.packages.model.PackageSubmitPayload
+import com.efthemiosprime.pasabayan.features.packages.model.ServiceRequestShoppingItem
+import com.efthemiosprime.pasabayan.features.packages.model.ServiceRequestSubmitPayload
 import com.efthemiosprime.pasabayan.features.packages.services.PackagesRepository
+import java.time.LocalDate
+import java.time.LocalTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -28,13 +37,15 @@ class PackageViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var fakeRepo: FakePackagesRepository
+    private lateinit var fakeBookingsRepository: FakeBookingsRepository
     private lateinit var viewModel: PackageViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeRepo = FakePackagesRepository()
-        viewModel = PackageViewModel(fakeRepo)
+        fakeBookingsRepository = FakeBookingsRepository()
+        viewModel = PackageViewModel(fakeRepo, fakeBookingsRepository)
     }
 
     @After
@@ -127,6 +138,74 @@ class PackageViewModelTest {
         assertNull(viewModel.uiState.value.errorMessage)
     }
 
+    @Test
+    fun `createPackageRequest updates submit state and prepends created package`() = runTest {
+        fakeRepo.createResult = Result.success(testPkg(90))
+
+        viewModel.createPackageRequest(
+            payload = testPackagePayload(),
+            imageUris = listOf(Uri.parse("content://photos/1")),
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isSubmittingPackageRequest)
+        assertEquals("Package request submitted", state.packageRequestSuccessMessage)
+        assertEquals(90, state.packageRequests.first().id)
+    }
+
+    @Test
+    fun `createServiceRequest updates submit error on failure`() = runTest {
+        fakeRepo.createServiceResult = Result.failure(Exception("Service create failed"))
+
+        viewModel.createServiceRequest(
+            ServiceRequestSubmitPayload(
+                serviceTypeCode = "grocery_shopping",
+                shoppingItems = listOf(
+                    ServiceRequestShoppingItem(item = "Eggs", quantity = "12", notes = null),
+                ),
+                deliveryCity = "Toronto",
+                deliveryAddress = "123 Main",
+                storeName = null,
+                storeAddress = null,
+                estimatedCost = null,
+                maxPriceBudget = null,
+                deliveryDateNeeded = LocalDate.of(2026, 4, 10),
+                urgencyLevelCode = "normal",
+                directionCode = null,
+                recipientName = null,
+                recipientPhone = null,
+            ),
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isSubmittingServiceRequest)
+        assertEquals("Service create failed", state.serviceRequestErrorMessage)
+    }
+
+    private fun testPackagePayload() = PackageSubmitPayload(
+        pickupAddress = "123 Main",
+        pickupCity = "Toronto",
+        pickupCountryCode = "CA",
+        deliveryAddress = "456 Oak",
+        deliveryCity = "Montreal",
+        deliveryCountryCode = "CA",
+        packageWeightKg = 1.5,
+        packageTypeCode = "general",
+        fragile = false,
+        urgencyLevelCode = "normal",
+        pickupDatePreferred = LocalDate.of(2026, 4, 5),
+        pickupTimePreferred = LocalTime.of(9, 30),
+        pickupDateFlexible = false,
+        deliveryDateNeeded = LocalDate.of(2026, 4, 7),
+        deliveryTimeNeeded = LocalTime.of(12, 0),
+        packageValue = 100.0,
+        packageDescription = "Test package",
+        maxPriceBudget = 40.0,
+        specialHandlingRequirements = null,
+    )
+
     private fun testPkg(
         id: Int,
         status: PackageRequestStatus = PackageRequestStatus.OPEN,
@@ -154,13 +233,43 @@ class FakePackagesRepository : PackagesRepository {
     var availableResult: Result<List<AvailablePackage>> = Result.success(emptyList())
     var getResult: Result<PackageRequest>? = null
     var createResult: Result<PackageRequest>? = null
+    var createServiceResult: Result<PackageRequest>? = null
     var updateResult: Result<PackageRequest>? = null
     var cancelResult: Result<Unit> = Result.success(Unit)
 
     override suspend fun loadPackages() = loadResult
     override suspend fun loadAvailablePackages(params: Map<String, String>) = availableResult
     override suspend fun getPackage(id: Int) = getResult ?: Result.failure(Exception("Not set"))
-    override suspend fun createPackage(request: CreatePackageRequestJson) = createResult ?: Result.failure(Exception("Not set"))
+    override suspend fun createPackage(
+        request: CreatePackageRequestJson,
+        imageUris: List<Uri>,
+    ) = createResult ?: Result.failure(Exception("Not set"))
+    override suspend fun createServiceRequest(request: CreateServiceRequestBodyJson) =
+        createServiceResult ?: Result.failure(Exception("Not set"))
     override suspend fun updatePackage(id: Int, request: PackageUpdateRequestJson) = updateResult ?: Result.failure(Exception("Not set"))
     override suspend fun cancelPackage(id: Int) = cancelResult
+}
+
+private class FakeBookingsRepository : BookingsRepository {
+    override suspend fun loadMatches(role: String?, status: String?): Result<List<DeliveryMatch>> = Result.success(emptyList())
+    override suspend fun getMatch(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
+    override suspend fun confirmMatch(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
+    override suspend fun cancelMatch(matchId: Int): Result<Unit> = Result.failure(Exception("Not used"))
+    override suspend fun markPickedUp(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
+    override suspend fun markInTransit(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
+    override suspend fun markDelivered(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
+    override suspend fun shipperAccept(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
+    override suspend fun shipperDecline(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
+    override suspend fun carrierAcceptShipperRequest(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
+    override suspend fun carrierDeclineShipperRequest(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
+    override suspend fun generatePickupCode(matchId: Int): Result<String> = Result.failure(Exception("Not used"))
+    override suspend fun generateDeliveryCode(matchId: Int): Result<String> = Result.failure(Exception("Not used"))
+    override suspend fun confirmPickupWithCode(matchId: Int, code: String): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
+    override suspend fun confirmDeliveryWithCode(matchId: Int, code: String): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
+    override suspend fun shipperRequestTrip(
+        packageId: Int,
+        tripId: Int,
+        offeredPrice: Double,
+        message: String?,
+    ): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
 }

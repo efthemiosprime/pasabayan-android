@@ -1,9 +1,11 @@
 package com.efthemiosprime.pasabayan.features.packages.services
 
+import android.net.Uri
 import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.network.ApiErrorMapper
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.network.packages.CreatePackageRequestJson
+import com.efthemiosprime.pasabayan.core.network.packages.CreateServiceRequestBodyJson
 import com.efthemiosprime.pasabayan.core.network.packages.PackageUpdateRequestJson
 import com.efthemiosprime.pasabayan.core.network.packages.PackagesApi
 import com.efthemiosprime.pasabayan.features.packages.model.AvailablePackage
@@ -17,6 +19,7 @@ import javax.inject.Singleton
 class PackagesRepositoryImpl @Inject constructor(
     private val packagesApi: PackagesApi,
     private val json: Json,
+    private val multipartFormDataFactory: MultipartFormDataFactory,
 ) : PackagesRepository {
 
     override suspend fun loadPackages(): Result<List<PackageRequest>> {
@@ -65,17 +68,28 @@ class PackagesRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun createPackage(request: CreatePackageRequestJson): Result<PackageRequest> {
+    override suspend fun createPackage(
+        request: CreatePackageRequestJson,
+        imageUris: List<Uri>,
+    ): Result<PackageRequest> {
         return try {
-            val res = packagesApi.createPackage(request)
-            if (!res.isSuccessful) {
-                return Result.failure(
-                    DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
-                )
+            val response = if (imageUris.isEmpty()) {
+                packagesApi.createPackage(request)
+            } else {
+                val fields = multipartFormDataFactory.createPackageFields(request)
+                val imageParts = multipartFormDataFactory.createImageParts(imageUris)
+                packagesApi.createPackageMultipart(fields = fields, images = imageParts)
             }
-            val pkg = res.body()?.data?.toDomain()
-                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
-            Result.success(pkg)
+            response.toPackageResult()
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun createServiceRequest(request: CreateServiceRequestBodyJson): Result<PackageRequest> {
+        return try {
+            val response = packagesApi.createServiceRequest(request)
+            response.toPackageResult()
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }
@@ -109,5 +123,17 @@ class PackagesRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }
+    }
+
+    private fun retrofit2.Response<com.efthemiosprime.pasabayan.core.network.packages.PackageRequestResponseJson>.toPackageResult():
+        Result<PackageRequest> {
+        if (!isSuccessful) {
+            return Result.failure(
+                DomainErrorMapperException(ApiErrorMapper.map(code(), errorBody()?.bytes(), json)),
+            )
+        }
+        val pkg = body()?.data?.toDomain()
+            ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+        return Result.success(pkg)
     }
 }

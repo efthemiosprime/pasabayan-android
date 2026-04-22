@@ -61,6 +61,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PExpandableSecti
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequestBaseScaffold
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequirementChipUi
+import com.efthemiosprime.pasabayan.features.packages.model.PackageSubmitPayload
 import com.efthemiosprime.pasabayan.shared.model.CityCatalog
 import com.efthemiosprime.pasabayan.shared.model.CountryCatalog
 import com.efthemiosprime.pasabayan.shared.components.CreationWizardStepHeader
@@ -71,8 +72,9 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun PackageRequestScreen(
-    onSave: () -> Unit,
+    onSave: (PackageSubmitPayload, List<Uri>) -> Unit,
     onCancel: () -> Unit,
+    isSubmitting: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -80,7 +82,9 @@ fun PackageRequestScreen(
     val countryLabelsByCode = countryOptions.associate { it.code to stringResource(it.labelRes) }
     val countryOptionLabels = countryOptions.map { option -> countryLabelsByCode.getValue(option.code) }
     val packageTypeOptions = packageTypeOptions()
+    val packageTypeLabelsByCode = packageTypeOptions.associate { it.code to stringResource(it.labelRes) }
     val urgencyOptions = urgencyOptions()
+    val urgencyLabelsByCode = urgencyOptions.associate { it.code to stringResource(it.labelRes) }
 
     var currentStep by remember { mutableStateOf(0) }
     var hasReachedFullReview by remember { mutableStateOf(false) }
@@ -115,13 +119,14 @@ fun PackageRequestScreen(
     var deliveryDate by remember { mutableStateOf(LocalDate.now().plusDays(2)) }
     var deliveryTime by remember { mutableStateOf(LocalTime.of(14, 0)) }
 
+    val parsedWeightKg = remember(weight) { weight.toDoubleOrNull() }
     val completedRequirements = remember(
         description,
         pickupAddress,
         pickupCity,
         deliveryAddress,
         deliveryCity,
-        weight,
+        parsedWeightKg,
         pickupDate,
         pickupTime,
         deliveryDate,
@@ -131,7 +136,7 @@ fun PackageRequestScreen(
         if (description.isNotBlank()) count += 1
         if (pickupAddress.isNotBlank() && pickupCity.isNotBlank()) count += 1
         if (deliveryAddress.isNotBlank() && deliveryCity.isNotBlank()) count += 1
-        if (weight.isNotBlank()) count += 1
+        if (parsedWeightKg != null && parsedWeightKg > 0.0) count += 1
         if (isDatesValid(pickupDate, pickupTime, deliveryDate, deliveryTime)) count += 1
         count
     }
@@ -177,9 +182,35 @@ fun PackageRequestScreen(
             if (hasReachedFullReview) {
                 PButton(
                     text = stringResource(R.string.packages_create_submit),
-                    onClick = onSave,
+                    onClick = {
+                        val safeWeight = parsedWeightKg ?: return@PButton
+                        onSave(
+                            PackageSubmitPayload(
+                                pickupAddress = pickupAddress.trim(),
+                                pickupCity = pickupCity.trim(),
+                                pickupCountryCode = pickupCountry.code,
+                                deliveryAddress = deliveryAddress.trim(),
+                                deliveryCity = deliveryCity.trim(),
+                                deliveryCountryCode = deliveryCountry.code,
+                                packageWeightKg = safeWeight,
+                                packageTypeCode = packageType.code,
+                                fragile = isFragile,
+                                urgencyLevelCode = urgencyLevel.code,
+                                pickupDatePreferred = pickupDate,
+                                pickupTimePreferred = pickupTime,
+                                pickupDateFlexible = pickupDateFlexible,
+                                deliveryDateNeeded = deliveryDate,
+                                deliveryTimeNeeded = deliveryTime,
+                                packageValue = packageValue.toDoubleOrNull(),
+                                packageDescription = description.trim().takeIf { it.isNotBlank() },
+                                maxPriceBudget = maxBudget.toDoubleOrNull(),
+                                specialHandlingRequirements = specialHandling.trim().takeIf { it.isNotBlank() },
+                            ),
+                            selectedPhotoUris.toList(),
+                        )
+                    },
                     style = PButtonStyle.Submit,
-                    enabled = isFormValid,
+                    enabled = isFormValid && !isSubmitting,
                     modifier = Modifier.padding(PasabayanSpacing.lg),
                 )
             } else {
@@ -380,15 +411,29 @@ fun PackageRequestScreen(
                     ) {
                         PackageRequestDropdownField(
                             label = stringResource(R.string.packages_create_package_type),
-                            value = packageType,
-                            options = packageTypeOptions,
-                            onSelected = { packageType = it },
+                            value = packageTypeLabelsByCode.getValue(packageType.code),
+                            options = packageTypeOptions.map { packageTypeLabelsByCode.getValue(it.code) },
+                            onSelected = { selectedLabel ->
+                                val selectedCode = packageTypeLabelsByCode.entries
+                                    .firstOrNull { it.value == selectedLabel }
+                                    ?.key
+                                    ?: packageTypeOptions.first().code
+                                packageType = packageTypeOptions.firstOrNull { it.code == selectedCode }
+                                    ?: packageTypeOptions.first()
+                            },
                         )
                         PackageRequestDropdownField(
                             label = stringResource(R.string.packages_create_urgency),
-                            value = urgencyLevel,
-                            options = urgencyOptions,
-                            onSelected = { urgencyLevel = it },
+                            value = urgencyLabelsByCode.getValue(urgencyLevel.code),
+                            options = urgencyOptions.map { urgencyLabelsByCode.getValue(it.code) },
+                            onSelected = { selectedLabel ->
+                                val selectedCode = urgencyLabelsByCode.entries
+                                    .firstOrNull { it.value == selectedLabel }
+                                    ?.key
+                                    ?: urgencyOptions.first().code
+                                urgencyLevel = urgencyOptions.firstOrNull { it.code == selectedCode }
+                                    ?: urgencyOptions.first()
+                            },
                         )
                         POutlinedTextField(
                             value = description,
@@ -700,24 +745,29 @@ private fun isDatesValid(
 private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy")
 private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a")
 
-@Composable
-private fun packageTypeOptions(): List<String> = listOf(
-    stringResource(R.string.packages_type_general),
-    stringResource(R.string.packages_type_electronics),
-    stringResource(R.string.packages_type_clothing),
-    stringResource(R.string.packages_type_books),
-    stringResource(R.string.packages_type_food),
-    stringResource(R.string.packages_type_fragile),
-    stringResource(R.string.packages_type_documents),
+private data class RequestOption(
+    val code: String,
+    val labelRes: Int,
 )
 
 @Composable
-private fun urgencyOptions(): List<String> = listOf(
-    stringResource(R.string.packages_urgency_low),
-    stringResource(R.string.packages_urgency_normal),
-    stringResource(R.string.packages_urgency_high),
-    stringResource(R.string.packages_urgency_urgent),
-    stringResource(R.string.packages_urgency_express),
+private fun packageTypeOptions(): List<RequestOption> = listOf(
+    RequestOption(code = "general", labelRes = R.string.packages_type_general),
+    RequestOption(code = "electronics", labelRes = R.string.packages_type_electronics),
+    RequestOption(code = "clothing", labelRes = R.string.packages_type_clothing),
+    RequestOption(code = "books", labelRes = R.string.packages_type_books),
+    RequestOption(code = "food", labelRes = R.string.packages_type_food),
+    RequestOption(code = "fragile", labelRes = R.string.packages_type_fragile),
+    RequestOption(code = "documents", labelRes = R.string.packages_type_documents),
+)
+
+@Composable
+private fun urgencyOptions(): List<RequestOption> = listOf(
+    RequestOption(code = "low", labelRes = R.string.packages_urgency_low),
+    RequestOption(code = "normal", labelRes = R.string.packages_urgency_normal),
+    RequestOption(code = "high", labelRes = R.string.packages_urgency_high),
+    RequestOption(code = "urgent", labelRes = R.string.packages_urgency_urgent),
+    RequestOption(code = "express", labelRes = R.string.packages_urgency_express),
 )
 
 @Preview(showBackground = true, name = "PackageRequest — light", heightDp = 900)
@@ -725,6 +775,6 @@ private fun urgencyOptions(): List<String> = listOf(
 @Composable
 private fun PackageRequestPreview() {
     PasabayanTheme {
-        PackageRequestScreen(onSave = {}, onCancel = {})
+        PackageRequestScreen(onSave = { _, _ -> }, onCancel = {})
     }
 }
