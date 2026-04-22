@@ -25,6 +25,17 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
 import com.efthemiosprime.pasabayan.core.designsystem.component.PLinearProgress
 
+enum class TripProgressStatus {
+    NOT_STARTED,
+    IN_PROGRESS,
+    COMPLETE,
+}
+
+data class ProgressLabel(
+    val resId: Int,
+    val formatArgs: List<Any> = emptyList(),
+)
+
 data class TripPackageProgressMetrics(
     val totalMatches: Int,
     val deliveredMatches: Int,
@@ -33,6 +44,30 @@ data class TripPackageProgressMetrics(
 ) {
     val deliveredRatio: Float
         get() = if (totalMatches > 0) deliveredMatches.toFloat() / totalMatches else 0f
+
+    val deliveredLabel: ProgressLabel
+        get() = ProgressLabel(
+            resId = R.string.trips_progress_delivered_label,
+            formatArgs = listOf(deliveredMatches, totalMatches),
+        )
+
+    val status: TripProgressStatus
+        get() = when {
+            totalMatches <= 0 -> TripProgressStatus.NOT_STARTED
+            deliveredMatches >= totalMatches -> TripProgressStatus.COMPLETE
+            deliveredMatches > 0 || activeMatches > 0 -> TripProgressStatus.IN_PROGRESS
+            else -> TripProgressStatus.NOT_STARTED
+        }
+
+    val nextActionLabel: ProgressLabel
+        get() = if (activeMatches > 0) {
+            ProgressLabel(
+                resId = R.string.trips_progress_next_action_active,
+                formatArgs = listOf(activeMatches),
+            )
+        } else {
+            ProgressLabel(resId = R.string.trips_progress_next_action_none)
+        }
 }
 
 @Composable
@@ -49,9 +84,8 @@ fun TripPackageProgressWidget(
             ) {
                 Text(
                     text = stringResource(
-                        R.string.trips_progress_delivered_label,
-                        metrics.deliveredMatches,
-                        metrics.totalMatches,
+                        metrics.deliveredLabel.resId,
+                        *metrics.deliveredLabel.formatArgs.toTypedArray(),
                     ),
                     style = PasabayanTextStyles.Body.medium,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -68,11 +102,10 @@ fun TripPackageProgressWidget(
                 indicatorColor = PasabayanColors.Success,
             )
             Text(
-                text = if (metrics.activeMatches > 0) {
-                    stringResource(R.string.trips_progress_next_action_active, metrics.activeMatches)
-                } else {
-                    stringResource(R.string.trips_progress_next_action_none)
-                },
+                text = stringResource(
+                    metrics.nextActionLabel.resId,
+                    *metrics.nextActionLabel.formatArgs.toTypedArray(),
+                ),
                 style = PasabayanTextStyles.Caption.large,
                 color = MaterialTheme.colorScheme.primary,
             )

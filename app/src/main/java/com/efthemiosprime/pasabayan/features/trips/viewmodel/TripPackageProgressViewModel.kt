@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed interface TripPackageProgressState {
+    data object Idle : TripPackageProgressState
     data object Loading : TripPackageProgressState
     data object Empty : TripPackageProgressState
     data class Loaded(val metrics: TripPackageProgressMetrics) : TripPackageProgressState
@@ -24,10 +25,29 @@ sealed interface TripPackageProgressState {
 class TripPackageProgressViewModel @Inject constructor(
     private val tripsRepository: TripsRepository,
 ) : ViewModel() {
-    private val _state = MutableStateFlow<TripPackageProgressState>(TripPackageProgressState.Loading)
+    private var lastTripId: Int? = null
+    private var lastArrivalDateText: String? = null
+
+    private val _state = MutableStateFlow<TripPackageProgressState>(TripPackageProgressState.Idle)
     val state: StateFlow<TripPackageProgressState> = _state.asStateFlow()
 
+    fun loadMatches(tripId: Int, arrivalDateText: String) {
+        lastTripId = tripId
+        lastArrivalDateText = arrivalDateText
+        loadInternal(tripId = tripId, arrivalDateText = arrivalDateText)
+    }
+
     fun load(tripId: Int, arrivalDateText: String) {
+        loadMatches(tripId = tripId, arrivalDateText = arrivalDateText)
+    }
+
+    fun refresh() {
+        val tripId = lastTripId ?: return
+        val arrivalDateText = lastArrivalDateText.orEmpty()
+        loadInternal(tripId = tripId, arrivalDateText = arrivalDateText)
+    }
+
+    private fun loadInternal(tripId: Int, arrivalDateText: String) {
         viewModelScope.launch {
             _state.value = TripPackageProgressState.Loading
             tripsRepository.loadTripMatches(tripId).fold(
@@ -54,7 +74,7 @@ class TripPackageProgressViewModel @Inject constructor(
                 },
                 onFailure = { error ->
                     _state.value = TripPackageProgressState.Error(
-                        message = error.message.orEmpty(),
+                        message = error.message ?: "Failed to load trip matches",
                     )
                 },
             )
