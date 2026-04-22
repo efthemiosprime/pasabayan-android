@@ -2,8 +2,10 @@ package com.efthemiosprime.pasabayan.features.trips.viewmodel
 
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
+import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageRequestStatus
 import com.efthemiosprime.pasabayan.features.trips.model.PopularRoute
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
+import com.efthemiosprime.pasabayan.features.packages.model.PackageRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -125,6 +127,137 @@ class BrowseTripsViewModelTest {
         assertEquals(2, viewModel.uiState.value.availableTrips.size)
         assertEquals(2, viewModel.uiState.value.currentPage)
     }
+
+    @Test
+    fun `selectTrip and selectPackage compute compatibility result`() = runTest {
+        val trip = testTrip(
+            id = 11,
+            status = TripStatus.ACTIVE,
+        ).copy(
+            originCity = "Toronto",
+            destinationCity = "Montreal",
+            availableWeightKg = 20.0,
+            departureDate = "2026-04-01T08:00:00Z",
+            arrivalDate = "2026-04-02T08:00:00Z",
+        )
+        val pkg = testPackage(
+            id = 44,
+            pickupCity = "Toronto",
+            deliveryCity = "Montreal",
+            packageWeightKg = 5.0,
+            maxPriceBudget = 300.0,
+            pickupDatePreferred = "2026-04-01T12:00:00Z",
+        )
+
+        viewModel.selectTrip(trip)
+        viewModel.selectPackage(pkg)
+        advanceUntilIdle()
+
+        val compatibility = viewModel.uiState.value.compatibilityResult
+        assertTrue(compatibility != null)
+        assertTrue(compatibility!!.isCompatible)
+        assertTrue(compatibility.capacitySufficient)
+        assertTrue(compatibility.dateCompatible)
+        assertTrue(compatibility.priceCompatible)
+    }
+
+    @Test
+    fun `selectPackage marks incompatible when capacity is insufficient`() = runTest {
+        val trip = testTrip(id = 3, status = TripStatus.ACTIVE).copy(availableWeightKg = 1.0)
+        val pkg = testPackage(id = 9, packageWeightKg = 10.0)
+
+        viewModel.selectTrip(trip)
+        viewModel.selectPackage(pkg)
+        advanceUntilIdle()
+
+        val compatibility = viewModel.uiState.value.compatibilityResult
+        assertTrue(compatibility != null)
+        assertFalse(compatibility!!.isCompatible)
+        assertFalse(compatibility.capacitySufficient)
+    }
+
+    @Test
+    fun `showBookingSheet requires compatible selection`() = runTest {
+        val trip = testTrip(id = 21, status = TripStatus.ACTIVE)
+        val pkg = testPackage(id = 22, packageWeightKg = 1000.0)
+        viewModel.selectTrip(trip.copy(availableWeightKg = 2.0))
+        viewModel.selectPackage(pkg)
+        advanceUntilIdle()
+
+        viewModel.showBookingSheet()
+        assertFalse(viewModel.uiState.value.isBookingSheetPresented)
+
+        viewModel.selectPackage(testPackage(id = 23, packageWeightKg = 1.0))
+        advanceUntilIdle()
+        viewModel.showBookingSheet()
+        assertTrue(viewModel.uiState.value.isBookingSheetPresented)
+    }
+
+    @Test
+    fun `bookTripDirectly toggles booking state and clearBookingState resets`() = runTest {
+        val trip = testTrip(id = 31, status = TripStatus.ACTIVE).copy(availableWeightKg = 5.0)
+        val pkg = testPackage(id = 32, packageWeightKg = 1.0)
+        viewModel.selectTrip(trip)
+        viewModel.selectPackage(pkg)
+        advanceUntilIdle()
+        viewModel.showBookingSheet()
+
+        viewModel.bookTripDirectly()
+        assertTrue(viewModel.uiState.value.isBookingTrip)
+
+        viewModel.clearBookingState()
+        val state = viewModel.uiState.value
+        assertFalse(state.isBookingTrip)
+        assertFalse(state.isBookingSheetPresented)
+        assertNull(state.selectedTrip)
+        assertNull(state.selectedPackage)
+        assertNull(state.compatibilityResult)
+        assertNull(state.bookingSuccessMessage)
+    }
+
+    private fun testPackage(
+        id: Int,
+        pickupCity: String = "Toronto",
+        deliveryCity: String = "Vancouver",
+        packageWeightKg: Double = 2.0,
+        maxPriceBudget: Double = 50.0,
+        pickupDatePreferred: String? = null,
+    ) = PackageRequest(
+        id = id,
+        shipperId = 1,
+        pickupAddress = "A",
+        pickupCity = pickupCity,
+        pickupCountry = "Canada",
+        deliveryAddress = "B",
+        deliveryCity = deliveryCity,
+        deliveryCountry = "Canada",
+        packageWeightKg = packageWeightKg,
+        packageDimensions = null,
+        packageType = null,
+        fragile = false,
+        packageValue = null,
+        packageDescription = "Books",
+        urgencyLevel = null,
+        maxPriceBudget = maxPriceBudget,
+        pickupDatePreferred = pickupDatePreferred,
+        pickupTimePreferred = null,
+        pickupDateFlexible = null,
+        deliveryDateNeeded = null,
+        deliveryTimeNeeded = null,
+        specialHandlingRequirements = null,
+        requestStatus = PackageRequestStatus.OPEN,
+        createdAt = null,
+        updatedAt = null,
+        compatibleTripsCount = null,
+        shipper = null,
+        images = null,
+        imagesProcessing = null,
+        serviceType = null,
+        shoppingList = null,
+        storeName = null,
+        storeAddress = null,
+        receiptRequired = null,
+    )
 
     private fun testTrip(
         id: Int,
