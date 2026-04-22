@@ -2,6 +2,7 @@ package com.efthemiosprime.pasabayan.features.trips.viewmodel
 
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
+import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.network.trips.CreateTripRequestJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson
 import com.efthemiosprime.pasabayan.features.trips.model.CreateTripFromPackageRequest
@@ -180,6 +181,63 @@ class CarrierTripsViewModelTest {
         assertEquals("in_transit", fakeRepo.lastUpdateStatus)
     }
 
+    @Test
+    fun `cancelTrip marks active trip as cancelled when no blocking matches`() = runTest {
+        val existing = testTrip(1, TripStatus.ACTIVE)
+        fakeRepo.carrierTripsResult = Result.success(listOf(existing))
+        fakeRepo.tripMatchesResult = Result.success(
+            listOf(
+                testTripMatch(id = 10, status = MatchStatus.PENDING),
+            ),
+        )
+        fakeRepo.deleteResult = Result.success(Unit)
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        viewModel.cancelTrip(1)
+        advanceUntilIdle()
+
+        assertEquals(MatchStatus.PENDING, fakeRepo.tripMatchesResult.getOrThrow().first().matchStatus)
+        assertEquals(listOf(1), fakeRepo.loadedTripMatchIds)
+        assertEquals(listOf(1), fakeRepo.deletedTripIds)
+        assertEquals(TripStatus.CANCELLED, viewModel.uiState.value.trips.first().tripStatus)
+    }
+
+    @Test
+    fun `cancelTrip is blocked when matches are confirmed picked up or in transit`() = runTest {
+        val existing = testTrip(1, TripStatus.ACTIVE)
+        fakeRepo.carrierTripsResult = Result.success(listOf(existing))
+        fakeRepo.tripMatchesResult = Result.success(
+            listOf(
+                testTripMatch(id = 11, status = MatchStatus.CONFIRMED),
+                testTripMatch(id = 12, status = MatchStatus.PICKED_UP),
+                testTripMatch(id = 13, status = MatchStatus.IN_TRANSIT),
+            ),
+        )
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        viewModel.cancelTrip(1)
+        advanceUntilIdle()
+
+        assertEquals(0, fakeRepo.deletedTripIds.size)
+        assertEquals(TripStatus.ACTIVE, viewModel.uiState.value.trips.first().tripStatus)
+        assertTrue(viewModel.uiState.value.errorMessage != null)
+    }
+
+    @Test
+    fun `cancelTrip is blocked for completed trip before loading matches`() = runTest {
+        fakeRepo.carrierTripsResult = Result.success(listOf(testTrip(1, TripStatus.COMPLETED)))
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        viewModel.cancelTrip(1)
+        advanceUntilIdle()
+
+        assertEquals(0, fakeRepo.loadedTripMatchIds.size)
+        assertEquals(0, fakeRepo.deletedTripIds.size)
+    }
+
     private fun testTrip(
         id: Int,
         status: TripStatus = TripStatus.ACTIVE,
@@ -205,6 +263,24 @@ class CarrierTripsViewModelTest {
         hasPendingRequests = null, pendingRequestCount = null,
         pendingRequests = null, distanceKm = null,
     )
+
+    private fun testTripMatch(
+        id: Int,
+        status: MatchStatus,
+    ) = TripMatchPackage(
+        id = id,
+        matchStatus = status,
+        agreedPrice = null,
+        packageDescription = null,
+        packageWeightKg = null,
+        packageId = null,
+        shipper = null,
+        chatConversationId = null,
+        confirmedAt = null,
+        pickedUpAt = null,
+        deliveredAt = null,
+        createdAt = null,
+    )
 }
 
 /** Fake repository for ViewModel tests. */
@@ -222,13 +298,17 @@ class FakeTripsRepository : TripsRepository {
     var tripMatchesResult: Result<List<TripMatchPackage>> = Result.success(emptyList())
     var tripTemplateResult: Result<TripTemplateData> = Result.failure(Exception("Not set"))
     var deletedTripIds: MutableList<Int> = mutableListOf()
+    var loadedTripMatchIds: MutableList<Int> = mutableListOf()
     var lastUpdateStatus: String? = null
 
     override suspend fun loadCarrierTrips() = carrierTripsResult
     override suspend fun loadAvailableTrips(filter: TripFilter) = availableTripsResult
     override suspend fun loadPopularPackageRoutes() = popularRoutesResult
     override suspend fun loadRouteActivitySummary() = routeActivitySummaryResult
-    override suspend fun loadTripMatches(tripId: Int) = tripMatchesResult
+    override suspend fun loadTripMatches(tripId: Int): Result<List<TripMatchPackage>> {
+        loadedTripMatchIds.add(tripId)
+        return tripMatchesResult
+    }
     override suspend fun loadTripTemplate(packageId: Int) = tripTemplateResult
     override suspend fun getTrip(id: Int) = getTripResult ?: Result.failure(Exception("Not set"))
     override suspend fun createTrip(request: CreateTripRequestJson) = createResult ?: Result.failure(Exception("Not set"))

@@ -2,6 +2,7 @@ package com.efthemiosprime.pasabayan.features.trips.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
@@ -35,6 +36,13 @@ data class CarrierTripsUiState(
 class CarrierTripsViewModel @Inject constructor(
     private val tripsRepository: TripsRepository,
 ) : ViewModel() {
+    private companion object {
+        val CANCEL_BLOCKING_MATCH_STATUSES = setOf(
+            MatchStatus.CONFIRMED,
+            MatchStatus.PICKED_UP,
+            MatchStatus.IN_TRANSIT,
+        )
+    }
 
     private val _uiState = MutableStateFlow(CarrierTripsUiState())
     val uiState: StateFlow<CarrierTripsUiState> = _uiState.asStateFlow()
@@ -77,6 +85,42 @@ class CarrierTripsViewModel @Inject constructor(
                 onFailure = { e ->
                     _uiState.update {
                         it.copy(errorMessage = e.message ?: "Failed to delete trip")
+                    }
+                },
+            )
+        }
+    }
+
+    fun cancelTrip(tripId: Int) {
+        val currentTrip = _uiState.value.trips.firstOrNull { it.id == tripId } ?: return
+        if (!canTransition(currentTrip.tripStatus, TripStatus.CANCELLED)) {
+            _uiState.update { it.copy(errorMessage = "Failed to cancel trip") }
+            return
+        }
+
+        viewModelScope.launch {
+            val matchesResult = tripsRepository.loadTripMatches(tripId)
+            val hasBlockingMatches = matchesResult.getOrNull()
+                ?.any { it.matchStatus in CANCEL_BLOCKING_MATCH_STATUSES } == true
+            if (hasBlockingMatches) {
+                _uiState.update { it.copy(errorMessage = "Failed to cancel trip") }
+                return@launch
+            }
+
+            tripsRepository.deleteTrip(tripId).fold(
+                onSuccess = {
+                    _uiState.update { state ->
+                        state.copy(
+                            trips = state.trips.map { trip ->
+                                if (trip.id == tripId) trip.copy(tripStatus = TripStatus.CANCELLED) else trip
+                            },
+                            errorMessage = null,
+                        )
+                    }
+                },
+                onFailure = { e ->
+                    _uiState.update {
+                        it.copy(errorMessage = e.message ?: "Failed to cancel trip")
                     }
                 },
             )
