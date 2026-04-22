@@ -56,6 +56,14 @@
     <string name="trips_detail_weight">Poids</string>
     <string name="trips_detail_notes">Notes sp\u00e9ciales</string>
     <string name="trips_detail_earnings">Revenus</string>
+    <string name="trips_detail_earnings_total">Total : %1$s %2$.2f</string>
+    <string name="trips_detail_earnings_delivered">Livr\u00e9 : %1$s %2$.2f</string>
+    <string name="trips_detail_earnings_pending">En attente : %1$s %2$.2f</string>
+    <string name="trips_detail_accepted_packages_title">Colis accept\u00e9s</string>
+    <string name="trips_detail_accepted_packages_empty">Aucun colis accept\u00e9 pour ce filtre.</string>
+    <string name="trips_detail_match_status_label">Statut : %1$s</string>
+    <string name="trips_detail_package_fallback">Colis</string>
+    <string name="trips_detail_package_weight_caption">%1$.1f kg</string>
     <string name="trips_detail_pending_requests">%1$d demande(s) en attente</string>
     <string name="trips_detail_title">D\u00e9tails du trajet</string>
     <string name="trips_detail_close">Fermer les d\u00e9tails</string>
@@ -79,6 +87,12 @@
     <string name="trips_create_flat_price">Prix forfaitaire</string>
     <string name="trips_create_transport_method">M\u00e9thode de transport</string>
     <string name="trips_create_special_notes">Notes sp\u00e9ciales (optionnel)</string>
+    <string name="trips_create_from_package_title">Cr\u00e9er un trajet depuis un colis</string>
+    <string name="trips_create_from_package_template_route">%1$s vers %2$s</string>
+    <string name="trips_create_from_package_proposed_price">Prix propos\u00e9</string>
+    <string name="trips_create_from_package_request_message">Message de demande</string>
+    <string name="trips_filter_sheet_title">Filtrer les trajets</string>
+    <string name="trips_edit_route_locked_note">L\'itin\u00e9raire et l\'horaire sont verrouill\u00e9s d\u00e8s que le trajet quitte l\'\u00e9tat planifi\u00e9.</string>
 
     <!-- Browse -->
     <string name="trips_browse_title">Parcourir les trajets</string>

@@ -56,6 +56,14 @@
     <string name="trips_detail_weight">Weight</string>
     <string name="trips_detail_notes">Special Notes</string>
     <string name="trips_detail_earnings">Earnings</string>
+    <string name="trips_detail_earnings_total">Total: %1$s %2$.2f</string>
+    <string name="trips_detail_earnings_delivered">Delivered: %1$s %2$.2f</string>
+    <string name="trips_detail_earnings_pending">Pending: %1$s %2$.2f</string>
+    <string name="trips_detail_accepted_packages_title">Accepted Packages</string>
+    <string name="trips_detail_accepted_packages_empty">No accepted packages for this filter.</string>
+    <string name="trips_detail_match_status_label">Status: %1$s</string>
+    <string name="trips_detail_package_fallback">Package</string>
+    <string name="trips_detail_package_weight_caption">%1$.1f kg</string>
     <string name="trips_detail_pending_requests">%1$d pending request(s)</string>
     <string name="trips_detail_title">Trip Details</string>
     <string name="trips_detail_close">Close details</string>
@@ -79,6 +87,12 @@
     <string name="trips_create_flat_price">Flat Price</string>
     <string name="trips_create_transport_method">Transportation Method</string>
     <string name="trips_create_special_notes">Special Notes (optional)</string>
+    <string name="trips_create_from_package_title">Create Trip From Package</string>
+    <string name="trips_create_from_package_template_route">%1$s to %2$s</string>
+    <string name="trips_create_from_package_proposed_price">Proposed Price</string>
+    <string name="trips_create_from_package_request_message">Request Message</string>
+    <string name="trips_filter_sheet_title">Filter Trips</string>
+    <string name="trips_edit_route_locked_note">Route and schedule are locked once trip leaves planning.</string>
 
     <!-- Browse -->
     <string name="trips_browse_title">Browse Trips</string>
