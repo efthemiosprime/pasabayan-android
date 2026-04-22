@@ -35,7 +35,7 @@ class RouteActivitySummaryViewModel @Inject constructor(
                 onFailure = { error ->
                     _uiState.update {
                         it.copy(
-                            summary = RouteActivitySummary(0, 0, 0),
+                            summary = RouteActivitySummary(0, 0, 0, null, null),
                             isLoading = false,
                             errorMessage = error.message,
                         )

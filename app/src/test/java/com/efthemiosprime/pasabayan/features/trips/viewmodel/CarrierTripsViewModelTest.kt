@@ -217,7 +217,7 @@ class FakeTripsRepository : TripsRepository {
     var deleteResult: Result<Unit> = Result.success(Unit)
     var popularRoutesResult: Result<List<PopularRoute>> = Result.success(emptyList())
     var routeActivitySummaryResult: Result<RouteActivitySummary> = Result.success(
-        RouteActivitySummary(0, 0, 0),
+        RouteActivitySummary(0, 0, 0, null, null),
     )
     var tripMatchesResult: Result<List<TripMatchPackage>> = Result.success(emptyList())
     var tripTemplateResult: Result<TripTemplateData> = Result.failure(Exception("Not set"))

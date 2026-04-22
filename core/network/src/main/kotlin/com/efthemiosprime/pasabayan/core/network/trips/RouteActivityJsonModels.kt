@@ -12,11 +12,16 @@ data class PopularRoutesResponseJson(
 
 @Serializable
 data class PopularRouteJson(
-    val city: String = "",
-    val country: String = "",
+    @SerialName("origin_city") val originCity: String? = null,
+    @SerialName("origin_country") val originCountry: String? = null,
     @SerialName("destination_city") val destinationCity: String = "",
-    @SerialName("destination_country") val destinationCountry: String = "",
-    @SerialName("route_type") val routeType: String = "unknown",
+    @SerialName("package_count") val packageCount: Int? = null,
+    @SerialName("average_price") val averagePrice: Double? = null,
+    // Legacy support for previously wired payload variants.
+    val city: String? = null,
+    val country: String? = null,
+    @SerialName("destination_country") val destinationCountry: String? = null,
+    @SerialName("route_type") val routeType: String? = null,
     @SerialName("display_name") val displayName: String? = null,
     @SerialName("trip_count") val tripCount: Int? = null,
 )
@@ -30,11 +35,17 @@ data class RouteActivitySummaryResponseJson(
 
 @Serializable
 data class RouteActivitySummaryDataJson(
-    val carrier: RouteActivityCarrierSummaryJson? = null,
+    @SerialName("total_trips") val totalTrips: Int? = null,
+    @SerialName("active_trips") val activeTrips: Int? = null,
+    @SerialName("completed_trips") val completedTrips: Int? = null,
+    @SerialName("total_earnings") val totalEarnings: Double? = null,
+    val currency: String? = null,
+    // Legacy payload support.
+    val carrier: RouteActivityLegacyCarrierJson? = null,
 )
 
 @Serializable
-data class RouteActivityCarrierSummaryJson(
+data class RouteActivityLegacyCarrierJson(
     @SerialName("package_delivery_near_home") val packageDeliveryNearHome: Int = 0,
     @SerialName("service_errand_near_home") val serviceErrandNearHome: Int = 0,
     @SerialName("new_packages_this_week_near_home") val newPackagesThisWeekNearHome: Int = 0,

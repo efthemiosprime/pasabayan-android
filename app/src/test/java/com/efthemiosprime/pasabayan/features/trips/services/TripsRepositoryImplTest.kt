@@ -359,7 +359,7 @@ class TripsRepositoryImplTest {
                     "success": true,
                     "message": "ok",
                     "data": [
-                        {"city":"Toronto","country":"Canada","destination_city":"Montreal","destination_country":"Canada","route_type":"flight","display_name":"Toronto -> Montreal","trip_count":6}
+                        {"origin_city":"Toronto","destination_city":"Montreal","package_count":6,"average_price":52.5}
                     ]
                 }""",
             ),
@@ -367,19 +367,22 @@ class TripsRepositoryImplTest {
         val result = repo.loadPopularPackageRoutes()
         assertTrue(result.isSuccess)
         assertEquals(1, result.getOrThrow().size)
-        assertEquals("Toronto", result.getOrThrow().first().city)
+        assertEquals("Toronto", result.getOrThrow().first().originCity)
+        assertEquals(6, result.getOrThrow().first().packageCount)
     }
 
     @Test
     fun `loadRouteActivitySummary returns zero-safe summary`() = runBlocking {
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(
-                """{"success":true,"message":"ok","data":{"carrier":{"package_delivery_near_home":2,"service_errand_near_home":1,"new_packages_this_week_near_home":4}}}""",
+                """{"success":true,"message":"ok","data":{"total_trips":2,"active_trips":1,"completed_trips":4,"total_earnings":89.75,"currency":"CAD"}}""",
             ),
         )
         val result = repo.loadRouteActivitySummary()
         assertTrue(result.isSuccess)
-        assertEquals(2, result.getOrThrow().packageDeliveryNearHome)
+        assertEquals(2, result.getOrThrow().totalTrips)
+        assertEquals(1, result.getOrThrow().activeTrips)
+        assertEquals(4, result.getOrThrow().completedTrips)
     }
 
     @Test

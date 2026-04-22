@@ -2,7 +2,7 @@ package com.efthemiosprime.pasabayan.features.trips.model
 
 import com.efthemiosprime.pasabayan.core.network.trips.PendingTripRequestJson
 import com.efthemiosprime.pasabayan.core.network.trips.PopularRouteJson
-import com.efthemiosprime.pasabayan.core.network.trips.RouteActivityCarrierSummaryJson
+import com.efthemiosprime.pasabayan.core.network.trips.RouteActivitySummaryDataJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripTemplateJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripEarningsBreakdownJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripJson
@@ -91,20 +91,27 @@ fun TripMatchPackageJson.toDomain(): TripMatchPackage = TripMatchPackage(
 )
 
 fun PopularRouteJson.toDomain(): PopularRoute = PopularRoute(
-    city = city,
-    country = country,
+    originCity = originCity ?: city.orEmpty(),
     destinationCity = destinationCity,
-    destinationCountry = destinationCountry,
-    routeType = PopularRouteType.fromWire(routeType),
-    displayName = displayName ?: "$destinationCity, $destinationCountry",
-    tripCount = tripCount,
+    packageCount = packageCount ?: tripCount ?: 0,
+    averagePrice = averagePrice,
 )
 
-fun RouteActivityCarrierSummaryJson?.toDomainOrZero(): RouteActivitySummary = RouteActivitySummary(
-    packageDeliveryNearHome = this?.packageDeliveryNearHome ?: 0,
-    serviceErrandNearHome = this?.serviceErrandNearHome ?: 0,
-    newPackagesThisWeekNearHome = this?.newPackagesThisWeekNearHome ?: 0,
-)
+fun RouteActivitySummaryDataJson?.toDomainOrZero(): RouteActivitySummary {
+    val summary = this
+    val legacy = summary?.carrier
+    return RouteActivitySummary(
+        totalTrips = summary?.totalTrips ?: (
+            (legacy?.packageDeliveryNearHome ?: 0) +
+                (legacy?.serviceErrandNearHome ?: 0) +
+                (legacy?.newPackagesThisWeekNearHome ?: 0)
+            ),
+        activeTrips = summary?.activeTrips ?: (legacy?.packageDeliveryNearHome ?: 0),
+        completedTrips = summary?.completedTrips ?: (legacy?.serviceErrandNearHome ?: 0),
+        totalEarnings = summary?.totalEarnings,
+        currency = summary?.currency,
+    )
+}
 
 fun TripTemplateJson.toDomain(packageId: Int): TripTemplateData = TripTemplateData(
     packageId = packageId,

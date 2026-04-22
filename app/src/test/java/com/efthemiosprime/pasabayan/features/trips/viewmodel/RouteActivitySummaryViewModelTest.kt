@@ -33,11 +33,19 @@ class RouteActivitySummaryViewModelTest {
 
     @Test
     fun `loadSummary publishes summary data`() = runTest {
-        fakeRepo.routeActivitySummaryResult = Result.success(RouteActivitySummary(4, 2, 9))
+        fakeRepo.routeActivitySummaryResult = Result.success(
+            RouteActivitySummary(
+                totalTrips = 4,
+                activeTrips = 2,
+                completedTrips = 1,
+                totalEarnings = 99.5,
+                currency = "CAD",
+            ),
+        )
         viewModel.loadSummary()
         advanceUntilIdle()
-        assertEquals(4, viewModel.uiState.value.summary?.packageDeliveryNearHome)
-        assertEquals(2, viewModel.uiState.value.summary?.serviceErrandNearHome)
-        assertEquals(9, viewModel.uiState.value.summary?.newPackagesThisWeekNearHome)
+        assertEquals(4, viewModel.uiState.value.summary?.totalTrips)
+        assertEquals(2, viewModel.uiState.value.summary?.activeTrips)
+        assertEquals(1, viewModel.uiState.value.summary?.completedTrips)
     }
 }

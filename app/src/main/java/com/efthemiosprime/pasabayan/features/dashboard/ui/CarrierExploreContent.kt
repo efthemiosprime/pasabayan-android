@@ -134,25 +134,34 @@ fun CarrierExploreContent(
                     )
                     Text(
                         text = stringResource(
-                            R.string.trips_route_activity_package_delivery_count,
-                            summary.packageDeliveryNearHome,
+                            R.string.trips_route_activity_total_trips_count,
+                            summary.totalTrips,
                         ),
                         style = PasabayanTextStyles.Body.small,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
                         text = stringResource(
-                            R.string.trips_route_activity_service_errand_count,
-                            summary.serviceErrandNearHome,
+                            R.string.trips_route_activity_active_trips_count,
+                            summary.activeTrips,
                         ),
                         style = PasabayanTextStyles.Body.small,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
                         text = stringResource(
-                            R.string.trips_route_activity_new_packages_count,
-                            summary.newPackagesThisWeekNearHome,
+                            R.string.trips_route_activity_completed_trips_count,
+                            summary.completedTrips,
                         ),
+                        style = PasabayanTextStyles.Body.small,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    val earningsText = summary.totalEarnings?.let { earnings ->
+                        val currency = summary.currency ?: "CAD"
+                        stringResource(R.string.trips_route_activity_total_earnings, currency, earnings)
+                    } ?: stringResource(R.string.trips_route_activity_total_earnings_unavailable)
+                    Text(
+                        text = earningsText,
                         style = PasabayanTextStyles.Body.small,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

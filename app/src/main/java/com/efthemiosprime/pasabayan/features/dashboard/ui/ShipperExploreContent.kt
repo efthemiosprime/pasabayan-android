@@ -61,8 +61,8 @@ import com.efthemiosprime.pasabayan.features.dashboard.components.ShipperExplore
 import com.efthemiosprime.pasabayan.features.dashboard.components.UserHeaderCard
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.trips.ui.TripDetailsScreen
-import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.BrowseTripsViewModel
+import com.efthemiosprime.pasabayan.features.trips.model.Trip
 
 /**
  * Shipper Explore tab — browse available trips / carriers.
@@ -152,23 +152,40 @@ fun ShipperExploreContent(
                     ) {
                         Column {
                             Text(
-                                text = route.displayName,
+                                text = stringResource(
+                                    R.string.trips_popular_routes_path,
+                                    route.originCity,
+                                    route.destinationCity,
+                                ),
                                 style = PasabayanTextStyles.Body.medium,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
-                            route.tripCount?.let { count ->
-                                Text(
-                                    text = stringResource(R.string.trips_popular_routes_count, count),
-                                    style = PasabayanTextStyles.Caption.regular,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
+                            Text(
+                                text = stringResource(
+                                    R.string.trips_popular_routes_count,
+                                    route.packageCount,
+                                ),
+                                style = PasabayanTextStyles.Caption.regular,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
-                        Text(
-                            text = route.routeType.name.lowercase(),
-                            style = PasabayanTextStyles.Caption.large,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
+                        route.averagePrice?.let { averagePrice ->
+                            Text(
+                                text = stringResource(
+                                    R.string.trips_popular_routes_average_price,
+                                    averagePrice,
+                                ),
+                                style = PasabayanTextStyles.Caption.large,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                        if (route.averagePrice == null) {
+                            Text(
+                                text = stringResource(R.string.trips_popular_routes_average_price_unavailable),
+                                style = PasabayanTextStyles.Caption.large,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
                     }
                 }
             }

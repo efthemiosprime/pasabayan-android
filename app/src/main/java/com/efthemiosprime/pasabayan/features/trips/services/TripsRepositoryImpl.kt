@@ -106,7 +106,7 @@ class TripsRepositoryImpl @Inject constructor(
                     DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
                 )
             }
-            val summary = res.body()?.data?.carrier.toDomainOrZero()
+            val summary = res.body()?.data.toDomainOrZero()
             Result.success(summary)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))

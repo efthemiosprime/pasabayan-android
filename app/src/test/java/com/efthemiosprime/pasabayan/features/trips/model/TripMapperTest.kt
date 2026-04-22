@@ -7,7 +7,7 @@ import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.core.network.trips.PackageSummaryJson
 import com.efthemiosprime.pasabayan.core.network.trips.PendingTripRequestJson
 import com.efthemiosprime.pasabayan.core.network.trips.PopularRouteJson
-import com.efthemiosprime.pasabayan.core.network.trips.RouteActivityCarrierSummaryJson
+import com.efthemiosprime.pasabayan.core.network.trips.RouteActivitySummaryDataJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripEarningsBreakdownJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripMatchPackageJson
@@ -149,25 +149,23 @@ class TripMapperTest {
     @Test
     fun `PopularRouteJson toDomain maps route type and fallback display name`() {
         val route = PopularRouteJson(
-            city = "Toronto",
-            country = "Canada",
+            originCity = "Toronto",
             destinationCity = "Montreal",
-            destinationCountry = "Canada",
-            routeType = "flight",
-            displayName = null,
-            tripCount = 9,
+            packageCount = 9,
+            averagePrice = 47.25,
         ).toDomain()
 
-        assertEquals(PopularRouteType.FLIGHT, route.routeType)
-        assertEquals("Montreal, Canada", route.displayName)
+        assertEquals("Toronto", route.originCity)
+        assertEquals(9, route.packageCount)
+        assertEquals(47.25, route.averagePrice!!, 0.001)
     }
 
     @Test
     fun `RouteActivityCarrierSummaryJson nullable maps to zero summary`() {
-        val summary = (null as RouteActivityCarrierSummaryJson?).toDomainOrZero()
-        assertEquals(0, summary.packageDeliveryNearHome)
-        assertEquals(0, summary.serviceErrandNearHome)
-        assertEquals(0, summary.newPackagesThisWeekNearHome)
+        val summary = (null as RouteActivitySummaryDataJson?).toDomainOrZero()
+        assertEquals(0, summary.totalTrips)
+        assertEquals(0, summary.activeTrips)
+        assertEquals(0, summary.completedTrips)
     }
 
     @Test

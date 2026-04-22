@@ -204,9 +204,10 @@ class TripJsonModelsDecodeTest {
 
         assertTrue(response.success)
         assertEquals(2, response.data.size)
-        assertEquals("Toronto", response.data.first().city)
-        assertEquals("flight", response.data.first().routeType)
-        assertEquals(9, response.data.first().tripCount)
+        assertEquals("Toronto", response.data.first().originCity)
+        assertEquals("Montreal", response.data.first().destinationCity)
+        assertEquals(9, response.data.first().packageCount)
+        assertEquals(47.25, response.data.first().averagePrice!!, 0.001)
     }
 
     @Test
@@ -215,8 +216,10 @@ class TripJsonModelsDecodeTest {
         val response = json.decodeFromString<RouteActivitySummaryResponseJson>(raw)
 
         assertTrue(response.success)
-        assertEquals(12, response.data.carrier?.packageDeliveryNearHome)
-        assertEquals(3, response.data.carrier?.serviceErrandNearHome)
-        assertEquals(7, response.data.carrier?.newPackagesThisWeekNearHome)
+        assertEquals(12, response.data.totalTrips)
+        assertEquals(3, response.data.activeTrips)
+        assertEquals(7, response.data.completedTrips)
+        assertEquals(845.75, response.data.totalEarnings!!, 0.001)
+        assertEquals("CAD", response.data.currency)
     }
 }

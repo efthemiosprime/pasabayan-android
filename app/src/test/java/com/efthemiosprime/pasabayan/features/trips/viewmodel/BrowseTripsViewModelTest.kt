@@ -3,7 +3,6 @@ package com.efthemiosprime.pasabayan.features.trips.viewmodel
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.features.trips.model.PopularRoute
-import com.efthemiosprime.pasabayan.features.trips.model.PopularRouteType
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -101,13 +100,10 @@ class BrowseTripsViewModelTest {
         fakeRepo.popularRoutesResult = Result.success(
             listOf(
                 PopularRoute(
-                    city = "Toronto",
-                    country = "Canada",
+                    originCity = "Toronto",
                     destinationCity = "Montreal",
-                    destinationCountry = "Canada",
-                    routeType = PopularRouteType.FLIGHT,
-                    displayName = "Toronto -> Montreal",
-                    tripCount = 5,
+                    packageCount = 5,
+                    averagePrice = 34.0,
                 ),
             ),
         )
