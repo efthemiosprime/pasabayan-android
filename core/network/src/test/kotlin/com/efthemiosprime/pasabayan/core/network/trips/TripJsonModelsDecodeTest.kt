@@ -168,4 +168,55 @@ class TripJsonModelsDecodeTest {
         assertEquals("Alice", req.shipperName)
         assertEquals(75.0, req.proposedPrice!!, 0.001)
     }
+
+    @Test
+    fun `TripTemplateResponseJson decodes package template payload`() {
+        val raw = fixture("trip_template_response.json")
+        val response = json.decodeFromString<TripTemplateResponseJson>(raw)
+
+        assertEquals("Trip template generated", response.message)
+        val template = requireNotNull(response.data)
+        assertEquals("Toronto", template.originCity)
+        assertEquals("Montreal", template.destinationCity)
+        assertEquals(15.5, template.suggestedWeightKg!!, 0.001)
+
+        val packageDetails = requireNotNull(template.packageDetails)
+        assertEquals(88, packageDetails.id)
+        assertTrue(packageDetails.isFragile)
+    }
+
+    @Test
+    fun `TripMatchesResponseJson decodes trip and matches`() {
+        val raw = fixture("trip_matches_response.json")
+        val response = json.decodeFromString<TripMatchesResponseJson>(raw)
+
+        val trip = requireNotNull(response.trip)
+        assertEquals(501, trip.id)
+        assertEquals(TransportationMethod.CAR, trip.transportationMethod)
+        assertEquals(1, response.matches.size)
+        assertEquals(MatchStatus.CONFIRMED, response.matches.first().matchStatus)
+    }
+
+    @Test
+    fun `PopularRoutesResponseJson decodes routes payload`() {
+        val raw = fixture("popular_routes.json")
+        val response = json.decodeFromString<PopularRoutesResponseJson>(raw)
+
+        assertTrue(response.success)
+        assertEquals(2, response.data.size)
+        assertEquals("Toronto", response.data.first().city)
+        assertEquals("flight", response.data.first().routeType)
+        assertEquals(9, response.data.first().tripCount)
+    }
+
+    @Test
+    fun `RouteActivitySummaryResponseJson decodes carrier summary`() {
+        val raw = fixture("route_activity_summary.json")
+        val response = json.decodeFromString<RouteActivitySummaryResponseJson>(raw)
+
+        assertTrue(response.success)
+        assertEquals(12, response.data.carrier?.packageDeliveryNearHome)
+        assertEquals(3, response.data.carrier?.serviceErrandNearHome)
+        assertEquals(7, response.data.carrier?.newPackagesThisWeekNearHome)
+    }
 }

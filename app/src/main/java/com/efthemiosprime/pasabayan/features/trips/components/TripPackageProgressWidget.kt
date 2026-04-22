@@ -28,8 +28,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PLinearProgress
 data class TripPackageProgressMetrics(
     val totalMatches: Int,
     val deliveredMatches: Int,
-    val deliveredLabel: String,
-    val nextActionLabel: String,
+    val activeMatches: Int,
     val arrivalDateText: String,
 ) {
     val deliveredRatio: Float
@@ -49,7 +48,11 @@ fun TripPackageProgressWidget(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = metrics.deliveredLabel,
+                    text = stringResource(
+                        R.string.trips_progress_delivered_label,
+                        metrics.deliveredMatches,
+                        metrics.totalMatches,
+                    ),
                     style = PasabayanTextStyles.Body.medium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -65,7 +68,11 @@ fun TripPackageProgressWidget(
                 indicatorColor = PasabayanColors.Success,
             )
             Text(
-                text = metrics.nextActionLabel,
+                text = if (metrics.activeMatches > 0) {
+                    stringResource(R.string.trips_progress_next_action_active, metrics.activeMatches)
+                } else {
+                    stringResource(R.string.trips_progress_next_action_none)
+                },
                 style = PasabayanTextStyles.Caption.large,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -128,8 +135,7 @@ private fun TripPackageProgressPreview() {
             metrics = TripPackageProgressMetrics(
                 totalMatches = 5,
                 deliveredMatches = 3,
-                deliveredLabel = "3/5 delivered",
-                nextActionLabel = "Pick up 2 packages",
+                activeMatches = 2,
                 arrivalDateText = "Apr 1, 2026",
             ),
             modifier = Modifier.padding(PasabayanSpacing.lg),

@@ -33,6 +33,8 @@ import com.efthemiosprime.pasabayan.features.packages.components.CreatePackageOp
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageErrandRequestScreen
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageRequestScreen
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
+import com.efthemiosprime.pasabayan.features.trips.ui.TripCreationScreen
+import com.efthemiosprime.pasabayan.features.trips.viewmodel.CarrierPreferencesFormViewModel
 
 /**
  * Main tabbed dashboard shell — replaces the Phase 1 placeholder.
@@ -48,11 +50,14 @@ fun MainTabScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val packageViewModel: PackageViewModel = hiltViewModel()
+    val carrierPreferencesFormViewModel: CarrierPreferencesFormViewModel = hiltViewModel()
     val packageUiState by packageViewModel.uiState.collectAsStateWithLifecycle()
     val tabs = MainTabs.forRole(state.currentRole)
     var showCreateOptionsSheet by remember { mutableStateOf(false) }
     var showPackageRequestSheet by remember { mutableStateOf(false) }
     var showErrandRequestSheet by remember { mutableStateOf(false) }
+    var showTripCreationSheet by remember { mutableStateOf(false) }
+    var showCarrierPreferencesGate by remember { mutableStateOf(false) }
 
     LaunchedEffect(user) {
         viewModel.initializeRole(user)
@@ -100,7 +105,13 @@ fun MainTabScreen(
                 )
                 "my_trips" -> com.efthemiosprime.pasabayan.features.trips.ui.CarrierMyTripsScreen(
                     onViewTripDetails = { /* Handled by expandable card */ },
-                    onCreateTrip = { /* TODO: navigate to trip creation */ },
+                    onCreateTrip = {
+                        if (carrierPreferencesFormViewModel.isAcknowledged(user.id)) {
+                            showTripCreationSheet = true
+                        } else {
+                            showCarrierPreferencesGate = true
+                        }
+                    },
                 )
                 "packages" -> com.efthemiosprime.pasabayan.features.packages.ui.PackageListScreen(
                     onViewPackageDetails = { /* Handled by expandable card */ },
@@ -175,6 +186,41 @@ fun MainTabScreen(
                 },
                 onCancel = { showErrandRequestSheet = false },
                 isSubmitting = packageUiState.isSubmittingServiceRequest,
+            )
+        }
+    }
+
+    if (showCarrierPreferencesGate) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showCarrierPreferencesGate = false },
+        ) {
+            com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetScaffold(
+                title = stringResource(R.string.trips_preferences_gate_title),
+                closeContentDescription = stringResource(R.string.trips_detail_close),
+                onClose = { showCarrierPreferencesGate = false },
+            ) {
+                androidx.compose.material3.Text(
+                    text = stringResource(R.string.trips_preferences_gate_body),
+                )
+                com.efthemiosprime.pasabayan.core.designsystem.component.PButton(
+                    text = stringResource(R.string.trips_preferences_gate_acknowledge),
+                    onClick = {
+                        carrierPreferencesFormViewModel.markAcknowledged(user.id)
+                        showCarrierPreferencesGate = false
+                        showTripCreationSheet = true
+                    },
+                )
+            }
+        }
+    }
+
+    if (showTripCreationSheet) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showTripCreationSheet = false },
+        ) {
+            TripCreationScreen(
+                onSave = { showTripCreationSheet = false },
+                onCancel = { showTripCreationSheet = false },
             )
         }
     }

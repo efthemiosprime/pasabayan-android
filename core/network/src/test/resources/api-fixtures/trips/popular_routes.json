@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "message": "Popular routes loaded",
+  "data": [
+    {
+      "city": "Toronto",
+      "country": "Canada",
+      "destination_city": "Montreal",
+      "destination_country": "Canada",
+      "route_type": "flight",
+      "display_name": "Toronto to Montreal",
+      "trip_count": 9
+    },
+    {
+      "city": "Vancouver",
+      "country": "Canada",
+      "destination_city": "Calgary",
+      "destination_country": "Canada",
+      "route_type": "car",
+      "display_name": "Vancouver to Calgary",
+      "trip_count": 4
+    }
+  ]
+}

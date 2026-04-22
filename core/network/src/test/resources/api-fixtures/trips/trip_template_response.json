@@ -1,0 +1,23 @@
+{
+  "message": "Trip template generated",
+  "data": {
+    "origin_city": "Toronto",
+    "origin_country": "Canada",
+    "destination_city": "Montreal",
+    "destination_country": "Canada",
+    "suggested_departure_date": "2026-06-01T12:00:00Z",
+    "suggested_arrival_date": "2026-06-02T12:00:00Z",
+    "suggested_weight_kg": 15.5,
+    "suggested_space_liters": 60.0,
+    "package_details": {
+      "id": 88,
+      "description": "Fragile electronics",
+      "weight_kg": 5.2,
+      "length_cm": 30,
+      "width_cm": 20,
+      "height_cm": 15,
+      "is_fragile": true,
+      "urgency_level": "high"
+    }
+  }
+}

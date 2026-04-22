@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.features.trips.services
 
+import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.network.trips.TripsApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -14,6 +15,7 @@ import org.junit.Before
 import org.junit.Test
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import java.util.concurrent.TimeUnit
 
 class TripsRepositoryImplTest {
 
@@ -187,6 +189,226 @@ class TripsRepositoryImplTest {
 
         val result = repo.getTrip(999)
         assertTrue(result.isFailure)
+    }
+
+    @Test
+    fun `createTrip returns trip on success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "message":"Created",
+                    "data":{"id": 11, "origin_city":"Toronto", "destination_city":"Ottawa",
+                            "trip_status":"planning", "transportation_method":"car"}
+                }""",
+            ),
+        )
+
+        val result = repo.createTrip(
+            com.efthemiosprime.pasabayan.core.network.trips.CreateTripRequestJson(
+                originCity = "Toronto",
+                originCountry = "Canada",
+                destinationCity = "Ottawa",
+                destinationCountry = "Canada",
+                departureDate = "2026-04-01T08:00:00Z",
+                arrivalDate = "2026-04-01T12:00:00Z",
+                availableWeightKg = 10.0,
+                transportationMethod = "car",
+                flatTripPrice = 25.0,
+            ),
+        )
+        assertTrue(result.isSuccess)
+        assertEquals(11, result.getOrThrow().id)
+    }
+
+    @Test
+    fun `createTrip returns failure on validation error`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(422).setBody(
+                """{
+                    "message":"Validation failed",
+                    "errors":{"departure_date":["Departure required"]}
+                }""",
+            ),
+        )
+        val result = repo.createTrip(
+            com.efthemiosprime.pasabayan.core.network.trips.CreateTripRequestJson(
+                originCity = "Toronto",
+                originCountry = "Canada",
+                destinationCity = "Ottawa",
+                destinationCountry = "Canada",
+                departureDate = "2026-04-01T08:00:00Z",
+                arrivalDate = "2026-04-01T12:00:00Z",
+                availableWeightKg = 10.0,
+                transportationMethod = "car",
+                flatTripPrice = 25.0,
+            ),
+        )
+        assertTrue(result.isFailure)
+    }
+
+    @Test
+    fun `createTrip returns timeout network error when request exceeds timeout`() = runBlocking {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setHeadersDelay(10, TimeUnit.SECONDS)
+                .setBody(
+                    """{
+                        "message":"Created",
+                        "data":{"id": 12, "origin_city":"A", "destination_city":"B",
+                        "trip_status":"planning", "transportation_method":"car"}
+                    }""",
+                ),
+        )
+
+        val result = repo.createTrip(
+            com.efthemiosprime.pasabayan.core.network.trips.CreateTripRequestJson(
+                originCity = "Toronto",
+                originCountry = "Canada",
+                destinationCity = "Ottawa",
+                destinationCountry = "Canada",
+                departureDate = "2026-04-01T08:00:00Z",
+                arrivalDate = "2026-04-01T12:00:00Z",
+                availableWeightKg = 10.0,
+                transportationMethod = "car",
+                flatTripPrice = 25.0,
+            ),
+        )
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull() is DomainErrorMapperException)
+    }
+
+    @Test
+    fun `updateTrip returns trip on success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "message":"Updated",
+                    "data":{"id": 7, "origin_city":"Toronto", "destination_city":"Montreal",
+                            "trip_status":"active", "transportation_method":"flight"}
+                }""",
+            ),
+        )
+        val result = repo.updateTrip(
+            id = 7,
+            request = com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson(tripStatus = "active"),
+        )
+        assertTrue(result.isSuccess)
+        assertEquals("Montreal", result.getOrThrow().destinationCity)
+    }
+
+    @Test
+    fun `loadPopularPackageRoutes returns mapped routes`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "success": true,
+                    "message": "ok",
+                    "data": [
+                        {"city":"Toronto","country":"Canada","destination_city":"Montreal","destination_country":"Canada","route_type":"flight","display_name":"Toronto -> Montreal","trip_count":6}
+                    ]
+                }""",
+            ),
+        )
+        val result = repo.loadPopularPackageRoutes()
+        assertTrue(result.isSuccess)
+        assertEquals(1, result.getOrThrow().size)
+        assertEquals("Toronto", result.getOrThrow().first().city)
+    }
+
+    @Test
+    fun `loadRouteActivitySummary returns zero-safe summary`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success":true,"message":"ok","data":{"carrier":{"package_delivery_near_home":2,"service_errand_near_home":1,"new_packages_this_week_near_home":4}}}""",
+            ),
+        )
+        val result = repo.loadRouteActivitySummary()
+        assertTrue(result.isSuccess)
+        assertEquals(2, result.getOrThrow().packageDeliveryNearHome)
+    }
+
+    @Test
+    fun `loadTripTemplate returns mapped template data`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "message":"ok",
+                    "data":{
+                        "origin_city":"Toronto",
+                        "origin_country":"Canada",
+                        "destination_city":"Ottawa",
+                        "destination_country":"Canada",
+                        "suggested_departure_date":"2026-05-01T10:00:00Z",
+                        "suggested_arrival_date":"2026-05-01T15:00:00Z",
+                        "suggested_weight_kg":15,
+                        "suggested_space_liters":40,
+                        "package_details":{"id":99,"description":"Books","weight_kg":3}
+                    }
+                }""",
+            ),
+        )
+        val result = repo.loadTripTemplate(packageId = 99)
+        assertTrue(result.isSuccess)
+        assertEquals(99, result.getOrThrow().packageId)
+        assertEquals("Books", result.getOrThrow().packageDescription)
+    }
+
+    @Test
+    fun `loadTripMatches returns mapped matches`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "trip":{"id":1,"trip_status":"active","transportation_method":"car"},
+                    "matches":[
+                        {"id":5,"match_status":"confirmed","package":{"id":9,"description":"Parcel","package_weight_kg":2.5}}
+                    ]
+                }""",
+            ),
+        )
+        val result = repo.loadTripMatches(1)
+        assertTrue(result.isSuccess)
+        assertEquals(1, result.getOrThrow().size)
+        assertEquals(9, result.getOrThrow().first().packageId)
+    }
+
+    @Test
+    fun `createTripFromPackage injects auto request fields`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "message":"Created",
+                    "data":{"id": 19, "origin_city":"Toronto", "destination_city":"Ottawa",
+                            "trip_status":"planning", "transportation_method":"car"}
+                }""",
+            ),
+        )
+        val result = repo.createTripFromPackage(
+            com.efthemiosprime.pasabayan.features.trips.model.CreateTripFromPackageRequest(
+                packageId = 77,
+                originCity = "Toronto",
+                originCountry = "Canada",
+                destinationCity = "Ottawa",
+                destinationCountry = "Canada",
+                departureDate = "2026-04-01T08:00:00Z",
+                arrivalDate = "2026-04-01T12:00:00Z",
+                availableWeightKg = 10.0,
+                availableSpaceLiters = 20.0,
+                transportationMethod = "car",
+                pricePerKg = null,
+                flatTripPrice = 30.0,
+                specialNotes = "Handle with care",
+                pickupAddress = "1 A St",
+                dropoffAddress = "2 B St",
+                proposedPrice = 100.0,
+                requestMessage = "I can carry this",
+            ),
+        )
+        assertTrue(result.isSuccess)
+        val request = server.takeRequest()
+        val body = request.body.readUtf8()
+        assertTrue(body.contains("\"auto_request_package_id\":77"))
+        assertTrue(body.contains("\"proposed_price\":100.0"))
     }
 
     // -- deleteTrip --

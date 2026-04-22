@@ -1,0 +1,31 @@
+{
+  "trip": {
+    "id": 501,
+    "carrier_id": 42,
+    "origin_city": "Toronto",
+    "origin_country": "Canada",
+    "destination_city": "Ottawa",
+    "destination_country": "Canada",
+    "trip_status": "active",
+    "transportation_method": "car"
+  },
+  "matches": [
+    {
+      "id": 901,
+      "match_status": "confirmed",
+      "agreed_price": 80.5,
+      "package": {
+        "id": 77,
+        "description": "Books",
+        "package_weight_kg": 10,
+        "package_dimensions": "20x10x8"
+      },
+      "shipper": {
+        "id": 12,
+        "name": "Jane Shipper"
+      },
+      "chat_conversation_id": 3001,
+      "confirmed_at": "2026-05-01T10:00:00Z"
+    }
+  ]
+}

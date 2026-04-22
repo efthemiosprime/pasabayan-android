@@ -4,8 +4,13 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.core.network.trips.CreateTripRequestJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson
+import com.efthemiosprime.pasabayan.features.trips.model.CreateTripFromPackageRequest
+import com.efthemiosprime.pasabayan.features.trips.model.PopularRoute
+import com.efthemiosprime.pasabayan.features.trips.model.RouteActivitySummary
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.model.TripFilter
+import com.efthemiosprime.pasabayan.features.trips.model.TripMatchPackage
+import com.efthemiosprime.pasabayan.features.trips.model.TripTemplateData
 import com.efthemiosprime.pasabayan.features.trips.services.TripsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -134,6 +139,47 @@ class CarrierTripsViewModelTest {
         assertEquals(2, viewModel.uiState.value.trips[0].id)
     }
 
+    @Test
+    fun `deleteTrip is blocked for in transit trips`() = runTest {
+        fakeRepo.carrierTripsResult = Result.success(listOf(testTrip(1, TripStatus.IN_TRANSIT)))
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        viewModel.deleteTrip(1)
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.uiState.value.trips.size)
+        assertEquals(0, fakeRepo.deletedTripIds.size)
+    }
+
+    @Test
+    fun `updateTripStatus enforces transition rules`() = runTest {
+        fakeRepo.carrierTripsResult = Result.success(listOf(testTrip(1, TripStatus.COMPLETED)))
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        viewModel.updateTripStatus(1, TripStatus.ACTIVE)
+        advanceUntilIdle()
+
+        assertNull(fakeRepo.lastUpdateStatus)
+    }
+
+    @Test
+    fun `updateTripStatus updates trip on success`() = runTest {
+        val existing = testTrip(1, TripStatus.ACTIVE)
+        val updated = existing.copy(tripStatus = TripStatus.IN_TRANSIT)
+        fakeRepo.carrierTripsResult = Result.success(listOf(existing))
+        fakeRepo.updateResult = Result.success(updated)
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        viewModel.updateTripStatus(1, TripStatus.IN_TRANSIT)
+        advanceUntilIdle()
+
+        assertEquals(TripStatus.IN_TRANSIT, viewModel.uiState.value.trips.first().tripStatus)
+        assertEquals("in_transit", fakeRepo.lastUpdateStatus)
+    }
+
     private fun testTrip(
         id: Int,
         status: TripStatus = TripStatus.ACTIVE,
@@ -169,11 +215,31 @@ class FakeTripsRepository : TripsRepository {
     var createResult: Result<Trip>? = null
     var updateResult: Result<Trip>? = null
     var deleteResult: Result<Unit> = Result.success(Unit)
+    var popularRoutesResult: Result<List<PopularRoute>> = Result.success(emptyList())
+    var routeActivitySummaryResult: Result<RouteActivitySummary> = Result.success(
+        RouteActivitySummary(0, 0, 0),
+    )
+    var tripMatchesResult: Result<List<TripMatchPackage>> = Result.success(emptyList())
+    var tripTemplateResult: Result<TripTemplateData> = Result.failure(Exception("Not set"))
+    var deletedTripIds: MutableList<Int> = mutableListOf()
+    var lastUpdateStatus: String? = null
 
     override suspend fun loadCarrierTrips() = carrierTripsResult
     override suspend fun loadAvailableTrips(filter: TripFilter) = availableTripsResult
+    override suspend fun loadPopularPackageRoutes() = popularRoutesResult
+    override suspend fun loadRouteActivitySummary() = routeActivitySummaryResult
+    override suspend fun loadTripMatches(tripId: Int) = tripMatchesResult
+    override suspend fun loadTripTemplate(packageId: Int) = tripTemplateResult
     override suspend fun getTrip(id: Int) = getTripResult ?: Result.failure(Exception("Not set"))
     override suspend fun createTrip(request: CreateTripRequestJson) = createResult ?: Result.failure(Exception("Not set"))
-    override suspend fun updateTrip(id: Int, request: TripUpdateRequestJson) = updateResult ?: Result.failure(Exception("Not set"))
-    override suspend fun deleteTrip(id: Int) = deleteResult
+    override suspend fun createTripFromPackage(request: CreateTripFromPackageRequest): Result<Trip> =
+        createResult ?: Result.failure(Exception("Not set"))
+    override suspend fun updateTrip(id: Int, request: TripUpdateRequestJson): Result<Trip> {
+        lastUpdateStatus = request.tripStatus
+        return updateResult ?: Result.failure(Exception("Not set"))
+    }
+    override suspend fun deleteTrip(id: Int): Result<Unit> {
+        deletedTripIds.add(id)
+        return deleteResult
+    }
 }

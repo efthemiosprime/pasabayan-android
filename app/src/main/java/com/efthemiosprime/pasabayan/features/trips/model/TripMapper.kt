@@ -1,6 +1,9 @@
 package com.efthemiosprime.pasabayan.features.trips.model
 
 import com.efthemiosprime.pasabayan.core.network.trips.PendingTripRequestJson
+import com.efthemiosprime.pasabayan.core.network.trips.PopularRouteJson
+import com.efthemiosprime.pasabayan.core.network.trips.RouteActivityCarrierSummaryJson
+import com.efthemiosprime.pasabayan.core.network.trips.TripTemplateJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripEarningsBreakdownJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripMatchPackageJson
@@ -32,10 +35,18 @@ fun TripJson.toDomain(): Trip = Trip(
     flatTripPrice = flatTripPrice,
     basePrice = basePrice,
     calculatedPrice = calculatedPrice,
+    distanceMultiplier = distanceMultiplier,
+    passengerCapacity = passengerCapacity,
+    pricePerPassenger = pricePerPassenger,
+    passengerRequirements = passengerRequirements,
+    ageRestrictions = ageRestrictions,
+    passengerAmenities = passengerAmenities,
     pickupAddress = pickupAddress,
     pickupLandmark = pickupLandmark,
+    pickupInstructions = pickupInstructions,
     dropoffAddress = dropoffAddress,
     dropoffLandmark = dropoffLandmark,
+    dropoffInstructions = dropoffInstructions,
     tripEarningsTotal = tripEarningsTotal,
     tripEarningsCurrency = tripEarningsCurrency,
     tripEarningsBreakdown = tripEarningsBreakdown?.toDomain(),
@@ -77,4 +88,35 @@ fun TripMatchPackageJson.toDomain(): TripMatchPackage = TripMatchPackage(
     pickedUpAt = pickedUpAt,
     deliveredAt = deliveredAt,
     createdAt = createdAt,
+)
+
+fun PopularRouteJson.toDomain(): PopularRoute = PopularRoute(
+    city = city,
+    country = country,
+    destinationCity = destinationCity,
+    destinationCountry = destinationCountry,
+    routeType = PopularRouteType.fromWire(routeType),
+    displayName = displayName ?: "$destinationCity, $destinationCountry",
+    tripCount = tripCount,
+)
+
+fun RouteActivityCarrierSummaryJson?.toDomainOrZero(): RouteActivitySummary = RouteActivitySummary(
+    packageDeliveryNearHome = this?.packageDeliveryNearHome ?: 0,
+    serviceErrandNearHome = this?.serviceErrandNearHome ?: 0,
+    newPackagesThisWeekNearHome = this?.newPackagesThisWeekNearHome ?: 0,
+)
+
+fun TripTemplateJson.toDomain(packageId: Int): TripTemplateData = TripTemplateData(
+    packageId = packageId,
+    originCity = originCity,
+    originCountry = originCountry,
+    destinationCity = destinationCity,
+    destinationCountry = destinationCountry,
+    suggestedDepartureDate = suggestedDepartureDate,
+    suggestedArrivalDate = suggestedArrivalDate,
+    suggestedWeightKg = suggestedWeightKg,
+    suggestedSpaceLiters = suggestedSpaceLiters,
+    packageDescription = packageDetails?.description,
+    packageWeightKg = packageDetails?.weightKg,
+    packageUrgencyLevel = packageDetails?.urgencyLevel,
 )

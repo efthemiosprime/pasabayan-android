@@ -21,6 +21,9 @@ interface TripsApi {
     @GET("trips/{id}")
     suspend fun getTrip(@Path("id") id: Int): Response<TripResponseJson>
 
+    @GET("trips/{id}/matches")
+    suspend fun getTripMatches(@Path("id") id: Int): Response<TripMatchesResponseJson>
+
     @POST("trips")
     suspend fun createTrip(@Body body: CreateTripRequestJson): Response<TripResponseJson>
 
@@ -35,4 +38,13 @@ interface TripsApi {
 
     @GET("trips/available")
     suspend fun getAvailableTrips(@QueryMap params: Map<String, String>): Response<TripsSuccessResponseJson>
+
+    @GET("packages/{id}/trip-template")
+    suspend fun getTripTemplate(@Path("id") packageId: Int): Response<TripTemplateResponseJson>
+
+    @GET("routes/popular-packages")
+    suspend fun getPopularPackageRoutes(): Response<PopularRoutesResponseJson>
+
+    @GET("route-activity/summary")
+    suspend fun getRouteActivitySummary(): Response<RouteActivitySummaryResponseJson>
 }

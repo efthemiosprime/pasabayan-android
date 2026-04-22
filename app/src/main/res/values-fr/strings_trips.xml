@@ -83,7 +83,17 @@
     <!-- Browse -->
     <string name="trips_browse_title">Parcourir les trajets</string>
     <string name="trips_browse_search">Rechercher des trajets\u2026</string>
+    <string name="trips_browse_load_more">Charger plus de trajets</string>
     <string name="trips_card_distance_from_you">\u00c0 %1$.0f km de vous</string>
+    <string name="trips_popular_routes_title">Itin\u00e9raires populaires de colis</string>
+    <string name="trips_popular_routes_count">%1$d trajets</string>
+    <string name="trips_route_activity_title">R\u00e9sum\u00e9 d\'activit\u00e9 \u00e0 proximit\u00e9</string>
+    <string name="trips_route_activity_package_delivery_count">Livraisons de colis pr\u00e8s de chez vous : %1$d</string>
+    <string name="trips_route_activity_service_errand_count">Services pr\u00e8s de chez vous : %1$d</string>
+    <string name="trips_route_activity_new_packages_count">Nouveaux colis cette semaine : %1$d</string>
+    <string name="trips_progress_delivered_label">%1$d/%2$d livr\u00e9s</string>
+    <string name="trips_progress_next_action_active">Traiter %1$d colis actif(s)</string>
+    <string name="trips_progress_next_action_none">Aucune action de colis active</string>
 
     <!-- Sort -->
     <string name="trips_sort_departure_date">Date de d\u00e9part</string>
@@ -95,6 +105,9 @@
     <string name="trips_disclaimer_title">Avis au transporteur</string>
     <string name="trips_disclaimer_body">En cr\u00e9ant des trajets, vous acceptez de transporter les colis en toute s\u00e9curit\u00e9 et de les livrer tel que d\u00e9crit. Vous \u00eates responsable des colis sous votre garde pendant le transit.</string>
     <string name="trips_disclaimer_acknowledge">Je comprends</string>
+    <string name="trips_preferences_gate_title">Configuration transporteur</string>
+    <string name="trips_preferences_gate_body">Avant de publier votre premier trajet, confirmez que vos pr\u00e9f\u00e9rences d\'itin\u00e9raire et de manutention sont correctement d\u00e9finies.</string>
+    <string name="trips_preferences_gate_acknowledge">Continuer vers la cr\u00e9ation du trajet</string>
 
     <!-- Tutorial -->
     <string name="trips_tutorial_title">Bienvenue, transporteur !</string>

@@ -186,4 +186,19 @@ class TripComputedPropertiesTest {
         val trip = baseTrip().copy(departureDate = null)
         assertEquals("", trip.formattedDepartureDate)
     }
+
+    @Test
+    fun `priceDisplayString mirrors formatted price`() {
+        val trip = baseTrip(pricePerKg = 22.0)
+        assertEquals(trip.formattedPrice, trip.priceDisplayString)
+    }
+
+    @Test
+    fun `formattedDuration renders hours and minutes`() {
+        val trip = baseTrip().copy(
+            departureDate = "2026-04-01T08:00:00Z",
+            arrivalDate = "2026-04-01T14:30:00Z",
+        )
+        assertEquals("6h 30m", trip.formattedDuration)
+    }
 }

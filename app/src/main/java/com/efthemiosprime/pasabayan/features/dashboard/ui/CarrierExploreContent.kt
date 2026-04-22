@@ -49,6 +49,7 @@ import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.dashboard.components.UserHeaderCard
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequestCard
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
+import com.efthemiosprime.pasabayan.features.trips.viewmodel.RouteActivitySummaryViewModel
 
 /**
  * Carrier Explore tab — browse available packages.
@@ -61,10 +62,15 @@ fun CarrierExploreContent(
     modifier: Modifier = Modifier,
     onViewPackageDetails: (packageId: Int) -> Unit = {},
     packageViewModel: PackageViewModel = hiltViewModel(),
+    routeActivityViewModel: RouteActivitySummaryViewModel = hiltViewModel(),
 ) {
     val state by packageViewModel.uiState.collectAsStateWithLifecycle()
+    val routeActivityState by routeActivityViewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) { packageViewModel.loadPackages(force = true) }
+    LaunchedEffect(Unit) {
+        packageViewModel.loadPackages(force = true)
+        routeActivityViewModel.loadSummary()
+    }
 
     Column(
         modifier = modifier
@@ -112,6 +118,48 @@ fun CarrierExploreContent(
         )
 
         PDivider()
+
+        routeActivityState.summary?.let { summary ->
+            PCard {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(PasabayanSpacing.sm),
+                    verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+                ) {
+                    Text(
+                        text = stringResource(R.string.trips_route_activity_title),
+                        style = PasabayanTextStyles.Body.medium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.trips_route_activity_package_delivery_count,
+                            summary.packageDeliveryNearHome,
+                        ),
+                        style = PasabayanTextStyles.Body.small,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.trips_route_activity_service_errand_count,
+                            summary.serviceErrandNearHome,
+                        ),
+                        style = PasabayanTextStyles.Body.small,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.trips_route_activity_new_packages_count,
+                            summary.newPackagesThisWeekNearHome,
+                        ),
+                        style = PasabayanTextStyles.Body.small,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            PDivider()
+        }
 
         // Browse content
         when {

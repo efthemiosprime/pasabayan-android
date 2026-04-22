@@ -3,6 +3,7 @@ package com.efthemiosprime.pasabayan.features.trips.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
+import com.efthemiosprime.pasabayan.features.trips.model.PopularRoute
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.model.TripFilter
 import com.efthemiosprime.pasabayan.features.trips.services.TripsRepository
@@ -18,9 +19,15 @@ private val BOOKABLE_STATUSES = setOf(TripStatus.PLANNING, TripStatus.ACTIVE)
 
 data class BrowseTripsUiState(
     val availableTrips: List<Trip> = emptyList(),
+    val popularRoutes: List<PopularRoute> = emptyList(),
     val isLoading: Boolean = false,
+    val isLoadingMore: Boolean = false,
+    val isLoadingPopularRoutes: Boolean = false,
     val errorMessage: String? = null,
+    val popularRoutesErrorMessage: String? = null,
     val hasLoadedTrips: Boolean = false,
+    val currentPage: Int = 1,
+    val hasMore: Boolean = true,
     val filter: TripFilter = TripFilter(),
 )
 
@@ -32,18 +39,35 @@ class BrowseTripsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(BrowseTripsUiState())
     val uiState: StateFlow<BrowseTripsUiState> = _uiState.asStateFlow()
 
-    fun loadAvailableTrips() {
+    fun loadAvailableTrips(reset: Boolean = true) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            tripsRepository.loadAvailableTrips(_uiState.value.filter).fold(
+            val current = _uiState.value
+            val requestFilter = if (reset) current.filter.copy(page = 1) else current.filter
+            _uiState.update {
+                it.copy(
+                    filter = requestFilter,
+                    isLoading = reset,
+                    isLoadingMore = !reset,
+                    errorMessage = null,
+                )
+            }
+            tripsRepository.loadAvailableTrips(requestFilter).fold(
                 onSuccess = { trips ->
                     // Client-side filter: remove non-bookable statuses
                     val filtered = trips.filter { it.tripStatus in BOOKABLE_STATUSES }
                     _uiState.update {
+                        val merged = if (reset) {
+                            filtered
+                        } else {
+                            (it.availableTrips + filtered).distinctBy { trip -> trip.id }
+                        }
                         it.copy(
-                            availableTrips = filtered,
+                            availableTrips = merged,
                             isLoading = false,
+                            isLoadingMore = false,
                             hasLoadedTrips = true,
+                            currentPage = requestFilter.page,
+                            hasMore = filtered.isNotEmpty(),
                         )
                     }
                 },
@@ -51,6 +75,7 @@ class BrowseTripsViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
+                            isLoadingMore = false,
                             hasLoadedTrips = true,
                             errorMessage = e.message ?: "Failed to load trips",
                         )
@@ -60,17 +85,60 @@ class BrowseTripsViewModel @Inject constructor(
         }
     }
 
-    fun refreshTrips() = loadAvailableTrips()
+    fun refreshTrips() = loadAvailableTrips(reset = true)
+
+    fun loadMoreTrips() {
+        val current = _uiState.value
+        if (current.isLoading || current.isLoadingMore || !current.hasMore) return
+        _uiState.update {
+            it.copy(
+                filter = it.filter.copy(page = it.currentPage + 1),
+            )
+        }
+        loadAvailableTrips(reset = false)
+    }
+
+    fun loadPopularRoutes() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingPopularRoutes = true, popularRoutesErrorMessage = null) }
+            tripsRepository.loadPopularPackageRoutes().fold(
+                onSuccess = { routes ->
+                    _uiState.update {
+                        it.copy(
+                            popularRoutes = routes,
+                            isLoadingPopularRoutes = false,
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingPopularRoutes = false,
+                            popularRoutesErrorMessage = error.message,
+                        )
+                    }
+                },
+            )
+        }
+    }
 
     fun updateSearchText(text: String) {
         _uiState.update { it.copy(filter = it.filter.copy(searchText = text)) }
     }
 
     fun clearFilters() {
-        _uiState.update { it.copy(filter = TripFilter()) }
+        _uiState.update {
+            it.copy(
+                filter = TripFilter(),
+                availableTrips = emptyList(),
+                currentPage = 1,
+                hasMore = true,
+            )
+        }
     }
 
     fun applyFilterAndFetch() {
-        loadAvailableTrips()
+        _uiState.update { it.copy(filter = it.filter.copy(page = 1)) }
+        loadAvailableTrips(reset = true)
     }
 }

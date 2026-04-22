@@ -5,6 +5,7 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.core.domain.util.DateTimeParsing
+import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -42,11 +43,20 @@ data class Trip(
     val flatTripPrice: Double?,
     val basePrice: Double?,
     val calculatedPrice: Double?,
+    val distanceMultiplier: Double? = null,
+    // Passenger transport
+    val passengerCapacity: Int? = null,
+    val pricePerPassenger: Double? = null,
+    val passengerRequirements: String? = null,
+    val ageRestrictions: String? = null,
+    val passengerAmenities: String? = null,
     // Addresses
     val pickupAddress: String?,
     val pickupLandmark: String?,
+    val pickupInstructions: String? = null,
     val dropoffAddress: String?,
     val dropoffLandmark: String?,
+    val dropoffInstructions: String? = null,
     // Earnings
     val tripEarningsTotal: Double?,
     val tripEarningsCurrency: String?,
@@ -91,6 +101,10 @@ data class Trip(
             PricingType.FLAT -> String.format("$%.2f", effectivePrice)
         }
 
+    // Alias used by iOS naming in some parity docs.
+    val priceDisplayString: String
+        get() = formattedPrice
+
     val formattedCapacity: String
         get() = String.format("%.1f kg", availableWeightKg ?: 0.0)
 
@@ -101,6 +115,16 @@ data class Trip(
     val formattedArrivalDate: String
         get() = DateTimeParsing.parseApiDateTime(arrivalDate)
             ?.let { DateTimeParsing.formatDateTime(it) } ?: ""
+
+    val formattedDuration: String
+        get() {
+            val departure = DateTimeParsing.parseApiDateTime(departureDate) ?: return ""
+            val arrival = DateTimeParsing.parseApiDateTime(arrivalDate) ?: return ""
+            val durationMinutes = abs(arrival - departure) / (60 * 1000)
+            val hours = durationMinutes / 60
+            val minutes = durationMinutes % 60
+            return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
+        }
 
     val routeDistanceKm: Double
         get() {

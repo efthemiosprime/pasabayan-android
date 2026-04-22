@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "message": "Route activity summary loaded",
+  "data": {
+    "carrier": {
+      "package_delivery_near_home": 12,
+      "service_errand_near_home": 3,
+      "new_packages_this_week_near_home": 7
+    }
+  }
+}

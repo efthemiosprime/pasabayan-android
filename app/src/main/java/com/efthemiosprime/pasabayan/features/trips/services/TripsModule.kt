@@ -51,4 +51,9 @@ object TripsProviderModule {
     @Singleton
     fun provideCarrierDisclaimerStore(@TripsPrefs prefs: SharedPreferences): CarrierDisclaimerStore =
         CarrierDisclaimerStore(prefs)
+
+    @Provides
+    @Singleton
+    fun provideCarrierPreferencesFormStore(@TripsPrefs prefs: SharedPreferences): CarrierPreferencesFormStore =
+        CarrierPreferencesFormStore(prefs)
 }

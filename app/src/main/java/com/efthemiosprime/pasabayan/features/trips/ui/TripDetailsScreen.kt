@@ -91,7 +91,10 @@ fun TripDetailsScreen(
                     },
                     label = stringResource(R.string.trips_detail_start_location),
                     value = "${trip.originCity}, ${trip.originCountry}",
-                    caption = trip.pickupAddress,
+                    caption = listOfNotNull(trip.pickupAddress, trip.pickupInstructions)
+                        .filter { it.isNotBlank() }
+                        .joinToString(separator = " • ")
+                        .ifBlank { null },
                 )
                 PDivider()
                 LabeledIconRow(
@@ -105,7 +108,10 @@ fun TripDetailsScreen(
                     },
                     label = stringResource(R.string.trips_detail_end_location),
                     value = "${trip.destinationCity}, ${trip.destinationCountry}",
-                    caption = trip.dropoffAddress,
+                    caption = listOfNotNull(trip.dropoffAddress, trip.dropoffInstructions)
+                        .filter { it.isNotBlank() }
+                        .joinToString(separator = " • ")
+                        .ifBlank { null },
                 )
             }
         }

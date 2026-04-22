@@ -6,9 +6,13 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.core.network.trips.PackageSummaryJson
 import com.efthemiosprime.pasabayan.core.network.trips.PendingTripRequestJson
+import com.efthemiosprime.pasabayan.core.network.trips.PopularRouteJson
+import com.efthemiosprime.pasabayan.core.network.trips.RouteActivityCarrierSummaryJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripEarningsBreakdownJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripMatchPackageJson
+import com.efthemiosprime.pasabayan.core.network.trips.TripTemplateJson
+import com.efthemiosprime.pasabayan.core.network.trips.PackageTemplateDetailsJson
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -116,5 +120,74 @@ class TripMapperTest {
         assertEquals(55, match.packageId)
         assertEquals("Jane", match.shipper!!.name)
         assertEquals(77, match.chatConversationId)
+    }
+
+    @Test
+    fun `TripJson toDomain maps passenger and instruction parity fields`() {
+        val json = TripJson(
+            id = 10,
+            distanceMultiplier = 1.25,
+            passengerCapacity = 3,
+            pricePerPassenger = 40.0,
+            passengerRequirements = "Carry ID",
+            ageRestrictions = "18+",
+            passengerAmenities = "WiFi",
+            pickupInstructions = "Meet at front door",
+            dropoffInstructions = "Call on arrival",
+        )
+        val trip = json.toDomain()
+        assertEquals(1.25, trip.distanceMultiplier!!, 0.001)
+        assertEquals(3, trip.passengerCapacity)
+        assertEquals(40.0, trip.pricePerPassenger!!, 0.001)
+        assertEquals("Carry ID", trip.passengerRequirements)
+        assertEquals("18+", trip.ageRestrictions)
+        assertEquals("WiFi", trip.passengerAmenities)
+        assertEquals("Meet at front door", trip.pickupInstructions)
+        assertEquals("Call on arrival", trip.dropoffInstructions)
+    }
+
+    @Test
+    fun `PopularRouteJson toDomain maps route type and fallback display name`() {
+        val route = PopularRouteJson(
+            city = "Toronto",
+            country = "Canada",
+            destinationCity = "Montreal",
+            destinationCountry = "Canada",
+            routeType = "flight",
+            displayName = null,
+            tripCount = 9,
+        ).toDomain()
+
+        assertEquals(PopularRouteType.FLIGHT, route.routeType)
+        assertEquals("Montreal, Canada", route.displayName)
+    }
+
+    @Test
+    fun `RouteActivityCarrierSummaryJson nullable maps to zero summary`() {
+        val summary = (null as RouteActivityCarrierSummaryJson?).toDomainOrZero()
+        assertEquals(0, summary.packageDeliveryNearHome)
+        assertEquals(0, summary.serviceErrandNearHome)
+        assertEquals(0, summary.newPackagesThisWeekNearHome)
+    }
+
+    @Test
+    fun `TripTemplateJson maps to template domain`() {
+        val template = TripTemplateJson(
+            originCity = "Toronto",
+            originCountry = "Canada",
+            destinationCity = "Ottawa",
+            destinationCountry = "Canada",
+            suggestedWeightKg = 12.5,
+            packageDetails = PackageTemplateDetailsJson(
+                id = 77,
+                description = "Books",
+                weightKg = 2.5,
+                urgencyLevel = "normal",
+            ),
+        ).toDomain(packageId = 77)
+
+        assertEquals(77, template.packageId)
+        assertEquals("Toronto", template.originCity)
+        assertEquals("Books", template.packageDescription)
     }
 }

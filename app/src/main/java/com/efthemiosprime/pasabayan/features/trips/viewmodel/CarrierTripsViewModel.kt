@@ -3,6 +3,7 @@ package com.efthemiosprime.pasabayan.features.trips.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
+import com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.services.TripsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -61,6 +62,11 @@ class CarrierTripsViewModel @Inject constructor(
     }
 
     fun deleteTrip(tripId: Int) {
+        val trip = _uiState.value.trips.firstOrNull { it.id == tripId }
+        if (trip != null && trip.tripStatus in setOf(TripStatus.IN_TRANSIT, TripStatus.COMPLETED)) {
+            _uiState.update { it.copy(errorMessage = "Failed to delete trip") }
+            return
+        }
         viewModelScope.launch {
             tripsRepository.deleteTrip(tripId).fold(
                 onSuccess = {
@@ -74,6 +80,48 @@ class CarrierTripsViewModel @Inject constructor(
                     }
                 },
             )
+        }
+    }
+
+    fun updateTripStatus(tripId: Int, targetStatus: TripStatus) {
+        val currentTrip = _uiState.value.trips.firstOrNull { it.id == tripId } ?: return
+        if (!canTransition(currentTrip.tripStatus, targetStatus)) {
+            _uiState.update { it.copy(errorMessage = "Failed to load trips") }
+            return
+        }
+        viewModelScope.launch {
+            tripsRepository.updateTrip(
+                id = tripId,
+                request = TripUpdateRequestJson(tripStatus = targetStatus.name.lowercase()),
+            ).fold(
+                onSuccess = { updated ->
+                    _uiState.update { state ->
+                        state.copy(
+                            trips = state.trips.map { existing ->
+                                if (existing.id == updated.id) updated else existing
+                            },
+                            errorMessage = null,
+                        )
+                    }
+                },
+                onFailure = { e ->
+                    _uiState.update {
+                        it.copy(errorMessage = e.message ?: "Failed to load trips")
+                    }
+                },
+            )
+        }
+    }
+
+    private fun canTransition(current: TripStatus, target: TripStatus): Boolean {
+        if (target == TripStatus.CANCELLED) {
+            return current in setOf(TripStatus.PLANNING, TripStatus.ACTIVE)
+        }
+        return when (current) {
+            TripStatus.PLANNING -> target in setOf(TripStatus.ACTIVE, TripStatus.CANCELLED)
+            TripStatus.ACTIVE -> target in setOf(TripStatus.IN_TRANSIT, TripStatus.CANCELLED)
+            TripStatus.IN_TRANSIT -> target == TripStatus.COMPLETED
+            TripStatus.COMPLETED, TripStatus.CANCELLED -> false
         }
     }
 }

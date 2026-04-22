@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -47,6 +48,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
+import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDivider
@@ -81,7 +83,10 @@ fun ShipperExploreContent(
     var detailTrip by remember { mutableStateOf<Trip?>(null) }
     var requestBookTrip by remember { mutableStateOf<Trip?>(null) }
 
-    LaunchedEffect(Unit) { browseTripsViewModel.loadAvailableTrips() }
+    LaunchedEffect(Unit) {
+        browseTripsViewModel.loadAvailableTrips()
+        browseTripsViewModel.loadPopularRoutes()
+    }
 
     Column(
         modifier = modifier
@@ -130,6 +135,46 @@ fun ShipperExploreContent(
 
         PDivider()
 
+        if (state.popularRoutes.isNotEmpty()) {
+            Text(
+                text = stringResource(R.string.trips_popular_routes_title),
+                style = PasabayanTextStyles.Body.medium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            state.popularRoutes.take(5).forEach { route ->
+                PCard {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(PasabayanSpacing.sm),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column {
+                            Text(
+                                text = route.displayName,
+                                style = PasabayanTextStyles.Body.medium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            route.tripCount?.let { count ->
+                                Text(
+                                    text = stringResource(R.string.trips_popular_routes_count, count),
+                                    style = PasabayanTextStyles.Caption.regular,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                        Text(
+                            text = route.routeType.name.lowercase(),
+                            style = PasabayanTextStyles.Caption.large,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            }
+            PDivider()
+        }
+
         // Browse content
         when {
             state.isLoading -> {
@@ -155,6 +200,23 @@ fun ShipperExploreContent(
                         },
                         onRequestBook = { requestBookTrip = trip },
                     )
+                }
+                if (state.hasMore) {
+                    Spacer(modifier = Modifier.size(PasabayanSpacing.xs))
+                    PButton(
+                        text = stringResource(R.string.trips_browse_load_more),
+                        onClick = { browseTripsViewModel.loadMoreTrips() },
+                        style = PButtonStyle.Secondary,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                if (state.isLoadingMore) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        PCircularProgress()
+                    }
                 }
             }
         }
@@ -363,8 +425,14 @@ private fun ShipperExplorePreview() {
                 avatarUrl = null,
                 onSwitchRole = {},
             )
-            Text("Find Carriers", style = PasabayanTextStyles.Heading.h4)
-            Text("Ship packages with trusted carriers", style = PasabayanTextStyles.Body.small)
+            Text(
+                text = stringResource(R.string.dashboard_shipper_find_carriers),
+                style = PasabayanTextStyles.Heading.h4,
+            )
+            Text(
+                text = stringResource(R.string.dashboard_shipper_find_carriers_subtitle),
+                style = PasabayanTextStyles.Body.small,
+            )
             ShipperBrowseEmptyState(onCreatePackage = {})
         }
     }
