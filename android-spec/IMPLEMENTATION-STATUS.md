@@ -19,7 +19,7 @@
 | Field | Value |
 |-------|--------|
 | **Current phase** | Phase 4 — Payments & Stripe (Phase 3 complete) |
-| **Last updated** | 2026-04-22 (Trips parity + status alignment) |
+| **Last updated** | 2026-04-22 (Trips TDD checklist closeout pass) |
 | **Spec audit** | **Complete** — YAML expanded from ~25 to ~100 endpoint rows; all feature specs updated with query params, multipart fields, WebSocket protocol, local storage keys, activity logs, cache policy, GPS services, badge rules, analytics mock structures |
 
 ---
@@ -93,7 +93,7 @@
 |------|------|
 | [02-auth-session.md](02-auth-session.md) | [x] | App + `:core:session` meets exit gate; optional extra VM/repo tests later |
 | [17-onboarding.md](17-onboarding.md) | [x] | Flows + keys + gates; carrier consent flash uses `didJustCompleteConsent` when carrier UI ships |
-| [03-trips.md](03-trips.md) | [ ] | Partial — core Trips scope and major parity slice landed (extra APIs, repository wiring, domain fields/helpers, pagination, guards, first-time gate, expanded tests), but several spec-defined sections/checklist items are still open (see **03-trips remaining blockers** below). |
+| [03-trips.md](03-trips.md) | [ ] | Partial — core Trips scope and major parity slices landed (extra APIs, repository wiring, domain fields/helpers, pagination, guards, create/cancel rules, progress state machine, sheets, store wiring, expanded tests). Remaining open scope is now primarily non-TDD UI/flow parity from **03-trips remaining blockers**. |
 | [04-packages.md](04-packages.md) | [x] | API + DTOs, domain models, repository, ViewModel, UI screens, form validation (14 tests) |
 | [13-ui-tab-explore.md](13-ui-tab-explore.md) | [x] | Tab shell, role switcher, carrier + shipper explore content, stats grids; Matches/Messages/Profile stubs |
 | [05-bookings-matches.md](05-bookings-matches.md) | [x] | Unified MatchCard + MatchListScreen, 3 ViewModels, counter-offer flows, code screens, 60+ tests |
@@ -132,7 +132,7 @@
   `SavedRoutesSheet` and `TripTutorialOverlay` exist but are not yet integrated into the primary trips flows.
 
 - **TDD checklist parity (`03-trips.md` TDD checklist)**  
-  New tests were added, but spec checklist items still remaining include: spec-specific POST `/trips` error-mapping matrix, `TripUpdateRequest` encode constraints for planning-only route fields, full progress metrics/status derivation coverage, and store behavior tests beyond the new preferences-gate coverage.
+  **Resolved in closeout slices** — added/expanded tests now cover the previously listed gaps: POST `/trips` spec error mapping matrix, `TripUpdateRequest` planning vs non-planning encode constraints, `TripPackageProgressMetrics` status/labels derivation, and store integration behavior (`UsualTransportStore`, disclaimer pending-sync retry hook, local-state coordinator/use-case wiring).
 
 ---
 

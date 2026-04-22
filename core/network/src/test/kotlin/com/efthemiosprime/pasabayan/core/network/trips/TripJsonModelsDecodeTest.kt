@@ -140,6 +140,42 @@ class TripJsonModelsDecodeTest {
     }
 
     @Test
+    fun `TripUpdateRequestJson for non planning update omits route fields`() {
+        val request = TripUpdateRequestJson(
+            availableWeightKg = 10.0,
+            specialNotes = "Updated notes",
+            originCity = null,
+            destinationCity = null,
+            departureDate = null,
+            arrivalDate = null,
+        )
+        val encoded = json.encodeToString(TripUpdateRequestJson.serializer(), request)
+
+        assertTrue(encoded.contains("\"available_weight_kg\":10.0"))
+        assertTrue(encoded.contains("\"special_notes\":\"Updated notes\""))
+        assertTrue(!encoded.contains("\"origin_city\""))
+        assertTrue(!encoded.contains("\"destination_city\""))
+        assertTrue(!encoded.contains("\"departure_date\""))
+        assertTrue(!encoded.contains("\"arrival_date\""))
+    }
+
+    @Test
+    fun `TripUpdateRequestJson for planning update includes route fields`() {
+        val request = TripUpdateRequestJson(
+            originCity = "Toronto",
+            destinationCity = "Montreal",
+            departureDate = "2026-08-01T08:00:00Z",
+            arrivalDate = "2026-08-01T12:00:00Z",
+        )
+        val encoded = json.encodeToString(TripUpdateRequestJson.serializer(), request)
+
+        assertTrue(encoded.contains("\"origin_city\":\"Toronto\""))
+        assertTrue(encoded.contains("\"destination_city\":\"Montreal\""))
+        assertTrue(encoded.contains("\"departure_date\":\"2026-08-01T08:00:00Z\""))
+        assertTrue(encoded.contains("\"arrival_date\":\"2026-08-01T12:00:00Z\""))
+    }
+
+    @Test
     fun `TripEarningsBreakdownJson decodes`() {
         val raw = """{
             "delivered_amount": "500.00",
