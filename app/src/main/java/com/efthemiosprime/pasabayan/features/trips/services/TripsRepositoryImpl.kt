@@ -165,8 +165,9 @@ class TripsRepositoryImpl @Inject constructor(
                 tripsApi.createTrip(request)
             }
             if (!res.isSuccessful) {
+                val errorBytes = res.errorBody()?.bytes()
                 return Result.failure(
-                    DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
+                    DomainErrorMapperException(mapCreateTripError(res.code(), errorBytes)),
                 )
             }
             val trip = res.body()?.data?.toDomain()
@@ -177,6 +178,23 @@ class TripsRepositoryImpl @Inject constructor(
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(timeout)))
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    private fun mapCreateTripError(statusCode: Int, body: ByteArray?): DomainError {
+        val message = body?.decodeToString().orEmpty()
+        val normalized = message.lowercase()
+        return when {
+            statusCode == 400 && normalized.contains("cargo-only or passenger-only, not both") ->
+                DomainError.MixedTransportTypes
+            statusCode == 400 &&
+                normalized.contains("must specify either cargo transport or passenger transport") ->
+                DomainError.NoTransportTypeSpecified
+            statusCode == 401 && normalized.contains("unauthenticated") ->
+                DomainError.Unauthenticated
+            statusCode == 403 && normalized.contains("not registered as a carrier") ->
+                DomainError.UserNotCarrier
+            else -> ApiErrorMapper.map(statusCode, body, json)
         }
     }
 

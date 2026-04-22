@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.features.trips.services
 
+import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.network.trips.TripsApi
 import kotlinx.coroutines.runBlocking
@@ -10,6 +11,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -247,6 +249,54 @@ class TripsRepositoryImplTest {
     }
 
     @Test
+    fun `createTrip maps mixed transport message to MixedTransportTypes`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(400).setBody(
+                """{"message":"Trip must be cargo-only or passenger-only, not both"}""",
+            ),
+        )
+        val result = repo.createTrip(testCreateTripRequest())
+        assertTrue(result.isFailure)
+        assertDomainError(result, DomainError.MixedTransportTypes)
+    }
+
+    @Test
+    fun `createTrip maps missing transport message to NoTransportTypeSpecified`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(400).setBody(
+                """{"message":"You must specify either cargo transport or passenger transport"}""",
+            ),
+        )
+        val result = repo.createTrip(testCreateTripRequest())
+        assertTrue(result.isFailure)
+        assertDomainError(result, DomainError.NoTransportTypeSpecified)
+    }
+
+    @Test
+    fun `createTrip maps unauthenticated response to Unauthenticated`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(401).setBody(
+                """{"message":"Unauthenticated"}""",
+            ),
+        )
+        val result = repo.createTrip(testCreateTripRequest())
+        assertTrue(result.isFailure)
+        assertDomainError(result, DomainError.Unauthenticated)
+    }
+
+    @Test
+    fun `createTrip maps not registered carrier response to UserNotCarrier`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(403).setBody(
+                """{"message":"You are not registered as a carrier"}""",
+            ),
+        )
+        val result = repo.createTrip(testCreateTripRequest())
+        assertTrue(result.isFailure)
+        assertDomainError(result, DomainError.UserNotCarrier)
+    }
+
+    @Test
     fun `createTrip returns timeout network error when request exceeds timeout`() = runBlocking {
         server.enqueue(
             MockResponse()
@@ -276,6 +326,10 @@ class TripsRepositoryImplTest {
         )
         assertTrue(result.isFailure)
         assertTrue(result.exceptionOrNull() is DomainErrorMapperException)
+        val error = (result.exceptionOrNull() as DomainErrorMapperException).domainError
+        assertTrue(error is DomainError.NetworkError)
+        val cause = (error as DomainError.NetworkError).cause
+        assertTrue(cause is java.net.SocketTimeoutException)
     }
 
     @Test
@@ -435,5 +489,25 @@ class TripsRepositoryImplTest {
 
         val result = repo.deleteTrip(1)
         assertTrue(result.isFailure)
+    }
+
+    private fun testCreateTripRequest() = com.efthemiosprime.pasabayan.core.network.trips.CreateTripRequestJson(
+        originCity = "Toronto",
+        originCountry = "Canada",
+        destinationCity = "Ottawa",
+        destinationCountry = "Canada",
+        departureDate = "2026-04-01T08:00:00Z",
+        arrivalDate = "2026-04-01T12:00:00Z",
+        availableWeightKg = 10.0,
+        transportationMethod = "car",
+        flatTripPrice = 25.0,
+    )
+
+    private fun assertDomainError(result: Result<*>, expected: DomainError) {
+        val exception = result.exceptionOrNull()
+        assertTrue(exception is DomainErrorMapperException)
+        val mapped = (exception as DomainErrorMapperException).domainError
+        assertFalse(mapped is DomainError.ServerError)
+        assertEquals(expected, mapped)
     }
 }
