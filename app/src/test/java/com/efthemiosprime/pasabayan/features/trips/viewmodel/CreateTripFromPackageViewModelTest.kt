@@ -4,6 +4,7 @@ import com.efthemiosprime.pasabayan.features.trips.model.CreateTripFromPackageRe
 import com.efthemiosprime.pasabayan.features.trips.model.TripTemplateData
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.services.CreateTripFromPackageUseCase
+import com.efthemiosprime.pasabayan.features.trips.services.TripsLocalStateUpdater
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +24,7 @@ import org.junit.Test
 class CreateTripFromPackageViewModelTest {
     private val dispatcher = StandardTestDispatcher()
     private lateinit var fakeRepo: FakeTripsRepository
+    private lateinit var fakeLocalStateUpdater: TripsLocalStateUpdater
     private lateinit var useCase: CreateTripFromPackageUseCase
     private lateinit var viewModel: CreateTripFromPackageViewModel
 
@@ -30,7 +32,20 @@ class CreateTripFromPackageViewModelTest {
     fun setUp() {
         Dispatchers.setMain(dispatcher)
         fakeRepo = FakeTripsRepository()
-        useCase = CreateTripFromPackageUseCase(fakeRepo)
+        fakeLocalStateUpdater = object : TripsLocalStateUpdater {
+            override fun onTripCreationSucceeded(
+                userId: Long,
+                request: CreateTripFromPackageRequest,
+            ) = Unit
+
+            override fun onCarrierDisclaimerAcknowledgeAttempt(userId: Long, syncSucceeded: Boolean) = Unit
+
+            override suspend fun retryPendingCarrierDisclaimerSync(
+                userId: Long,
+                syncAction: suspend () -> Result<Unit>,
+            ): Boolean = false
+        }
+        useCase = CreateTripFromPackageUseCase(fakeRepo, fakeLocalStateUpdater)
         viewModel = CreateTripFromPackageViewModel(useCase)
     }
 

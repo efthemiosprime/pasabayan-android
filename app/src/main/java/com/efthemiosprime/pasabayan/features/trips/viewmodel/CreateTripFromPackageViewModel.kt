@@ -48,10 +48,10 @@ class CreateTripFromPackageViewModel @Inject constructor(
         }
     }
 
-    fun createTrip(request: CreateTripFromPackageRequest) {
+    fun createTrip(request: CreateTripFromPackageRequest, userId: Long? = null) {
         viewModelScope.launch {
             _uiState.update { it.copy(isSavingTrip = true, errorMessage = null, createdTrip = null) }
-            useCase.createTrip(request).fold(
+            useCase.createTrip(request, userId = userId).fold(
                 onSuccess = { trip ->
                     _uiState.update { it.copy(isSavingTrip = false, createdTrip = trip) }
                 },

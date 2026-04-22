@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Chat
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +35,7 @@ import com.efthemiosprime.pasabayan.features.packages.ui.PackageRequestScreen
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.trips.ui.TripCreationScreen
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.CarrierPreferencesFormViewModel
+import com.efthemiosprime.pasabayan.features.trips.viewmodel.TripsLocalStateViewModel
 
 /**
  * Main tabbed dashboard shell — replaces the Phase 1 placeholder.
@@ -51,6 +52,7 @@ fun MainTabScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val packageViewModel: PackageViewModel = hiltViewModel()
     val carrierPreferencesFormViewModel: CarrierPreferencesFormViewModel = hiltViewModel()
+    val tripsLocalStateViewModel: TripsLocalStateViewModel = hiltViewModel()
     val packageUiState by packageViewModel.uiState.collectAsStateWithLifecycle()
     val tabs = MainTabs.forRole(state.currentRole)
     var showCreateOptionsSheet by remember { mutableStateOf(false) }
@@ -61,6 +63,7 @@ fun MainTabScreen(
 
     LaunchedEffect(user) {
         viewModel.initializeRole(user)
+        tripsLocalStateViewModel.retryCarrierDisclaimerPendingSync(user.id)
     }
 
     PScaffold(
@@ -119,7 +122,7 @@ fun MainTabScreen(
                     viewModel = packageViewModel,
                 )
                 "messages" -> StubTabContent(
-                    icon = Icons.Outlined.Chat,
+                    icon = Icons.AutoMirrored.Outlined.Chat,
                     title = stringResource(R.string.dashboard_stub_messages_title),
                     description = stringResource(R.string.dashboard_stub_messages_description),
                 )

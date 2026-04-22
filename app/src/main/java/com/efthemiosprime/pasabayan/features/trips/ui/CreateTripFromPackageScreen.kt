@@ -33,6 +33,7 @@ import com.efthemiosprime.pasabayan.features.trips.viewmodel.CreateTripFromPacka
 @Composable
 fun CreateTripFromPackageScreen(
     packageId: Int,
+    userId: Long? = null,
     onClose: () -> Unit,
     onTripCreated: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -139,7 +140,7 @@ fun CreateTripFromPackageScreen(
                         proposedPrice = proposedPrice,
                         requestMessage = requestMessage,
                     )
-                    viewModel.createTrip(request)
+                    viewModel.createTrip(request, userId = userId)
                 },
                 enabled = !state.isSavingTrip,
                 modifier = Modifier

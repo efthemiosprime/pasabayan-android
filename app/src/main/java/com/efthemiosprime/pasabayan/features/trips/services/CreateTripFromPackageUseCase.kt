@@ -7,10 +7,17 @@ import javax.inject.Inject
 
 class CreateTripFromPackageUseCase @Inject constructor(
     private val tripsRepository: TripsRepository,
+    private val tripsLocalStateUpdater: TripsLocalStateUpdater,
 ) {
     suspend fun loadTemplate(packageId: Int): Result<TripTemplateData> =
         tripsRepository.loadTripTemplate(packageId)
 
-    suspend fun createTrip(request: CreateTripFromPackageRequest): Result<Trip> =
-        tripsRepository.createTripFromPackage(request)
+    suspend fun createTrip(
+        request: CreateTripFromPackageRequest,
+        userId: Long? = null,
+    ): Result<Trip> = tripsRepository.createTripFromPackage(request).onSuccess {
+        if (userId != null) {
+            tripsLocalStateUpdater.onTripCreationSucceeded(userId, request)
+        }
+    }
 }

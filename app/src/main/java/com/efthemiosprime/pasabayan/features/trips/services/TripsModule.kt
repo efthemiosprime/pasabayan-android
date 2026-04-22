@@ -23,6 +23,10 @@ abstract class TripsBindingsModule {
     @Binds
     @Singleton
     abstract fun bindTripsRepository(impl: TripsRepositoryImpl): TripsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTripsLocalStateUpdater(impl: TripsLocalStateCoordinator): TripsLocalStateUpdater
 }
 
 @Module
