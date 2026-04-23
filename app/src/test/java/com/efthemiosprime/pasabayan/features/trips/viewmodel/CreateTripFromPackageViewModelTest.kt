@@ -17,6 +17,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 
@@ -74,6 +75,7 @@ class CreateTripFromPackageViewModelTest {
         )
         viewModel.loadTemplate(4)
         advanceUntilIdle()
+        assertEquals(4, fakeRepo.lastTripTemplatePackageId)
         assertEquals(4, viewModel.uiState.value.template?.packageId)
     }
 
@@ -106,6 +108,38 @@ class CreateTripFromPackageViewModelTest {
         advanceUntilIdle()
         assertNotNull(viewModel.uiState.value.createdTrip)
         assertEquals(99, viewModel.uiState.value.createdTrip?.id)
+    }
+
+    @Test
+    fun `clearCreatedTrip removes emitted created trip after success`() = runTest {
+        fakeRepo.createResult = Result.success(testTrip(id = 77))
+        viewModel.createTrip(
+            CreateTripFromPackageRequest(
+                packageId = 4,
+                originCity = "Toronto",
+                originCountry = "Canada",
+                destinationCity = "Montreal",
+                destinationCountry = "Canada",
+                departureDate = "2026-06-01T08:00:00Z",
+                arrivalDate = "2026-06-01T12:00:00Z",
+                availableWeightKg = 10.0,
+                availableSpaceLiters = 30.0,
+                transportationMethod = "car",
+                pricePerKg = null,
+                flatTripPrice = 25.0,
+                specialNotes = null,
+                pickupAddress = null,
+                dropoffAddress = null,
+                proposedPrice = 80.0,
+                requestMessage = "Can carry",
+            ),
+        )
+        advanceUntilIdle()
+        assertEquals(77, viewModel.uiState.value.createdTrip?.id)
+
+        viewModel.clearCreatedTrip()
+
+        assertNull(viewModel.uiState.value.createdTrip)
     }
 
     private fun testTrip(id: Int): Trip = Trip(

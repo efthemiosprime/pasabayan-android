@@ -36,6 +36,7 @@ import com.efthemiosprime.pasabayan.features.packages.ui.PackageRequestScreen
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.ui.TripFilterSheet
+import com.efthemiosprime.pasabayan.features.trips.ui.CreateTripFromPackageScreen
 import com.efthemiosprime.pasabayan.features.trips.ui.EditTripSheet
 import com.efthemiosprime.pasabayan.features.trips.ui.TripDetailsScreen
 import com.efthemiosprime.pasabayan.features.trips.ui.TripCreationScreen
@@ -75,6 +76,21 @@ fun MainTabScreen(
     var showTripCreationSheet by remember { mutableStateOf(false) }
     var showCarrierPreferencesGate by remember { mutableStateOf(false) }
     var selectedCarrierTripId by remember { mutableStateOf<Int?>(null) }
+    val dismissActiveSheetRoute = { viewModel.dismissActiveSheetRoute() }
+    val openTripFilterSheet = { viewModel.openTripFilterSheet() }
+    val openCreateTripFromPackageSheet: (Int) -> Unit = { packageId ->
+        viewModel.openCreateTripFromPackageSheet(packageId)
+    }
+    val openEditTripSheet: (Int) -> Unit = { tripId ->
+        viewModel.openEditTripSheet(tripId)
+    }
+    val createTripFromPackageRouteActions = remember(viewModel, carrierTripsViewModel, packageViewModel) {
+        CreateTripFromPackageRouteActions(
+            dismissRoute = dismissActiveSheetRoute,
+            refreshCarrierTrips = { carrierTripsViewModel.refreshTrips() },
+            refreshPackages = { packageViewModel.refreshPackages() },
+        )
+    }
 
     LaunchedEffect(user) {
         viewModel.initializeRole(user)
@@ -115,7 +131,7 @@ fun MainTabScreen(
                         ShipperExploreContent(
                             user = user,
                             onSwitchRole = { viewModel.switchRole() },
-                            onOpenTripFilter = { viewModel.openTripFilterSheet() },
+                            onOpenTripFilter = openTripFilterSheet,
                             browseTripsViewModel = browseTripsViewModel,
                         )
                 }
@@ -138,6 +154,7 @@ fun MainTabScreen(
                 "packages" -> com.efthemiosprime.pasabayan.features.packages.ui.PackageListScreen(
                     onViewPackageDetails = { /* Handled by expandable card */ },
                     onCreatePackage = { showCreateOptionsSheet = true },
+                    onCreateTripFromPackage = openCreateTripFromPackageSheet,
                     viewModel = packageViewModel,
                 )
                 "messages" -> StubTabContent(
@@ -252,20 +269,34 @@ fun MainTabScreen(
     if (state.activeSheetRoute is DashboardSheetRoute.TripFilter) {
         TripFilterSheet(
             filter = browseTripsState.filter,
-            onDismiss = { viewModel.dismissActiveSheetRoute() },
+            onDismiss = dismissActiveSheetRoute,
             onSearchChange = { browseTripsViewModel.updateSearchText(it) },
             onOriginChange = { browseTripsViewModel.updateOrigin(it) },
             onDestinationChange = { browseTripsViewModel.updateDestination(it) },
             onApply = {
                 browseTripsViewModel.applyFilterAndFetch()
-                viewModel.dismissActiveSheetRoute()
+                dismissActiveSheetRoute()
             },
             onClear = {
                 browseTripsViewModel.clearFilters()
                 browseTripsViewModel.applyFilterAndFetch()
-                viewModel.dismissActiveSheetRoute()
+                dismissActiveSheetRoute()
             },
         )
+    }
+
+    val createFromPackageRoute = state.activeSheetRoute as? DashboardSheetRoute.CreateTripFromPackage
+    createFromPackageRoute?.let { route ->
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = createTripFromPackageRouteActions::onClose,
+        ) {
+            CreateTripFromPackageScreen(
+                packageId = route.packageId,
+                userId = user.id,
+                onClose = createTripFromPackageRouteActions::onClose,
+                onTripCreated = createTripFromPackageRouteActions::onTripCreated,
+            )
+        }
     }
 
     val selectedCarrierTrip = selectedCarrierTripId?.let { id ->
@@ -278,7 +309,7 @@ fun MainTabScreen(
             TripDetailsScreen(
                 trip = trip,
                 isCarrier = true,
-                onEdit = { viewModel.openEditTripSheet(trip.id) },
+                onEdit = { openEditTripSheet(trip.id) },
                 onCancel = {
                     carrierTripsViewModel.cancelTrip(trip.id)
                     selectedCarrierTripId = null
@@ -295,14 +326,14 @@ fun MainTabScreen(
     editingCarrierTrip?.let { trip ->
         EditTripSheet(
             trip = trip,
-            onDismiss = { viewModel.dismissActiveSheetRoute() },
+            onDismiss = dismissActiveSheetRoute,
             onSave = { availableWeightKg, notes ->
                 carrierTripsViewModel.updateTripDetails(
                     tripId = trip.id,
                     availableWeightKg = availableWeightKg,
                     specialNotes = notes,
                 )
-                viewModel.dismissActiveSheetRoute()
+                dismissActiveSheetRoute()
             },
         )
     }

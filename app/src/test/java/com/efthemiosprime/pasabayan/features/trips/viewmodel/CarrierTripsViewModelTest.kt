@@ -315,6 +315,7 @@ class FakeTripsRepository : TripsRepository {
     )
     var tripMatchesResult: Result<List<TripMatchPackage>> = Result.success(emptyList())
     var tripTemplateResult: Result<TripTemplateData> = Result.failure(Exception("Not set"))
+    var lastTripTemplatePackageId: Int? = null
     var deletedTripIds: MutableList<Int> = mutableListOf()
     var loadedTripMatchIds: MutableList<Int> = mutableListOf()
     var lastUpdateStatus: String? = null
@@ -333,7 +334,10 @@ class FakeTripsRepository : TripsRepository {
         loadedTripMatchIds.add(tripId)
         return tripMatchesResult
     }
-    override suspend fun loadTripTemplate(packageId: Int) = tripTemplateResult
+    override suspend fun loadTripTemplate(packageId: Int): Result<TripTemplateData> {
+        lastTripTemplatePackageId = packageId
+        return tripTemplateResult
+    }
     override suspend fun getTrip(id: Int) = getTripResult ?: Result.failure(Exception("Not set"))
     override suspend fun createTrip(request: CreateTripRequestJson) = createResult ?: Result.failure(Exception("Not set"))
     override suspend fun createTripFromPackage(request: CreateTripFromPackageRequest): Result<Trip> =

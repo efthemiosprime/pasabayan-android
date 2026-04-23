@@ -38,6 +38,7 @@
     <string name="trips_cancel_trip">Annuler le trajet</string>
     <string name="trips_view_compatible">Voir les colis compatibles</string>
     <string name="trips_action_request_book">Demander la r\u00e9servation</string>
+    <string name="trips_action_create_trip_from_package">Créer un trajet à partir du colis</string>
 
     <!-- Trip details -->
     <string name="trips_detail_route">Itin\u00e9raire</string>

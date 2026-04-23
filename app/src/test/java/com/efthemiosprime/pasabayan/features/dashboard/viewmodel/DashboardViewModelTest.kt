@@ -134,6 +134,16 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun `openCreateTripFromPackageSheet replaces prior package id with latest`() {
+        viewModel.openCreateTripFromPackageSheet(packageId = 88)
+        viewModel.openCreateTripFromPackageSheet(packageId = 99)
+        assertEquals(
+            DashboardSheetRoute.CreateTripFromPackage(packageId = 99),
+            viewModel.uiState.value.activeSheetRoute,
+        )
+    }
+
+    @Test
     fun `openEditTripSheet sets edit route with trip id`() {
         viewModel.openEditTripSheet(tripId = 42)
         assertEquals(

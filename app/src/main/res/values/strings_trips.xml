@@ -38,6 +38,7 @@
     <string name="trips_cancel_trip">Cancel Trip</string>
     <string name="trips_view_compatible">View Compatible Packages</string>
     <string name="trips_action_request_book">Request Book</string>
+    <string name="trips_action_create_trip_from_package">Create trip from package</string>
 
     <!-- Trip details -->
     <string name="trips_detail_route">Route</string>

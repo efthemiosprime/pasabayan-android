@@ -27,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
+import com.efthemiosprime.pasabayan.core.designsystem.component.CardMenuAction
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
 import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequestCard
@@ -36,6 +37,7 @@ import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 fun PackageListScreen(
     onViewPackageDetails: (packageId: Int) -> Unit,
     onCreatePackage: () -> Unit,
+    onCreateTripFromPackage: (packageId: Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PackageViewModel = hiltViewModel(),
 ) {
@@ -74,6 +76,12 @@ fun PackageListScreen(
                         PackageRequestCard(
                             pkg = pkg,
                             onViewDetails = { onViewPackageDetails(pkg.id) },
+                            menuActions = listOf(
+                                CardMenuAction(
+                                    title = stringResource(R.string.trips_action_create_trip_from_package),
+                                    onClick = { onCreateTripFromPackage(pkg.id) },
+                                ),
+                            ),
                         )
                     }
                 }
