@@ -87,6 +87,14 @@
     <string name="trips_create_flat_price">Flat Price</string>
     <string name="trips_create_transport_method">Transportation Method</string>
     <string name="trips_create_special_notes">Special Notes (optional)</string>
+    <string name="trips_create_wizard_step_indicator">Step %1$d of %2$d: %3$s</string>
+    <string name="trips_create_wizard_next">Next</string>
+    <string name="trips_create_wizard_back">Back</string>
+    <string name="trips_create_wizard_review">Review Trip Details</string>
+    <string name="trips_create_review_edit_wizard">Back to Wizard</string>
+    <string name="trips_create_saved_routes_title">Saved Routes</string>
+    <string name="trips_create_saved_routes_use_saved">Use Saved Route</string>
+    <string name="trips_create_saved_routes_empty">No saved routes yet.</string>
     <string name="trips_create_from_package_title">Create Trip From Package</string>
     <string name="trips_create_from_package_template_route">%1$s to %2$s</string>
     <string name="trips_create_from_package_proposed_price">Proposed Price</string>

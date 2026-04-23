@@ -35,11 +35,12 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
 import com.efthemiosprime.pasabayan.core.designsystem.component.PFilterChip
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.features.trips.components.TripCard
+import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.CarrierTripsViewModel
 
 @Composable
 fun CarrierMyTripsScreen(
-    onViewTripDetails: (tripId: Int) -> Unit,
+    onViewTripDetails: (Trip) -> Unit,
     onCreateTrip: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CarrierTripsViewModel = hiltViewModel(),
@@ -91,7 +92,7 @@ fun CarrierMyTripsScreen(
                         items(state.filteredTrips, key = { it.id }) { trip ->
                             TripCard(
                                 trip = trip,
-                                onViewDetails = { onViewTripDetails(trip.id) },
+                                onViewDetails = { onViewTripDetails(trip) },
                             )
                         }
                     }

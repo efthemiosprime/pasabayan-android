@@ -157,6 +157,38 @@ class CarrierTripsViewModel @Inject constructor(
         }
     }
 
+    fun updateTripDetails(
+        tripId: Int,
+        availableWeightKg: Double?,
+        specialNotes: String?,
+    ) {
+        viewModelScope.launch {
+            tripsRepository.updateTrip(
+                id = tripId,
+                request = TripUpdateRequestJson(
+                    availableWeightKg = availableWeightKg,
+                    specialNotes = specialNotes,
+                ),
+            ).fold(
+                onSuccess = { updated ->
+                    _uiState.update { state ->
+                        state.copy(
+                            trips = state.trips.map { existing ->
+                                if (existing.id == updated.id) updated else existing
+                            },
+                            errorMessage = null,
+                        )
+                    }
+                },
+                onFailure = { e ->
+                    _uiState.update {
+                        it.copy(errorMessage = e.message ?: "Failed to update trip")
+                    }
+                },
+            )
+        }
+    }
+
     private fun canTransition(current: TripStatus, target: TripStatus): Boolean {
         if (target == TripStatus.CANCELLED) {
             return current in setOf(TripStatus.PLANNING, TripStatus.ACTIVE)

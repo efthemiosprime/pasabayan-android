@@ -19,7 +19,7 @@
 | Field | Value |
 |-------|--------|
 | **Current phase** | Phase 4 — Payments & Stripe (Phase 3 complete) |
-| **Last updated** | 2026-04-22 (Trips TDD checklist closeout pass) |
+| **Last updated** | 2026-04-22 (Trips My Trips detail/edit/cancel wiring) |
 | **Spec audit** | **Complete** — YAML expanded from ~25 to ~100 endpoint rows; all feature specs updated with query params, multipart fields, WebSocket protocol, local storage keys, activity logs, cache policy, GPS services, badge rules, analytics mock structures |
 
 ---
@@ -30,7 +30,7 @@
 |-------|-----------|--------|
 | **0** — Foundation | See [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md) § Phase 0 | **Complete** — foundation modules, API-SHAPES (auth), **ErrorAlertPolicy**, TDD Phase 0 backlog ticked; app shell polish remains in later phases |
 | **1** — Authentication | Login, token, `/auth/me`, logout | **Complete** — OAuth UI (Google/Facebook → backend); cold-start onboarding → auth; post-login city → consent → dashboard shell; **`UnauthorizedSessionNotifier`** + **`AuthViewModel`** signed-out on **401**; `didJustCompleteConsent` one-shot; auth DTO tests + **`AuthRepositoryIntegrationTest`** + **`TokenClearingHandlerTest`**. Optional: Credential Manager / One Tap, extra `AuthViewModel` tests. |
-| **2** — Trips, packages, Explore | Browse/list/create flows + role tabs | **Complete** — `:core:domain` (15 enums, 4 shared models, FlexibleDecoders, DateTimeParsing); 12 new `P*` design-system components; tab shell with role switcher. **Trips** parity additions now wired in Android code: endpoints in `TripsApi` (`/routes/popular-packages`, `/route-activity/summary`, `/trips/{id}/matches`, `/packages/{id}/trip-template`), repository methods in `TripsRepository`/`TripsRepositoryImpl`, create-from-package orchestration (`CreateTripFromPackageUseCase`, `CreateTripFromPackageViewModel`, payload fields `autoRequestPackageId`/`proposedPrice`/`requestMessage`), domain parity in `Trip` + `TripMapper` (passenger fields, `distanceMultiplier`, pickup/dropoff instructions, `formattedDuration`, `priceDisplayString`), ViewModel rules (`BrowseTripsViewModel` load-more pagination, `CarrierTripsViewModel` transition/delete guards, `TripPackageProgressViewModel` state machine, `RouteActivitySummaryViewModel`), and first-time gate store `CarrierPreferencesFormStore`. Decode/repository/VM/store tests and fixtures were expanded accordingly. **Packages**: API/DTO/domain/repository/VM/UI + `PackageFormValidator` tests remain complete. **Explore**: `CarrierExploreContent` + `ShipperExploreContent` now surface route activity summary and popular routes; EN/FR strings updated. |
+| **2** — Trips, packages, Explore | Browse/list/create flows + role tabs | **Complete** — `:core:domain` (15 enums, 4 shared models, FlexibleDecoders, DateTimeParsing); 12 new `P*` design-system components; tab shell with role switcher. **Trips** parity slices landed across API/repository/VM/UI/store/TDD: endpoints in `TripsApi` (`/routes/popular-packages`, `/route-activity/summary`, `/trips/{id}/matches`, `/packages/{id}/trip-template`), create-trip special error taxonomy, `PopularRoute` + `RouteActivitySummary` contract alignment, booking/compatibility state in `BrowseTripsViewModel`, explicit `cancelTrip()` blocking in `CarrierTripsViewModel`, `TripPackageProgressViewModel` idle + status labels, new UI surfaces (`TripFilterSheet`, `EditTripSheet`, `CreateTripFromPackageScreen`), carrier `TripDetailsScreen` sections, and local-state coordinator wiring (`UsualTransportStore`, saved-route autosave, disclaimer pending-sync retry hook). Decode/repository/VM/store tests were expanded, including `TripUpdateRequestJson` planning/non-planning encode constraints. **Packages**: API/DTO/domain/repository/VM/UI + `PackageFormValidator` tests remain complete. **Explore**: `CarrierExploreContent` + `ShipperExploreContent` surface route activity/popular routes; EN/FR strings updated. |
 | **3** — Bookings & matches | Core marketplace loop + counter-offer parity | **Complete** — BookingsApi (20+ endpoints), DeliveryMatch (60+ fields) + BookingAction (10 cases) + BookingMapper + computed props (availableActions, pricing, codes); BookingType enum; 9 nested info types; 10 supporting models (CounterOfferContext, codes, tracking, stats); BookingsRepository (15 methods); MatchingViewModel + LiveTrackingViewModel + AutoChargeConfirmationViewModel; unified MatchCard (replaces 4 iOS cards) + MatchStatusBadge + PriceComparison + CounterOfferBanner + code views; RequestToCarrySheet + CounterOfferPromptSheet + AutoChargeSheet + RateDeliverySheet; unified MatchListScreen wired to tab; BookingSuccessScreen + code screens; 60+ tests; full i18n (EN+FR). |
 | **4** — Payments & Stripe | … | **Partial** — closeout check run: PaymentSheet parity ✅, transactions parity ✅, payments test checklist ✅. Exit gate not met yet: Stripe Connect onboarding/dashboard journey still lacks full iOS parity states (loading/not setup/partial/complete, security notice, onboarding/dashboard sheet handling). |
 | **5** — Chat & notifications | … | **Pending** — FCM service stub + `firebase-messaging` dependency only; feature implementation not started. |
@@ -93,7 +93,7 @@
 |------|------|
 | [02-auth-session.md](02-auth-session.md) | [x] | App + `:core:session` meets exit gate; optional extra VM/repo tests later |
 | [17-onboarding.md](17-onboarding.md) | [x] | Flows + keys + gates; carrier consent flash uses `didJustCompleteConsent` when carrier UI ships |
-| [03-trips.md](03-trips.md) | [ ] | Partial — core Trips scope and major parity slices landed (extra APIs, repository wiring, domain fields/helpers, pagination, guards, create/cancel rules, progress state machine, sheets, store wiring, expanded tests). Remaining open scope is now primarily non-TDD UI/flow parity from **03-trips remaining blockers**. |
+| [03-trips.md](03-trips.md) | [ ] | Partial — core Trips scope and parity/TDD slices are implemented (API, repository, domain, VM, store, and test closeout items). Remaining open scope is now concentrated in deeper UI/flow polish and integration gaps listed in **03-trips remaining blockers**. |
 | [04-packages.md](04-packages.md) | [x] | API + DTOs, domain models, repository, ViewModel, UI screens, form validation (14 tests) |
 | [13-ui-tab-explore.md](13-ui-tab-explore.md) | [x] | Tab shell, role switcher, carrier + shipper explore content, stats grids; Matches/Messages/Profile stubs |
 | [05-bookings-matches.md](05-bookings-matches.md) | [x] | Unified MatchCard + MatchListScreen, 3 ViewModels, counter-offer flows, code screens, 60+ tests |
@@ -110,29 +110,17 @@
 
 ## 03-trips remaining blockers (mapped to spec sections/checklist)
 
-- **Endpoints → POST `/trips` special error handling (`03-trips.md` “POST `/trips` — special error handling”, checklist item: POST error handling)**  
-  Android `createTrip()` still maps non-2xx via generic `ApiErrorMapper`; it does not implement the spec-specific domain mapping for `MixedTransportTypes`, `NoTransportTypeSpecified`, `Unauthenticated`, and `UserNotCarrier`.
+- **UI flow depth (`03-trips.md` Trip creation UX detail)**  
+  `TripCreationScreen` remains scaffold-level and does not yet implement full parity behaviors: wizard/full-review mode switch, city autocomplete catalog UX, saved-route apply flow in the main creation journey, keyboard focus chain toolbar behavior, and success flow (including save-route prompt path).
 
-- **Services contract parity (`03-trips.md` “RouteActivitySummary”, “PopularRoute”)**  
-  Android route-activity and popular-route DTO/domain shapes currently follow the iOS carrier-near-home summary variant (`package_delivery_near_home`, etc.) and destination trip-count route objects, not the exact `RouteActivitySummary`/`PopularRoute` fields documented in `03-trips.md` (`totalTrips`, `activeTrips`, `completedTrips`, `totalEarnings`, `currency`, `originCity`, `packageCount`, `averagePrice`).
+- **Trips UI integration coverage (`03-trips.md` screens/components integration)**  
+  `EditTripSheet`, `CreateTripFromPackageScreen`, `TripFilterSheet`, and carrier `TripDetailsScreen` sections now exist, and the **carrier My Trips** detail flow is wired end-to-end (view details + edit + cancel). Remaining integration gaps are in broader entry-point coverage and full creation-flow connections.
 
-- **ViewModel parity (`03-trips.md` ViewModels section, checklist items for Browse/Carrier/Progress VMs)**  
-  `BrowseTripsViewModel` still lacks several spec-listed booking/compatibility actions/state (`selectTrip`, `selectPackage`, compatibility checks, booking state/action set).  
-  `CarrierTripsViewModel` lacks explicit `cancelTrip()` and match-status-based cancel blocking (`confirmed` / `picked_up` / `in_transit`).  
-  `TripPackageProgressViewModel` does not include the spec `Idle` state and does not expose full spec metrics fields (`status`, explicit label model).
-
-- **UI parity (`03-trips.md` UI screens + trip details sections + creation UX detail)**  
-  `EditTripSheet`, `CreateTripFromPackageScreen`, and `TripFilterSheet` are still missing.  
-  `TripDetailsScreen` is missing spec-listed carrier sections (trip earnings overview, accepted packages list with `TripPackagesFilter`, richer carrier action set).  
-  `TripCreationScreen` remains scaffold-level and does not yet implement the full spec flow (wizard/full-review modes, city autocomplete, saved-routes apply flow integration, keyboard focus chain, success flow).
-
-- **Local/client behavior parity (`03-trips.md` Local state + checklist item for stores)**  
-  `UsualTransportStore` exists but is not yet wired to auto-save on successful trip creation.  
-  `CarrierDisclaimerStore` keys exist, but offline sync retry behavior is not integrated into startup/flow logic.  
-  `SavedRoutesSheet` and `TripTutorialOverlay` exist but are not yet integrated into the primary trips flows.
+- **Local/client integration depth (`03-trips.md` Local state section)**  
+  `UsualTransportStore` autosave and disclaimer pending-sync retry hook are wired. Remaining gap: complete in-flow integration for `SavedRoutesSheet` and `TripTutorialOverlay` in primary trip creation/management journeys.
 
 - **TDD checklist parity (`03-trips.md` TDD checklist)**  
-  **Resolved in closeout slices** — added/expanded tests now cover the previously listed gaps: POST `/trips` spec error mapping matrix, `TripUpdateRequest` planning vs non-planning encode constraints, `TripPackageProgressMetrics` status/labels derivation, and store integration behavior (`UsualTransportStore`, disclaimer pending-sync retry hook, local-state coordinator/use-case wiring).
+  **Resolved for previously flagged closeout items** — tests now cover POST `/trips` error mapping matrix, `TripUpdateRequestJson` planning/non-planning encode behavior, progress metrics status/label derivation, and store wiring coordinator/use-case paths.
 
 ---
 
@@ -153,7 +141,7 @@
 - [ ] `RouteActivity/` — Partial — summary endpoint + `RouteActivitySummaryViewModel` + carrier dashboard summary surface implemented via Trips parity slice; remaining Phase 7 RouteActivity scope pending.  
 - [ ] `Shipper/` — Pending — implementation not started.  
 - [ ] `Support/` — Pending — implementation not started.  
-- [ ] `Trips/` — Partial — core Phase 2 scope plus major parity slice landed; remaining blockers are listed in **03-trips remaining blockers** above.  
+- [ ] `Trips/` — Partial — core Phase 2 scope plus parity/TDD slices are implemented, including My Trips detail/edit/cancel wiring; remaining blockers are listed in **03-trips remaining blockers** above.  
 - [ ] `Verification/` — Pending — implementation not started.  
 
 **Cross-cutting**

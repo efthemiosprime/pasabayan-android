@@ -87,6 +87,14 @@
     <string name="trips_create_flat_price">Prix forfaitaire</string>
     <string name="trips_create_transport_method">M\u00e9thode de transport</string>
     <string name="trips_create_special_notes">Notes sp\u00e9ciales (optionnel)</string>
+    <string name="trips_create_wizard_step_indicator">\u00c9tape %1$d sur %2$d : %3$s</string>
+    <string name="trips_create_wizard_next">Suivant</string>
+    <string name="trips_create_wizard_back">Retour</string>
+    <string name="trips_create_wizard_review">V\u00e9rifier les d\u00e9tails du trajet</string>
+    <string name="trips_create_review_edit_wizard">Retour \u00e0 l\'assistant</string>
+    <string name="trips_create_saved_routes_title">Itin\u00e9raires enregistr\u00e9s</string>
+    <string name="trips_create_saved_routes_use_saved">Utiliser un itin\u00e9raire enregistr\u00e9</string>
+    <string name="trips_create_saved_routes_empty">Aucun itin\u00e9raire enregistr\u00e9 pour l\'instant.</string>
     <string name="trips_create_from_package_title">Cr\u00e9er un trajet depuis un colis</string>
     <string name="trips_create_from_package_template_route">%1$s vers %2$s</string>
     <string name="trips_create_from_package_proposed_price">Prix propos\u00e9</string>

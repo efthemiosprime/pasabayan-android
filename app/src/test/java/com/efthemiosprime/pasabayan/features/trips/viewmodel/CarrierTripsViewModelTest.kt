@@ -238,6 +238,24 @@ class CarrierTripsViewModelTest {
         assertEquals(0, fakeRepo.deletedTripIds.size)
     }
 
+    @Test
+    fun `updateTripDetails sends weight and notes and updates state`() = runTest {
+        val existing = testTrip(7, TripStatus.ACTIVE).copy(availableWeightKg = 20.0, specialNotes = "Old")
+        val updated = existing.copy(availableWeightKg = 12.5, specialNotes = "New")
+        fakeRepo.carrierTripsResult = Result.success(listOf(existing))
+        fakeRepo.updateResult = Result.success(updated)
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        viewModel.updateTripDetails(tripId = 7, availableWeightKg = 12.5, specialNotes = "New")
+        advanceUntilIdle()
+
+        assertEquals(12.5, requireNotNull(viewModel.uiState.value.trips.first().availableWeightKg), 0.001)
+        assertEquals("New", viewModel.uiState.value.trips.first().specialNotes)
+        assertEquals(12.5, requireNotNull(fakeRepo.lastUpdateWeight), 0.001)
+        assertEquals("New", fakeRepo.lastUpdateNotes)
+    }
+
     private fun testTrip(
         id: Int,
         status: TripStatus = TripStatus.ACTIVE,
@@ -300,6 +318,8 @@ class FakeTripsRepository : TripsRepository {
     var deletedTripIds: MutableList<Int> = mutableListOf()
     var loadedTripMatchIds: MutableList<Int> = mutableListOf()
     var lastUpdateStatus: String? = null
+    var lastUpdateWeight: Double? = null
+    var lastUpdateNotes: String? = null
 
     override suspend fun loadCarrierTrips() = carrierTripsResult
     override suspend fun loadAvailableTrips(filter: TripFilter) = availableTripsResult
@@ -316,6 +336,8 @@ class FakeTripsRepository : TripsRepository {
         createResult ?: Result.failure(Exception("Not set"))
     override suspend fun updateTrip(id: Int, request: TripUpdateRequestJson): Result<Trip> {
         lastUpdateStatus = request.tripStatus
+        lastUpdateWeight = request.availableWeightKg
+        lastUpdateNotes = request.specialNotes
         return updateResult ?: Result.failure(Exception("Not set"))
     }
     override suspend fun deleteTrip(id: Int): Result<Unit> {

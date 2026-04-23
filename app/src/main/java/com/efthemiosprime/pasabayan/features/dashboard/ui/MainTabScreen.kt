@@ -33,8 +33,13 @@ import com.efthemiosprime.pasabayan.features.packages.components.CreatePackageOp
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageErrandRequestScreen
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageRequestScreen
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
+import com.efthemiosprime.pasabayan.features.trips.model.Trip
+import com.efthemiosprime.pasabayan.features.trips.ui.EditTripSheet
+import com.efthemiosprime.pasabayan.features.trips.ui.TripDetailsScreen
 import com.efthemiosprime.pasabayan.features.trips.ui.TripCreationScreen
+import com.efthemiosprime.pasabayan.features.trips.viewmodel.CarrierTripsViewModel
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.CarrierPreferencesFormViewModel
+import com.efthemiosprime.pasabayan.features.trips.viewmodel.TripCreationSavedRoutesViewModel
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.TripsLocalStateViewModel
 
 /**
@@ -52,6 +57,10 @@ fun MainTabScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val packageViewModel: PackageViewModel = hiltViewModel()
     val carrierPreferencesFormViewModel: CarrierPreferencesFormViewModel = hiltViewModel()
+    val carrierTripsViewModel: CarrierTripsViewModel = hiltViewModel()
+    val carrierTripsState by carrierTripsViewModel.uiState.collectAsStateWithLifecycle()
+    val tripCreationSavedRoutesViewModel: TripCreationSavedRoutesViewModel = hiltViewModel()
+    val tripCreationSavedRoutesState by tripCreationSavedRoutesViewModel.uiState.collectAsStateWithLifecycle()
     val tripsLocalStateViewModel: TripsLocalStateViewModel = hiltViewModel()
     val packageUiState by packageViewModel.uiState.collectAsStateWithLifecycle()
     val tabs = MainTabs.forRole(state.currentRole)
@@ -60,6 +69,8 @@ fun MainTabScreen(
     var showErrandRequestSheet by remember { mutableStateOf(false) }
     var showTripCreationSheet by remember { mutableStateOf(false) }
     var showCarrierPreferencesGate by remember { mutableStateOf(false) }
+    var selectedCarrierTripId by remember { mutableStateOf<Int?>(null) }
+    var editingCarrierTripId by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(user) {
         viewModel.initializeRole(user)
@@ -107,14 +118,16 @@ fun MainTabScreen(
                     onAction = { action, matchId -> /* TODO: handle booking actions */ },
                 )
                 "my_trips" -> com.efthemiosprime.pasabayan.features.trips.ui.CarrierMyTripsScreen(
-                    onViewTripDetails = { /* Handled by expandable card */ },
+                    onViewTripDetails = { trip -> selectedCarrierTripId = trip.id },
                     onCreateTrip = {
+                        tripCreationSavedRoutesViewModel.refreshSavedRoutes()
                         if (carrierPreferencesFormViewModel.isAcknowledged(user.id)) {
                             showTripCreationSheet = true
                         } else {
                             showCarrierPreferencesGate = true
                         }
                     },
+                    viewModel = carrierTripsViewModel,
                 )
                 "packages" -> com.efthemiosprime.pasabayan.features.packages.ui.PackageListScreen(
                     onViewPackageDetails = { /* Handled by expandable card */ },
@@ -209,6 +222,7 @@ fun MainTabScreen(
                     text = stringResource(R.string.trips_preferences_gate_acknowledge),
                     onClick = {
                         carrierPreferencesFormViewModel.markAcknowledged(user.id)
+                        tripCreationSavedRoutesViewModel.refreshSavedRoutes()
                         showCarrierPreferencesGate = false
                         showTripCreationSheet = true
                     },
@@ -222,10 +236,49 @@ fun MainTabScreen(
             onDismissRequest = { showTripCreationSheet = false },
         ) {
             TripCreationScreen(
+                savedRoutes = tripCreationSavedRoutesState.savedRoutes,
                 onSave = { showTripCreationSheet = false },
                 onCancel = { showTripCreationSheet = false },
             )
         }
+    }
+
+    val selectedCarrierTrip = selectedCarrierTripId?.let { id ->
+        carrierTripsState.trips.firstOrNull { it.id == id }
+    }
+    selectedCarrierTrip?.let { trip ->
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { selectedCarrierTripId = null },
+        ) {
+            TripDetailsScreen(
+                trip = trip,
+                isCarrier = true,
+                onEdit = { editingCarrierTripId = trip.id },
+                onCancel = {
+                    carrierTripsViewModel.cancelTrip(trip.id)
+                    selectedCarrierTripId = null
+                },
+                onBack = { selectedCarrierTripId = null },
+            )
+        }
+    }
+
+    val editingCarrierTrip = editingCarrierTripId?.let { id ->
+        carrierTripsState.trips.firstOrNull { it.id == id }
+    }
+    editingCarrierTrip?.let { trip ->
+        EditTripSheet(
+            trip = trip,
+            onDismiss = { editingCarrierTripId = null },
+            onSave = { availableWeightKg, notes ->
+                carrierTripsViewModel.updateTripDetails(
+                    tripId = trip.id,
+                    availableWeightKg = availableWeightKg,
+                    specialNotes = notes,
+                )
+                editingCarrierTripId = null
+            },
+        )
     }
 }
 

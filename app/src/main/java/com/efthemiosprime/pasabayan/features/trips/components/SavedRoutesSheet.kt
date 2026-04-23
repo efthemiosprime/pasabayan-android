@@ -13,7 +13,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
@@ -35,32 +37,40 @@ fun SavedRoutesSheet(
             verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
         ) {
             Text(
-                text = "Saved Routes",
+                text = stringResource(R.string.trips_create_saved_routes_title),
                 style = PasabayanTextStyles.Heading.h5,
                 color = MaterialTheme.colorScheme.onSurface,
             )
-            LazyColumn {
-                items(routes) { route ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onSelectRoute(route) }
-                            .padding(vertical = PasabayanSpacing.sm),
-                    ) {
-                        Text(
-                            text = route.displayLabel,
-                            style = PasabayanTextStyles.Body.medium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        route.pickupAddress?.let {
+            if (routes.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.trips_create_saved_routes_empty),
+                    style = PasabayanTextStyles.Body.small,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                LazyColumn {
+                    items(routes) { route ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onSelectRoute(route) }
+                                .padding(vertical = PasabayanSpacing.sm),
+                        ) {
                             Text(
-                                text = it,
-                                style = PasabayanTextStyles.Caption.regular,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                text = route.displayLabel,
+                                style = PasabayanTextStyles.Body.medium,
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
+                            route.pickupAddress?.let {
+                                Text(
+                                    text = it,
+                                    style = PasabayanTextStyles.Caption.regular,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
+                        PDivider()
                     }
-                    PDivider()
                 }
             }
         }
@@ -73,7 +83,7 @@ fun SavedRoutesSheet(
 private fun SavedRoutesPreview() {
     PasabayanTheme {
         Column(modifier = Modifier.padding(PasabayanSpacing.lg)) {
-            Text("Saved Routes sheet would appear here")
+            Text(stringResource(R.string.trips_create_saved_routes_title))
         }
     }
 }
