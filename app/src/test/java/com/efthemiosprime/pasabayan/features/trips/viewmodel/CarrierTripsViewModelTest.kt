@@ -320,9 +320,13 @@ class FakeTripsRepository : TripsRepository {
     var lastUpdateStatus: String? = null
     var lastUpdateWeight: Double? = null
     var lastUpdateNotes: String? = null
+    var lastAvailableTripsFilter: TripFilter? = null
 
     override suspend fun loadCarrierTrips() = carrierTripsResult
-    override suspend fun loadAvailableTrips(filter: TripFilter) = availableTripsResult
+    override suspend fun loadAvailableTrips(filter: TripFilter): Result<List<Trip>> {
+        lastAvailableTripsFilter = filter
+        return availableTripsResult
+    }
     override suspend fun loadPopularPackageRoutes() = popularRoutesResult
     override suspend fun loadRouteActivitySummary() = routeActivitySummaryResult
     override suspend fun loadTripMatches(tripId: Int): Result<List<TripMatchPackage>> {

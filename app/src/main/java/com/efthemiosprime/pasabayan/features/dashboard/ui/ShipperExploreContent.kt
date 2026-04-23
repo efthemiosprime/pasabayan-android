@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -75,6 +76,7 @@ fun ShipperExploreContent(
     onSwitchRole: () -> Unit,
     modifier: Modifier = Modifier,
     onViewTripDetails: (tripId: Int) -> Unit = {},
+    onOpenTripFilter: () -> Unit = {},
     browseTripsViewModel: BrowseTripsViewModel = hiltViewModel(),
     packageViewModel: PackageViewModel = hiltViewModel(),
 ) {
@@ -116,22 +118,37 @@ fun ShipperExploreContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        // Search field
-        POutlinedTextField(
-            value = state.filter.searchText,
-            onValueChange = { browseTripsViewModel.updateSearchText(it) },
-            label = { Text(stringResource(R.string.dashboard_shipper_search_placeholder)) },
+        // Search + filter actions
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-                IconButton(onClick = { browseTripsViewModel.applyFilterAndFetch() }) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        tint = PasabayanColors.PrimaryBlack,
-                    )
-                }
-            },
-        )
+            horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            POutlinedTextField(
+                value = state.filter.searchText,
+                onValueChange = { browseTripsViewModel.updateSearchText(it) },
+                label = { Text(stringResource(R.string.dashboard_shipper_search_placeholder)) },
+                modifier = Modifier.weight(1f),
+                trailingIcon = {
+                    IconButton(onClick = { browseTripsViewModel.applyFilterAndFetch() }) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = PasabayanColors.PrimaryBlack,
+                        )
+                    }
+                },
+            )
+            IconButton(
+                onClick = onOpenTripFilter,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Tune,
+                    contentDescription = stringResource(R.string.trips_filter_open),
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
 
         PDivider()
 

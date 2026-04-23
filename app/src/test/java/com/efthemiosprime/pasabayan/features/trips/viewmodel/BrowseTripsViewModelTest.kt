@@ -91,10 +91,44 @@ class BrowseTripsViewModelTest {
     }
 
     @Test
+    fun `updateOrigin updates filter`() = runTest {
+        viewModel.updateOrigin("Toronto")
+        assertEquals("Toronto", viewModel.uiState.value.filter.origin)
+    }
+
+    @Test
+    fun `updateDestination updates filter`() = runTest {
+        viewModel.updateDestination("Montreal")
+        assertEquals("Montreal", viewModel.uiState.value.filter.destination)
+    }
+
+    @Test
+    fun `applyFilterAndFetch uses latest search route filter values`() = runTest {
+        fakeRepo.availableTripsResult = Result.success(emptyList())
+        viewModel.updateSearchText("electronics")
+        viewModel.updateOrigin("Toronto")
+        viewModel.updateDestination("Montreal")
+
+        viewModel.applyFilterAndFetch()
+        advanceUntilIdle()
+
+        val recordedFilter = fakeRepo.lastAvailableTripsFilter
+        assertEquals("electronics", recordedFilter?.searchText)
+        assertEquals("Toronto", recordedFilter?.origin)
+        assertEquals("Montreal", recordedFilter?.destination)
+        assertEquals(1, recordedFilter?.page)
+    }
+
+    @Test
     fun `clearFilters resets filter`() = runTest {
         viewModel.updateSearchText("test")
+        viewModel.updateOrigin("A")
+        viewModel.updateDestination("B")
         viewModel.clearFilters()
-        assertTrue(viewModel.uiState.value.filter.searchText.isEmpty())
+        val filter = viewModel.uiState.value.filter
+        assertTrue(filter.searchText.isEmpty())
+        assertTrue(filter.origin.isEmpty())
+        assertTrue(filter.destination.isEmpty())
     }
 
     @Test

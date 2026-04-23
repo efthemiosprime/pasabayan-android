@@ -118,6 +118,13 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun `dismissActiveSheetRoute clears trip filter route`() {
+        viewModel.openTripFilterSheet()
+        viewModel.dismissActiveSheetRoute()
+        assertNull(viewModel.uiState.value.activeSheetRoute)
+    }
+
+    @Test
     fun `openCreateTripFromPackageSheet sets package route with id`() {
         viewModel.openCreateTripFromPackageSheet(packageId = 88)
         assertEquals(

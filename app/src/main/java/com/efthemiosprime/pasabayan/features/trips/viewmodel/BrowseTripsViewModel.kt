@@ -150,6 +150,14 @@ class BrowseTripsViewModel @Inject constructor(
         _uiState.update { it.copy(filter = it.filter.copy(searchText = text)) }
     }
 
+    fun updateOrigin(text: String) {
+        _uiState.update { it.copy(filter = it.filter.copy(origin = text)) }
+    }
+
+    fun updateDestination(text: String) {
+        _uiState.update { it.copy(filter = it.filter.copy(destination = text)) }
+    }
+
     fun clearFilters() {
         _uiState.update {
             it.copy(
