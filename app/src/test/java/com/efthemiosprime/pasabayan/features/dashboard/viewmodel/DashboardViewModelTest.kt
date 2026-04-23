@@ -2,6 +2,7 @@ package com.efthemiosprime.pasabayan.features.dashboard.viewmodel
 
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.session.AuthUser
+import com.efthemiosprime.pasabayan.features.dashboard.model.DashboardSheetRoute
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -108,6 +109,54 @@ class DashboardViewModelTest {
         viewModel.selectPackage(10)
         assertEquals(10, viewModel.uiState.value.selectedPackageId)
         assertNull(viewModel.uiState.value.selectedTripId)
+    }
+
+    @Test
+    fun `openTripFilterSheet sets active sheet route`() {
+        viewModel.openTripFilterSheet()
+        assertEquals(DashboardSheetRoute.TripFilter, viewModel.uiState.value.activeSheetRoute)
+    }
+
+    @Test
+    fun `openCreateTripFromPackageSheet sets package route with id`() {
+        viewModel.openCreateTripFromPackageSheet(packageId = 88)
+        assertEquals(
+            DashboardSheetRoute.CreateTripFromPackage(packageId = 88),
+            viewModel.uiState.value.activeSheetRoute,
+        )
+    }
+
+    @Test
+    fun `openEditTripSheet sets edit route with trip id`() {
+        viewModel.openEditTripSheet(tripId = 42)
+        assertEquals(
+            DashboardSheetRoute.EditTrip(tripId = 42),
+            viewModel.uiState.value.activeSheetRoute,
+        )
+    }
+
+    @Test
+    fun `opening a new sheet route replaces previous active route`() {
+        viewModel.openTripFilterSheet()
+        viewModel.openEditTripSheet(tripId = 25)
+        assertEquals(
+            DashboardSheetRoute.EditTrip(tripId = 25),
+            viewModel.uiState.value.activeSheetRoute,
+        )
+    }
+
+    @Test
+    fun `dismissActiveSheetRoute clears active route without changing tab or role`() {
+        viewModel.initializeRole(testUser(isActiveCarrier = true))
+        viewModel.selectTab(3)
+        viewModel.openTripFilterSheet()
+
+        viewModel.dismissActiveSheetRoute()
+
+        val state = viewModel.uiState.value
+        assertNull(state.activeSheetRoute)
+        assertEquals(UserRole.CARRIER, state.currentRole)
+        assertEquals(3, state.selectedTabIndex)
     }
 
     private fun testUser(

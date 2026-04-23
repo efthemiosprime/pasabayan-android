@@ -28,6 +28,7 @@ import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.dashboard.components.DashboardTopBar
 import com.efthemiosprime.pasabayan.features.dashboard.components.PasabayanBottomBar
 import com.efthemiosprime.pasabayan.features.dashboard.model.MainTabs
+import com.efthemiosprime.pasabayan.features.dashboard.model.DashboardSheetRoute
 import com.efthemiosprime.pasabayan.features.dashboard.viewmodel.DashboardViewModel
 import com.efthemiosprime.pasabayan.features.packages.components.CreatePackageOptionsSheet
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageErrandRequestScreen
@@ -70,7 +71,6 @@ fun MainTabScreen(
     var showTripCreationSheet by remember { mutableStateOf(false) }
     var showCarrierPreferencesGate by remember { mutableStateOf(false) }
     var selectedCarrierTripId by remember { mutableStateOf<Int?>(null) }
-    var editingCarrierTripId by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(user) {
         viewModel.initializeRole(user)
@@ -253,7 +253,7 @@ fun MainTabScreen(
             TripDetailsScreen(
                 trip = trip,
                 isCarrier = true,
-                onEdit = { editingCarrierTripId = trip.id },
+                onEdit = { viewModel.openEditTripSheet(trip.id) },
                 onCancel = {
                     carrierTripsViewModel.cancelTrip(trip.id)
                     selectedCarrierTripId = null
@@ -263,20 +263,21 @@ fun MainTabScreen(
         }
     }
 
+    val editingCarrierTripId = (state.activeSheetRoute as? DashboardSheetRoute.EditTrip)?.tripId
     val editingCarrierTrip = editingCarrierTripId?.let { id ->
         carrierTripsState.trips.firstOrNull { it.id == id }
     }
     editingCarrierTrip?.let { trip ->
         EditTripSheet(
             trip = trip,
-            onDismiss = { editingCarrierTripId = null },
+            onDismiss = { viewModel.dismissActiveSheetRoute() },
             onSave = { availableWeightKg, notes ->
                 carrierTripsViewModel.updateTripDetails(
                     tripId = trip.id,
                     availableWeightKg = availableWeightKg,
                     specialNotes = notes,
                 )
-                editingCarrierTripId = null
+                viewModel.dismissActiveSheetRoute()
             },
         )
     }

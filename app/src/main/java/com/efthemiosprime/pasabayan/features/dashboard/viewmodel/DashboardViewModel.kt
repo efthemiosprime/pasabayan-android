@@ -3,7 +3,7 @@ package com.efthemiosprime.pasabayan.features.dashboard.viewmodel
 import androidx.lifecycle.ViewModel
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.session.AuthUser
-import com.efthemiosprime.pasabayan.features.dashboard.model.MainTabs
+import com.efthemiosprime.pasabayan.features.dashboard.model.DashboardSheetRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +16,7 @@ data class DashboardUiState(
     val selectedTabIndex: Int = 0,
     val selectedTripId: Int? = null,
     val selectedPackageId: Int? = null,
+    val activeSheetRoute: DashboardSheetRoute? = null,
 )
 
 @HiltViewModel
@@ -61,5 +62,25 @@ class DashboardViewModel @Inject constructor() : ViewModel() {
 
     fun clearSelection() {
         _uiState.update { it.copy(selectedTripId = null, selectedPackageId = null) }
+    }
+
+    fun openTripFilterSheet() {
+        _uiState.update { it.copy(activeSheetRoute = DashboardSheetRoute.TripFilter) }
+    }
+
+    fun openCreateTripFromPackageSheet(packageId: Int) {
+        _uiState.update {
+            it.copy(activeSheetRoute = DashboardSheetRoute.CreateTripFromPackage(packageId = packageId))
+        }
+    }
+
+    fun openEditTripSheet(tripId: Int) {
+        _uiState.update {
+            it.copy(activeSheetRoute = DashboardSheetRoute.EditTrip(tripId = tripId))
+        }
+    }
+
+    fun dismissActiveSheetRoute() {
+        _uiState.update { it.copy(activeSheetRoute = null) }
     }
 }
