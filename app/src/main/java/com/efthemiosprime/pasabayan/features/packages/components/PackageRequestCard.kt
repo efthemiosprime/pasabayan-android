@@ -56,7 +56,7 @@ fun PackageRequestCard(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = pkg.title,
+                        text = packageDisplayTitle(pkg),
                         style = PasabayanTextStyles.Heading.h6,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
@@ -78,12 +78,15 @@ fun PackageRequestCard(
                 pkg.packageWeightKg?.let { weight ->
                     PDetailRow(
                         label = stringResource(R.string.packages_detail_weight),
-                        value = String.format("%.1f kg", weight),
+                        value = stringResource(R.string.packages_detail_weight_value, weight),
                     )
                 }
 
                 PCardActionFooter(
-                    onViewDetails = { expanded = true },
+                    onViewDetails = {
+                        expanded = true
+                        onViewDetails()
+                    },
                     menuActions = menuActions,
                 )
             }
@@ -97,7 +100,7 @@ fun PackageRequestCard(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = pkg.title,
+                        text = packageDisplayTitle(pkg),
                         style = PasabayanTextStyles.Heading.h4,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f),
@@ -119,7 +122,7 @@ fun PackageRequestCard(
                 pkg.packageWeightKg?.let { weight ->
                     PDetailRow(
                         label = stringResource(R.string.packages_detail_weight),
-                        value = String.format("%.1f kg", weight),
+                        value = stringResource(R.string.packages_detail_weight_value, weight),
                     )
                 }
                 pkg.packageDimensions?.let { dims ->
@@ -131,25 +134,25 @@ fun PackageRequestCard(
                 pkg.packageType?.let { type ->
                     PDetailRow(
                         label = stringResource(R.string.packages_detail_type),
-                        value = "${type.icon} ${type.name.lowercase().replaceFirstChar { it.uppercase() }}",
+                        value = "${type.icon} ${packageTypeLabel(type)}",
                     )
                 }
                 pkg.urgencyLevel?.let { urgency ->
                     PDetailRow(
                         label = stringResource(R.string.packages_detail_urgency),
-                        value = "${urgency.icon} ${urgency.name.lowercase().replaceFirstChar { it.uppercase() }}",
+                        value = "${urgency.icon} ${urgencyLevelLabel(urgency)}",
                     )
                 }
                 if (pkg.isFragile) {
                     PDetailRow(
                         label = stringResource(R.string.packages_detail_fragile),
-                        value = "Yes",
+                        value = stringResource(R.string.packages_detail_fragile_yes),
                     )
                 }
                 pkg.maxPriceBudget?.let { budget ->
                     PDetailRow(
                         label = stringResource(R.string.packages_detail_budget),
-                        value = String.format("$%.2f", budget),
+                        value = stringResource(R.string.packages_detail_budget_value, budget),
                     )
                 }
                 pkg.packageDescription?.let { desc ->

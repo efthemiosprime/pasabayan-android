@@ -38,6 +38,8 @@ fun PackageListScreen(
     onViewPackageDetails: (packageId: Int) -> Unit,
     onCreatePackage: () -> Unit,
     onCreateTripFromPackage: (packageId: Int) -> Unit,
+    onEditPackage: (packageId: Int) -> Unit,
+    onCancelPackage: (packageId: Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PackageViewModel = hiltViewModel(),
 ) {
@@ -81,6 +83,14 @@ fun PackageListScreen(
                                     title = stringResource(R.string.trips_action_create_trip_from_package),
                                     onClick = { onCreateTripFromPackage(pkg.id) },
                                 ),
+                                CardMenuAction(
+                                    title = stringResource(R.string.packages_edit_package),
+                                    onClick = { onEditPackage(pkg.id) },
+                                ),
+                                CardMenuAction(
+                                    title = stringResource(R.string.packages_cancel_package),
+                                    onClick = { onCancelPackage(pkg.id) },
+                                ),
                             ),
                         )
                     }
@@ -112,8 +122,8 @@ private fun PackageListPreview() {
     PasabayanTheme {
         PEmptyState(
             icon = Icons.Outlined.Inventory2,
-            title = "No packages yet",
-            description = "Create a package request to find carriers.",
+            title = stringResource(R.string.packages_empty_no_packages),
+            description = stringResource(R.string.packages_empty_no_packages_description),
             modifier = Modifier.padding(PasabayanSpacing.lg),
         )
     }

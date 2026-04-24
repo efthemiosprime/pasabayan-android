@@ -53,6 +53,7 @@ import com.efthemiosprime.pasabayan.features.packages.model.ServiceRequestSubmit
 import com.efthemiosprime.pasabayan.shared.model.CityCatalog
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 private enum class ErrandServiceType(val code: String, val labelRes: Int) {
     GroceryShopping("grocery_shopping", R.string.packages_service_type_grocery_shopping),
@@ -553,7 +554,7 @@ private fun showDatePicker(
     ).show()
 }
 
-private val errandDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy")
+private val errandDateFormatter: DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
 
 @Preview(showBackground = true, name = "PackageErrandRequest - light", heightDp = 900)
 @Preview(

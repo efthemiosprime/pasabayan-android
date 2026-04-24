@@ -19,7 +19,7 @@
 | Field | Value |
 |-------|--------|
 | **Current phase** | Phase 4 — Payments & Stripe (Phase 3 complete) |
-| **Last updated** | 2026-04-23 (Trip creation parity slices: wizard/review, saved routes, tutorial, success prompt, route determinism coverage) |
+| **Last updated** | 2026-04-23 (Packages strict parity slices: detail/edit/cancel wiring, available-packages carrier browse semantics, disclaimer/tutorial + saved template integration, localization hardening, and store/view-model TDD expansion) |
 | **Spec audit** | **Complete** — YAML expanded from ~25 to ~100 endpoint rows; all feature specs updated with query params, multipart fields, WebSocket protocol, local storage keys, activity logs, cache policy, GPS services, badge rules, analytics mock structures |
 
 ---
@@ -93,8 +93,8 @@
 |------|------|
 | [02-auth-session.md](02-auth-session.md) | [x] | App + `:core:session` meets exit gate; optional extra VM/repo tests later |
 | [17-onboarding.md](17-onboarding.md) | [x] | Flows + keys + gates; carrier consent flash uses `didJustCompleteConsent` when carrier UI ships |
-| [03-trips.md](03-trips.md) | [x] | Complete for current parity scope — trip creation depth/integration blockers were closed: wizard/review flow, local city autocomplete UX, in-flow `SavedRoutesSheet` apply, keyboard focus chain, success + save-route prompt, and `TripTutorialOverlay` primary-journey wiring with test coverage. |
-| [04-packages.md](04-packages.md) | [x] | API + DTOs, domain models, repository, ViewModel, UI screens, form validation (14 tests) |
+| [03-trips.md](03-trips.md) | [x] | Complete for current parity scope — trip creation depth/integration blockers were closed: wizard/review flow, reusable `CityAutocompleteField` + local city autocomplete UX, in-flow `SavedRoutesSheet` apply, keyboard focus chain, success + save-route prompt, and `TripTutorialOverlay` primary-journey wiring with test coverage. |
+| [04-packages.md](04-packages.md) | [x] | Strict parity bridge landed: package detail/edit/cancel flow wired through dashboard sheet routes, carrier explore moved to available-packages data path, package creation journeys integrate disclaimer + tutorial + saved descriptions/routes stores, packages VM/UI copy localized (EN/FR), and package stores/view-model coverage expanded with new tests. |
 | [13-ui-tab-explore.md](13-ui-tab-explore.md) | [x] | Tab shell, role switcher, carrier + shipper explore content, stats grids; Matches/Messages/Profile stubs |
 | [05-bookings-matches.md](05-bookings-matches.md) | [x] | Unified MatchCard + MatchListScreen, 3 ViewModels, counter-offer flows, code screens, 60+ tests |
 | [06-payments-stripe.md](06-payments-stripe.md) | [ ] | Partial — closeout check confirms most scope complete (PaymentSheet + transactions + tests). Remaining for phase gate: finalize `PayoutSetupScreen` parity per spec states and onboarding/dashboard sheet UX, then re-run Phase 4 verification. |
@@ -120,7 +120,7 @@
   `SavedRoutesSheet` and `TripTutorialOverlay` are now integrated in primary trip creation journeys; `UsualTransportStore` and saved-route persistence are applied in the manual creation success path.
 
 - **TDD checklist parity (`03-trips.md` TDD checklist)**  
-  Coverage now includes trip creation flow-state transitions, saved-route store behavior, trip-creation view-model state machine, and route determinism tests alongside prior API/repository/VM/store closeout coverage.
+  Coverage now includes trip creation flow-state transitions, saved-route store behavior, trip-creation view-model state machine, success-flow save/skip branch assertions, and route determinism tests alongside prior API/repository/VM/store closeout coverage.
 
 ---
 

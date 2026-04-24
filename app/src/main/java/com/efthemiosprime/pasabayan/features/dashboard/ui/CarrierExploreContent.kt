@@ -24,6 +24,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -48,6 +51,7 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.dashboard.components.UserHeaderCard
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequestCard
+import com.efthemiosprime.pasabayan.features.packages.model.toPackageRequest
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.RouteActivitySummaryViewModel
 
@@ -66,9 +70,10 @@ fun CarrierExploreContent(
 ) {
     val state by packageViewModel.uiState.collectAsStateWithLifecycle()
     val routeActivityState by routeActivityViewModel.uiState.collectAsStateWithLifecycle()
+    var searchText by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
-        packageViewModel.loadPackages(force = true)
+        packageViewModel.loadAvailablePackages(force = true)
         routeActivityViewModel.loadSummary()
     }
 
@@ -102,12 +107,21 @@ fun CarrierExploreContent(
 
         // Search field
         POutlinedTextField(
-            value = "",
-            onValueChange = { /* TODO: search */ },
+            value = searchText,
+            onValueChange = { searchText = it },
             label = { Text(stringResource(R.string.dashboard_carrier_search_placeholder)) },
             modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
-                IconButton(onClick = { /* TODO: submit search */ }) {
+                IconButton(
+                    onClick = {
+                        val params = if (searchText.isBlank()) {
+                            emptyMap()
+                        } else {
+                            mapOf("search" to searchText.trim())
+                        }
+                        packageViewModel.refreshAvailablePackages(params)
+                    },
+                ) {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = null,
@@ -172,7 +186,7 @@ fun CarrierExploreContent(
 
         // Browse content
         when {
-            state.isLoading -> {
+            state.isLoadingAvailablePackages -> {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center,
@@ -180,13 +194,14 @@ fun CarrierExploreContent(
                     PCircularProgress()
                 }
             }
-            state.hasLoadedPackages && state.packageRequests.isEmpty() -> {
+            state.hasLoadedAvailablePackages && state.availablePackages.isEmpty() -> {
                 CarrierBrowseEmptyState(
                     onPostTrip = { /* TODO: switch to My Trips tab */ },
                 )
             }
             else -> {
-                state.packageRequests.forEach { pkg ->
+                state.availablePackages.forEach { available ->
+                    val pkg = available.toPackageRequest()
                     PackageRequestCard(
                         pkg = pkg,
                         onViewDetails = { onViewPackageDetails(pkg.id) },

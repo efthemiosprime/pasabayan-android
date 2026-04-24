@@ -29,6 +29,8 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UrgencyLevel
 import com.efthemiosprime.pasabayan.features.packages.components.PackageDetailsSection
 import com.efthemiosprime.pasabayan.features.packages.components.PackageStatusBadgeConfig
+import com.efthemiosprime.pasabayan.features.packages.components.packageDisplayTitle
+import com.efthemiosprime.pasabayan.features.packages.components.urgencyLevelLabel
 import com.efthemiosprime.pasabayan.features.packages.model.PackageRequest
 
 @Composable
@@ -61,7 +63,7 @@ fun PackageDetailScreen(
         PStatusBadge(config = PackageStatusBadgeConfig(pkg.status, statusLabel))
 
         Text(
-            text = pkg.title,
+            text = packageDisplayTitle(pkg),
             style = PasabayanTextStyles.Heading.h4,
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -89,7 +91,7 @@ fun PackageDetailScreen(
         PackageDetailsSection(
             weightKg = pkg.packageWeightKg,
             dimensions = pkg.packageDimensions?.formatted,
-            packageType = pkg.packageType?.name?.lowercase()?.replaceFirstChar { it.uppercase() },
+            packageType = pkg.packageType?.let { com.efthemiosprime.pasabayan.features.packages.components.packageTypeLabel(it) },
             isFragile = pkg.isFragile,
             description = pkg.packageDescription,
             specialHandling = pkg.specialHandlingRequirements,
@@ -101,13 +103,13 @@ fun PackageDetailScreen(
                 pkg.maxPriceBudget?.let {
                     PDetailRow(
                         label = stringResource(R.string.packages_detail_budget),
-                        value = String.format("$%.2f", it),
+                        value = stringResource(R.string.packages_detail_budget_value, it),
                     )
                 }
                 pkg.urgencyLevel?.let {
                     PDetailRow(
                         label = stringResource(R.string.packages_detail_urgency),
-                        value = "${it.icon} ${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }}",
+                        value = "${it.icon} ${urgencyLevelLabel(it)}",
                     )
                 }
             }
@@ -127,6 +129,12 @@ fun PackageDetailScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+        PButton(
+            text = stringResource(R.string.trips_detail_done),
+            onClick = onBack,
+            style = PButtonStyle.Secondary,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 

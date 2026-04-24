@@ -51,7 +51,7 @@ class PackageComputedPropertiesTest {
     @Test
     fun `title falls back to packageType displayName`() {
         val pkg = basePkg(packageDescription = null, packageType = PackageType.ELECTRONICS)
-        assertTrue(pkg.title.contains("Package"))
+        assertEquals("ELECTRONICS", pkg.title)
     }
 
     @Test

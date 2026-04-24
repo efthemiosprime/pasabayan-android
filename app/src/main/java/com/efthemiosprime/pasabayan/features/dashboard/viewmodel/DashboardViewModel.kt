@@ -80,6 +80,18 @@ class DashboardViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    fun openPackageDetailSheet(packageId: Int) {
+        _uiState.update {
+            it.copy(activeSheetRoute = DashboardSheetRoute.PackageDetail(packageId = packageId))
+        }
+    }
+
+    fun openEditPackageSheet(packageId: Int) {
+        _uiState.update {
+            it.copy(activeSheetRoute = DashboardSheetRoute.EditPackage(packageId = packageId))
+        }
+    }
+
     fun dismissActiveSheetRoute() {
         _uiState.update { it.copy(activeSheetRoute = null) }
     }

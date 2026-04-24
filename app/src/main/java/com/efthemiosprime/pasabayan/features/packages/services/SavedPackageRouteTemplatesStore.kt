@@ -2,8 +2,12 @@ package com.efthemiosprime.pasabayan.features.packages.services
 
 import android.content.SharedPreferences
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,7 +40,7 @@ class SavedPackageRouteTemplatesStore @Inject constructor(
     private val handoffKey = "saved_handoff_templates_v1"
     private val maxTemplates = 5
 
-    fun getPickupTemplates(): List<PickupTemplate> = loadList(pickupKey)
+    fun getPickupTemplates(): List<PickupTemplate> = loadPickupList()
 
     fun savePickupTemplate(template: PickupTemplate) {
         saveToList(pickupKey, template, ::loadPickupList)
@@ -51,7 +55,17 @@ class SavedPackageRouteTemplatesStore @Inject constructor(
     private fun loadPickupList(): List<PickupTemplate> {
         val raw = prefs.getString(pickupKey, null) ?: return emptyList()
         return try {
-            json.decodeFromString<List<PickupTemplate>>(raw).sortedByDescending { it.createdAt }
+            json.parseToJsonElement(raw).asJsonArray()
+                .mapNotNull { element ->
+                    val obj = element as? JsonObject ?: return@mapNotNull null
+                    PickupTemplate(
+                        pickupCountryCode = obj["pickupCountryCode"].asString(),
+                        pickupCity = obj["pickupCity"].asString(),
+                        pickupAddress = obj["pickupAddress"]?.asNullableString(),
+                        createdAt = obj["createdAt"].asLongOrZero(),
+                    )
+                }
+                .sortedByDescending { it.createdAt }
         } catch (_: Exception) {
             emptyList()
         }
@@ -60,16 +74,17 @@ class SavedPackageRouteTemplatesStore @Inject constructor(
     private fun loadHandoffList(): List<HandoffTemplate> {
         val raw = prefs.getString(handoffKey, null) ?: return emptyList()
         return try {
-            json.decodeFromString<List<HandoffTemplate>>(raw).sortedByDescending { it.createdAt }
-        } catch (_: Exception) {
-            emptyList()
-        }
-    }
-
-    private inline fun <reified T> loadList(key: String): List<T> {
-        val raw = prefs.getString(key, null) ?: return emptyList()
-        return try {
-            json.decodeFromString<List<T>>(raw)
+            json.parseToJsonElement(raw).asJsonArray()
+                .mapNotNull { element ->
+                    val obj = element as? JsonObject ?: return@mapNotNull null
+                    HandoffTemplate(
+                        deliveryCountryCode = obj["deliveryCountryCode"].asString(),
+                        deliveryCity = obj["deliveryCity"].asString(),
+                        deliveryAddress = obj["deliveryAddress"]?.asNullableString(),
+                        createdAt = obj["createdAt"].asLongOrZero(),
+                    )
+                }
+                .sortedByDescending { it.createdAt }
         } catch (_: Exception) {
             emptyList()
         }
@@ -79,13 +94,60 @@ class SavedPackageRouteTemplatesStore @Inject constructor(
         val current = loader().toMutableList()
         current.add(0, template)
         val trimmed = current.take(maxTemplates)
-        prefs.edit().putString(key, json.encodeToString(trimmed)).apply()
+        prefs.edit().putString(
+            key,
+            buildJsonArray {
+                trimmed.forEach { template ->
+                    add(
+                        JsonObject(
+                            mapOf(
+                                "pickupCountryCode" to JsonPrimitive(template.pickupCountryCode),
+                                "pickupCity" to JsonPrimitive(template.pickupCity),
+                                "pickupAddress" to (template.pickupAddress?.let(::JsonPrimitive) ?: JsonNull),
+                                "createdAt" to JsonPrimitive(template.createdAt),
+                            ),
+                        ),
+                    )
+                }
+            }.toString(),
+        ).apply()
     }
 
     private fun saveHandoffToList(template: HandoffTemplate) {
         val current = loadHandoffList().toMutableList()
         current.add(0, template)
         val trimmed = current.take(maxTemplates)
-        prefs.edit().putString(handoffKey, json.encodeToString(trimmed)).apply()
+        prefs.edit().putString(
+            handoffKey,
+            buildJsonArray {
+                trimmed.forEach { template ->
+                    add(
+                        JsonObject(
+                            mapOf(
+                                "deliveryCountryCode" to JsonPrimitive(template.deliveryCountryCode),
+                                "deliveryCity" to JsonPrimitive(template.deliveryCity),
+                                "deliveryAddress" to (template.deliveryAddress?.let(::JsonPrimitive) ?: JsonNull),
+                                "createdAt" to JsonPrimitive(template.createdAt),
+                            ),
+                        ),
+                    )
+                }
+            }.toString(),
+        ).apply()
     }
+
+    private fun kotlinx.serialization.json.JsonElement?.asString(): String =
+        (this as? JsonPrimitive)?.content.orEmpty()
+
+    private fun kotlinx.serialization.json.JsonElement?.asNullableString(): String? {
+        if (this == null || this is JsonNull) return null
+        val content = (this as? JsonPrimitive)?.content.orEmpty()
+        return content.ifBlank { null }
+    }
+
+    private fun kotlinx.serialization.json.JsonElement?.asLongOrZero(): Long =
+        (this as? JsonPrimitive)?.content?.toLongOrNull() ?: 0L
+
+    private fun kotlinx.serialization.json.JsonElement.asJsonArray(): JsonArray =
+        this as? JsonArray ?: JsonArray(emptyList())
 }

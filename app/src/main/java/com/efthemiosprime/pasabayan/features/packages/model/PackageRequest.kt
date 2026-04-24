@@ -50,7 +50,7 @@ data class PackageRequest(
 ) {
     val title: String
         get() = packageDescription
-            ?: "${packageType?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "General"} Package"
+            ?: packageType?.name.orEmpty()
 
     val pickupLocation: String
         get() = listOfNotNull(pickupAddress, pickupCity)

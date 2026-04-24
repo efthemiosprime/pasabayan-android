@@ -37,7 +37,7 @@ fun PackageDetailsSection(
             weightKg?.let {
                 PDetailRow(
                     label = stringResource(R.string.packages_detail_weight),
-                    value = String.format("%.1f kg", it),
+                    value = stringResource(R.string.packages_detail_weight_value, it),
                 )
             }
             dimensions?.let {
@@ -55,7 +55,7 @@ fun PackageDetailsSection(
             if (isFragile) {
                 PDetailRow(
                     label = stringResource(R.string.packages_detail_fragile),
-                    value = "Yes",
+                    value = stringResource(R.string.packages_detail_fragile_yes),
                 )
             }
             description?.let {

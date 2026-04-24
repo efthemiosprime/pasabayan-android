@@ -177,6 +177,24 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun `openPackageDetailSheet sets package detail route with package id`() {
+        viewModel.openPackageDetailSheet(packageId = 55)
+        assertEquals(
+            DashboardSheetRoute.PackageDetail(packageId = 55),
+            viewModel.uiState.value.activeSheetRoute,
+        )
+    }
+
+    @Test
+    fun `openEditPackageSheet sets edit package route with package id`() {
+        viewModel.openEditPackageSheet(packageId = 56)
+        assertEquals(
+            DashboardSheetRoute.EditPackage(packageId = 56),
+            viewModel.uiState.value.activeSheetRoute,
+        )
+    }
+
+    @Test
     fun `opening a new sheet route replaces previous active route`() {
         viewModel.openTripFilterSheet()
         viewModel.openEditTripSheet(tripId = 25)
@@ -200,6 +218,18 @@ class DashboardViewModelTest {
         viewModel.openEditTripSheet(tripId = 33)
         assertEquals(
             DashboardSheetRoute.EditTrip(tripId = 33),
+            viewModel.uiState.value.activeSheetRoute,
+        )
+
+        viewModel.openPackageDetailSheet(packageId = 44)
+        assertEquals(
+            DashboardSheetRoute.PackageDetail(packageId = 44),
+            viewModel.uiState.value.activeSheetRoute,
+        )
+
+        viewModel.openEditPackageSheet(packageId = 45)
+        assertEquals(
+            DashboardSheetRoute.EditPackage(packageId = 45),
             viewModel.uiState.value.activeSheetRoute,
         )
 

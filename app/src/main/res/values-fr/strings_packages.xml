@@ -85,6 +85,9 @@
     <string name="packages_create_photo_tip_2">Montrez tous les c\u00f4t\u00e9s du colis</string>
     <string name="packages_create_photo_tip_3">Incluez les dommages ou marquages sp\u00e9ciaux</string>
     <string name="packages_create_photo_tip_4">Capturez clairement les \u00e9tiquettes et codes-barres</string>
+    <string name="packages_create_use_recent_description">Utiliser une description r\u00e9cente</string>
+    <string name="packages_create_use_saved_pickup">Utiliser un trajet de r\u00e9cup\u00e9ration enregistr\u00e9</string>
+    <string name="packages_create_use_saved_handoff">Utiliser un trajet de remise enregistr\u00e9</string>
 
     <!-- Service request form -->
     <string name="packages_service_title">Cr\u00e9er une demande de service</string>
@@ -136,17 +139,58 @@
     <string name="packages_type_clothing">V\u00eatements</string>
     <string name="packages_type_books">Livres</string>
     <string name="packages_type_food">Nourriture</string>
+    <string name="packages_type_furniture">Mobilier</string>
+    <string name="packages_type_medical">M\u00e9dical</string>
     <string name="packages_type_fragile">Fragile</string>
     <string name="packages_type_documents">Documents</string>
+    <string name="packages_type_parcel">Colis</string>
+    <string name="packages_type_gifts">Cadeaux</string>
+    <string name="packages_type_automotive">Automobile</string>
+    <string name="packages_type_beauty">Beaut\u00e9</string>
+    <string name="packages_type_sports">Sports</string>
+    <string name="packages_type_toys">Jouets</string>
+    <string name="packages_type_household">Maison</string>
+    <string name="packages_type_jewelry">Bijoux</string>
+    <string name="packages_type_art">Art</string>
+    <string name="packages_type_industrial">Industriel</string>
+    <string name="packages_type_equipment">\u00c9quipement</string>
+    <string name="packages_type_other">Autre</string>
     <string name="packages_urgency_low">Faible</string>
     <string name="packages_urgency_normal">Normale</string>
     <string name="packages_urgency_high">\u00c9lev\u00e9e</string>
     <string name="packages_urgency_urgent">Urgente</string>
     <string name="packages_urgency_express">Express</string>
+    <string name="packages_urgency_flexible">Flexible</string>
 
     <!-- Browse -->
     <string name="packages_browse_title">Parcourir les colis</string>
     <string name="packages_browse_search">Rechercher des colis\u2026</string>
+
+    <!-- Disclaimer -->
+    <string name="packages_disclaimer_title">Avis \u00e0 l\'exp\u00e9diteur</string>
+    <string name="packages_disclaimer_body">En publiant une demande de colis, vous confirmez que les d\u00e9tails du colis sont exacts et conformes, et que les informations de r\u00e9cup\u00e9ration/remise sont valides.</string>
+    <string name="packages_disclaimer_acknowledge">Je comprends</string>
+
+    <!-- Formatting -->
+    <string name="packages_detail_fragile_yes">Oui</string>
+    <string name="packages_detail_weight_value">%1$.1f kg</string>
+    <string name="packages_detail_budget_value">%1$.2f $</string>
+    <string name="packages_detail_title_fallback">Colis %1$s</string>
+
+    <!-- Messages -->
+    <string name="packages_error_load_packages">\u00c9chec du chargement des colis</string>
+    <string name="packages_error_load_available_packages">\u00c9chec du chargement des colis disponibles</string>
+    <string name="packages_error_load_package_detail">\u00c9chec du chargement des d\u00e9tails du colis</string>
+    <string name="packages_error_cancel_package">\u00c9chec de l\'annulation du colis</string>
+    <string name="packages_error_submit_package_request">\u00c9chec de l\'envoi de la demande de colis</string>
+    <string name="packages_error_submit_service_request">\u00c9chec de l\'envoi de la demande de service</string>
+    <string name="packages_error_trip_request_send">\u00c9chec de l\'envoi de la demande</string>
+    <string name="packages_error_update_package">\u00c9chec de la mise \u00e0 jour du colis</string>
+    <string name="packages_success_cancel_package">Colis annul\u00e9</string>
+    <string name="packages_success_submit_package_request">Demande de colis envoy\u00e9e</string>
+    <string name="packages_success_submit_service_request">Demande de service envoy\u00e9e</string>
+    <string name="packages_success_trip_request_sent">Demande envoy\u00e9e</string>
+    <string name="packages_success_update_package">Colis mis \u00e0 jour</string>
 
     <!-- Tutorial -->
     <string name="packages_tutorial_title">Bienvenue, exp\u00e9diteur !</string>

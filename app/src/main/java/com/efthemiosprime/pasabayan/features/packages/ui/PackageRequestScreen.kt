@@ -61,7 +61,10 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PExpandableSecti
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequestBaseScaffold
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequirementChipUi
+import com.efthemiosprime.pasabayan.features.packages.components.PackageTutorialOverlay
 import com.efthemiosprime.pasabayan.features.packages.model.PackageSubmitPayload
+import com.efthemiosprime.pasabayan.features.packages.services.HandoffTemplate
+import com.efthemiosprime.pasabayan.features.packages.services.PickupTemplate
 import com.efthemiosprime.pasabayan.shared.model.CityCatalog
 import com.efthemiosprime.pasabayan.shared.model.CountryCatalog
 import com.efthemiosprime.pasabayan.shared.components.CreationWizardStepHeader
@@ -69,11 +72,17 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @Composable
 fun PackageRequestScreen(
     onSave: (PackageSubmitPayload, List<Uri>) -> Unit,
     onCancel: () -> Unit,
+    savedDescriptions: List<String> = emptyList(),
+    savedPickupTemplates: List<PickupTemplate> = emptyList(),
+    savedHandoffTemplates: List<HandoffTemplate> = emptyList(),
+    showTutorialOverlay: Boolean = false,
+    onDismissTutorial: () -> Unit = {},
     isSubmitting: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
@@ -267,6 +276,14 @@ fun PackageRequestScreen(
                             title = stringResource(R.string.packages_create_step_what_it_is),
                             subtitle = stringResource(R.string.packages_create_what_it_is_hint),
                         )
+                        if (savedDescriptions.isNotEmpty()) {
+                            PButton(
+                                text = stringResource(R.string.packages_create_use_recent_description),
+                                onClick = { description = savedDescriptions.first() },
+                                style = PButtonStyle.Secondary,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
                         UploadPhotosBlock(
                             selectedPhotoUris = selectedPhotoUris,
                             onPickPhotos = { photoPickerLauncher.launch("image/*") },
@@ -279,6 +296,20 @@ fun PackageRequestScreen(
                             title = stringResource(R.string.packages_create_section_pickup_details),
                             subtitle = stringResource(R.string.packages_create_pickup_hint),
                         )
+                        if (savedPickupTemplates.isNotEmpty()) {
+                            PButton(
+                                text = stringResource(R.string.packages_create_use_saved_pickup),
+                                onClick = {
+                                    val template = savedPickupTemplates.first()
+                                    pickupCountry = CountryCatalog.byCode(template.pickupCountryCode)
+                                    pickupCity = template.pickupCity
+                                    pickupAddress = template.pickupAddress.orEmpty()
+                                    pickupCitySuggestions = emptyList()
+                                },
+                                style = PButtonStyle.Secondary,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
                         CountryAndAddressFields(
                             countryLabel = stringResource(R.string.packages_create_pickup_country),
                             countryValue = countryLabelsByCode.getValue(pickupCountry.code),
@@ -347,6 +378,20 @@ fun PackageRequestScreen(
                             title = stringResource(R.string.packages_create_section_handoff_details),
                             subtitle = stringResource(R.string.packages_create_handoff_hint),
                         )
+                        if (savedHandoffTemplates.isNotEmpty()) {
+                            PButton(
+                                text = stringResource(R.string.packages_create_use_saved_handoff),
+                                onClick = {
+                                    val template = savedHandoffTemplates.first()
+                                    deliveryCountry = CountryCatalog.byCode(template.deliveryCountryCode)
+                                    deliveryCity = template.deliveryCity
+                                    deliveryAddress = template.deliveryAddress.orEmpty()
+                                    deliveryCitySuggestions = emptyList()
+                                },
+                                style = PButtonStyle.Secondary,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
                         CountryAndAddressFields(
                             countryLabel = stringResource(R.string.packages_create_delivery_country),
                             countryValue = countryLabelsByCode.getValue(deliveryCountry.code),
@@ -474,6 +519,10 @@ fun PackageRequestScreen(
                 }
             }
         }
+    }
+
+    if (showTutorialOverlay) {
+        PackageTutorialOverlay(onDismiss = onDismissTutorial)
     }
 }
 
@@ -742,8 +791,8 @@ private fun isDatesValid(
     return pickupDateTime >= minimumPickup && deliveryDateTime.isAfter(pickupDateTime)
 }
 
-private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy")
-private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a")
+private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
 
 private data class RequestOption(
     val code: String,

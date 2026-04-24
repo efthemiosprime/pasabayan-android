@@ -85,6 +85,9 @@
     <string name="packages_create_photo_tip_2">Show all sides of the package</string>
     <string name="packages_create_photo_tip_3">Include any damage or special markings</string>
     <string name="packages_create_photo_tip_4">Capture labels and barcodes clearly</string>
+    <string name="packages_create_use_recent_description">Use recent description</string>
+    <string name="packages_create_use_saved_pickup">Use saved pickup route</string>
+    <string name="packages_create_use_saved_handoff">Use saved handoff route</string>
 
     <!-- Service request form -->
     <string name="packages_service_title">Create Service Request</string>
@@ -136,17 +139,58 @@
     <string name="packages_type_clothing">Clothing</string>
     <string name="packages_type_books">Books</string>
     <string name="packages_type_food">Food</string>
+    <string name="packages_type_furniture">Furniture</string>
+    <string name="packages_type_medical">Medical</string>
     <string name="packages_type_fragile">Fragile</string>
     <string name="packages_type_documents">Documents</string>
+    <string name="packages_type_parcel">Parcel</string>
+    <string name="packages_type_gifts">Gifts</string>
+    <string name="packages_type_automotive">Automotive</string>
+    <string name="packages_type_beauty">Beauty</string>
+    <string name="packages_type_sports">Sports</string>
+    <string name="packages_type_toys">Toys</string>
+    <string name="packages_type_household">Household</string>
+    <string name="packages_type_jewelry">Jewelry</string>
+    <string name="packages_type_art">Art</string>
+    <string name="packages_type_industrial">Industrial</string>
+    <string name="packages_type_equipment">Equipment</string>
+    <string name="packages_type_other">Other</string>
     <string name="packages_urgency_low">Low</string>
     <string name="packages_urgency_normal">Normal</string>
     <string name="packages_urgency_high">High</string>
     <string name="packages_urgency_urgent">Urgent</string>
     <string name="packages_urgency_express">Express</string>
+    <string name="packages_urgency_flexible">Flexible</string>
 
     <!-- Browse -->
     <string name="packages_browse_title">Browse Packages</string>
     <string name="packages_browse_search">Search packages\u2026</string>
+
+    <!-- Disclaimer -->
+    <string name="packages_disclaimer_title">Shipper Disclaimer</string>
+    <string name="packages_disclaimer_body">By posting a package request, you confirm all package details are accurate and lawful, and that pickup/handoff information is valid.</string>
+    <string name="packages_disclaimer_acknowledge">I Understand</string>
+
+    <!-- Formatting -->
+    <string name="packages_detail_fragile_yes">Yes</string>
+    <string name="packages_detail_weight_value">%1$.1f kg</string>
+    <string name="packages_detail_budget_value">$%1$.2f</string>
+    <string name="packages_detail_title_fallback">%1$s package</string>
+
+    <!-- Messages -->
+    <string name="packages_error_load_packages">Failed to load packages</string>
+    <string name="packages_error_load_available_packages">Failed to load available packages</string>
+    <string name="packages_error_load_package_detail">Failed to load package details</string>
+    <string name="packages_error_cancel_package">Failed to cancel package</string>
+    <string name="packages_error_submit_package_request">Failed to submit package request</string>
+    <string name="packages_error_submit_service_request">Failed to submit service request</string>
+    <string name="packages_error_trip_request_send">Failed to send request</string>
+    <string name="packages_error_update_package">Failed to update package</string>
+    <string name="packages_success_cancel_package">Package cancelled</string>
+    <string name="packages_success_submit_package_request">Package request submitted</string>
+    <string name="packages_success_submit_service_request">Service request submitted</string>
+    <string name="packages_success_trip_request_sent">Request sent</string>
+    <string name="packages_success_update_package">Package updated</string>
 
     <!-- Tutorial -->
     <string name="packages_tutorial_title">Welcome, Shipper!</string>

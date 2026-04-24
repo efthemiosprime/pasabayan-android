@@ -53,4 +53,9 @@ object PackagesProviderModule {
         @PackagesPrefs prefs: SharedPreferences,
         json: Json,
     ): SavedPackageRouteTemplatesStore = SavedPackageRouteTemplatesStore(prefs, json)
+
+    @Provides
+    @Singleton
+    fun providePackageTutorialStore(@PackagesPrefs prefs: SharedPreferences): PackageTutorialStore =
+        PackageTutorialStore(prefs)
 }

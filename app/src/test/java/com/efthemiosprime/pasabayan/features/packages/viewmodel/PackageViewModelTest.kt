@@ -1,6 +1,8 @@
 package com.efthemiosprime.pasabayan.features.packages.viewmodel
 
+import android.content.Context
 import android.net.Uri
+import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageRequestStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UrgencyLevel
@@ -24,6 +26,8 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -36,6 +40,7 @@ import org.junit.Test
 class PackageViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
+    private lateinit var mockContext: Context
     private lateinit var fakeRepo: FakePackagesRepository
     private lateinit var fakeBookingsRepository: FakeBookingsRepository
     private lateinit var viewModel: PackageViewModel
@@ -43,9 +48,23 @@ class PackageViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+        mockContext = mockk(relaxed = true)
+        every { mockContext.getString(R.string.packages_error_load_packages) } returns "Failed to load packages"
+        every { mockContext.getString(R.string.packages_error_load_available_packages) } returns "Failed to load available packages"
+        every { mockContext.getString(R.string.packages_error_load_package_detail) } returns "Failed to load package details"
+        every { mockContext.getString(R.string.packages_error_cancel_package) } returns "Failed to cancel package"
+        every { mockContext.getString(R.string.packages_error_submit_package_request) } returns "Failed to submit package request"
+        every { mockContext.getString(R.string.packages_error_submit_service_request) } returns "Failed to submit service request"
+        every { mockContext.getString(R.string.packages_error_trip_request_send) } returns "Failed to send request"
+        every { mockContext.getString(R.string.packages_error_update_package) } returns "Failed to update package"
+        every { mockContext.getString(R.string.packages_success_cancel_package) } returns "Package cancelled"
+        every { mockContext.getString(R.string.packages_success_submit_package_request) } returns "Package request submitted"
+        every { mockContext.getString(R.string.packages_success_submit_service_request) } returns "Service request submitted"
+        every { mockContext.getString(R.string.packages_success_trip_request_sent) } returns "Request sent"
+        every { mockContext.getString(R.string.packages_success_update_package) } returns "Package updated"
         fakeRepo = FakePackagesRepository()
         fakeBookingsRepository = FakeBookingsRepository()
-        viewModel = PackageViewModel(fakeRepo, fakeBookingsRepository)
+        viewModel = PackageViewModel(mockContext, fakeRepo, fakeBookingsRepository)
     }
 
     @After
@@ -182,6 +201,39 @@ class PackageViewModelTest {
         val state = viewModel.uiState.value
         assertFalse(state.isSubmittingServiceRequest)
         assertEquals("Service create failed", state.serviceRequestErrorMessage)
+    }
+
+    @Test
+    fun `loadAvailablePackages updates available list on success`() = runTest {
+        fakeRepo.availableResult = Result.success(emptyList())
+
+        viewModel.loadAvailablePackages(force = true)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isLoadingAvailablePackages)
+        assertTrue(state.hasLoadedAvailablePackages)
+    }
+
+    @Test
+    fun `loadPackageDetail updates selected detail on success`() = runTest {
+        fakeRepo.getResult = Result.success(testPkg(70))
+
+        viewModel.loadPackageDetail(70)
+        advanceUntilIdle()
+
+        assertEquals(70, viewModel.uiState.value.selectedPackageDetail?.id)
+    }
+
+    @Test
+    fun `updatePackage updates selected detail on success`() = runTest {
+        fakeRepo.updateResult = Result.success(testPkg(11))
+
+        viewModel.updatePackage(11, PackageUpdateRequestJson(maxPriceBudget = 88.0))
+        advanceUntilIdle()
+
+        assertEquals(11, viewModel.uiState.value.selectedPackageDetail?.id)
+        assertEquals("Package updated", viewModel.uiState.value.successMessage)
     }
 
     private fun testPackagePayload() = PackageSubmitPayload(

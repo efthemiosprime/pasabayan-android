@@ -31,8 +31,11 @@ import com.efthemiosprime.pasabayan.features.dashboard.model.MainTabs
 import com.efthemiosprime.pasabayan.features.dashboard.model.DashboardSheetRoute
 import com.efthemiosprime.pasabayan.features.dashboard.viewmodel.DashboardViewModel
 import com.efthemiosprime.pasabayan.features.packages.components.CreatePackageOptionsSheet
+import com.efthemiosprime.pasabayan.features.packages.ui.EditPackageSheet
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageErrandRequestScreen
+import com.efthemiosprime.pasabayan.features.packages.ui.PackageDetailScreen
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageRequestScreen
+import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageCreationAssistViewModel
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.ui.TripFilterSheet
@@ -60,6 +63,8 @@ fun MainTabScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val packageViewModel: PackageViewModel = hiltViewModel()
+    val packageCreationAssistViewModel: PackageCreationAssistViewModel = hiltViewModel()
+    val packageCreationAssistState by packageCreationAssistViewModel.uiState.collectAsStateWithLifecycle()
     val browseTripsViewModel: BrowseTripsViewModel = hiltViewModel()
     val browseTripsState by browseTripsViewModel.uiState.collectAsStateWithLifecycle()
     val carrierPreferencesFormViewModel: CarrierPreferencesFormViewModel = hiltViewModel()
@@ -72,7 +77,9 @@ fun MainTabScreen(
     val tabs = MainTabs.forRole(state.currentRole)
     var showCreateOptionsSheet by remember { mutableStateOf(false) }
     var showPackageRequestSheet by remember { mutableStateOf(false) }
+    var showPackageDisclaimerGate by remember { mutableStateOf(false) }
     var showErrandRequestSheet by remember { mutableStateOf(false) }
+    var openErrandAfterDisclaimer by remember { mutableStateOf(false) }
     var showTripCreationSheet by remember { mutableStateOf(false) }
     var showCarrierPreferencesGate by remember { mutableStateOf(false) }
     var selectedCarrierTripId by remember { mutableStateOf<Int?>(null) }
@@ -127,6 +134,10 @@ fun MainTabScreen(
                         CarrierExploreContent(
                             user = user,
                             onSwitchRole = { viewModel.switchRole() },
+                            onViewPackageDetails = { packageId ->
+                                viewModel.openPackageDetailSheet(packageId)
+                            },
+                            packageViewModel = packageViewModel,
                         )
                     UserRole.SHIPPER ->
                         ShipperExploreContent(
@@ -154,9 +165,20 @@ fun MainTabScreen(
                     viewModel = carrierTripsViewModel,
                 )
                 "packages" -> com.efthemiosprime.pasabayan.features.packages.ui.PackageListScreen(
-                    onViewPackageDetails = { /* Handled by expandable card */ },
-                    onCreatePackage = { showCreateOptionsSheet = true },
+                    onViewPackageDetails = { packageId ->
+                        viewModel.openPackageDetailSheet(packageId)
+                    },
+                    onCreatePackage = {
+                        packageCreationAssistViewModel.initialize(user.id)
+                        showCreateOptionsSheet = true
+                    },
                     onCreateTripFromPackage = openCreateTripFromPackageSheet,
+                    onEditPackage = { packageId ->
+                        viewModel.openEditPackageSheet(packageId)
+                    },
+                    onCancelPackage = { packageId ->
+                        packageViewModel.cancelPackage(packageId)
+                    },
                     viewModel = packageViewModel,
                 )
                 "messages" -> StubTabContent(
@@ -180,11 +202,21 @@ fun MainTabScreen(
                 onClose = { showCreateOptionsSheet = false },
                 onShipPackage = {
                     showCreateOptionsSheet = false
-                    showPackageRequestSheet = true
+                    if (packageCreationAssistState.hasAcknowledgedDisclaimer) {
+                        showPackageRequestSheet = true
+                    } else {
+                        openErrandAfterDisclaimer = false
+                        showPackageDisclaimerGate = true
+                    }
                 },
                 onErrandService = {
                     showCreateOptionsSheet = false
-                    showErrandRequestSheet = true
+                    if (packageCreationAssistState.hasAcknowledgedDisclaimer) {
+                        showErrandRequestSheet = true
+                    } else {
+                        openErrandAfterDisclaimer = true
+                        showPackageDisclaimerGate = true
+                    }
                 },
             )
         }
@@ -201,14 +233,49 @@ fun MainTabScreen(
                         imageUris = imageUris,
                     ) { result ->
                         if (result.isSuccess) {
+                            packageCreationAssistViewModel.onPackageCreated(payload)
                             showPackageRequestSheet = false
                             packageViewModel.refreshPackages()
                         }
                     }
                 },
                 onCancel = { showPackageRequestSheet = false },
+                savedDescriptions = packageCreationAssistState.savedDescriptions,
+                savedPickupTemplates = packageCreationAssistState.savedPickupTemplates,
+                savedHandoffTemplates = packageCreationAssistState.savedHandoffTemplates,
+                showTutorialOverlay = packageCreationAssistState.showTutorial,
+                onDismissTutorial = { packageCreationAssistViewModel.dismissTutorial(user.id) },
                 isSubmitting = packageUiState.isSubmittingPackageRequest,
             )
+        }
+    }
+
+    if (showPackageDisclaimerGate) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showPackageDisclaimerGate = false },
+        ) {
+            com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetScaffold(
+                title = stringResource(R.string.packages_disclaimer_title),
+                closeContentDescription = stringResource(R.string.packages_create_close),
+                onClose = { showPackageDisclaimerGate = false },
+            ) {
+                androidx.compose.material3.Text(
+                    text = stringResource(R.string.packages_disclaimer_body),
+                )
+                com.efthemiosprime.pasabayan.core.designsystem.component.PButton(
+                    text = stringResource(R.string.packages_disclaimer_acknowledge),
+                    onClick = {
+                        packageCreationAssistViewModel.acknowledgeDisclaimer(user.id)
+                        showPackageDisclaimerGate = false
+                        if (openErrandAfterDisclaimer) {
+                            showErrandRequestSheet = true
+                        } else {
+                            showPackageRequestSheet = true
+                        }
+                        openErrandAfterDisclaimer = false
+                    },
+                )
+            }
         }
     }
 
@@ -302,6 +369,53 @@ fun MainTabScreen(
                 userId = user.id,
                 onClose = createTripFromPackageRouteActions::onClose,
                 onTripCreated = createTripFromPackageRouteActions::onTripCreated,
+            )
+        }
+    }
+
+    val packageDetailRoute = state.activeSheetRoute as? DashboardSheetRoute.PackageDetail
+    packageDetailRoute?.let { route ->
+        LaunchedEffect(route.packageId) {
+            packageViewModel.loadPackageDetail(route.packageId)
+        }
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = {
+                packageViewModel.clearPackageDetail()
+                dismissActiveSheetRoute()
+            },
+        ) {
+            val detail = packageUiState.selectedPackageDetail
+            if (detail != null) {
+                PackageDetailScreen(
+                    pkg = detail,
+                    onEdit = { viewModel.openEditPackageSheet(detail.id) },
+                    onCancel = {
+                        packageViewModel.cancelPackage(detail.id)
+                        packageViewModel.clearPackageDetail()
+                        dismissActiveSheetRoute()
+                    },
+                    onBack = {
+                        packageViewModel.clearPackageDetail()
+                        dismissActiveSheetRoute()
+                    },
+                )
+            }
+        }
+    }
+
+    val editPackageRoute = state.activeSheetRoute as? DashboardSheetRoute.EditPackage
+    editPackageRoute?.let { route ->
+        val detail = packageUiState.selectedPackageDetail
+            ?: packageUiState.packageRequests.firstOrNull { it.id == route.packageId }
+        detail?.let { pkg ->
+            EditPackageSheet(
+                pkg = pkg,
+                onDismiss = dismissActiveSheetRoute,
+                onSave = { request ->
+                    packageViewModel.updatePackage(route.packageId, request)
+                    packageViewModel.refreshPackages()
+                    dismissActiveSheetRoute()
+                },
             )
         }
     }

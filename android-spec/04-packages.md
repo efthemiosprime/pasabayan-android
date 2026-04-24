@@ -746,23 +746,23 @@ features/packages/
 
 ## TDD checklist
 
-- [ ] `PackageRequest` JSON decode — all fields including images, service fields, flexible types, coordinate fields, compatibility fields.
-- [ ] `PackageRequest` — `shipperId` fallback from nested `shipper.id`.
-- [ ] `CreatePackageRequest` encode — all fields.
-- [ ] `PackageUpdateRequest` partial update — verify only changed fields sent; verify `clearSpecialHandlingRequirements` encodes null.
-- [ ] `CreateServiceRequestBody` encode — all fields including shopping list.
-- [ ] All enums decode from raw string values (especially `PackageType` 21+1 cases, `PackageRequestStatus` 9 cases, `ServiceType` 5 cases).
-- [ ] `AvailablePackage` decode with `distanceKm`, `daysSincePosted`, shipper, `packageRequestId`, `volumeLiters`, service fields.
-- [ ] `AvailablePackage.toPackageRequest()` converter — all fields mapped correctly.
-- [ ] `AvailablePackageShipper` decode with computed properties (ratingValue, effectiveVerificationLevel).
-- [ ] `CompatibleTrip` + `CarrierInfo` + `CompatibilityDetails` decode — including pricing fields and `user_types` dual format.
-- [ ] `CapacityUtilization` decode.
-- [ ] `CompatiblePackagesData` — test both nested and direct pagination shapes.
-- [ ] Multipart field names match iOS (22 text fields + images array).
-- [ ] Browse query params: verify all 17 params serialize correctly as snake_case.
-- [ ] Image polling: mock 3-attempt poll until `imagesProcessing == false`.
-- [ ] Flexible type decoding: Double/Int/String for weight; Bool/Int/String for fragile; object/string for dimensions; array/string for shoppingList.
-- [ ] Local stores: descriptions (max 15, FIFO, dedup), templates (max 5), disclaimer (offline sync).
-- [ ] Service request ViewModel: type selection, shopping list, store location, validation.
-- [ ] Date parsing: all format variants (date-only, ISO8601, fractional, microseconds).
-- [ ] `AvailablePackagesResult.nearby` flag preserved through response parsing.
+- [x] `PackageRequest` JSON decode — all fields including images, service fields, flexible types, coordinate fields, compatibility fields.
+- [x] `PackageRequest` — `shipperId` fallback from nested `shipper.id`.
+- [x] `CreatePackageRequest` encode — all fields.
+- [x] `PackageUpdateRequest` partial update — verify only changed fields sent; verify `clearSpecialHandlingRequirements` encodes null.
+- [x] `CreateServiceRequestBody` encode — all fields including shopping list.
+- [x] All enums decode from raw string values (especially `PackageType` 21+1 cases, `PackageRequestStatus` 9 cases, `ServiceType` 5 cases).
+- [x] `AvailablePackage` decode with `distanceKm`, `daysSincePosted`, shipper, `packageRequestId`, `volumeLiters`, service fields.
+- [x] `AvailablePackage.toPackageRequest()` converter — all fields mapped correctly.
+- [x] `AvailablePackageShipper` decode with computed properties (ratingValue, effectiveVerificationLevel).
+- [x] `CompatibleTrip` + `CarrierInfo` + `CompatibilityDetails` decode — including pricing fields and `user_types` dual format.
+- [x] `CapacityUtilization` decode.
+- [x] `CompatiblePackagesData` — test both nested and direct pagination shapes.
+- [x] Multipart field names match iOS (22 text fields + images array).
+- [x] Browse query params: verify all 17 params serialize correctly as snake_case.
+- [x] Image polling: mock 3-attempt poll until `imagesProcessing == false`.
+- [x] Flexible type decoding: Double/Int/String for weight; Bool/Int/String for fragile; object/string for dimensions; array/string for shoppingList.
+- [x] Local stores: descriptions (max 15, FIFO, dedup), templates (max 5), disclaimer (offline sync).
+- [x] Service request ViewModel: type selection, shopping list, store location, validation.
+- [x] Date parsing: all format variants (date-only, ISO8601, fractional, microseconds).
+- [x] `AvailablePackagesResult.nearby` flag preserved through response parsing.
