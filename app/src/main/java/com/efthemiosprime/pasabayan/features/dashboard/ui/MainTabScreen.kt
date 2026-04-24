@@ -100,7 +100,14 @@ fun MainTabScreen(
     LaunchedEffect(user) {
         viewModel.initializeRole(user)
         tripsLocalStateViewModel.retryCarrierDisclaimerPendingSync(user.id)
-        conversationsViewModel.loadConversations()
+    }
+
+    LaunchedEffect(state.currentRole) {
+        val roleFilter = when (state.currentRole) {
+            UserRole.SHIPPER -> "shipper"
+            UserRole.CARRIER -> "carrier"
+        }
+        conversationsViewModel.loadConversations(role = roleFilter)
     }
 
     PScaffold(
@@ -180,7 +187,7 @@ fun MainTabScreen(
                     },
                     viewModel = packageViewModel,
                 )
-                "messages" -> MessagesTabScreen()
+                "messages" -> MessagesTabScreen(currentRole = state.currentRole)
                 "profile" -> com.efthemiosprime.pasabayan.features.payments.ui.PaymentsProfileScreen(
                     onLogout = onLogout,
                 )
