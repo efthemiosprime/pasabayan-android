@@ -144,6 +144,13 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun `dismissActiveSheetRoute clears create trip from package route`() {
+        viewModel.openCreateTripFromPackageSheet(packageId = 88)
+        viewModel.dismissActiveSheetRoute()
+        assertNull(viewModel.uiState.value.activeSheetRoute)
+    }
+
+    @Test
     fun `openEditTripSheet sets edit route with trip id`() {
         viewModel.openEditTripSheet(tripId = 42)
         assertEquals(
@@ -163,6 +170,13 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun `dismissActiveSheetRoute clears edit trip route`() {
+        viewModel.openEditTripSheet(tripId = 42)
+        viewModel.dismissActiveSheetRoute()
+        assertNull(viewModel.uiState.value.activeSheetRoute)
+    }
+
+    @Test
     fun `opening a new sheet route replaces previous active route`() {
         viewModel.openTripFilterSheet()
         viewModel.openEditTripSheet(tripId = 25)
@@ -170,6 +184,27 @@ class DashboardViewModelTest {
             DashboardSheetRoute.EditTrip(tripId = 25),
             viewModel.uiState.value.activeSheetRoute,
         )
+    }
+
+    @Test
+    fun `all sheet routes can open in sequence and dismiss deterministically`() {
+        viewModel.openTripFilterSheet()
+        assertEquals(DashboardSheetRoute.TripFilter, viewModel.uiState.value.activeSheetRoute)
+
+        viewModel.openCreateTripFromPackageSheet(packageId = 22)
+        assertEquals(
+            DashboardSheetRoute.CreateTripFromPackage(packageId = 22),
+            viewModel.uiState.value.activeSheetRoute,
+        )
+
+        viewModel.openEditTripSheet(tripId = 33)
+        assertEquals(
+            DashboardSheetRoute.EditTrip(tripId = 33),
+            viewModel.uiState.value.activeSheetRoute,
+        )
+
+        viewModel.dismissActiveSheetRoute()
+        assertNull(viewModel.uiState.value.activeSheetRoute)
     }
 
     @Test

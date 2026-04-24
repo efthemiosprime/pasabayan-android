@@ -1,7 +1,6 @@
 package com.efthemiosprime.pasabayan.features.dashboard.ui
 
 import androidx.activity.ComponentActivity
-import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -50,7 +49,7 @@ class MainTabScreenEditTripEntryPointsTest {
         }
 
         composeRule.onNodeWithContentDescription(moreOptionsLabel).performClick()
-        composeRule.onNodeWithText(editLabel).assertExists().performClick()
+        composeRule.onNodeWithText(editLabel).performClick()
 
         assertEquals(15, selectedTripId)
     }
@@ -72,7 +71,7 @@ class MainTabScreenEditTripEntryPointsTest {
             }
         }
 
-        composeRule.onNodeWithText(editLabel).assertExists().performClick()
+        composeRule.onNodeWithText(editLabel).performClick()
         assertEquals(1, editClicks)
     }
 

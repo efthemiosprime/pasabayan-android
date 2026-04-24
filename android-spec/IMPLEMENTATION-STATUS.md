@@ -114,7 +114,7 @@
   `TripCreationScreen` remains scaffold-level and does not yet implement full parity behaviors: wizard/full-review mode switch, city autocomplete catalog UX, saved-route apply flow in the main creation journey, keyboard focus chain toolbar behavior, and success flow (including save-route prompt path).
 
 - **Trips UI integration coverage (`03-trips.md` screens/components integration)**  
-  `EditTripSheet`, `CreateTripFromPackageScreen`, `TripFilterSheet`, and carrier `TripDetailsScreen` sections now exist, and the **carrier My Trips** detail flow is wired end-to-end (view details + edit + cancel). Remaining integration gaps are in broader entry-point coverage and full creation-flow connections.
+  `EditTripSheet`, `CreateTripFromPackageScreen`, `TripFilterSheet`, and carrier `TripDetailsScreen` sections now exist, and the **carrier My Trips** detail flow is wired end-to-end (view details + edit + cancel). Entry-point coverage is now complete for these tab/sheet routes with deterministic open/close test coverage; remaining integration gap is full trip creation-flow parity connections.
 
 - **Local/client integration depth (`03-trips.md` Local state section)**  
   `UsualTransportStore` autosave and disclaimer pending-sync retry hook are wired. Remaining gap: complete in-flow integration for `SavedRoutesSheet` and `TripTutorialOverlay` in primary trip creation/management journeys.
