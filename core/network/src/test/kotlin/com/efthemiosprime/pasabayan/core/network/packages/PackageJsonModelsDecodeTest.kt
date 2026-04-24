@@ -91,6 +91,26 @@ class PackageJsonModelsDecodeTest {
         assertNull(pkg.shipper)
     }
 
+    @Test
+    fun `PackageRequestJson decodes shopping list array payload`() {
+        val raw = """
+            {
+              "id": 210,
+              "service_type": "grocery_shopping",
+              "shopping_list": [
+                {"item":"Cheese Burger","quantity":"1","notes":"Well-done"},
+                {"item":"Iced Coffee","quantity":"1","notes":"Vanilla syrup"}
+              ],
+              "pickup_city": "Montreal",
+              "delivery_city": "Montreal"
+            }
+        """.trimIndent()
+        val pkg = json.decodeFromString<PackageRequestJson>(raw)
+        assertEquals(210, pkg.id)
+        assertEquals("grocery_shopping", pkg.serviceType)
+        assertNotNull(pkg.shoppingList)
+    }
+
     // -- AvailablePackageJson --
 
     @Test

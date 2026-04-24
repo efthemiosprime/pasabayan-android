@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,6 +29,7 @@ import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.CardMenuAction
+import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
 import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequestCard
@@ -45,7 +47,7 @@ fun PackageListScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) { viewModel.loadPackages() }
+    LaunchedEffect(Unit) { viewModel.refreshPackages() }
 
     Box(modifier = modifier.fillMaxSize()) {
         when {
@@ -55,6 +57,26 @@ fun PackageListScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     PCircularProgress()
+                }
+            }
+            state.errorMessage != null -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(PasabayanSpacing.lg),
+                    verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md, Alignment.CenterVertically),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    PEmptyState(
+                        icon = Icons.Outlined.Inventory2,
+                        title = stringResource(R.string.packages_error_load_packages),
+                        description = state.errorMessage ?: stringResource(R.string.packages_error_load_packages),
+                    )
+                    PButton(
+                        text = stringResource(R.string.packages_retry_load),
+                        onClick = { viewModel.refreshPackages() },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             }
             state.hasLoadedPackages && state.packageRequests.isEmpty() -> {

@@ -3,6 +3,11 @@ package com.efthemiosprime.pasabayan.features.packages.model
 import com.efthemiosprime.pasabayan.core.network.packages.AvailablePackageJson
 import com.efthemiosprime.pasabayan.core.network.packages.PackageImageJson
 import com.efthemiosprime.pasabayan.core.network.packages.PackageRequestJson
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 
 fun PackageRequestJson.toDomain(): PackageRequest = PackageRequest(
     id = id,
@@ -35,7 +40,7 @@ fun PackageRequestJson.toDomain(): PackageRequest = PackageRequest(
     images = images?.map { it.toDomain() },
     imagesProcessing = imagesProcessing,
     serviceType = serviceType,
-    shoppingList = shoppingList,
+    shoppingList = shoppingList.toDisplayString(),
     storeName = storeName,
     storeAddress = storeAddress,
     receiptRequired = receiptRequired,
@@ -74,3 +79,21 @@ fun AvailablePackageJson.toDomain(): AvailablePackage = AvailablePackage(
     shipper = shipper,
     serviceType = serviceType,
 )
+
+private fun JsonElement?.toDisplayString(): String? {
+    val value = this ?: return null
+    return when (value) {
+        is JsonArray -> value.joinToString(separator = "\n") { entry ->
+            val obj = entry as? JsonObject ?: return@joinToString entry.toString()
+            val item = obj["item"]?.jsonPrimitive?.content.orEmpty()
+            val quantity = obj["quantity"]?.jsonPrimitive?.content.orEmpty()
+            val notes = obj["notes"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
+            buildString {
+                append(item)
+                if (quantity.isNotBlank()) append(" x$quantity")
+                if (notes != null) append(" - $notes")
+            }.ifBlank { obj.toString() }
+        }.ifBlank { null }
+        else -> value.jsonPrimitive.contentOrNull ?: value.toString()
+    }
+}

@@ -186,6 +186,7 @@
     <string name="packages_error_submit_service_request">Failed to submit service request</string>
     <string name="packages_error_trip_request_send">Failed to send request</string>
     <string name="packages_error_update_package">Failed to update package</string>
+    <string name="packages_retry_load">Retry loading packages</string>
     <string name="packages_success_cancel_package">Package cancelled</string>
     <string name="packages_success_submit_package_request">Package request submitted</string>
     <string name="packages_success_submit_service_request">Service request submitted</string>

@@ -54,12 +54,24 @@ sealed interface RealtimeChatEvent {
 }
 
 @Singleton
-class RealtimeChatServiceImpl @Inject constructor(
+class RealtimeChatServiceImpl(
     private val okHttpClient: OkHttpClient,
     private val chatRepository: ChatRepository,
     private val json: Json,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val ioDispatcher: CoroutineDispatcher,
 ) : RealtimeChatService {
+    @Inject
+    constructor(
+        okHttpClient: OkHttpClient,
+        chatRepository: ChatRepository,
+        json: Json,
+    ) : this(
+        okHttpClient = okHttpClient,
+        chatRepository = chatRepository,
+        json = json,
+        ioDispatcher = Dispatchers.IO,
+    )
+
     private val scope = CoroutineScope(SupervisorJob() + ioDispatcher)
     private val _isConnected = MutableStateFlow(false)
     private val _events = MutableSharedFlow<RealtimeChatEvent>(extraBufferCapacity = 32)

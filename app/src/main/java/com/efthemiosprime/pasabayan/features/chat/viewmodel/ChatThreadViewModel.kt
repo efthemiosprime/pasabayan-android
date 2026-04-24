@@ -13,7 +13,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.efthemiosprime.pasabayan.core.domain.error.DomainError
@@ -35,8 +34,8 @@ class ChatThreadViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val realtimeChatService: RealtimeChatService,
     private val chatMergeLogic: ChatMergeLogic,
-    private val nowMsProvider: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
+    private var nowMsProvider: () -> Long = System::currentTimeMillis
 
     private val _uiState = MutableStateFlow(ChatThreadUiState())
     val uiState: StateFlow<ChatThreadUiState> = _uiState.asStateFlow()
@@ -256,7 +255,6 @@ class ChatThreadViewModel @Inject constructor(
         deferredPollMessages = null
         pollConnectionJob = viewModelScope.launch {
             realtimeChatService.isConnected
-                .distinctUntilChanged()
                 .collect { connected ->
                     if (connected) {
                         pollMessagesJob?.cancel()
@@ -358,6 +356,14 @@ class ChatThreadViewModel @Inject constructor(
         }
         val text = message.orEmpty().lowercase()
         return text.contains("decode") || text.contains("serialization") || text.contains("invalidresponse")
+    }
+
+    internal fun setNowMsProviderForTesting(provider: () -> Long) {
+        nowMsProvider = provider
+    }
+
+    internal fun applyPolledMessagesForTesting(polledMessages: List<MessageItem>, force: Boolean = false) {
+        applyPolledMessages(polledMessages = polledMessages, force = force)
     }
 }
 

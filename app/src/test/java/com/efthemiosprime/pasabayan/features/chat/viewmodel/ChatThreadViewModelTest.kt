@@ -201,19 +201,19 @@ class ChatThreadViewModelTest {
             chatRepository = fakeRepository,
             realtimeChatService = fakeRealtime,
             chatMergeLogic = ChatMergeLogic(),
-            nowMsProvider = { nowMs },
         )
+        highVolumeViewModel.setNowMsProviderForTesting { nowMs }
         fakeRepository.pageOneMessages = (1..201).map { testMessage(it) }
 
         highVolumeViewModel.openConversation(conversationId = 10, status = "active")
         advanceUntilIdle()
 
-        fakeRealtime.emitPolling((1..202).map { testMessage(it) })
+        highVolumeViewModel.applyPolledMessagesForTesting((1..202).map { testMessage(it) })
         advanceUntilIdle()
         assertEquals(202, highVolumeViewModel.uiState.value.messages.maxOf { it.id })
 
         nowMs = 1_200L
-        fakeRealtime.emitPolling((1..203).map { testMessage(it) })
+        highVolumeViewModel.applyPolledMessagesForTesting((1..203).map { testMessage(it) })
         advanceUntilIdle()
         assertEquals(202, highVolumeViewModel.uiState.value.messages.maxOf { it.id })
 

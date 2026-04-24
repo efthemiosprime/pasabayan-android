@@ -186,6 +186,7 @@
     <string name="packages_error_submit_service_request">\u00c9chec de l\'envoi de la demande de service</string>
     <string name="packages_error_trip_request_send">\u00c9chec de l\'envoi de la demande</string>
     <string name="packages_error_update_package">\u00c9chec de la mise \u00e0 jour du colis</string>
+    <string name="packages_retry_load">R\u00e9essayer le chargement des colis</string>
     <string name="packages_success_cancel_package">Colis annul\u00e9</string>
     <string name="packages_success_submit_package_request">Demande de colis envoy\u00e9e</string>
     <string name="packages_success_submit_service_request">Demande de service envoy\u00e9e</string>

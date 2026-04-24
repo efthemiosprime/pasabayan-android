@@ -8,6 +8,7 @@ import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.core.network.packages.AvailablePackageJson
 import com.efthemiosprime.pasabayan.core.network.packages.PackageImageJson
 import com.efthemiosprime.pasabayan.core.network.packages.PackageRequestJson
+import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -15,6 +16,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PackageMapperTest {
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+    }
 
     @Test
     fun `PackageRequestJson toDomain maps all core fields`() {
@@ -80,6 +85,29 @@ class PackageMapperTest {
         val pkg = json.toDomain()
         assertEquals(1, pkg.images!!.size)
         assertEquals("https://example.com/img.jpg", pkg.images!![0].url)
+    }
+
+    @Test
+    fun `PackageRequestJson toDomain flattens shopping list array`() {
+        val json = PackageRequestJson(
+            id = 50,
+            serviceType = "grocery_shopping",
+            shoppingList = this.json.parseToJsonElement(
+                """
+                [
+                  {"item":"Cheese Burger","quantity":"1","notes":"Well-done"},
+                  {"item":"Iced Coffee","quantity":"1","notes":"Vanilla"}
+                ]
+                """.trimIndent(),
+            ),
+        )
+
+        val pkg = json.toDomain()
+
+        assertEquals("grocery_shopping", pkg.serviceType)
+        assertNotNull(pkg.shoppingList)
+        assertTrue(pkg.shoppingList!!.contains("Cheese Burger x1 - Well-done"))
+        assertTrue(pkg.shoppingList!!.contains("Iced Coffee x1 - Vanilla"))
     }
 
     @Test

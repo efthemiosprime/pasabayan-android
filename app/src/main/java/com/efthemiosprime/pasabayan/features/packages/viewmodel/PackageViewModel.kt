@@ -74,7 +74,7 @@ class PackageViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            hasLoadedPackages = true,
+                            hasLoadedPackages = false,
                             errorMessage = e.message
                                 ?: context.getString(R.string.packages_error_load_packages),
                         )

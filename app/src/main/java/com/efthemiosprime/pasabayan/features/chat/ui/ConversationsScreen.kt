@@ -89,6 +89,17 @@ fun ConversationsContent(
             PTopBar(title = stringResource(R.string.chat_conversations_title))
         },
     ) { innerPadding ->
+        if (!state.alertMessage.isNullOrBlank() && state.conversations.isEmpty() && !state.isLoading) {
+            Text(
+                text = state.alertMessage,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(PasabayanSpacing.lg),
+            )
+            return@PScaffold
+        }
+
         if (state.conversations.isEmpty() && !state.isLoading) {
             Text(
                 text = stringResource(R.string.chat_conversations_empty),

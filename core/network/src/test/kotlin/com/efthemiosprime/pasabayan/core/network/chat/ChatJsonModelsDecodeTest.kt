@@ -16,6 +16,98 @@ class ChatJsonModelsDecodeTest {
     }
 
     @Test
+    fun `ConversationsResponseJson decodes iOS-style conversations wrapper`() {
+        val raw = """
+            {
+              "message": "Conversations retrieved",
+              "conversations": [
+                {
+                  "id": 77,
+                  "status": "active",
+                  "status_display": "Active",
+                  "unread_count": 1,
+                  "other_participant": {
+                    "id": 10,
+                    "name": "Carrier One"
+                  }
+                }
+              ]
+            }
+        """.trimIndent()
+
+        val decoded = json.decodeFromString<ConversationsResponseJson>(raw)
+
+        assertEquals(1, decoded.conversationsOrEmpty().size)
+        assertEquals(77, decoded.conversationsOrEmpty().first().id)
+    }
+
+    @Test
+    fun `MessagesResponseJson decodes nested messages paginator wrapper`() {
+        val raw = """
+            {
+              "message": "Messages retrieved",
+              "messages": {
+                "current_page": 2,
+                "last_page": 5,
+                "data": [
+                  {
+                    "id": 101,
+                    "message": "hello",
+                    "message_type": "text",
+                    "created_at": "2026-01-01T00:00:00Z"
+                  }
+                ]
+              }
+            }
+        """.trimIndent()
+
+        val decoded = json.decodeFromString<MessagesResponseJson>(raw)
+
+        assertEquals(1, decoded.messagesOrEmpty().size)
+        assertEquals(2, decoded.resolvedCurrentPage())
+        assertEquals(5, decoded.resolvedLastPage())
+    }
+
+    @Test
+    fun `SendMessageResponseJson prefers chat_message when present`() {
+        val raw = """
+            {
+              "message": "Message sent successfully",
+              "chat_message": {
+                "id": 202,
+                "message": "sent",
+                "message_type": "text",
+                "created_at": "2026-01-01T00:00:00Z"
+              }
+            }
+        """.trimIndent()
+
+        val decoded = json.decodeFromString<SendMessageResponseJson>(raw)
+
+        assertNotNull(decoded.messageOrNull())
+        assertEquals(202, decoded.messageOrNull()!!.id)
+    }
+
+    @Test
+    fun `SendMessageResponseJson decodes legacy message object`() {
+        val raw = """
+            {
+              "message": {
+                "id": 303,
+                "message": "legacy",
+                "message_type": "text",
+                "created_at": "2026-01-01T00:00:00Z"
+              }
+            }
+        """.trimIndent()
+
+        val decoded = json.decodeFromString<SendMessageResponseJson>(raw)
+
+        assertNotNull(decoded.messageOrNull())
+        assertEquals(303, decoded.messageOrNull()!!.id)
+    }
+
+    @Test
     fun `ConversationSummary decodes nested payload`() {
         val raw = """
             {

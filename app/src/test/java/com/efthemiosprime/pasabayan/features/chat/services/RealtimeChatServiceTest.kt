@@ -7,7 +7,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import kotlin.test.assertIs
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -85,7 +84,7 @@ class RealtimeChatServiceTest {
             chatRepository.authenticateChannel(any(), "private-chat.42", "1001.2002")
         }
         verify {
-            webSocket.send(match { payload ->
+            webSocket.send(match<String> { payload ->
                 payload.contains("pusher:subscribe") &&
                     payload.contains("private-chat.42") &&
                     payload.contains("auth-signature")
@@ -243,7 +242,7 @@ class RealtimeChatServiceTest {
 
         val failedAttempts = events.filterIsInstance<RealtimeChatEvent.ConnectionFailed>().map { it.attempt }
         assertEquals(listOf(1, 2, 3, 4, 5), failedAttempts)
-        assertIs<RealtimeChatEvent.MaxReconnectExceeded>(events.last())
+        assertTrue(events.last() is RealtimeChatEvent.MaxReconnectExceeded)
 
         collectJob.cancel()
     }

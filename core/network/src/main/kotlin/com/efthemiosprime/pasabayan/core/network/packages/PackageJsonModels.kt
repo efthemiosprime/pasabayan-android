@@ -9,6 +9,7 @@ import com.efthemiosprime.pasabayan.core.domain.util.FlexibleBoolSerializer
 import com.efthemiosprime.pasabayan.core.domain.util.FlexibleDoubleSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class PackageRequestJson(
@@ -43,7 +44,7 @@ data class PackageRequestJson(
     @SerialName("images_processing") @Serializable(with = FlexibleBoolSerializer::class) val imagesProcessing: Boolean? = null,
     // Service request fields
     @SerialName("service_type") val serviceType: String? = null,
-    @SerialName("shopping_list") val shoppingList: String? = null,
+    @SerialName("shopping_list") val shoppingList: JsonElement? = null,
     @SerialName("store_name") val storeName: String? = null,
     @SerialName("store_address") val storeAddress: String? = null,
     @SerialName("receipt_required") @Serializable(with = FlexibleBoolSerializer::class) val receiptRequired: Boolean? = null,

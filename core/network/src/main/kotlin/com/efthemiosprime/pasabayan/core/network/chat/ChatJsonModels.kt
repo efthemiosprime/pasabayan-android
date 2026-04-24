@@ -2,39 +2,88 @@ package com.efthemiosprime.pasabayan.core.network.chat
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class ConversationsResponseJson(
-    val data: List<ConversationSummaryJson> = emptyList(),
-)
+    val data: List<ConversationSummaryJson>? = null,
+    val conversations: List<ConversationSummaryJson>? = null,
+) {
+    fun conversationsOrEmpty(): List<ConversationSummaryJson> =
+        when {
+            !conversations.isNullOrEmpty() -> conversations
+            !data.isNullOrEmpty() -> data
+            else -> emptyList()
+        }
+}
 
 @Serializable
 data class ConversationDetailResponseJson(
     val data: ConversationDetailJson? = null,
-)
+    val conversation: ConversationDetailJson? = null,
+) {
+    fun conversationOrNull(): ConversationDetailJson? = conversation ?: data
+}
 
 @Serializable
 data class MessagesResponseJson(
+    val data: List<MessageItemJson>? = null,
+    @SerialName("current_page") val currentPage: Int? = null,
+    @SerialName("last_page") val lastPage: Int? = null,
+    val messages: PaginatedMessagesJson? = null,
+) {
+    fun messagesOrEmpty(): List<MessageItemJson> = messages?.data ?: data.orEmpty()
+    fun resolvedCurrentPage(): Int = messages?.currentPage ?: currentPage ?: 1
+    fun resolvedLastPage(): Int = messages?.lastPage ?: lastPage ?: 1
+}
+
+@Serializable
+data class SendMessageResponseJson(
+    val message: JsonElement? = null,
+    @SerialName("chat_message") val chatMessage: MessageItemJson? = null,
+) {
+    fun messageOrNull(): MessageItemJson? {
+        if (chatMessage != null) return chatMessage
+        val payload = message as? JsonObject ?: return null
+        return runCatching { tolerantJson.decodeFromJsonElement(MessageItemJson.serializer(), payload) }.getOrNull()
+    }
+
+    private companion object {
+        val tolerantJson = Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+            coerceInputValues = true
+        }
+    }
+}
+
+@Serializable
+data class DeleteMessageResponseJson(
+    val success: Boolean = false,
+    @SerialName("deleted_at") val deletedAt: String? = null,
+    val data: DeleteMessageDataJson? = null,
+) {
+    fun deletedAtOrNull(): String? = deletedAt ?: data?.deletedAt
+}
+
+@Serializable
+data class GenericSuccessResponseJson(
+    val success: Boolean = false,
+    val message: String? = null,
+)
+
+@Serializable
+data class PaginatedMessagesJson(
     val data: List<MessageItemJson> = emptyList(),
     @SerialName("current_page") val currentPage: Int = 1,
     @SerialName("last_page") val lastPage: Int = 1,
 )
 
 @Serializable
-data class SendMessageResponseJson(
-    val message: MessageItemJson? = null,
-)
-
-@Serializable
-data class DeleteMessageResponseJson(
-    val success: Boolean = false,
+data class DeleteMessageDataJson(
     @SerialName("deleted_at") val deletedAt: String? = null,
-)
-
-@Serializable
-data class GenericSuccessResponseJson(
-    val success: Boolean = false,
-    val message: String? = null,
 )
 
 @Serializable

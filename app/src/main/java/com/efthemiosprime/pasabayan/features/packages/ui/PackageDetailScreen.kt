@@ -3,17 +3,19 @@ package com.efthemiosprime.pasabayan.features.packages.ui
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
@@ -41,6 +43,8 @@ fun PackageDetailScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val screenHeightDp = LocalConfiguration.current.screenHeightDp
+    val maxSheetHeight = (screenHeightDp * 0.85f).dp
     val statusLabel = when (pkg.status) {
         PackageRequestStatus.OPEN -> stringResource(R.string.packages_status_open)
         PackageRequestStatus.PENDING_REQUEST -> stringResource(R.string.packages_status_pending_request)
@@ -55,7 +59,8 @@ fun PackageDetailScreen(
 
     Column(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .heightIn(max = maxSheetHeight)
             .verticalScroll(rememberScrollState())
             .padding(PasabayanSpacing.screenPadding),
         verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),

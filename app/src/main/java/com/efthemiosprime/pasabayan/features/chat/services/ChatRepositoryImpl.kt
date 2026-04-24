@@ -48,7 +48,7 @@ class ChatRepositoryImpl @Inject constructor(
             if (!response.isSuccessful) {
                 Result.failure(mapError(response))
             } else {
-                Result.success(response.body()?.data?.map { it.toDomain() }.orEmpty())
+                Result.success(response.body()?.conversationsOrEmpty()?.map { it.toDomain() }.orEmpty())
             }
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
@@ -61,7 +61,7 @@ class ChatRepositoryImpl @Inject constructor(
             if (!response.isSuccessful) {
                 Result.failure(mapError(response))
             } else {
-                val detail = response.body()?.data
+                val detail = response.body()?.conversationOrNull()
                 if (detail == null) {
                     Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
                 } else {
@@ -100,9 +100,9 @@ class ChatRepositoryImpl @Inject constructor(
                 } else {
                     Result.success(
                         MessagesPage(
-                            messages = body.data.map { it.toDomain() },
-                            currentPage = body.currentPage,
-                            lastPage = body.lastPage,
+                            messages = body.messagesOrEmpty().map { it.toDomain() },
+                            currentPage = body.resolvedCurrentPage(),
+                            lastPage = body.resolvedLastPage(),
                         ),
                     )
                 }
@@ -125,7 +125,7 @@ class ChatRepositoryImpl @Inject constructor(
             if (!response.isSuccessful) {
                 Result.failure(mapError(response))
             } else {
-                val sent = response.body()?.message?.toDomain()
+                val sent = response.body()?.messageOrNull()?.toDomain()
                 if (sent == null) {
                     Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
                 } else {
@@ -143,7 +143,7 @@ class ChatRepositoryImpl @Inject constructor(
             if (!response.isSuccessful) {
                 Result.failure(mapError(response))
             } else {
-                Result.success(response.body()?.deletedAt)
+                Result.success(response.body()?.deletedAtOrNull())
             }
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
