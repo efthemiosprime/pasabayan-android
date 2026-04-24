@@ -19,7 +19,7 @@
 | Field | Value |
 |-------|--------|
 | **Current phase** | Phase 4 — Payments & Stripe (Phase 3 complete) |
-| **Last updated** | 2026-04-22 (Trips My Trips detail/edit/cancel wiring) |
+| **Last updated** | 2026-04-23 (Trip creation parity slices: wizard/review, saved routes, tutorial, success prompt, route determinism coverage) |
 | **Spec audit** | **Complete** — YAML expanded from ~25 to ~100 endpoint rows; all feature specs updated with query params, multipart fields, WebSocket protocol, local storage keys, activity logs, cache policy, GPS services, badge rules, analytics mock structures |
 
 ---
@@ -93,7 +93,7 @@
 |------|------|
 | [02-auth-session.md](02-auth-session.md) | [x] | App + `:core:session` meets exit gate; optional extra VM/repo tests later |
 | [17-onboarding.md](17-onboarding.md) | [x] | Flows + keys + gates; carrier consent flash uses `didJustCompleteConsent` when carrier UI ships |
-| [03-trips.md](03-trips.md) | [ ] | Partial — core Trips scope and parity/TDD slices are implemented (API, repository, domain, VM, store, and test closeout items). Remaining open scope is now concentrated in deeper UI/flow polish and integration gaps listed in **03-trips remaining blockers**. |
+| [03-trips.md](03-trips.md) | [x] | Complete for current parity scope — trip creation depth/integration blockers were closed: wizard/review flow, local city autocomplete UX, in-flow `SavedRoutesSheet` apply, keyboard focus chain, success + save-route prompt, and `TripTutorialOverlay` primary-journey wiring with test coverage. |
 | [04-packages.md](04-packages.md) | [x] | API + DTOs, domain models, repository, ViewModel, UI screens, form validation (14 tests) |
 | [13-ui-tab-explore.md](13-ui-tab-explore.md) | [x] | Tab shell, role switcher, carrier + shipper explore content, stats grids; Matches/Messages/Profile stubs |
 | [05-bookings-matches.md](05-bookings-matches.md) | [x] | Unified MatchCard + MatchListScreen, 3 ViewModels, counter-offer flows, code screens, 60+ tests |
@@ -108,19 +108,19 @@
 
 ---
 
-## 03-trips remaining blockers (mapped to spec sections/checklist)
+## 03-trips parity notes (recently resolved)
 
-- **UI flow depth (`03-trips.md` Trip creation UX detail)**  
-  `TripCreationScreen` remains scaffold-level and does not yet implement full parity behaviors: wizard/full-review mode switch, city autocomplete catalog UX, saved-route apply flow in the main creation journey, keyboard focus chain toolbar behavior, and success flow (including save-route prompt path).
+- **Trip creation UX depth (`03-trips.md` Trip creation UX detail)**  
+  `TripCreationScreen` now supports wizard/full-review transitions, local city autocomplete catalog UX, in-flow saved-route apply, keyboard focus chain behavior, and success flow with save-route prompt.
 
 - **Trips UI integration coverage (`03-trips.md` screens/components integration)**  
-  `EditTripSheet`, `CreateTripFromPackageScreen`, `TripFilterSheet`, and carrier `TripDetailsScreen` sections now exist, and the **carrier My Trips** detail flow is wired end-to-end (view details + edit + cancel). Entry-point coverage is now complete for these tab/sheet routes with deterministic open/close test coverage; remaining integration gap is full trip creation-flow parity connections.
+  `EditTripSheet`, `CreateTripFromPackageScreen`, `TripFilterSheet`, carrier `TripDetailsScreen`, and primary creation-journey integrations are now wired with deterministic route/open-close behavior coverage.
 
 - **Local/client integration depth (`03-trips.md` Local state section)**  
-  `UsualTransportStore` autosave and disclaimer pending-sync retry hook are wired. Remaining gap: complete in-flow integration for `SavedRoutesSheet` and `TripTutorialOverlay` in primary trip creation/management journeys.
+  `SavedRoutesSheet` and `TripTutorialOverlay` are now integrated in primary trip creation journeys; `UsualTransportStore` and saved-route persistence are applied in the manual creation success path.
 
 - **TDD checklist parity (`03-trips.md` TDD checklist)**  
-  **Resolved for previously flagged closeout items** — tests now cover POST `/trips` error mapping matrix, `TripUpdateRequestJson` planning/non-planning encode behavior, progress metrics status/label derivation, and store wiring coordinator/use-case paths.
+  Coverage now includes trip creation flow-state transitions, saved-route store behavior, trip-creation view-model state machine, and route determinism tests alongside prior API/repository/VM/store closeout coverage.
 
 ---
 
@@ -141,7 +141,7 @@
 - [ ] `RouteActivity/` — Partial — summary endpoint + `RouteActivitySummaryViewModel` + carrier dashboard summary surface implemented via Trips parity slice; remaining Phase 7 RouteActivity scope pending.  
 - [ ] `Shipper/` — Pending — implementation not started.  
 - [ ] `Support/` — Pending — implementation not started.  
-- [ ] `Trips/` — Partial — core Phase 2 scope plus parity/TDD slices are implemented, including My Trips detail/edit/cancel wiring; remaining blockers are listed in **03-trips remaining blockers** above.  
+- [x] `Trips/` — Complete for current parity scope — includes My Trips detail/edit/cancel wiring, trip sheet route determinism coverage, and full trip-creation journey depth/integration slices from `03-trips.md`.  
 - [ ] `Verification/` — Pending — implementation not started.  
 
 **Cross-cutting**

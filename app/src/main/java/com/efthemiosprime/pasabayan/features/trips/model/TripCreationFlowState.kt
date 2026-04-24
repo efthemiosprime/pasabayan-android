@@ -28,10 +28,18 @@ data class TripCreationFlowState(
 
 data class TripCreationRouteFields(
     val originCity: String = "",
+    val originCountryCode: String = "",
+    val pickupAddress: String = "",
     val destinationCity: String = "",
+    val destinationCountryCode: String = "",
+    val dropoffAddress: String = "",
 ) {
     fun applySavedRoute(route: SavedRouteTemplate): TripCreationRouteFields = copy(
         originCity = route.startLocation,
+        originCountryCode = route.startCountryCode,
+        pickupAddress = route.pickupAddress.orEmpty(),
         destinationCity = route.endLocation,
+        destinationCountryCode = route.endCountryCode,
+        dropoffAddress = route.dropoffAddress.orEmpty(),
     )
 }

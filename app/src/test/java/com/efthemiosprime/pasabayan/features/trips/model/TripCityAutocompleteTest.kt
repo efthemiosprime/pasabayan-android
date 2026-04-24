@@ -26,4 +26,11 @@ class TripCityAutocompleteTest {
 
         assertTrue(result.contains("Toronto"))
     }
+
+    @Test
+    fun `suggestions honors result limit`() {
+        val result = TripCityAutocomplete.suggestions("a", limit = 2)
+
+        assertEquals(2, result.size)
+    }
 }

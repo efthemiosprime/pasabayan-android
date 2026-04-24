@@ -261,8 +261,13 @@ fun MainTabScreen(
             onDismissRequest = { showTripCreationSheet = false },
         ) {
             TripCreationScreen(
+                userId = user.id,
                 savedRoutes = tripCreationSavedRoutesState.savedRoutes,
-                onSave = { showTripCreationSheet = false },
+                onTripCreated = {
+                    showTripCreationSheet = false
+                    tripCreationSavedRoutesViewModel.refreshSavedRoutes()
+                    carrierTripsViewModel.refreshTrips()
+                },
                 onCancel = { showTripCreationSheet = false },
             )
         }

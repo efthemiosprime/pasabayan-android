@@ -35,18 +35,31 @@ class TripCreationFlowStateTest {
     }
 
     @Test
-    fun `applySavedRoute replaces origin and destination cities`() {
-        val fields = TripCreationRouteFields(originCity = "Old", destinationCity = "Cities")
+    fun `applySavedRoute replaces route, country, and address fields`() {
+        val fields = TripCreationRouteFields(
+            originCity = "Old",
+            originCountryCode = "CA",
+            pickupAddress = "Old pickup",
+            destinationCity = "Cities",
+            destinationCountryCode = "CA",
+            dropoffAddress = "Old dropoff",
+        )
         val route = SavedRouteTemplate(
             startCountryCode = "CA",
             startLocation = "Toronto",
+            pickupAddress = "Union Station",
             endCountryCode = "CA",
             endLocation = "Montreal",
+            dropoffAddress = "Old Port",
         )
 
         val updated = fields.applySavedRoute(route)
 
         assertEquals("Toronto", updated.originCity)
         assertEquals("Montreal", updated.destinationCity)
+        assertEquals("CA", updated.originCountryCode)
+        assertEquals("CA", updated.destinationCountryCode)
+        assertEquals("Union Station", updated.pickupAddress)
+        assertEquals("Old Port", updated.dropoffAddress)
     }
 }
