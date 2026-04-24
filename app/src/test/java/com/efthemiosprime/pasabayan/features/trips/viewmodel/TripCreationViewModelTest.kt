@@ -21,6 +21,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import io.mockk.confirmVerified
 import org.junit.Before
 import org.junit.Test
 
@@ -105,6 +106,42 @@ class TripCreationViewModelTest {
         verify(exactly = 1) { usualTransportStore.set(9, TransportationMethod.CAR) }
         verify(exactly = 1) { savedRouteTemplatesStore.save(route) }
         assertFalse(viewModel.uiState.value.shouldShowSaveRoutePrompt)
+    }
+
+    @Test
+    fun `completeSuccessFlow skip route does not persist template`() {
+        val route = SavedRouteTemplate(
+            startCountryCode = "CA",
+            startLocation = "Toronto",
+            endCountryCode = "CA",
+            endLocation = "Montreal",
+        )
+
+        viewModel.completeSuccessFlow(
+            userId = 9L,
+            transportationMethod = TransportationMethod.CAR,
+            saveRouteTemplate = route,
+            saveRoute = false,
+        )
+
+        verify(exactly = 1) { usualTransportStore.set(9, TransportationMethod.CAR) }
+        verify(exactly = 0) { savedRouteTemplatesStore.save(any()) }
+        assertFalse(viewModel.uiState.value.shouldShowSaveRoutePrompt)
+    }
+
+    @Test
+    fun `completeSuccessFlow with no transport does not persist usual method`() {
+        viewModel.completeSuccessFlow(
+            userId = 9L,
+            transportationMethod = TransportationMethod.NONE,
+            saveRouteTemplate = null,
+            saveRoute = false,
+        )
+
+        verify(exactly = 0) { usualTransportStore.set(any(), any()) }
+        verify(exactly = 0) { savedRouteTemplatesStore.save(any()) }
+        assertFalse(viewModel.uiState.value.shouldShowSaveRoutePrompt)
+        confirmVerified(usualTransportStore, savedRouteTemplatesStore)
     }
 
     private fun testCreateTripRequest() =
