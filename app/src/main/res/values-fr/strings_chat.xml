@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_conversations_title">Messages</string>
+    <string name="chat_conversations_empty">Aucune conversation pour le moment</string>
+    <string name="chat_conversations_unknown_route">Itinéraire indisponible</string>
+    <string name="chat_conversations_no_messages_yet">Pas encore de messages</string>
+
+    <string name="chat_thread_title">Conversation</string>
+    <string name="chat_back">Retour</string>
+    <string name="chat_load_more">Charger les anciens messages</string>
+    <string name="chat_delete_message">Supprimer le message</string>
+    <string name="chat_compose_label">Message</string>
+    <string name="chat_send">Envoyer le message</string>
+    <string name="chat_composer_disabled">Cette conversation est fermée.</string>
+
+    <string name="chat_message_deleted_placeholder">[Message supprimé]</string>
+    <string name="chat_message_receipt_prompt">Téléversement du reçu demandé</string>
+    <string name="chat_message_service_list_item_label">Élément de liste de service</string>
+    <string name="chat_message_failed_retry">Échec d’envoi du message</string>
+    <string name="chat_message_retry">Réessayer</string>
+
+    <string name="chat_receipt_upload_title">Téléverser un reçu</string>
+    <string name="chat_receipt_upload_close">Fermer le téléversement du reçu</string>
+    <string name="chat_receipt_upload_description">Choisissez comment téléverser la photo de votre reçu.</string>
+    <string name="chat_receipt_upload_camera">Prendre une photo</string>
+    <string name="chat_receipt_upload_gallery">Choisir depuis la galerie</string>
+</resources>

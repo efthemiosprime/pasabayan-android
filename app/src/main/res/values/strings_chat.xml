@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_conversations_title">Messages</string>
+    <string name="chat_conversations_empty">No conversations yet</string>
+    <string name="chat_conversations_unknown_route">Route unavailable</string>
+    <string name="chat_conversations_no_messages_yet">No messages yet</string>
+
+    <string name="chat_thread_title">Conversation</string>
+    <string name="chat_back">Back</string>
+    <string name="chat_load_more">Load older messages</string>
+    <string name="chat_delete_message">Delete message</string>
+    <string name="chat_compose_label">Message</string>
+    <string name="chat_send">Send message</string>
+    <string name="chat_composer_disabled">This conversation is closed.</string>
+
+    <string name="chat_message_deleted_placeholder">[Message deleted]</string>
+    <string name="chat_message_receipt_prompt">Receipt upload requested</string>
+    <string name="chat_message_service_list_item_label">Service list item</string>
+    <string name="chat_message_failed_retry">Message failed to send</string>
+    <string name="chat_message_retry">Retry</string>
+
+    <string name="chat_receipt_upload_title">Upload receipt</string>
+    <string name="chat_receipt_upload_close">Close receipt upload</string>
+    <string name="chat_receipt_upload_description">Choose how you want to upload your receipt photo.</string>
+    <string name="chat_receipt_upload_camera">Take photo</string>
+    <string name="chat_receipt_upload_gallery">Choose from gallery</string>
+</resources>

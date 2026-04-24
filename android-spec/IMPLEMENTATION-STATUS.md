@@ -18,8 +18,8 @@
 
 | Field | Value |
 |-------|--------|
-| **Current phase** | Phase 4 — Payments & Stripe (Phase 3 complete) |
-| **Last updated** | 2026-04-23 (Packages strict parity slices: detail/edit/cancel wiring, available-packages carrier browse semantics, disclaimer/tutorial + saved template integration, localization hardening, and store/view-model TDD expansion) |
+| **Current phase** | Phase 5 — Chat & notifications (07 chat implementation slices landed; 08 notifications pending) |
+| **Last updated** | 2026-04-24 (Chat broadcasting slice landed: chat network contracts + decode tests, repository + merge logic, realtime websocket/polling service, conversations/thread ViewModels, Messages tab integration, chat UI screens/components/sheet, EN/FR chat localization resources, and chat-focused unit tests) |
 | **Spec audit** | **Complete** — YAML expanded from ~25 to ~100 endpoint rows; all feature specs updated with query params, multipart fields, WebSocket protocol, local storage keys, activity logs, cache policy, GPS services, badge rules, analytics mock structures |
 
 ---
@@ -33,7 +33,7 @@
 | **2** — Trips, packages, Explore | Browse/list/create flows + role tabs | **Complete** — `:core:domain` (15 enums, 4 shared models, FlexibleDecoders, DateTimeParsing); 12 new `P*` design-system components; tab shell with role switcher. **Trips** parity slices landed across API/repository/VM/UI/store/TDD: endpoints in `TripsApi` (`/routes/popular-packages`, `/route-activity/summary`, `/trips/{id}/matches`, `/packages/{id}/trip-template`), create-trip special error taxonomy, `PopularRoute` + `RouteActivitySummary` contract alignment, booking/compatibility state in `BrowseTripsViewModel`, explicit `cancelTrip()` blocking in `CarrierTripsViewModel`, `TripPackageProgressViewModel` idle + status labels, new UI surfaces (`TripFilterSheet`, `EditTripSheet`, `CreateTripFromPackageScreen`), carrier `TripDetailsScreen` sections, and local-state coordinator wiring (`UsualTransportStore`, saved-route autosave, disclaimer pending-sync retry hook). Decode/repository/VM/store tests were expanded, including `TripUpdateRequestJson` planning/non-planning encode constraints. **Packages**: API/DTO/domain/repository/VM/UI + `PackageFormValidator` tests remain complete. **Explore**: `CarrierExploreContent` + `ShipperExploreContent` surface route activity/popular routes; EN/FR strings updated. |
 | **3** — Bookings & matches | Core marketplace loop + counter-offer parity | **Complete** — BookingsApi (20+ endpoints), DeliveryMatch (60+ fields) + BookingAction (10 cases) + BookingMapper + computed props (availableActions, pricing, codes); BookingType enum; 9 nested info types; 10 supporting models (CounterOfferContext, codes, tracking, stats); BookingsRepository (15 methods); MatchingViewModel + LiveTrackingViewModel + AutoChargeConfirmationViewModel; unified MatchCard (replaces 4 iOS cards) + MatchStatusBadge + PriceComparison + CounterOfferBanner + code views; RequestToCarrySheet + CounterOfferPromptSheet + AutoChargeSheet + RateDeliverySheet; unified MatchListScreen wired to tab; BookingSuccessScreen + code screens; 60+ tests; full i18n (EN+FR). |
 | **4** — Payments & Stripe | … | **Partial** — closeout check run: PaymentSheet parity ✅, transactions parity ✅, payments test checklist ✅. Exit gate not met yet: Stripe Connect onboarding/dashboard journey still lacks full iOS parity states (loading/not setup/partial/complete, security notice, onboarding/dashboard sheet handling). |
-| **5** — Chat & notifications | … | **Pending** — FCM service stub + `firebase-messaging` dependency only; feature implementation not started. |
+| **5** — Chat & notifications | … | **Partial** — `07-chat-broadcasting` core slices landed (chat Retrofit contracts, DTO decode tests, chat repository + merge logic, realtime websocket service with reconnect/polling fallback hooks, thread/conversation ViewModels, chat UI + Messages tab wiring, EN/FR chat resources). Remaining: notification/device-token routing from `08-notifications-device-tokens.md`, deep-link parity, and final phase-gate verification. |
 | **6** — Profile, verification, favorites & ratings | … | **Pending** — feature implementation not started. |
 | **7** — Legal, support, misc | … | **Pending** — feature implementation not started. |
 
@@ -98,7 +98,7 @@
 | [13-ui-tab-explore.md](13-ui-tab-explore.md) | [x] | Tab shell, role switcher, carrier + shipper explore content, stats grids; Matches/Messages/Profile stubs |
 | [05-bookings-matches.md](05-bookings-matches.md) | [x] | Unified MatchCard + MatchListScreen, 3 ViewModels, counter-offer flows, code screens, 60+ tests |
 | [06-payments-stripe.md](06-payments-stripe.md) | [ ] | Partial — closeout check confirms most scope complete (PaymentSheet + transactions + tests). Remaining for phase gate: finalize `PayoutSetupScreen` parity per spec states and onboarding/dashboard sheet UX, then re-run Phase 4 verification. |
-| [07-chat-broadcasting.md](07-chat-broadcasting.md) | [ ] | Pending — implementation not started. |
+| [07-chat-broadcasting.md](07-chat-broadcasting.md) | [x] | Core implementation slices landed in app + `:core:network`: contracts/decode tests, repository/realtime/merge logic, ViewModels, Messages tab wiring, chat UI components/screens, and localization resources. Follow-up hardening remains for full parity/perf validation with live backend. |
 | [08-notifications-device-tokens.md](08-notifications-device-tokens.md) | [ ] | Pending — implementation not started. |
 | [09-profile-carrier-consent.md](09-profile-carrier-consent.md) | [ ] | Pending — implementation not started. |
 | [10-verification.md](10-verification.md) | [ ] | Pending — implementation not started. |
@@ -129,13 +129,13 @@
 - [x] `Authentication/` — Complete — `:core:session` + **AuthScreen** / **AuthRoute** / **AuthViewModel**; **401 → signed-out**  
 - [ ] `Analytics/` — Pending — [19-analytics.md](19-analytics.md) not started.  
 - [x] `Bookings/` — Complete — Phase 3 scope landed.  
-- [ ] `Chat/` — Pending — implementation not started.  
+- [x] `Chat/` — Complete for core Android spec slices — contracts + realtime service + repository/merge + ViewModels + UI/messages tab + localization landed; remaining Phase 5 completion depends on notifications/deep-link gate.  
 - [ ] `Favorites/` — Pending — implementation not started.  
 - [ ] `Legal/` — Pending — implementation not started.  
 - [ ] `Notifications/` — Pending — FCM dependency + stub service only.  
 - [x] `Onboarding/` — Complete — Phase 1 scope landed.  
-- [x] `Packages/` — Complete — Phase 2 scope landed.  
-- [x] `Payments/` — Partial — Phase 4 slice in progress; exit gate not met yet.  
+- [x] `Packages/` — Complete — strict `04-packages.md` parity bridge landed (detail/edit/cancel flow wiring, carrier available-packages path split, local store journey integration, localization hardening, and test/spec sync).  
+- [ ] `Payments/` — Partial — Phase 4 slice in progress; exit gate not met yet.  
 - [ ] `Profile/` — Pending — implementation not started.  
 - [ ] `Ratings/` — Pending — implementation not started.  
 - [ ] `RouteActivity/` — Partial — summary endpoint + `RouteActivitySummaryViewModel` + carrier dashboard summary surface implemented via Trips parity slice; remaining Phase 7 RouteActivity scope pending.  
@@ -149,5 +149,5 @@
 - [x] Shared networking stack in `:core:network` — Complete — interceptor policy + prod base URL.  
 - [x] Design tokens in `:core:designsystem` — Complete.  
 - [x] App shell / tabs / Explore — Complete — built in Phase 2 (`MainTabScreen`, role switcher, carrier + shipper explore); tab-specific feature depth continues in later phases.  
-- [x] `google-services.json` + Firebase project linkage for FCM — Partial — linkage done; runtime registration still TODO.  
+- [ ] `google-services.json` + Firebase project linkage for FCM — Partial — linkage done; runtime registration still TODO.  
 - [x] Google / Facebook **sign-in flows** — Complete — Compose + backend done; Credential Manager / extra tests optional.

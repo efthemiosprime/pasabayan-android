@@ -1,6 +1,8 @@
 package com.efthemiosprime.pasabayan.features.dashboard.components
 
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -18,6 +20,7 @@ fun PasabayanBottomBar(
     tabs: List<MainTab>,
     selectedIndex: Int,
     onTabSelected: (Int) -> Unit,
+    badgeCountByRoute: Map<String, Int> = emptyMap(),
     modifier: Modifier = Modifier,
 ) {
     NavigationBar(
@@ -30,10 +33,19 @@ fun PasabayanBottomBar(
                 selected = selectedIndex == index,
                 onClick = { onTabSelected(index) },
                 icon = {
-                    Icon(
-                        painter = painterResource(tab.iconResId),
-                        contentDescription = stringResource(tab.labelResId),
-                    )
+                    val badgeCount = badgeCountByRoute[tab.route] ?: 0
+                    BadgedBox(
+                        badge = {
+                            if (badgeCount > 0) {
+                                Badge { Text(text = badgeCount.toString()) }
+                            }
+                        },
+                    ) {
+                        Icon(
+                            painter = painterResource(tab.iconResId),
+                            contentDescription = stringResource(tab.labelResId),
+                        )
+                    }
                 },
                 label = {
                     Text(text = stringResource(tab.labelResId))
