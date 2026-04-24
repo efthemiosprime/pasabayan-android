@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -21,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -38,6 +40,7 @@ import com.efthemiosprime.pasabayan.features.chat.model.MessageItem
 import com.efthemiosprime.pasabayan.features.chat.model.Sender
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ChatThreadUiState
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ChatThreadViewModel
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +53,7 @@ fun ChatThreadScreen(
 ) {
     val state = viewModel.uiState.collectAsStateWithLifecycle().value
     var composerText by remember { mutableStateOf("") }
+    var showReceiptUploadSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(conversationId) {
         viewModel.openConversation(conversationId, status)
@@ -73,8 +77,16 @@ fun ChatThreadScreen(
         onLoadMore = viewModel::loadMoreMessages,
         onDeleteMessage = viewModel::deleteMessage,
         isFailed = viewModel::isFailed,
+        onReceiptUploadClick = { showReceiptUploadSheet = true },
         modifier = modifier,
     )
+    if (showReceiptUploadSheet) {
+        ChatReceiptUploadSheet(
+            onUploadFromCamera = { showReceiptUploadSheet = false },
+            onUploadFromGallery = { showReceiptUploadSheet = false },
+            onClose = { showReceiptUploadSheet = false },
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,8 +101,20 @@ fun ChatThreadContent(
     onLoadMore: () -> Unit,
     onDeleteMessage: (Int) -> Unit,
     isFailed: (MessageItem) -> Boolean,
+    onReceiptUploadClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val listState = rememberLazyListState()
+    LaunchedEffect(listState, state.nextPage, state.isPaging) {
+        snapshotFlow { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 }
+            .distinctUntilChanged()
+            .collect { isAtTop ->
+                if (isAtTop && state.nextPage != null && !state.isPaging) {
+                    onLoadMore()
+                }
+            }
+    }
+
     PScaffold(
         modifier = modifier,
         topBar = {
@@ -113,23 +137,20 @@ fun ChatThreadContent(
                 .padding(innerPadding),
         ) {
             LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
                     .padding(horizontal = PasabayanSpacing.lg),
                 verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
             ) {
-                item {
-                    androidx.compose.material3.TextButton(onClick = onLoadMore) {
-                        Text(stringResource(R.string.chat_load_more))
-                    }
-                }
                 items(state.messages, key = { it.id }) { message ->
                     ChatMessageBubble(
                         message = message,
                         isOwnMessage = message.canDelete,
                         isFailed = isFailed(message),
                         onRetry = { onRetrySend(message.id) },
+                        onReceiptUploadClick = onReceiptUploadClick,
                     )
                     if (message.canDelete && !message.isDeleted) {
                         androidx.compose.material3.TextButton(
@@ -217,6 +238,7 @@ private fun ChatThreadContentPreview() {
             onLoadMore = {},
             onDeleteMessage = {},
             isFailed = { false },
+            onReceiptUploadClick = {},
         )
     }
 }

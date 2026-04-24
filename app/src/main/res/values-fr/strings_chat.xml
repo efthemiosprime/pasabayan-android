@@ -4,6 +4,14 @@
     <string name="chat_conversations_empty">Aucune conversation pour le moment</string>
     <string name="chat_conversations_unknown_route">Itinéraire indisponible</string>
     <string name="chat_conversations_no_messages_yet">Pas encore de messages</string>
+    <string name="chat_conversation_verified">Participant vérifié</string>
+    <string name="chat_filters_all_roles">Tous les rôles</string>
+    <string name="chat_filters_role_shipper">Expéditeur</string>
+    <string name="chat_filters_role_carrier">Transporteur</string>
+    <string name="chat_filters_all_statuses">Tous les statuts</string>
+    <string name="chat_filters_status_active">Actif</string>
+    <string name="chat_filters_status_closed">Fermé</string>
+    <string name="chat_filters_unread_only">Non lus seulement</string>
 
     <string name="chat_thread_title">Conversation</string>
     <string name="chat_back">Retour</string>
@@ -15,7 +23,17 @@
 
     <string name="chat_message_deleted_placeholder">[Message supprimé]</string>
     <string name="chat_message_receipt_prompt">Téléversement du reçu demandé</string>
+    <string name="chat_message_receipt_prompt_action">Téléverser le reçu</string>
     <string name="chat_message_service_list_item_label">Élément de liste de service</string>
+    <string name="chat_message_service_item">Article : %1$s</string>
+    <string name="chat_message_service_quantity">Quantité : %1$d</string>
+    <string name="chat_message_service_notes">Notes : %1$s</string>
+    <string name="chat_message_service_note_url">Référence : %1$s</string>
+    <string name="chat_message_status_sent">Envoyé</string>
+    <string name="chat_message_status_delivered">Livré</string>
+    <string name="chat_message_status_read">Lu</string>
+    <string name="chat_message_status_read_by_you">Lu par vous</string>
+    <string name="chat_message_status_unread">Non lu</string>
     <string name="chat_message_failed_retry">Échec d’envoi du message</string>
     <string name="chat_message_retry">Réessayer</string>
 

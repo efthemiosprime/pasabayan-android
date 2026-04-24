@@ -2,16 +2,25 @@ package com.efthemiosprime.pasabayan.features.chat.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.background
 import androidx.compose.material3.Badge
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.efthemiosprime.pasabayan.R
@@ -22,6 +31,9 @@ import com.efthemiosprime.pasabayan.features.chat.model.ConversationSummary
 import com.efthemiosprime.pasabayan.features.chat.model.LastMessage
 import com.efthemiosprime.pasabayan.features.chat.model.MatchInfo
 import com.efthemiosprime.pasabayan.features.chat.model.Participant
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun ConversationRow(
@@ -36,17 +48,36 @@ fun ConversationRow(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+            verticalAlignment = Alignment.Top,
         ) {
+            AvatarBadge(name = conversation.otherParticipant.name)
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
             ) {
-                Text(
-                    text = conversation.otherParticipant.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = conversation.otherParticipant.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    if (!conversation.otherParticipant.verificationLevel.isNullOrBlank()) {
+                        Icon(
+                            imageVector = Icons.Filled.Verified,
+                            contentDescription = stringResource(R.string.chat_conversation_verified),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    Text(
+                        text = formatTimestamp(conversation.lastMessageAt),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 Text(
                     text = conversation.matchInfo?.route ?: stringResource(R.string.chat_conversations_unknown_route),
                     style = MaterialTheme.typography.bodySmall,
@@ -66,6 +97,43 @@ fun ConversationRow(
             }
         }
     }
+}
+
+@Composable
+private fun AvatarBadge(name: String) {
+    Box(
+        modifier = Modifier
+            .size(PasabayanSpacing.xxxl)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = initials(name),
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            style = MaterialTheme.typography.labelMedium,
+        )
+    }
+}
+
+private fun initials(name: String): String {
+    val pieces = name.split(" ").filter { it.isNotBlank() }
+    if (pieces.isEmpty()) return "?"
+    val first = pieces.first().first().uppercase()
+    val second = pieces.drop(1).firstOrNull()?.first()?.uppercase() ?: ""
+    return first + second
+}
+
+private fun formatTimestamp(raw: String?): String {
+    if (raw.isNullOrBlank()) {
+        return ""
+    }
+    return runCatching {
+        val parsed = Instant.parse(raw)
+        DateTimeFormatter.ofPattern("MMM d, HH:mm")
+            .withZone(ZoneId.systemDefault())
+            .format(parsed)
+    }.getOrElse { raw }
 }
 
 @Preview(showBackground = true)

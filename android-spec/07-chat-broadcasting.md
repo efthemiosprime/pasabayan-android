@@ -325,16 +325,16 @@ Sent via `POST /chat/conversations/{id}/messages` with `type: "system"`. Display
 - [ ] `MessageItem` JSON decode — all fields including metadata, readReceipts, deliveryStatus, isDeleted.
 - [ ] `BroadcastingConfigResponse` + `ReverbConfig` decode.
 - [ ] `ChannelAuthResponse` decode.
-- [ ] WebSocket: connect → extract socket_id → subscribe → receive message → parse → display.
-- [ ] Reconnection: exponential backoff up to 30s, max 5 attempts, auto-resubscribe.
-- [ ] Polling fallback: 5s interval, message merge logic, deduplication by ID.
+- [x] WebSocket: connect → extract socket_id → subscribe → receive message → parse → display.
+- [x] Reconnection: exponential backoff up to 30s, max 5 attempts, auto-resubscribe.
+- [x] Polling fallback: 5s interval, message merge logic, deduplication by ID.
 - [ ] `ChatMarkAsReadDedupeTests`: only one API call per message ID per session.
-- [ ] `ChatFailedMessageTests`: temp ID tracking, retry, recovery on decode error.
-- [ ] `ChatViewModelPollingPerformanceTests`: rate-limit at 200+ messages (1s coalesce).
+- [x] `ChatFailedMessageTests`: temp ID tracking, retry, recovery on decode error.
+- [x] `ChatViewModelPollingPerformanceTests`: rate-limit at 200+ messages (1s coalesce).
 - [ ] `ChatMergeLogic`: fast path (append), slow path (merge + dedup), status refresh.
 - [ ] Optimistic sending: temp negative ID → replace on success → mark failed on error.
 - [ ] Pagination: prepend older messages, deduplicate, nextPage tracking.
 - [ ] Soft-delete: update local state, show placeholder.
 - [ ] Conversation status → composer disabled for closed/archived/cancelled.
 - [ ] Unread count: sync on conversation list load, zero on open, expose for tab badge.
-- [ ] Special message types: system, receipt_upload_prompt, service_list_item metadata parsing.
+- [x] Special message types: system, receipt_upload_prompt, service_list_item metadata parsing.

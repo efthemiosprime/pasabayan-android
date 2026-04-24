@@ -58,9 +58,8 @@ class RealtimeChatServiceImpl @Inject constructor(
     private val okHttpClient: OkHttpClient,
     private val chatRepository: ChatRepository,
     private val json: Json,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : RealtimeChatService {
-
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
     private val scope = CoroutineScope(SupervisorJob() + ioDispatcher)
     private val _isConnected = MutableStateFlow(false)
     private val _events = MutableSharedFlow<RealtimeChatEvent>(extraBufferCapacity = 32)
@@ -77,10 +76,12 @@ class RealtimeChatServiceImpl @Inject constructor(
     private var pingJob: Job? = null
     private var reconnectJob: Job? = null
     private var reconnectAttempts: Int = 0
+    private var shouldReconnect: Boolean = true
     private val subscribedChannels = linkedSetOf<Int>()
 
     override fun connect(config: ReverbConfig) {
         this.config = config
+        shouldReconnect = true
         reconnectJob?.cancel()
         webSocket?.cancel()
         reconnectAttempts = 0
@@ -92,6 +93,7 @@ class RealtimeChatServiceImpl @Inject constructor(
     }
 
     override fun disconnect() {
+        shouldReconnect = false
         reconnectJob?.cancel()
         pingJob?.cancel()
         webSocket?.close(1000, "closed")
@@ -149,14 +151,18 @@ class RealtimeChatServiceImpl @Inject constructor(
             _isConnected.value = false
             _socketId.value = null
             pingJob?.cancel()
-            scheduleReconnect()
+            if (shouldReconnect) {
+                scheduleReconnect()
+            }
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             _isConnected.value = false
             _socketId.value = null
             pingJob?.cancel()
-            scheduleReconnect()
+            if (shouldReconnect) {
+                scheduleReconnect()
+            }
         }
     }
 
@@ -164,7 +170,7 @@ class RealtimeChatServiceImpl @Inject constructor(
         val root = parseJson(raw) ?: return
         val eventName = root["event"]?.jsonPrimitive?.contentOrNull ?: return
         when (eventName) {
-            "pusher:connection_established" -> {
+            "pusher:connection_established", "connection_established" -> {
                 val socket = extractSocketId(root)
                 _socketId.value = socket
                 resubscribeChannels(webSocket)
@@ -182,8 +188,14 @@ class RealtimeChatServiceImpl @Inject constructor(
     }
 
     private fun extractSocketId(root: JsonObject): String? {
-        val dataValue = root["data"]?.jsonPrimitive?.contentOrNull ?: return null
-        val nested = parseJson(dataValue) ?: return null
+        val dataField = root["data"] ?: return null
+        val nested = when (dataField) {
+            is JsonObject -> dataField
+            else -> {
+                val content = dataField.jsonPrimitive.contentOrNull ?: return null
+                parseJson(content) ?: return null
+            }
+        }
         return nested["socket_id"]?.jsonPrimitive?.contentOrNull
     }
 
@@ -194,11 +206,8 @@ class RealtimeChatServiceImpl @Inject constructor(
 
     private fun extractMessagePayload(root: JsonObject): MessageItem? {
         val dataField = root["data"] ?: return null
-        val dataObject = when (dataField) {
-            is JsonObject -> dataField
-            else -> parseJson(dataField.toString()) ?: return null
-        }
-        val rawMessage: JsonElement = dataObject["chat_message"] ?: dataObject
+        val dataObject = parseDataObject(dataField) ?: return null
+        val rawMessage: JsonElement = resolveMessageElement(dataObject) ?: return null
         return runCatching {
             json.decodeFromJsonElement(
                 com.efthemiosprime.pasabayan.core.network.chat.MessageItemJson.serializer(),
@@ -207,8 +216,36 @@ class RealtimeChatServiceImpl @Inject constructor(
         }.getOrNull()
     }
 
+    private fun parseDataObject(dataField: JsonElement): JsonObject? {
+        return when (dataField) {
+            is JsonObject -> dataField
+            else -> {
+                val content = dataField.jsonPrimitive.contentOrNull ?: return null
+                parseJson(content)
+            }
+        }
+    }
+
+    private fun resolveMessageElement(dataObject: JsonObject): JsonElement? {
+        val wrapped = dataObject["chat_message"] ?: return dataObject
+        return when (wrapped) {
+            is JsonObject -> wrapped
+            else -> {
+                val content = wrapped.jsonPrimitive.contentOrNull ?: return null
+                parseJson(content)
+            }
+        }
+    }
+
     private fun parseJson(raw: String): JsonObject? = runCatching {
-        json.parseToJsonElement(raw).jsonObject
+        val parsed = json.parseToJsonElement(raw)
+        when (parsed) {
+            is JsonObject -> parsed
+            else -> {
+                val nested = parsed.jsonPrimitive.contentOrNull ?: return@runCatching null
+                json.parseToJsonElement(nested).jsonObject
+            }
+        }
     }.getOrNull()
 
     private fun parseJson(raw: JsonElement): JsonObject? = runCatching {

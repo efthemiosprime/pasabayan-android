@@ -7,7 +7,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.features.chat.model.ConversationSummary
 import com.efthemiosprime.pasabayan.features.chat.model.LastMessage
+import com.efthemiosprime.pasabayan.features.chat.model.ListItem
 import com.efthemiosprime.pasabayan.features.chat.model.MessageItem
+import com.efthemiosprime.pasabayan.features.chat.model.MessageMetadata
 import com.efthemiosprime.pasabayan.features.chat.model.Participant
 import com.efthemiosprime.pasabayan.features.chat.model.Sender
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ChatThreadUiState
@@ -44,6 +46,12 @@ class ChatScreensTest {
                             ),
                         ),
                     ),
+                    roleFilter = null,
+                    statusFilter = null,
+                    unreadOnly = false,
+                    onRoleFilterChange = {},
+                    onStatusFilterChange = {},
+                    onUnreadOnlyChange = {},
                     onOpenConversation = {},
                 )
             }
@@ -90,11 +98,119 @@ class ChatScreensTest {
                     onLoadMore = {},
                     onDeleteMessage = {},
                     isFailed = { false },
+                    onReceiptUploadClick = {},
                 )
             }
         }
 
         composeRule.onNodeWithText("Hello there").assertIsDisplayed()
+    }
+
+    @Test
+    fun chatThreadContent_showsServiceListDetails() {
+        composeRule.setContent {
+            PasabayanTheme {
+                ChatThreadContent(
+                    state = ChatThreadUiState(
+                        conversationId = 9,
+                        messages = listOf(
+                            MessageItem(
+                                id = 10,
+                                message = "List item",
+                                messageType = "text",
+                                sender = Sender(1, "User", null),
+                                isRead = false,
+                                createdAt = "",
+                                formattedMessage = null,
+                                messageTypeDisplay = null,
+                                readAt = null,
+                                readReceipts = emptyMap(),
+                                deliveryStatus = "sent",
+                                deliveredAt = null,
+                                attachments = emptyList(),
+                                canEdit = false,
+                                canDelete = true,
+                                isDeleted = false,
+                                deletedAt = null,
+                                metadata = MessageMetadata(
+                                    type = "service_list_item",
+                                    listItemIndex = 1,
+                                    listItemTotal = 2,
+                                    listItem = ListItem(
+                                        item = "Milk",
+                                        quantity = 2,
+                                        notes = "Low fat",
+                                        noteUrls = listOf("https://example.com/milk"),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                    composerText = "",
+                    onComposerTextChange = {},
+                    onSend = {},
+                    onRetrySend = {},
+                    onBack = {},
+                    onLoadMore = {},
+                    onDeleteMessage = {},
+                    isFailed = { false },
+                    onReceiptUploadClick = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Quantity: 2").assertIsDisplayed()
+    }
+
+    @Test
+    fun chatThreadContent_showsReceiptUploadAction() {
+        composeRule.setContent {
+            PasabayanTheme {
+                ChatThreadContent(
+                    state = ChatThreadUiState(
+                        conversationId = 9,
+                        messages = listOf(
+                            MessageItem(
+                                id = 11,
+                                message = "Upload please",
+                                messageType = "text",
+                                sender = Sender(1, "User", null),
+                                isRead = false,
+                                createdAt = "",
+                                formattedMessage = null,
+                                messageTypeDisplay = null,
+                                readAt = null,
+                                readReceipts = emptyMap(),
+                                deliveryStatus = "sent",
+                                deliveredAt = null,
+                                attachments = emptyList(),
+                                canEdit = false,
+                                canDelete = true,
+                                isDeleted = false,
+                                deletedAt = null,
+                                metadata = MessageMetadata(
+                                    type = "receipt_upload_prompt",
+                                    listItemIndex = null,
+                                    listItemTotal = null,
+                                    listItem = null,
+                                ),
+                            ),
+                        ),
+                    ),
+                    composerText = "",
+                    onComposerTextChange = {},
+                    onSend = {},
+                    onRetrySend = {},
+                    onBack = {},
+                    onLoadMore = {},
+                    onDeleteMessage = {},
+                    isFailed = { false },
+                    onReceiptUploadClick = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Upload receipt").assertIsDisplayed()
     }
 }
 

@@ -58,21 +58,40 @@ class ConversationsViewModelTest {
         viewModel.markConversationOpened(2)
         assertEquals(1, viewModel.uiState.value.allUnreadCount)
     }
+
+    @Test
+    fun `loadConversations forwards role status and unread filters`() = runTest {
+        viewModel.loadConversations(role = "shipper", status = "active", unreadOnly = true)
+        advanceUntilIdle()
+
+        assertEquals("shipper", repository.lastRole)
+        assertEquals("active", repository.lastStatus)
+        assertEquals(true, repository.lastUnreadOnly)
+    }
 }
 
 private class FakeConversationsRepo : ChatRepository {
+    var lastRole: String? = null
+    var lastStatus: String? = null
+    var lastUnreadOnly: Boolean? = null
+
     override suspend fun loadBroadcastingConfig(): Result<ReverbConfig> = Result.failure(Exception("not needed"))
 
     override suspend fun loadConversations(
         role: String?,
         status: String?,
         unreadOnly: Boolean?,
-    ): Result<List<ConversationSummary>> = Result.success(
-        listOf(
-            conversation(1, 1),
-            conversation(2, 2),
-        ),
-    )
+    ): Result<List<ConversationSummary>> {
+        lastRole = role
+        lastStatus = status
+        lastUnreadOnly = unreadOnly
+        return Result.success(
+            listOf(
+                conversation(1, 1),
+                conversation(2, 2),
+            ),
+        )
+    }
 
     override suspend fun loadConversationDetail(conversationId: Int): Result<ConversationSummary> = Result.failure(Exception("not needed"))
     override suspend fun loadMessages(conversationId: Int, page: Int): Result<MessagesPage> = Result.failure(Exception("not needed"))

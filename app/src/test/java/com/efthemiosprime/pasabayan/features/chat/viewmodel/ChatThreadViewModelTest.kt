@@ -1,5 +1,7 @@
 package com.efthemiosprime.pasabayan.features.chat.viewmodel
 
+import com.efthemiosprime.pasabayan.core.domain.error.DomainError
+import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.features.chat.model.ConversationSummary
 import com.efthemiosprime.pasabayan.features.chat.model.LastMessage
 import com.efthemiosprime.pasabayan.features.chat.model.MatchInfo
@@ -21,8 +23,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -47,7 +49,11 @@ class ChatThreadViewModelTest {
         Dispatchers.setMain(dispatcher)
         fakeRepository = FakeChatRepository()
         fakeRealtime = FakeRealtimeChatService()
-        viewModel = ChatThreadViewModel(fakeRepository, fakeRealtime, ChatMergeLogic())
+        viewModel = ChatThreadViewModel(
+            chatRepository = fakeRepository,
+            realtimeChatService = fakeRealtime,
+            chatMergeLogic = ChatMergeLogic(),
+        )
     }
 
     @After
@@ -80,7 +86,7 @@ class ChatThreadViewModelTest {
 
     @Test
     fun `sendMessage failure marks temp message as failed`() = runTest {
-        fakeRepository.sendShouldFail = true
+        fakeRepository.sendFailure = Exception("send failed")
         viewModel.openConversation(conversationId = 10, status = "active")
         advanceUntilIdle()
 
@@ -92,13 +98,13 @@ class ChatThreadViewModelTest {
 
     @Test
     fun `retrySend reattempts failed temp message`() = runTest {
-        fakeRepository.sendShouldFail = true
+        fakeRepository.sendFailure = Exception("send failed")
         viewModel.openConversation(conversationId = 10, status = "active")
         advanceUntilIdle()
         viewModel.sendMessage("retry me")
         advanceUntilIdle()
 
-        fakeRepository.sendShouldFail = false
+        fakeRepository.sendFailure = null
         val failedId = viewModel.uiState.value.failedMessageTempIds.first()
         viewModel.retrySend(failedId)
         advanceUntilIdle()
@@ -137,10 +143,92 @@ class ChatThreadViewModelTest {
 
         assertFalse(viewModel.uiState.value.isComposerEnabled)
     }
+
+    @Test
+    fun `decode failure recovers optimistic message from latest page`() = runTest {
+        fakeRepository.sendFailure = DomainErrorMapperException(DomainError.InvalidResponse)
+        fakeRepository.pageOneMessages = listOf(
+            testMessage(2, "old"),
+            testMessage(3, "another"),
+            testMessage(880, "Recover me"),
+        )
+        viewModel.openConversation(conversationId = 10, status = "active")
+        advanceUntilIdle()
+
+        viewModel.sendMessage("Recover me")
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.messages.any { it.id == 880 && it.message == "Recover me" })
+        assertTrue(viewModel.uiState.value.failedMessageTempIds.isEmpty())
+    }
+
+    @Test
+    fun `openConversation disables composer on unauthorized mapped error`() = runTest {
+        fakeRepository.firstPageFailure = DomainErrorMapperException(DomainError.Unauthorized)
+
+        viewModel.openConversation(conversationId = 10, status = "active")
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.isComposerEnabled)
+    }
+
+    @Test
+    fun `polling starts when disconnected stops when connected and resumes on disconnect`() = runTest {
+        viewModel.openConversation(conversationId = 10, status = "active")
+        advanceUntilIdle()
+
+        fakeRealtime.emitPolling(listOf(testMessage(4)))
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.messages.any { it.id == 4 })
+
+        fakeRealtime.emitConnection(true)
+        advanceUntilIdle()
+        fakeRealtime.emitPolling(listOf(testMessage(5)))
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.messages.any { it.id == 5 })
+
+        fakeRealtime.emitConnection(false)
+        advanceUntilIdle()
+        fakeRealtime.emitPolling(listOf(testMessage(5)))
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.messages.any { it.id == 5 })
+    }
+
+    @Test
+    fun `high volume polling coalesces updates into delayed apply`() = runTest {
+        var nowMs = 1_000L
+        val highVolumeViewModel = ChatThreadViewModel(
+            chatRepository = fakeRepository,
+            realtimeChatService = fakeRealtime,
+            chatMergeLogic = ChatMergeLogic(),
+            nowMsProvider = { nowMs },
+        )
+        fakeRepository.pageOneMessages = (1..201).map { testMessage(it) }
+
+        highVolumeViewModel.openConversation(conversationId = 10, status = "active")
+        advanceUntilIdle()
+
+        fakeRealtime.emitPolling((1..202).map { testMessage(it) })
+        advanceUntilIdle()
+        assertEquals(202, highVolumeViewModel.uiState.value.messages.maxOf { it.id })
+
+        nowMs = 1_200L
+        fakeRealtime.emitPolling((1..203).map { testMessage(it) })
+        advanceUntilIdle()
+        assertEquals(202, highVolumeViewModel.uiState.value.messages.maxOf { it.id })
+
+        nowMs = 2_200L
+        advanceTimeBy(900L)
+        advanceUntilIdle()
+        assertEquals(203, highVolumeViewModel.uiState.value.messages.maxOf { it.id })
+    }
 }
 
 private class FakeChatRepository : ChatRepository {
-    var sendShouldFail = false
+    var sendFailure: Throwable? = null
+    var firstPageFailure: Throwable? = null
+    var pageOneMessages: List<MessageItem> = listOf(testMessage(2), testMessage(3))
+    var pageTwoMessages: List<MessageItem> = listOf(testMessage(1), testMessage(2))
     var markConversationReadCalls = 0
     val markMessageReadCalls = mutableListOf<Int>()
 
@@ -175,10 +263,13 @@ private class FakeChatRepository : ChatRepository {
     }
 
     override suspend fun loadMessages(conversationId: Int, page: Int): Result<MessagesPage> {
+        if (page == 1 && firstPageFailure != null) {
+            return Result.failure(firstPageFailure!!)
+        }
         return if (page == 1) {
             Result.success(
                 MessagesPage(
-                    messages = listOf(message(2), message(3)),
+                    messages = pageOneMessages,
                     currentPage = 1,
                     lastPage = 2,
                 ),
@@ -186,7 +277,7 @@ private class FakeChatRepository : ChatRepository {
         } else {
             Result.success(
                 MessagesPage(
-                    messages = listOf(message(1), message(2)),
+                    messages = pageTwoMessages,
                     currentPage = 2,
                     lastPage = 2,
                 ),
@@ -195,10 +286,10 @@ private class FakeChatRepository : ChatRepository {
     }
 
     override suspend fun sendMessage(conversationId: Int, message: String, type: String): Result<MessageItem> {
-        return if (sendShouldFail) {
-            Result.failure(Exception("send failed"))
+        return if (sendFailure != null) {
+            Result.failure(sendFailure!!)
         } else {
-            Result.success(message(501, message))
+            Result.success(testMessage(501, message))
         }
     }
 
@@ -224,26 +315,6 @@ private class FakeChatRepository : ChatRepository {
         socketId: String,
     ): Result<String> = Result.success("auth-token")
 
-    private fun message(id: Int, text: String = "message-$id") = MessageItem(
-        id = id,
-        message = text,
-        messageType = "text",
-        sender = Sender(1, "User", null),
-        isRead = false,
-        createdAt = "",
-        formattedMessage = null,
-        messageTypeDisplay = null,
-        readAt = null,
-        readReceipts = emptyMap(),
-        deliveryStatus = "sent",
-        deliveredAt = null,
-        attachments = emptyList(),
-        canEdit = false,
-        canDelete = true,
-        isDeleted = false,
-        deletedAt = null,
-        metadata = null,
-    )
 }
 
 private class FakeRealtimeChatService : RealtimeChatService {
@@ -251,6 +322,7 @@ private class FakeRealtimeChatService : RealtimeChatService {
     private val _events = MutableSharedFlow<RealtimeChatEvent>()
     private val _incomingMessages = MutableSharedFlow<MessageItem>()
     private val _socketId = MutableStateFlow<String?>(null)
+    private val _pollingMessages = MutableSharedFlow<List<MessageItem>>()
 
     override val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
     override val events: Flow<RealtimeChatEvent> = _events.asSharedFlow()
@@ -261,6 +333,35 @@ private class FakeRealtimeChatService : RealtimeChatService {
     override fun disconnect() = Unit
     override fun subscribe(conversationId: Int) = Unit
     override fun unsubscribe(conversationId: Int) = Unit
-    override fun pollingMessages(conversationId: Int): Flow<List<MessageItem>> = emptyFlow()
+    override fun pollingMessages(conversationId: Int): Flow<List<MessageItem>> = _pollingMessages.asSharedFlow()
+
+    suspend fun emitConnection(connected: Boolean) {
+        _isConnected.emit(connected)
+    }
+
+    suspend fun emitPolling(messages: List<MessageItem>) {
+        _pollingMessages.emit(messages)
+    }
 }
+
+private fun testMessage(id: Int, text: String = "message-$id") = MessageItem(
+    id = id,
+    message = text,
+    messageType = "text",
+    sender = Sender(1, "User", null),
+    isRead = false,
+    createdAt = "",
+    formattedMessage = null,
+    messageTypeDisplay = null,
+    readAt = null,
+    readReceipts = emptyMap(),
+    deliveryStatus = "sent",
+    deliveredAt = null,
+    attachments = emptyList(),
+    canEdit = false,
+    canDelete = true,
+    isDeleted = false,
+    deletedAt = null,
+    metadata = null,
+)
 

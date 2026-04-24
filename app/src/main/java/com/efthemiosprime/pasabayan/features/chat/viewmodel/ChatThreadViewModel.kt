@@ -8,12 +8,16 @@ import com.efthemiosprime.pasabayan.features.chat.services.ChatRepository
 import com.efthemiosprime.pasabayan.features.chat.services.RealtimeChatService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.efthemiosprime.pasabayan.core.domain.error.DomainError
+import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 
 data class ChatThreadUiState(
     val conversationId: Int? = null,
@@ -31,6 +35,7 @@ class ChatThreadViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val realtimeChatService: RealtimeChatService,
     private val chatMergeLogic: ChatMergeLogic,
+    private val nowMsProvider: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatThreadUiState())
@@ -39,7 +44,10 @@ class ChatThreadViewModel @Inject constructor(
     private val markMessageAsReadRequestedIds = linkedSetOf<Int>()
     private val tempIdToText = mutableMapOf<Int, String>()
     private var nextTempId = -1
-    private var pollJob: Job? = null
+    private var pollConnectionJob: Job? = null
+    private var pollMessagesJob: Job? = null
+    private var deferredPollApplyJob: Job? = null
+    private var deferredPollMessages: List<MessageItem>? = null
     private var latestPollApplyMs = 0L
     private var lastMessageId: Int = 0
 
@@ -73,7 +81,10 @@ class ChatThreadViewModel @Inject constructor(
     }
 
     fun closeConversation() {
-        pollJob?.cancel()
+        pollConnectionJob?.cancel()
+        pollMessagesJob?.cancel()
+        deferredPollApplyJob?.cancel()
+        deferredPollMessages = null
         _uiState.value.conversationId?.let { realtimeChatService.unsubscribe(it) }
         _uiState.update { ChatThreadUiState() }
         lastMessageId = 0
@@ -122,11 +133,12 @@ class ChatThreadViewModel @Inject constructor(
                     lastMessageId = maxOf(lastMessageId, sent.id)
                 }
                 .onFailure {
-                    _uiState.update {
-                        it.copy(
-                            failedMessageTempIds = it.failedMessageTempIds + tempId,
-                        )
-                    }
+                    recoverOrMarkFailedSend(
+                        tempId = tempId,
+                        text = text,
+                        conversationId = conversationId,
+                        error = it,
+                    )
                 }
         }
     }
@@ -221,7 +233,7 @@ class ChatThreadViewModel @Inject constructor(
                     it.copy(
                         isLoading = false,
                         alertMessage = error.message,
-                        isComposerEnabled = !isComposerDisableError(error.message),
+                        isComposerEnabled = !shouldDisableComposer(error),
                     )
                 }
             }
@@ -238,25 +250,114 @@ class ChatThreadViewModel @Inject constructor(
     }
 
     private fun startPollingFallback(conversationId: Int) {
-        pollJob?.cancel()
-        pollJob = viewModelScope.launch {
-            realtimeChatService.pollingMessages(conversationId).collect { polledMessages ->
-                val now = System.currentTimeMillis()
-                if (_uiState.value.messages.size > 200 && now - latestPollApplyMs < 1_000L) {
-                    return@collect
+        pollConnectionJob?.cancel()
+        pollMessagesJob?.cancel()
+        deferredPollApplyJob?.cancel()
+        deferredPollMessages = null
+        pollConnectionJob = viewModelScope.launch {
+            realtimeChatService.isConnected
+                .distinctUntilChanged()
+                .collect { connected ->
+                    if (connected) {
+                        pollMessagesJob?.cancel()
+                        pollMessagesJob = null
+                    } else if (pollMessagesJob?.isActive != true) {
+                        pollMessagesJob = launch {
+                            realtimeChatService.pollingMessages(conversationId).collect { polledMessages ->
+                                applyPolledMessages(polledMessages)
+                            }
+                        }
+                    }
                 }
-                val incoming = polledMessages.filter { it.id > lastMessageId }
-                val merge = chatMergeLogic.merge(_uiState.value.messages, incoming)
-                _uiState.update { it.copy(messages = merge.messages) }
-                lastMessageId = merge.lastMessageId
-                latestPollApplyMs = now
+        }
+    }
+
+    private fun applyPolledMessages(polledMessages: List<MessageItem>, force: Boolean = false) {
+        val now = nowMsProvider()
+        val isHighVolume = _uiState.value.messages.size > 200
+        val withinCoalesceWindow = now - latestPollApplyMs < 1_000L
+        if (!force && isHighVolume && withinCoalesceWindow) {
+            deferredPollMessages = polledMessages
+            if (deferredPollApplyJob?.isActive != true) {
+                val delayMs = (1_000L - (now - latestPollApplyMs)).coerceAtLeast(0L)
+                deferredPollApplyJob = viewModelScope.launch {
+                    delay(delayMs)
+                    val queued = deferredPollMessages ?: return@launch
+                    deferredPollMessages = null
+                    applyPolledMessages(queued, force = true)
+                }
+            }
+            return
+        }
+        val incoming = polledMessages.filter { it.id > lastMessageId }
+        val merge = chatMergeLogic.merge(_uiState.value.messages, incoming)
+        _uiState.update { it.copy(messages = merge.messages) }
+        lastMessageId = merge.lastMessageId
+        latestPollApplyMs = now
+    }
+
+    private fun recoverOrMarkFailedSend(
+        tempId: Int,
+        text: String,
+        conversationId: Int,
+        error: Throwable,
+    ) {
+        if (error.isDecodeFailure()) {
+            viewModelScope.launch {
+                chatRepository.loadMessages(conversationId = conversationId, page = 1)
+                    .onSuccess { page ->
+                        val recovered = page.messages.lastOrNull { it.message == text }
+                        if (recovered != null) {
+                            tempIdToText.remove(tempId)
+                            _uiState.update { state ->
+                                state.copy(
+                                    messages = state.messages.map { msg ->
+                                        if (msg.id == tempId) recovered else msg
+                                    }.sortedBy { msg -> msg.id },
+                                    failedMessageTempIds = state.failedMessageTempIds - tempId,
+                                )
+                            }
+                            lastMessageId = maxOf(lastMessageId, recovered.id)
+                        } else {
+                            markSendAsFailed(tempId)
+                        }
+                    }
+                    .onFailure {
+                        markSendAsFailed(tempId)
+                    }
+            }
+            return
+        }
+        markSendAsFailed(tempId)
+    }
+
+    private fun markSendAsFailed(tempId: Int) {
+        _uiState.update {
+            it.copy(
+                failedMessageTempIds = it.failedMessageTempIds + tempId,
+            )
+        }
+    }
+
+    private fun shouldDisableComposer(error: Throwable): Boolean {
+        val mapped = (error as? DomainErrorMapperException)?.domainError
+        return when (mapped) {
+            DomainError.Unauthorized, DomainError.NotFound -> true
+            is DomainError.ServerError -> mapped.message?.contains("closed", ignoreCase = true) == true
+            else -> {
+                val text = error.message.orEmpty().lowercase()
+                text.contains("401") || text.contains("404") || text.contains("closed")
             }
         }
     }
 
-    private fun isComposerDisableError(message: String?): Boolean {
+    private fun Throwable.isDecodeFailure(): Boolean {
+        val mapped = (this as? DomainErrorMapperException)?.domainError
+        if (mapped == DomainError.InvalidResponse || mapped == DomainError.DecodingError) {
+            return true
+        }
         val text = message.orEmpty().lowercase()
-        return text.contains("401") || text.contains("404") || text.contains("closed")
+        return text.contains("decode") || text.contains("serialization") || text.contains("invalidresponse")
     }
 }
 
