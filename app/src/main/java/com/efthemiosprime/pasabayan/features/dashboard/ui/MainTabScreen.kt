@@ -81,7 +81,8 @@ fun MainTabScreen(
     val openCreateTripFromPackageSheet: (Int) -> Unit = { packageId ->
         viewModel.openCreateTripFromPackageSheet(packageId)
     }
-    val openEditTripSheet: (Int) -> Unit = { tripId ->
+    val openCarrierTripEditor: (Int) -> Unit = { tripId ->
+        selectedCarrierTripId = null
         viewModel.openEditTripSheet(tripId)
     }
     val createTripFromPackageRouteActions = remember(viewModel, carrierTripsViewModel, packageViewModel) {
@@ -141,6 +142,7 @@ fun MainTabScreen(
                 )
                 "my_trips" -> com.efthemiosprime.pasabayan.features.trips.ui.CarrierMyTripsScreen(
                     onViewTripDetails = { trip -> selectedCarrierTripId = trip.id },
+                    onEditTrip = { trip -> openCarrierTripEditor(trip.id) },
                     onCreateTrip = {
                         tripCreationSavedRoutesViewModel.refreshSavedRoutes()
                         if (carrierPreferencesFormViewModel.isAcknowledged(user.id)) {
@@ -309,7 +311,7 @@ fun MainTabScreen(
             TripDetailsScreen(
                 trip = trip,
                 isCarrier = true,
-                onEdit = { openEditTripSheet(trip.id) },
+                onEdit = { openCarrierTripEditor(trip.id) },
                 onCancel = {
                     carrierTripsViewModel.cancelTrip(trip.id)
                     selectedCarrierTripId = null

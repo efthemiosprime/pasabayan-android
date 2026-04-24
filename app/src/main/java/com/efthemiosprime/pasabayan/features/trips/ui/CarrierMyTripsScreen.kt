@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
+import com.efthemiosprime.pasabayan.core.designsystem.component.CardMenuAction
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
 import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
 import com.efthemiosprime.pasabayan.core.designsystem.component.PFilterChip
@@ -41,6 +42,7 @@ import com.efthemiosprime.pasabayan.features.trips.viewmodel.CarrierTripsViewMod
 @Composable
 fun CarrierMyTripsScreen(
     onViewTripDetails: (Trip) -> Unit,
+    onEditTrip: (Trip) -> Unit,
     onCreateTrip: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CarrierTripsViewModel = hiltViewModel(),
@@ -93,6 +95,12 @@ fun CarrierMyTripsScreen(
                             TripCard(
                                 trip = trip,
                                 onViewDetails = { onViewTripDetails(trip) },
+                                menuActions = listOf(
+                                    CardMenuAction(
+                                        title = stringResource(R.string.trips_edit_trip),
+                                        onClick = { onEditTrip(trip) },
+                                    ),
+                                ),
                             )
                         }
                     }

@@ -153,6 +153,16 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun `openEditTripSheet replaces prior edit trip id with latest`() {
+        viewModel.openEditTripSheet(tripId = 42)
+        viewModel.openEditTripSheet(tripId = 99)
+        assertEquals(
+            DashboardSheetRoute.EditTrip(tripId = 99),
+            viewModel.uiState.value.activeSheetRoute,
+        )
+    }
+
+    @Test
     fun `opening a new sheet route replaces previous active route`() {
         viewModel.openTripFilterSheet()
         viewModel.openEditTripSheet(tripId = 25)
