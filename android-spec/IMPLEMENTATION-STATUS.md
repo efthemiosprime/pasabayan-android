@@ -19,7 +19,7 @@
 | Field | Value |
 |-------|--------|
 | **Current phase** | Phase 5 — Chat & notifications (07 chat implementation slices landed; 08 notifications pending) |
-| **Last updated** | 2026-04-26 (Phase 5 chat parity gap-closure landed: nested subscription success parsing, full-page polling merge status refresh, retry/no-duplicate temp-bubble behavior, conversation-detail composer refresh, DS chat primitives (`PMessageBubble`, `PMessageDeliveryStatus`) + spec docs, DS filter chip migration, top-scroll pagination trigger, read-dedupe visibility wiring, receipt-sheet refresh callback, expanded JVM/androidTest coverage, and final 07 checklist reconciliation) |
+| **Last updated** | 2026-04-26 — Profile tab ([20-profile-tab.md](20-profile-tab.md)): `ProfileApi` + DTOs, `ProfileRepository`, `ProfileTabViewModel`, `ProfileTabScreen`/`ProfileTabContent`, `MainTabScreen` payments sub-route, JVM + androidTest, spec + status updates. (Earlier: Phase 5 chat 07 closeout: nested subscription success, polling merge, temp-bubble dedupe, chat DS primitives, EN/FR, tests.) |
 | **Spec audit** | **Complete** — YAML expanded from ~25 to ~100 endpoint rows; all feature specs updated with query params, multipart fields, WebSocket protocol, local storage keys, activity logs, cache policy, GPS services, badge rules, analytics mock structures |
 
 ---
@@ -95,16 +95,17 @@
 | [17-onboarding.md](17-onboarding.md) | [x] | Flows + keys + gates; carrier consent flash uses `didJustCompleteConsent` when carrier UI ships |
 | [03-trips.md](03-trips.md) | [x] | Complete for current parity scope — trip creation depth/integration blockers were closed: wizard/review flow, reusable `CityAutocompleteField` + local city autocomplete UX, in-flow `SavedRoutesSheet` apply, keyboard focus chain, success + save-route prompt, and `TripTutorialOverlay` primary-journey wiring with test coverage. |
 | [04-packages.md](04-packages.md) | [x] | Strict parity bridge landed: package detail/edit/cancel flow wired through dashboard sheet routes, carrier explore moved to available-packages data path, package creation journeys integrate disclaimer + tutorial + saved descriptions/routes stores, packages VM/UI copy localized (EN/FR), and package stores/view-model coverage expanded with new tests. |
-| [13-ui-tab-explore.md](13-ui-tab-explore.md) | [x] | Tab shell, role switcher, carrier + shipper explore content, stats grids; Matches/Messages/Profile stubs |
+| [13-ui-tab-explore.md](13-ui-tab-explore.md) | [x] | Tab shell, role switcher, carrier + shipper explore content, stats grids; Matches/Messages; Profile tab per [20-profile-tab.md](20-profile-tab.md) (shell + payments hub) |
 | [05-bookings-matches.md](05-bookings-matches.md) | [x] | Unified MatchCard + MatchListScreen, 3 ViewModels, counter-offer flows, code screens, 60+ tests |
 | [06-payments-stripe.md](06-payments-stripe.md) | [ ] | Partial — closeout check confirms most scope complete (PaymentSheet + transactions + tests). Remaining for phase gate: finalize `PayoutSetupScreen` parity per spec states and onboarding/dashboard sheet UX, then re-run Phase 4 verification. |
 | [07-chat-broadcasting.md](07-chat-broadcasting.md) | [x] | Core + hardening + parity closeout landed in app + `:core:network` + `:core:designsystem`: contracts/decode tests, repository/realtime/merge logic, full-flow realtime protocol tests (including nested subscription-success payload), parser hardening for wrapped/direct string/object payloads, reconnect auto-resubscribe verification, ViewModel decode-recovery + polling coalescing + delete/retry/no-duplicate-temp coverage, thread/conversation UI parity upgrades, DS chat primitives adoption, and EN/FR chat localization resources. Phase 5 gate still depends on `08-notifications-device-tokens.md`. |
 | [08-notifications-device-tokens.md](08-notifications-device-tokens.md) | [ ] | Pending — implementation not started. |
-| [09-profile-carrier-consent.md](09-profile-carrier-consent.md) | [ ] | Pending — implementation not started. |
+| [09-profile-carrier-consent.md](09-profile-carrier-consent.md) | [ ] | **Partial** — `ProfileApi` + JSON models + `ProfileRepository` in app (tab/bootstrap + 409 handling); full edit/avatar/multipart, disclaimers, account deletion, and dedicated 09 TDD still pending. |
 | [10-verification.md](10-verification.md) | [ ] | Pending — implementation not started. |
 | [11-favorites-ratings.md](11-favorites-ratings.md) | [ ] | Pending — implementation not started. |
 | [12-legal-support-misc.md](12-legal-support-misc.md) | [ ] | Pending — implementation not started. |
 | [15-platform-and-tab-index.md](15-platform-and-tab-index.md) | [ ] | Pending — full parity audit not completed yet. |
+| [20-profile-tab.md](20-profile-tab.md) | [ ] | **Partial** — `ProfileApi` + DTOs in `:core:network`, `ProfileRepository` + `ProfileTabViewModel`, `ProfileTabScreen` / `ProfileTabContent` (section order + role gating), `MainTabScreen` profile root + payments sub-route, EN/FR `strings_profile.xml`, JVM + androidTest; TDD checklist: see spec (some items deferred). Full exit gate: menu deep-links + 09 edit sheets + remaining TDD rows. |
 
 ---
 
@@ -136,7 +137,7 @@
 - [x] `Onboarding/` — Complete — Phase 1 scope landed.  
 - [x] `Packages/` — Complete — strict `04-packages.md` parity bridge landed (detail/edit/cancel flow wiring, carrier available-packages path split, local store journey integration, localization hardening, and test/spec sync).  
 - [ ] `Payments/` — Partial — Phase 4 slice in progress; exit gate not met yet.  
-- [ ] `Profile/` — Pending — implementation not started.  
+- [ ] `Profile/` — **Partial** — [20-profile-tab.md](20-profile-tab.md) shell + network/repository/VM/tests; [09-profile-carrier-consent.md](09-profile-carrier-consent.md) edit flows and remaining consent/disclaimer surfaces still pending.  
 - [ ] `Ratings/` — Pending — implementation not started.  
 - [ ] `RouteActivity/` — Partial — summary endpoint + `RouteActivitySummaryViewModel` + carrier dashboard summary surface implemented via Trips parity slice; remaining Phase 7 RouteActivity scope pending.  
 - [ ] `Shipper/` — Pending — implementation not started.  

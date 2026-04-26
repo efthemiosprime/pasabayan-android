@@ -1,0 +1,19 @@
+{
+  "message": "ok",
+  "data": {
+    "id": 5,
+    "user_id": 99,
+    "max_weight_capacity_kg": "50.5",
+    "max_space_capacity_liters": 100,
+    "preferred_pickup_city_id": 2,
+    "default_price_per_kg": 2.5,
+    "carrier_status": "active",
+    "available_routes": [
+      { "from": "Montreal", "to": "Toronto" }
+    ],
+    "total_trips": 3,
+    "total_earnings": "120.00",
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-01-02T00:00:00Z"
+  }
+}

@@ -4,7 +4,8 @@ import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.network.ApiErrorMapper
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.network.SupplementalApi
-import com.efthemiosprime.pasabayan.core.network.profile.UpdateProfileHomeCityRequestJson
+import com.efthemiosprime.pasabayan.core.network.profile.ProfileApi
+import com.efthemiosprime.pasabayan.core.network.profile.UpdateProfileRequestJson
 import com.efthemiosprime.pasabayan.features.onboarding.model.CityPickerOption
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -13,6 +14,7 @@ import kotlinx.serialization.json.Json
 @Singleton
 class CityOnboardingRepositoryImpl @Inject constructor(
     private val supplementalApi: SupplementalApi,
+    private val profileApi: ProfileApi,
     private val json: Json,
 ) : CityOnboardingRepository {
 
@@ -42,7 +44,7 @@ class CityOnboardingRepositoryImpl @Inject constructor(
 
     override suspend fun updateHomeCity(cityId: Int): Result<Unit> {
         return try {
-            val res = supplementalApi.updateProfile(UpdateProfileHomeCityRequestJson(homeCityId = cityId))
+            val res = profileApi.putProfile(UpdateProfileRequestJson(homeCityId = cityId))
             if (!res.isSuccessful) {
                 return Result.failure(
                     DomainErrorMapperException(

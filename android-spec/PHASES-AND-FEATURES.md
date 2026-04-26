@@ -19,7 +19,7 @@ This document is the **primary roadmap**: work **by phase**, and within each pha
 | Payments / Stripe | `Features/Payments/` | [06-payments-stripe.md](06-payments-stripe.md) |
 | Chat | `Features/Chat/` | [07-chat-broadcasting.md](07-chat-broadcasting.md) |
 | Notifications (in-app types, e.g. counter-offer) | `Features/Notifications/` | [08-notifications-device-tokens.md](08-notifications-device-tokens.md) |
-| Profile / carrier / consent | `Features/Profile/` | [09-profile-carrier-consent.md](09-profile-carrier-consent.md) |
+| Profile / carrier / consent | `Features/Profile/` | [09-profile-carrier-consent.md](09-profile-carrier-consent.md), [20-profile-tab.md](20-profile-tab.md) |
 | Verification | `Features/Verification/` | [10-verification.md](10-verification.md) |
 | Favorites | `Features/Favorites/` | [11-favorites-ratings.md](11-favorites-ratings.md) |
 | Ratings | `Features/Ratings/` | [11-favorites-ratings.md](11-favorites-ratings.md) |
@@ -107,7 +107,7 @@ This document is the **primary roadmap**: work **by phase**, and within each pha
 
 | Feature | Spec |
 |---------|------|
-| Profile, carrier, consent | [09-profile-carrier-consent.md](09-profile-carrier-consent.md) |
+| Profile, carrier, consent | [09-profile-carrier-consent.md](09-profile-carrier-consent.md), [20-profile-tab.md](20-profile-tab.md) |
 | Phone / premium verification | [10-verification.md](10-verification.md) |
 | Favorites & ratings | [11-favorites-ratings.md](11-favorites-ratings.md) |
 

@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "data": {
+    "packages_count": 4,
+    "delivered_count": 2,
+    "average_rating": "4.2",
+    "total_ratings": 6
+  }
+}

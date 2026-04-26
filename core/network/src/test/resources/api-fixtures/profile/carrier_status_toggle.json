@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "message": "ok",
+  "data": {
+    "is_active_carrier": true,
+    "carrier_status": "active",
+    "has_carrier_profile": true,
+    "profile_recommended": false,
+    "user_types": { "0": "shipper", "1": "carrier" }
+  }
+}

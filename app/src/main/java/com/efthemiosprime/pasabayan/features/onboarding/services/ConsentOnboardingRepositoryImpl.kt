@@ -3,7 +3,7 @@ package com.efthemiosprime.pasabayan.features.onboarding.services
 import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.network.ApiErrorMapper
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
-import com.efthemiosprime.pasabayan.core.network.SupplementalApi
+import com.efthemiosprime.pasabayan.core.network.profile.ProfileApi
 import com.efthemiosprime.pasabayan.core.network.profile.ConsentPreferencesUpdateJson
 import com.efthemiosprime.pasabayan.features.onboarding.model.ConsentSelections
 import javax.inject.Inject
@@ -12,7 +12,7 @@ import kotlinx.serialization.json.Json
 
 @Singleton
 class ConsentOnboardingRepositoryImpl @Inject constructor(
-    private val supplementalApi: SupplementalApi,
+    private val profileApi: ProfileApi,
     private val json: Json,
 ) : ConsentOnboardingRepository {
 
@@ -24,7 +24,7 @@ class ConsentOnboardingRepositoryImpl @Inject constructor(
                 analytics = selections.analytics,
                 marketingCommunications = selections.marketingCommunications,
             )
-            val res = supplementalApi.updateConsentPreferences(body)
+            val res = profileApi.putConsentPreferences(body)
             if (!res.isSuccessful) {
                 return Result.failure(
                     DomainErrorMapperException(

@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "message": "ok",
+  "data": {
+    "profile": {
+      "id": 1,
+      "full_name": "Test User",
+      "delivery_address": "123 St",
+      "profile_picture": "/uploads/avatar.png",
+      "preferred_contact_method": "app_notification",
+      "user_id": 99,
+      "verification_level": "verified"
+    },
+    "home_city_id": 101,
+    "is_complete": true
+  }
+}

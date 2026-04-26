@@ -1,9 +1,14 @@
 package com.efthemiosprime.pasabayan.features.dashboard.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,6 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.designsystem.component.PScaffold
+import com.efthemiosprime.pasabayan.core.designsystem.component.PTopBar
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.dashboard.components.DashboardTopBar
@@ -23,6 +29,8 @@ import com.efthemiosprime.pasabayan.features.dashboard.components.PasabayanBotto
 import com.efthemiosprime.pasabayan.features.dashboard.model.MainTabs
 import com.efthemiosprime.pasabayan.features.dashboard.model.DashboardSheetRoute
 import com.efthemiosprime.pasabayan.features.dashboard.viewmodel.DashboardViewModel
+import com.efthemiosprime.pasabayan.features.payments.ui.PaymentsProfileScreen
+import com.efthemiosprime.pasabayan.features.profile.ui.ProfileTabScreen
 import com.efthemiosprime.pasabayan.features.chat.ui.MessagesTabScreen
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ConversationsViewModel
 import com.efthemiosprime.pasabayan.features.packages.components.CreatePackageOptionsSheet
@@ -80,6 +88,7 @@ fun MainTabScreen(
     var showTripCreationSheet by remember { mutableStateOf(false) }
     var showCarrierPreferencesGate by remember { mutableStateOf(false) }
     var selectedCarrierTripId by remember { mutableStateOf<Int?>(null) }
+    var profilePaymentsOpen by remember { mutableStateOf(false) }
     val dismissActiveSheetRoute = { viewModel.dismissActiveSheetRoute() }
     val openTripFilterSheet = { viewModel.openTripFilterSheet() }
     val openCreateTripFromPackageSheet: (Int) -> Unit = { packageId ->
@@ -108,6 +117,13 @@ fun MainTabScreen(
             UserRole.CARRIER -> "carrier"
         }
         conversationsViewModel.loadConversations(role = roleFilter)
+    }
+
+    LaunchedEffect(state.selectedTabIndex) {
+        val tab = tabs.getOrNull(state.selectedTabIndex)
+        if (tab?.route != "profile") {
+            profilePaymentsOpen = false
+        }
     }
 
     PScaffold(
@@ -191,9 +207,37 @@ fun MainTabScreen(
                     currentRole = state.currentRole,
                     currentUserId = user.id,
                 )
-                "profile" -> com.efthemiosprime.pasabayan.features.payments.ui.PaymentsProfileScreen(
-                    onLogout = onLogout,
-                )
+                "profile" -> {
+                    if (profilePaymentsOpen) {
+                        Column {
+                            PTopBar(
+                                title = stringResource(R.string.payments_profile_title),
+                                navigationIcon = {
+                                    IconButton(
+                                        onClick = { profilePaymentsOpen = false },
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = stringResource(R.string.profile_back_payments),
+                                        )
+                                    }
+                                },
+                            )
+                            PaymentsProfileScreen(
+                                onLogout = onLogout,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
+                    } else {
+                        ProfileTabScreen(
+                            user = user,
+                            currentRole = state.currentRole,
+                            onSwitchRole = { viewModel.switchRole() },
+                            onLogout = onLogout,
+                            onOpenPaymentsHub = { profilePaymentsOpen = true },
+                        )
+                    }
+                }
                 else -> {}
             }
         }

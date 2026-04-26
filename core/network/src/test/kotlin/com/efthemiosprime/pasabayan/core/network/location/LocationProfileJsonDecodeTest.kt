@@ -1,7 +1,7 @@
 package com.efthemiosprime.pasabayan.core.network.location
 
 import com.efthemiosprime.pasabayan.core.network.profile.ProfileResponseJson
-import com.efthemiosprime.pasabayan.core.network.profile.UpdateProfileHomeCityRequestJson
+import com.efthemiosprime.pasabayan.core.network.profile.UpdateProfileRequestJson
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -41,9 +41,9 @@ class LocationProfileJsonDecodeTest {
     }
 
     @Test
-    fun `UpdateProfileHomeCityRequestJson encodes home_city_id`() {
-        val body = UpdateProfileHomeCityRequestJson(homeCityId = 55)
-        val encoded = json.encodeToString(UpdateProfileHomeCityRequestJson.serializer(), body)
+    fun `UpdateProfileRequestJson encodes home_city_id`() {
+        val body = UpdateProfileRequestJson(homeCityId = 55)
+        val encoded = json.encodeToString(UpdateProfileRequestJson.serializer(), body)
         assertTrue(encoded.contains("\"home_city_id\":55"))
     }
 

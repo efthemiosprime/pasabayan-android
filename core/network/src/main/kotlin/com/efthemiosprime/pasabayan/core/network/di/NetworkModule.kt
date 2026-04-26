@@ -4,6 +4,7 @@ import com.efthemiosprime.pasabayan.core.network.AuthInterceptor
 import com.efthemiosprime.pasabayan.core.network.UnauthorizedClearingInterceptor
 import com.efthemiosprime.pasabayan.core.network.BuildConfig
 import com.efthemiosprime.pasabayan.core.network.SupplementalApi
+import com.efthemiosprime.pasabayan.core.network.profile.ProfileApi
 import com.efthemiosprime.pasabayan.core.network.auth.AuthApi
 import com.efthemiosprime.pasabayan.core.network.bookings.BookingsApi
 import com.efthemiosprime.pasabayan.core.network.chat.ChatApi
@@ -90,6 +91,11 @@ object NetworkModule {
     @Singleton
     fun provideSupplementalApi(retrofit: Retrofit): SupplementalApi =
         retrofit.create(SupplementalApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideProfileApi(retrofit: Retrofit): ProfileApi =
+        retrofit.create(ProfileApi::class.java)
 
     @Provides
     @Singleton

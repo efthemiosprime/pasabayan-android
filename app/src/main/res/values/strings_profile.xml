@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_back_payments">Back to profile</string>
+    <string name="profile_header_title">Profile</string>
+    <string name="profile_role_chip_shipper">Shipper</string>
+    <string name="profile_role_chip_carrier">Carrier</string>
+    <string name="profile_role_switcher_title">I am a</string>
+    <string name="profile_stats_title">Your stats</string>
+    <string name="profile_stat_packages">Packages</string>
+    <string name="profile_stat_delivered">Delivered</string>
+    <string name="profile_stat_rating">Rating</string>
+    <string name="profile_stat_deliveries">Deliveries</string>
+    <string name="profile_stat_earnings">Earnings</string>
+    <string name="profile_carrier_status_title">Carrier status</string>
+    <string name="profile_carrier_status_active">Active</string>
+    <string name="profile_carrier_status_inactive">Inactive</string>
+    <string name="profile_verification_title">Verification</string>
+    <string name="profile_verification_subtitle">Upgrade to verify your account</string>
+    <string name="profile_menu_account">Account</string>
+    <string name="profile_menu_personal_info">Personal info</string>
+    <string name="profile_menu_verification">Verification</string>
+    <string name="profile_menu_vehicle_info">Vehicle info</string>
+    <string name="profile_menu_shipping_addresses">Shipping addresses</string>
+    <string name="profile_menu_payments">Payments</string>
+    <string name="profile_menu_payment_methods">Payment methods</string>
+    <string name="profile_menu_transactions">Transaction history</string>
+    <string name="profile_menu_receipts">Receipts</string>
+    <string name="profile_menu_payout">Payout setup</string>
+    <string name="profile_menu_bookings">Bookings</string>
+    <string name="profile_menu_delivery_history">Delivery history</string>
+    <string name="profile_menu_package_history">Package history</string>
+    <string name="profile_menu_favorites">Favorites</string>
+    <string name="profile_menu_feedback">Feedback</string>
+    <string name="profile_menu_reviews">Pending reviews and ratings</string>
+    <string name="profile_menu_support">Support</string>
+    <string name="profile_menu_help">Help center</string>
+    <string name="profile_menu_settings">Settings</string>
+    <string name="profile_menu_terms">Terms and privacy</string>
+    <string name="profile_actions_logout">Log out</string>
+    <string name="profile_footer_version">%1$s %2$s</string>
+    <string name="profile_error_generic">Could not load profile</string>
+    <string name="profile_retry">Retry</string>
+    <string name="profile_placeholder_not_implemented">Not available yet</string>
+</resources>

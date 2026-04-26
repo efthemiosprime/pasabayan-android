@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TODO: translate -->
+    <string name="profile_back_payments">Retour au profil</string>
+    <string name="profile_header_title">Profil</string>
+    <string name="profile_role_chip_shipper">Expéditeur</string>
+    <string name="profile_role_chip_carrier">Transporteur</string>
+    <string name="profile_role_switcher_title">Je suis</string>
+    <string name="profile_stats_title">Vos statistiques</string>
+    <string name="profile_stat_packages">Colis</string>
+    <string name="profile_stat_delivered">Livrés</string>
+    <string name="profile_stat_rating">Note</string>
+    <string name="profile_stat_deliveries">Livraisons</string>
+    <string name="profile_stat_earnings">Gains</string>
+    <string name="profile_carrier_status_title">Statut transporteur</string>
+    <string name="profile_carrier_status_active">Actif</string>
+    <string name="profile_carrier_status_inactive">Inactif</string>
+    <string name="profile_verification_title">Vérification</string>
+    <string name="profile_verification_subtitle">Passez à la vérification de votre compte</string>
+    <string name="profile_menu_account">Compte</string>
+    <string name="profile_menu_personal_info">Renseignements personnels</string>
+    <string name="profile_menu_verification">Vérification</string>
+    <string name="profile_menu_vehicle_info">Véhicule</string>
+    <string name="profile_menu_shipping_addresses">Adresses d’envoi</string>
+    <string name="profile_menu_payments">Paiements</string>
+    <string name="profile_menu_payment_methods">Modes de paiement</string>
+    <string name="profile_menu_transactions">Historique des transactions</string>
+    <string name="profile_menu_receipts">Reçus</string>
+    <string name="profile_menu_payout">Configuration des paiements</string>
+    <string name="profile_menu_bookings">Réservations</string>
+    <string name="profile_menu_delivery_history">Historique des livraisons</string>
+    <string name="profile_menu_package_history">Historique des colis</string>
+    <string name="profile_menu_favorites">Favoris</string>
+    <string name="profile_menu_feedback">Commentaires</string>
+    <string name="profile_menu_reviews">Avis en attente et évaluations</string>
+    <string name="profile_menu_support">Assistance</string>
+    <string name="profile_menu_help">Centre d’aide</string>
+    <string name="profile_menu_settings">Paramètres</string>
+    <string name="profile_menu_terms">Conditions et confidentialité</string>
+    <string name="profile_actions_logout">Se déconnecter</string>
+    <string name="profile_footer_version">%1$s %2$s</string>
+    <string name="profile_error_generic">Impossible de charger le profil</string>
+    <string name="profile_retry">Réessayer</string>
+    <string name="profile_placeholder_not_implemented">Pas encore disponible</string>
+</resources>

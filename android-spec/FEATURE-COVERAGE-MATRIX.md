@@ -16,7 +16,7 @@
 | 8 | `Onboarding/` | [**17-onboarding.md**](17-onboarding.md) | 1 | `PasabayanApp` + `ContentView` gates; `OnboardingScreen`, city, consent — see spec |
 | 9 | `Packages/` | [04-packages.md](04-packages.md) | 2 | API + local: `ShipperDisclaimerStore`, `SavedPackageDescriptionsStore`, route templates |
 | 10 | `Payments/` | [06-payments-stripe.md](06-payments-stripe.md) | 4 | `PaymentService`, Stripe, receipts WebView, tips, refunds, [`PaymentMethodsViewModel`](../../Pasabayan/Features/Payments/ViewModels/PaymentMethodsViewModel.swift) `/stripe/*` |
-| 11 | `Profile/` | [09-profile-carrier-consent.md](09-profile-carrier-consent.md) | 6 | Profile, carrier prefs, privacy, role switcher, menus → bookings/payments |
+| 11 | `Profile/` | [09-profile-carrier-consent.md](09-profile-carrier-consent.md), [20-profile-tab.md](20-profile-tab.md) | 6 | Profile APIs/editing + shared tab shell order, role gating, menu routing, and DS parity |
 | 12 | `Ratings/` | [11-favorites-ratings.md](11-favorites-ratings.md) | 6 | Ratings API + submission UI |
 | 13 | `RouteActivity/` | [12-legal-support-misc.md](12-legal-support-misc.md) | 7 | [`RouteActivityAPIService`](../../Pasabayan/Features/RouteActivity/Services/RouteActivityAPIService.swift); [`CarrierExploreViewModel`](../../Pasabayan/Features/RouteActivity/ViewModels/CarrierExploreViewModel.swift) ties to Explore |
 | 14 | `Shipper/` | [12-legal-support-misc.md](12-legal-support-misc.md) | 7 | Nearby carriers |

@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "message": "ok",
+  "data": {
+    "deliveries": {
+      "total_trips": 1,
+      "active_trips": 0,
+      "completed_trips": 1,
+      "total_matches": 2,
+      "completed_matches": 1,
+      "success_rate": "0.95"
+    },
+    "ratings": {
+      "average_rating": "4.50",
+      "total_ratings": 10
+    },
+    "earnings": {
+      "total_earnings": 500.0,
+      "monthly_earnings": 100.0,
+      "pending_payments": 0.0
+    },
+    "profile_complete": true
+  }
+}
