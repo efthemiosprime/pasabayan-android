@@ -321,20 +321,20 @@ Sent via `POST /chat/conversations/{id}/messages` with `type: "system"`. Display
 
 ## TDD checklist
 
-- [ ] `ConversationSummary` JSON decode — all fields including nested Participant, MatchInfo, LastMessage.
-- [ ] `MessageItem` JSON decode — all fields including metadata, readReceipts, deliveryStatus, isDeleted.
-- [ ] `BroadcastingConfigResponse` + `ReverbConfig` decode.
-- [ ] `ChannelAuthResponse` decode.
+- [x] `ConversationSummary` JSON decode — all fields including nested Participant, MatchInfo, LastMessage.
+- [x] `MessageItem` JSON decode — all fields including metadata, readReceipts, deliveryStatus, isDeleted.
+- [x] `BroadcastingConfigResponse` + `ReverbConfig` decode.
+- [x] `ChannelAuthResponse` decode.
 - [x] WebSocket: connect → extract socket_id → subscribe → receive message → parse → display.
 - [x] Reconnection: exponential backoff up to 30s, max 5 attempts, auto-resubscribe.
 - [x] Polling fallback: 5s interval, message merge logic, deduplication by ID.
-- [ ] `ChatMarkAsReadDedupeTests`: only one API call per message ID per session.
+- [x] `ChatMarkAsReadDedupeTests`: only one API call per message ID per session.
 - [x] `ChatFailedMessageTests`: temp ID tracking, retry, recovery on decode error.
 - [x] `ChatViewModelPollingPerformanceTests`: rate-limit at 200+ messages (1s coalesce).
-- [ ] `ChatMergeLogic`: fast path (append), slow path (merge + dedup), status refresh.
-- [ ] Optimistic sending: temp negative ID → replace on success → mark failed on error.
-- [ ] Pagination: prepend older messages, deduplicate, nextPage tracking.
-- [ ] Soft-delete: update local state, show placeholder.
-- [ ] Conversation status → composer disabled for closed/archived/cancelled.
-- [ ] Unread count: sync on conversation list load, zero on open, expose for tab badge.
+- [x] `ChatMergeLogic`: fast path (append), slow path (merge + dedup), status refresh.
+- [x] Optimistic sending: temp negative ID → replace on success → mark failed on error.
+- [x] Pagination: prepend older messages, deduplicate, nextPage tracking.
+- [x] Soft-delete: update local state, show placeholder.
+- [x] Conversation status → composer disabled for closed/archived/cancelled.
+- [x] Unread count: sync on conversation list load, zero on open, expose for tab badge.
 - [x] Special message types: system, receipt_upload_prompt, service_list_item metadata parsing.

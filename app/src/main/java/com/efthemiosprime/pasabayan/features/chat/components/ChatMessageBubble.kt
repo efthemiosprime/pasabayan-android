@@ -6,12 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.DoneAll
-import androidx.compose.material.icons.filled.RadioButtonUnchecked
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,7 +16,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
-import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
+import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
+import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonSize
+import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
+import com.efthemiosprime.pasabayan.core.designsystem.component.PMessageBubble
+import com.efthemiosprime.pasabayan.core.designsystem.component.PMessageBubbleStyle
+import com.efthemiosprime.pasabayan.core.designsystem.component.PMessageDeliveryState
+import com.efthemiosprime.pasabayan.core.designsystem.component.PMessageDeliveryStatus
 import com.efthemiosprime.pasabayan.features.chat.model.MessageItem
 import com.efthemiosprime.pasabayan.features.chat.model.MessageMetadata
 import com.efthemiosprime.pasabayan.features.chat.model.Sender
@@ -38,27 +38,31 @@ fun ChatMessageBubble(
 ) {
     val horizontalAlignment = if (isOwnMessage) Alignment.End else Alignment.Start
     val deliveryLabel = deliveryLabel(message = message, isOwnMessage = isOwnMessage)
-    val deliveryIcon = deliveryIcon(message = message, isOwnMessage = isOwnMessage)
+    val deliveryState = deliveryState(message = message, isOwnMessage = isOwnMessage)
+
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = horizontalAlignment,
         verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
     ) {
-        if (message.isSystemMessage) {
-            Text(
-                text = message.message,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = PasabayanSpacing.sm),
-            )
-        } else {
-            PCard {
-                if (message.isDeleted) {
+        PMessageBubble(
+            style = when {
+                message.isSystemMessage -> PMessageBubbleStyle.System
+                isOwnMessage -> PMessageBubbleStyle.Own
+                else -> PMessageBubbleStyle.Other
+            },
+        ) {
+            if (message.isDeleted) {
+                Text(
+                    text = stringResource(R.string.chat_message_deleted_placeholder),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            } else {
+                if (message.isSystemMessage) {
                     Text(
-                        text = stringResource(R.string.chat_message_deleted_placeholder),
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = message.message,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 } else {
                     Text(
@@ -72,33 +76,28 @@ fun ChatMessageBubble(
                     )
                 }
             }
+        }
+
+        if (!message.isSystemMessage) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = PasabayanSpacing.sm),
             ) {
-                Icon(
-                    imageVector = deliveryIcon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = deliveryLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                PMessageDeliveryStatus(
+                    label = deliveryLabel,
+                    state = deliveryState,
                 )
             }
         }
+
         if (isFailed) {
-            Text(
-                text = stringResource(R.string.chat_message_failed_retry),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(horizontal = PasabayanSpacing.sm),
+            PButton(
+                text = stringResource(R.string.chat_message_retry),
+                onClick = onRetry,
+                style = PButtonStyle.Tertiary,
+                size = PButtonSize.Small,
             )
-            androidx.compose.material3.TextButton(onClick = onRetry) {
-                Text(text = stringResource(R.string.chat_message_retry))
-            }
         }
     }
 }
@@ -116,9 +115,12 @@ private fun renderSpecialMessageContent(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(top = PasabayanSpacing.xs),
             )
-            androidx.compose.material3.TextButton(onClick = onReceiptUploadClick) {
-                Text(text = stringResource(R.string.chat_message_receipt_prompt_action))
-            }
+            PButton(
+                text = stringResource(R.string.chat_message_receipt_prompt_action),
+                onClick = onReceiptUploadClick,
+                style = PButtonStyle.Secondary,
+                size = PButtonSize.Small,
+            )
         }
 
         "service_list_item" -> {
@@ -173,21 +175,21 @@ private fun deliveryLabel(message: MessageItem, isOwnMessage: Boolean): String {
     }
 }
 
-private fun deliveryIcon(
+private fun deliveryState(
     message: MessageItem,
     isOwnMessage: Boolean,
-): androidx.compose.ui.graphics.vector.ImageVector {
+): PMessageDeliveryState {
     if (isOwnMessage) {
         return when (message.deliveryStatus) {
-            "read" -> Icons.Filled.DoneAll
-            "delivered" -> Icons.Filled.CheckCircle
-            else -> Icons.Filled.Check
+            "read" -> PMessageDeliveryState.Read
+            "delivered" -> PMessageDeliveryState.Delivered
+            else -> PMessageDeliveryState.Sent
         }
     }
     return if (message.isRead || message.deliveryStatus == "read") {
-        Icons.Filled.CheckCircle
+        PMessageDeliveryState.ReadByMe
     } else {
-        Icons.Filled.RadioButtonUnchecked
+        PMessageDeliveryState.Unread
     }
 }
 

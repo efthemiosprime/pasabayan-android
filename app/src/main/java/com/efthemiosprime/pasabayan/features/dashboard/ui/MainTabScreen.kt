@@ -187,7 +187,10 @@ fun MainTabScreen(
                     },
                     viewModel = packageViewModel,
                 )
-                "messages" -> MessagesTabScreen(currentRole = state.currentRole)
+                "messages" -> MessagesTabScreen(
+                    currentRole = state.currentRole,
+                    currentUserId = user.id,
+                )
                 "profile" -> com.efthemiosprime.pasabayan.features.payments.ui.PaymentsProfileScreen(
                     onLogout = onLogout,
                 )

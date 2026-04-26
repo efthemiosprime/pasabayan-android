@@ -534,9 +534,11 @@ Public composables use the **`P` prefix** (Pasabayan) for discoverability and pa
 |-------------------|------|
 | `PButton`, `PButtonStyle`, `PButtonSize`, `PIconPosition` | Button system (primary, secondary, tertiary, destructive, filter, submit) |
 | `PCard`, `PCardVariant` | Flat bordered surface (no shadow) |
+| `PMessageBubble`, `PMessageBubbleStyle` | Chat/message bubble container variants (own, other, system) |
+| `PMessageDeliveryStatus`, `PMessageDeliveryState` | Delivery/read receipt status row (sent, delivered, read, read-by-me, unread) |
 | `PasabayanTheme` | Root Material 3 theme + tokens |
 
-**Implemented in `:core:designsystem`:** `POutlinedTextField`, `PScaffold`, `PSnackbar`/`PSnackbarHost`, `PModalBottomSheet`, `PTopBar`, `PDivider`, `PCircularProgress` (plus existing `PButton`, `PCard`, `ds*` modifiers). **Optional later:** pull-to-refresh wrapper when a screen needs it — see TDD slices below.
+**Implemented in `:core:designsystem`:** `POutlinedTextField`, `PFilterChip`, `PScaffold`, `PSnackbar`/`PSnackbarHost`, `PModalBottomSheet`, `PTopBar`, `PDivider`, `PCircularProgress`, `PMessageBubble`, `PMessageDeliveryStatus` (plus existing `PButton`, `PCard`, `ds*` modifiers). **Optional later:** pull-to-refresh wrapper when a screen needs it — see TDD slices below.
 
 ### Android naming: sheet vs modal
 

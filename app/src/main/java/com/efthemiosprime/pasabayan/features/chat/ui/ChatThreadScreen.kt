@@ -32,6 +32,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
+import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
+import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonSize
+import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
+import com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
 import com.efthemiosprime.pasabayan.core.designsystem.component.PScaffold
 import com.efthemiosprime.pasabayan.core.designsystem.component.PTopBar
@@ -46,6 +50,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @Composable
 fun ChatThreadScreen(
     conversationId: Int,
+    currentUserId: Long,
     status: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -77,15 +82,25 @@ fun ChatThreadScreen(
         onLoadMore = viewModel::loadMoreMessages,
         onDeleteMessage = viewModel::deleteMessage,
         isFailed = viewModel::isFailed,
+        onMessageVisible = viewModel::markMessageRead,
         onReceiptUploadClick = { showReceiptUploadSheet = true },
+        currentUserId = currentUserId,
         modifier = modifier,
     )
     if (showReceiptUploadSheet) {
-        ChatReceiptUploadSheet(
-            onUploadFromCamera = { showReceiptUploadSheet = false },
-            onUploadFromGallery = { showReceiptUploadSheet = false },
-            onClose = { showReceiptUploadSheet = false },
-        )
+        PModalBottomSheet(onDismissRequest = { showReceiptUploadSheet = false }) {
+            ChatReceiptUploadSheet(
+                onUploadFromCamera = {
+                    showReceiptUploadSheet = false
+                    viewModel.refreshConversation()
+                },
+                onUploadFromGallery = {
+                    showReceiptUploadSheet = false
+                    viewModel.refreshConversation()
+                },
+                onClose = { showReceiptUploadSheet = false },
+            )
+        }
     }
 }
 
@@ -101,7 +116,9 @@ fun ChatThreadContent(
     onLoadMore: () -> Unit,
     onDeleteMessage: (Int) -> Unit,
     isFailed: (MessageItem) -> Boolean,
+    onMessageVisible: (Int) -> Unit,
     onReceiptUploadClick: () -> Unit,
+    currentUserId: Long,
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
@@ -145,19 +162,26 @@ fun ChatThreadContent(
                 verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
             ) {
                 items(state.messages, key = { it.id }) { message ->
+                    val isOwnMessage = message.id < 0 || message.sender?.id?.toLong() == currentUserId || message.canDelete
                     ChatMessageBubble(
                         message = message,
-                        isOwnMessage = message.canDelete,
+                        isOwnMessage = isOwnMessage,
                         isFailed = isFailed(message),
                         onRetry = { onRetrySend(message.id) },
                         onReceiptUploadClick = onReceiptUploadClick,
                     )
-                    if (message.canDelete && !message.isDeleted) {
-                        androidx.compose.material3.TextButton(
-                            onClick = { onDeleteMessage(message.id) },
-                        ) {
-                            Text(stringResource(R.string.chat_delete_message))
+                    if (!isOwnMessage && !message.isSystemMessage && !message.isRead) {
+                        LaunchedEffect(message.id) {
+                            onMessageVisible(message.id)
                         }
+                    }
+                    if (isOwnMessage && !message.isDeleted) {
+                        PButton(
+                            text = stringResource(R.string.chat_delete_message),
+                            onClick = { onDeleteMessage(message.id) },
+                            style = PButtonStyle.Tertiary,
+                            size = PButtonSize.Small,
+                        )
                     }
                 }
             }
@@ -238,7 +262,9 @@ private fun ChatThreadContentPreview() {
             onLoadMore = {},
             onDeleteMessage = {},
             isFailed = { false },
+            onMessageVisible = {},
             onReceiptUploadClick = {},
+            currentUserId = 1L,
         )
     }
 }

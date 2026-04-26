@@ -92,60 +92,19 @@ class ChatThreadViewModel @Inject constructor(
     fun sendMessage(text: String, type: String = "text") {
         val conversationId = _uiState.value.conversationId ?: return
         if (!_uiState.value.isComposerEnabled) return
-        val tempId = nextTempId--
-        tempIdToText[tempId] = text
-
-        val optimistic = MessageItem(
-            id = tempId,
-            message = text,
-            messageType = type,
-            sender = null,
-            isRead = false,
-            createdAt = "",
-            formattedMessage = null,
-            messageTypeDisplay = null,
-            readAt = null,
-            readReceipts = emptyMap(),
-            deliveryStatus = "sent",
-            deliveredAt = null,
-            attachments = emptyList(),
-            canEdit = false,
-            canDelete = true,
-            isDeleted = false,
-            deletedAt = null,
-            metadata = null,
-        )
-        _uiState.update { it.copy(messages = (it.messages + optimistic).sortedBy { msg -> msg.id }) }
-
-        viewModelScope.launch {
-            chatRepository.sendMessage(conversationId, text, type)
-                .onSuccess { sent ->
-                    tempIdToText.remove(tempId)
-                    _uiState.update { state ->
-                        state.copy(
-                            messages = state.messages.map { msg ->
-                                if (msg.id == tempId) sent else msg
-                            }.sortedBy { msg -> msg.id },
-                            failedMessageTempIds = state.failedMessageTempIds - tempId,
-                        )
-                    }
-                    lastMessageId = maxOf(lastMessageId, sent.id)
-                }
-                .onFailure {
-                    recoverOrMarkFailedSend(
-                        tempId = tempId,
-                        text = text,
-                        conversationId = conversationId,
-                        error = it,
-                    )
-                }
-        }
+        sendMessageInternal(conversationId = conversationId, text = text, type = type, existingTempId = null)
     }
 
     fun retrySend(tempId: Int) {
+        val conversationId = _uiState.value.conversationId ?: return
         val text = tempIdToText[tempId] ?: return
         _uiState.update { it.copy(failedMessageTempIds = it.failedMessageTempIds - tempId) }
-        sendMessage(text)
+        sendMessageInternal(
+            conversationId = conversationId,
+            text = text,
+            type = "text",
+            existingTempId = tempId,
+        )
     }
 
     fun isFailed(message: MessageItem): Boolean = message.id in _uiState.value.failedMessageTempIds
@@ -210,12 +169,26 @@ class ChatThreadViewModel @Inject constructor(
         }
     }
 
+    fun refreshConversation() {
+        viewModelScope.launch {
+            loadFirstPage()
+        }
+    }
+
     fun clearError() {
         _uiState.update { it.copy(alertMessage = null) }
     }
 
     private suspend fun loadFirstPage() {
         val conversationId = _uiState.value.conversationId ?: return
+        chatRepository.loadConversationDetail(conversationId)
+            .onSuccess { conversation ->
+                _uiState.update {
+                    it.copy(
+                        isComposerEnabled = conversation.status == "active",
+                    )
+                }
+            }
         chatRepository.loadMessages(conversationId = conversationId, page = 1)
             .onSuccess { pageData ->
                 _uiState.update {
@@ -287,8 +260,7 @@ class ChatThreadViewModel @Inject constructor(
             }
             return
         }
-        val incoming = polledMessages.filter { it.id > lastMessageId }
-        val merge = chatMergeLogic.merge(_uiState.value.messages, incoming)
+        val merge = chatMergeLogic.merge(_uiState.value.messages, polledMessages)
         _uiState.update { it.copy(messages = merge.messages) }
         lastMessageId = merge.lastMessageId
         latestPollApplyMs = now
@@ -364,6 +336,64 @@ class ChatThreadViewModel @Inject constructor(
 
     internal fun applyPolledMessagesForTesting(polledMessages: List<MessageItem>, force: Boolean = false) {
         applyPolledMessages(polledMessages = polledMessages, force = force)
+    }
+
+    private fun sendMessageInternal(
+        conversationId: Int,
+        text: String,
+        type: String,
+        existingTempId: Int?,
+    ) {
+        val tempId = existingTempId ?: nextTempId--
+        tempIdToText[tempId] = text
+        val optimistic = MessageItem(
+            id = tempId,
+            message = text,
+            messageType = type,
+            sender = null,
+            isRead = false,
+            createdAt = "",
+            formattedMessage = null,
+            messageTypeDisplay = null,
+            readAt = null,
+            readReceipts = emptyMap(),
+            deliveryStatus = "sent",
+            deliveredAt = null,
+            attachments = emptyList(),
+            canEdit = false,
+            canDelete = true,
+            isDeleted = false,
+            deletedAt = null,
+            metadata = null,
+        )
+        _uiState.update { state ->
+            val withoutPrevious = state.messages.filterNot { it.id == tempId }
+            state.copy(messages = (withoutPrevious + optimistic).sortedBy { msg -> msg.id })
+        }
+
+        viewModelScope.launch {
+            chatRepository.sendMessage(conversationId, text, type)
+                .onSuccess { sent ->
+                    tempIdToText.remove(tempId)
+                    _uiState.update { state ->
+                        state.copy(
+                            messages = state.messages.map { msg ->
+                                if (msg.id == tempId) sent else msg
+                            }.sortedBy { msg -> msg.id },
+                            failedMessageTempIds = state.failedMessageTempIds - tempId,
+                        )
+                    }
+                    lastMessageId = maxOf(lastMessageId, sent.id)
+                }
+                .onFailure {
+                    recoverOrMarkFailedSend(
+                        tempId = tempId,
+                        text = text,
+                        conversationId = conversationId,
+                        error = it,
+                    )
+                }
+        }
     }
 }
 

@@ -9,7 +9,7 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.features.chat.model.ConversationSummary
 
 @Composable
-fun MessagesTabScreen(currentRole: UserRole) {
+fun MessagesTabScreen(currentRole: UserRole, currentUserId: Long) {
     var selectedConversation by rememberSaveable { mutableStateOf<Int?>(null) }
     var selectedStatus by rememberSaveable { mutableStateOf("active") }
 
@@ -24,6 +24,7 @@ fun MessagesTabScreen(currentRole: UserRole) {
     } else {
         ChatThreadScreen(
             conversationId = selectedConversation ?: return,
+            currentUserId = currentUserId,
             status = selectedStatus,
             onBack = { selectedConversation = null },
         )

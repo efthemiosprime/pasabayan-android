@@ -19,7 +19,7 @@
 | Field | Value |
 |-------|--------|
 | **Current phase** | Phase 5 — Chat & notifications (07 chat implementation slices landed; 08 notifications pending) |
-| **Last updated** | 2026-04-24 (Phase 5 chat hardening landed: realtime full-flow protocol tests, strict `chat.message` parser variants, reconnect auto-resubscribe verification, deterministic polling fallback state transitions, decode-recovery path for optimistic sends, >200-message coalescing coverage, thread special-message/read-status UI parity updates, conversations filter controls + richer row metadata, and EN/FR localization additions) |
+| **Last updated** | 2026-04-26 (Phase 5 chat parity gap-closure landed: nested subscription success parsing, full-page polling merge status refresh, retry/no-duplicate temp-bubble behavior, conversation-detail composer refresh, DS chat primitives (`PMessageBubble`, `PMessageDeliveryStatus`) + spec docs, DS filter chip migration, top-scroll pagination trigger, read-dedupe visibility wiring, receipt-sheet refresh callback, expanded JVM/androidTest coverage, and final 07 checklist reconciliation) |
 | **Spec audit** | **Complete** — YAML expanded from ~25 to ~100 endpoint rows; all feature specs updated with query params, multipart fields, WebSocket protocol, local storage keys, activity logs, cache policy, GPS services, badge rules, analytics mock structures |
 
 ---
@@ -98,7 +98,7 @@
 | [13-ui-tab-explore.md](13-ui-tab-explore.md) | [x] | Tab shell, role switcher, carrier + shipper explore content, stats grids; Matches/Messages/Profile stubs |
 | [05-bookings-matches.md](05-bookings-matches.md) | [x] | Unified MatchCard + MatchListScreen, 3 ViewModels, counter-offer flows, code screens, 60+ tests |
 | [06-payments-stripe.md](06-payments-stripe.md) | [ ] | Partial — closeout check confirms most scope complete (PaymentSheet + transactions + tests). Remaining for phase gate: finalize `PayoutSetupScreen` parity per spec states and onboarding/dashboard sheet UX, then re-run Phase 4 verification. |
-| [07-chat-broadcasting.md](07-chat-broadcasting.md) | [x] | Core + hardening slices landed in app + `:core:network`: contracts/decode tests, repository/realtime/merge logic, full-flow realtime protocol tests, parser hardening for wrapped/direct string/object payloads, reconnect auto-resubscribe verification, ViewModel decode-recovery + polling coalescing tests, thread/conversation UI parity upgrades, and EN/FR chat localization resources. Phase 5 gate still depends on `08-notifications-device-tokens.md`. |
+| [07-chat-broadcasting.md](07-chat-broadcasting.md) | [x] | Core + hardening + parity closeout landed in app + `:core:network` + `:core:designsystem`: contracts/decode tests, repository/realtime/merge logic, full-flow realtime protocol tests (including nested subscription-success payload), parser hardening for wrapped/direct string/object payloads, reconnect auto-resubscribe verification, ViewModel decode-recovery + polling coalescing + delete/retry/no-duplicate-temp coverage, thread/conversation UI parity upgrades, DS chat primitives adoption, and EN/FR chat localization resources. Phase 5 gate still depends on `08-notifications-device-tokens.md`. |
 | [08-notifications-device-tokens.md](08-notifications-device-tokens.md) | [ ] | Pending — implementation not started. |
 | [09-profile-carrier-consent.md](09-profile-carrier-consent.md) | [ ] | Pending — implementation not started. |
 | [10-verification.md](10-verification.md) | [ ] | Pending — implementation not started. |

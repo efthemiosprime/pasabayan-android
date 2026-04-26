@@ -83,6 +83,20 @@ fun ConversationRow(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                if (!conversation.statusDisplay.isBlank()) {
+                    Text(
+                        text = conversation.statusDisplay,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                if (!conversation.matchInfo?.packageDescription.isNullOrBlank()) {
+                    Text(
+                        text = conversation.matchInfo?.packageDescription.orEmpty(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 Text(
                     text = conversation.lastMessage?.message
                         ?: stringResource(R.string.chat_conversations_no_messages_yet),

@@ -46,8 +46,10 @@ class ChatScreensTest {
                             ),
                         ),
                     ),
+                    roleFilter = "shipper",
                     statusFilter = null,
                     unreadOnly = false,
+                    onRoleFilterChange = {},
                     onStatusFilterChange = {},
                     onUnreadOnlyChange = {},
                     onOpenConversation = {},
@@ -96,7 +98,9 @@ class ChatScreensTest {
                     onLoadMore = {},
                     onDeleteMessage = {},
                     isFailed = { false },
+                    onMessageVisible = {},
                     onReceiptUploadClick = {},
+                    currentUserId = 1L,
                 )
             }
         }
@@ -152,7 +156,9 @@ class ChatScreensTest {
                     onLoadMore = {},
                     onDeleteMessage = {},
                     isFailed = { false },
+                    onMessageVisible = {},
                     onReceiptUploadClick = {},
+                    currentUserId = 1L,
                 )
             }
         }
@@ -203,7 +209,9 @@ class ChatScreensTest {
                     onLoadMore = {},
                     onDeleteMessage = {},
                     isFailed = { false },
+                    onMessageVisible = {},
                     onReceiptUploadClick = {},
+                    currentUserId = 1L,
                 )
             }
         }

@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -110,6 +111,8 @@ class ChatThreadViewModelTest {
         advanceUntilIdle()
 
         assertTrue(viewModel.uiState.value.messages.any { it.id == 501 && it.message == "retry me" })
+        assertEquals(1, viewModel.uiState.value.messages.count { it.message == "retry me" })
+        assertTrue(viewModel.uiState.value.messages.none { it.id < 0 })
     }
 
     @Test
@@ -138,6 +141,7 @@ class ChatThreadViewModelTest {
 
     @Test
     fun `openConversation with closed status disables composer`() = runTest {
+        fakeRepository.conversationDetailStatus = "closed"
         viewModel.openConversation(conversationId = 10, status = "closed")
         advanceUntilIdle()
 
@@ -214,13 +218,51 @@ class ChatThreadViewModelTest {
 
         nowMs = 1_200L
         highVolumeViewModel.applyPolledMessagesForTesting((1..203).map { testMessage(it) })
-        advanceUntilIdle()
+        runCurrent()
         assertEquals(202, highVolumeViewModel.uiState.value.messages.maxOf { it.id })
 
         nowMs = 2_200L
-        advanceTimeBy(900L)
+        advanceTimeBy(800L)
         advanceUntilIdle()
         assertEquals(203, highVolumeViewModel.uiState.value.messages.maxOf { it.id })
+    }
+
+    @Test
+    fun `poll merge refreshes status for existing message ids`() = runTest {
+        fakeRepository.pageOneMessages = listOf(
+            testMessage(1, "one", deliveryStatus = "sent", isRead = false),
+            testMessage(2, "two", deliveryStatus = "sent", isRead = false),
+        )
+        viewModel.openConversation(conversationId = 10, status = "active")
+        advanceUntilIdle()
+
+        fakeRealtime.emitPolling(
+            listOf(
+                testMessage(1, "one", deliveryStatus = "read", isRead = true),
+                testMessage(2, "two", deliveryStatus = "delivered", isRead = false),
+            ),
+        )
+        advanceUntilIdle()
+
+        val first = viewModel.uiState.value.messages.first { it.id == 1 }
+        val second = viewModel.uiState.value.messages.first { it.id == 2 }
+        assertEquals("read", first.deliveryStatus)
+        assertTrue(first.isRead)
+        assertEquals("delivered", second.deliveryStatus)
+    }
+
+    @Test
+    fun `delete message marks entry as deleted placeholder`() = runTest {
+        viewModel.openConversation(conversationId = 10, status = "active")
+        advanceUntilIdle()
+
+        viewModel.deleteMessage(2)
+        advanceUntilIdle()
+
+        val deleted = viewModel.uiState.value.messages.first { it.id == 2 }
+        assertTrue(deleted.isDeleted)
+        assertEquals("", deleted.message)
+        assertEquals("2026-04-24T00:00:00Z", deleted.deletedAt)
     }
 }
 
@@ -229,6 +271,7 @@ private class FakeChatRepository : ChatRepository {
     var firstPageFailure: Throwable? = null
     var pageOneMessages: List<MessageItem> = listOf(testMessage(2), testMessage(3))
     var pageTwoMessages: List<MessageItem> = listOf(testMessage(1), testMessage(2))
+    var conversationDetailStatus: String = "active"
     var markConversationReadCalls = 0
     val markMessageReadCalls = mutableListOf<Int>()
 
@@ -259,7 +302,21 @@ private class FakeChatRepository : ChatRepository {
     )
 
     override suspend fun loadConversationDetail(conversationId: Int): Result<ConversationSummary> {
-        throw NotImplementedError()
+        return Result.success(
+            ConversationSummary(
+                id = conversationId,
+                matchId = null,
+                status = conversationDetailStatus,
+                statusDisplay = conversationDetailStatus.replaceFirstChar { it.uppercase() },
+                userRole = "shipper",
+                otherParticipant = Participant(2, "Carrier", null, null),
+                matchInfo = MatchInfo("A-B", null, null, null),
+                unreadCount = 0,
+                lastMessage = null,
+                lastMessageAt = null,
+                createdAt = null,
+            ),
+        )
     }
 
     override suspend fun loadMessages(conversationId: Int, page: Int): Result<MessagesPage> {
@@ -344,18 +401,23 @@ private class FakeRealtimeChatService : RealtimeChatService {
     }
 }
 
-private fun testMessage(id: Int, text: String = "message-$id") = MessageItem(
+private fun testMessage(
+    id: Int,
+    text: String = "message-$id",
+    deliveryStatus: String = "sent",
+    isRead: Boolean = false,
+) = MessageItem(
     id = id,
     message = text,
     messageType = "text",
     sender = Sender(1, "User", null),
-    isRead = false,
+    isRead = isRead,
     createdAt = "",
     formattedMessage = null,
     messageTypeDisplay = null,
     readAt = null,
     readReceipts = emptyMap(),
-    deliveryStatus = "sent",
+    deliveryStatus = deliveryStatus,
     deliveredAt = null,
     attachments = emptyList(),
     canEdit = false,

@@ -212,8 +212,14 @@ class RealtimeChatServiceImpl(
     }
 
     private fun extractConversationId(root: JsonObject): Int? {
-        val dataValue = root["channel"]?.jsonPrimitive?.contentOrNull ?: return null
-        return dataValue.substringAfter("private-chat.", "").toIntOrNull()
+        val direct = root["channel"]?.jsonPrimitive?.contentOrNull
+        if (!direct.isNullOrBlank()) {
+            return direct.substringAfter("private-chat.", "").toIntOrNull()
+        }
+        val dataField = root["data"] ?: return null
+        val dataObject = parseDataObject(dataField) ?: return null
+        val nested = dataObject["channel"]?.jsonPrimitive?.contentOrNull ?: return null
+        return nested.substringAfter("private-chat.", "").toIntOrNull()
     }
 
     private fun extractMessagePayload(root: JsonObject): MessageItem? {

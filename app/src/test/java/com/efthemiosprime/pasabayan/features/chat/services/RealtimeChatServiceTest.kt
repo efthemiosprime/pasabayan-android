@@ -219,6 +219,34 @@ class RealtimeChatServiceTest {
     }
 
     @Test
+    fun `subscription succeeded parses channel from nested data payload`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val okHttpClient = mockk<OkHttpClient>()
+        val chatRepository = mockk<ChatRepository>()
+        val webSocket = mockk<WebSocket>(relaxed = true)
+        val listenerSlot = slot<WebSocketListener>()
+        every { okHttpClient.newWebSocket(any(), capture(listenerSlot)) } returns webSocket
+        coEvery { chatRepository.authenticateChannel(any(), any(), any()) } returns Result.success("auth")
+
+        val service = RealtimeChatServiceImpl(okHttpClient, chatRepository, json, dispatcher)
+        val events = mutableListOf<RealtimeChatEvent>()
+        val collectJob = backgroundScope.launch {
+            service.events.collect { events += it }
+        }
+
+        service.connect(ReverbConfig("pasabayan", "reverb.example.com", 443, "https"))
+        listenerSlot.captured.onMessage(
+            webSocket,
+            """{"event":"pusher_internal:subscription_succeeded","data":"{\"channel\":\"private-chat.77\"}"}""",
+        )
+        advanceUntilIdle()
+
+        val succeeded = events.filterIsInstance<RealtimeChatEvent.SubscriptionSucceeded>()
+        assertEquals(listOf(77), succeeded.map { it.conversationId })
+        collectJob.cancel()
+    }
+
+    @Test
     fun `reconnect emits failed attempts then max exceeded event`() = runTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val okHttpClient = mockk<OkHttpClient>()
