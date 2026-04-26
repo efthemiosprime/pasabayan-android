@@ -11,7 +11,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
@@ -76,7 +76,7 @@ class RealtimeChatServiceTest {
             webSocket,
             """{"event":"chat.message","data":"{\"chat_message\":${messageJson(id = 501, text = "hello realtime")}}"}""",
         )
-        advanceUntilIdle()
+        runCurrent()
 
         assertTrue(service.isConnected.value)
         assertEquals("1001.2002", service.socketId.value)
@@ -92,6 +92,7 @@ class RealtimeChatServiceTest {
         }
         assertEquals(listOf(501), collectedMessageIds)
 
+        service.disconnect()
         collectJob.cancel()
     }
 
@@ -121,9 +122,10 @@ class RealtimeChatServiceTest {
             webSocket,
             """{"event":"chat.message","data":${messageJson(id = 602, text = "direct object")}}""",
         )
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(listOf(601, 602), ids)
+        service.disconnect()
         collectJob.cancel()
     }
 
@@ -156,9 +158,10 @@ class RealtimeChatServiceTest {
             webSocket,
             """{"event":"chat.message","data":$doubleEncoded}""",
         )
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(listOf(701, 701), ids)
+        service.disconnect()
         collectJob.cancel()
     }
 
@@ -183,9 +186,10 @@ class RealtimeChatServiceTest {
             webSocket,
             """{"event":"chat.message","data":"not-json"}""",
         )
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(0, emissionCount)
+        service.disconnect()
         collectJob.cancel()
     }
 
@@ -212,10 +216,11 @@ class RealtimeChatServiceTest {
             webSocket,
             """{"event":"connection_established","data":"{\"socket_id\":\"2.2\"}"}""",
         )
-        advanceUntilIdle()
+        runCurrent()
 
         coVerify(atLeast = 1) { chatRepository.authenticateChannel(any(), "private-chat.11", "2.2") }
         coVerify(atLeast = 1) { chatRepository.authenticateChannel(any(), "private-chat.22", "2.2") }
+        service.disconnect()
     }
 
     @Test
@@ -239,10 +244,11 @@ class RealtimeChatServiceTest {
             webSocket,
             """{"event":"pusher_internal:subscription_succeeded","data":"{\"channel\":\"private-chat.77\"}"}""",
         )
-        advanceUntilIdle()
+        runCurrent()
 
         val succeeded = events.filterIsInstance<RealtimeChatEvent.SubscriptionSucceeded>()
         assertEquals(listOf(77), succeeded.map { it.conversationId })
+        service.disconnect()
         collectJob.cancel()
     }
 
@@ -266,12 +272,13 @@ class RealtimeChatServiceTest {
         repeat(RealtimeChatServiceImpl.MAX_RECONNECT_ATTEMPTS + 1) {
             listenerSlot.captured.onFailure(webSocket, RuntimeException("boom"), null)
         }
-        advanceUntilIdle()
+        runCurrent()
 
         val failedAttempts = events.filterIsInstance<RealtimeChatEvent.ConnectionFailed>().map { it.attempt }
         assertEquals(listOf(1, 2, 3, 4, 5), failedAttempts)
         assertTrue(events.last() is RealtimeChatEvent.MaxReconnectExceeded)
 
+        service.disconnect()
         collectJob.cancel()
     }
 
