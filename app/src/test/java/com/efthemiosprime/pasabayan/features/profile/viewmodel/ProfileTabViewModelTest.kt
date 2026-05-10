@@ -146,4 +146,40 @@ private class FakeProfileRepository : ProfileRepository {
     override suspend fun createCarrierProfile(
         body: com.efthemiosprime.pasabayan.core.network.profile.CreateCarrierProfileRequestJson,
     ) = error("unused")
+
+    override suspend fun updateCarrierProfile(
+        body: com.efthemiosprime.pasabayan.core.network.profile.CreateCarrierProfileRequestJson,
+    ) = error("unused")
+
+    override suspend fun enableCarrier() = error("unused")
+
+    override suspend fun updateProfile(
+        request: com.efthemiosprime.pasabayan.core.network.profile.UpdateProfileRequestJson,
+    ) = error("unused")
+
+    override suspend fun uploadProfileAvatar(
+        imageBytes: ByteArray,
+        mimeType: String,
+        fileName: String,
+        fullName: String?,
+        deliveryAddress: String?,
+        preferredContactMethod: String?,
+        additionalInfo: Map<String, String>?,
+    ) = error("unused")
+
+    override suspend fun deleteProfilePicture(): Result<Unit> = error("unused")
+
+    override suspend fun requestAccountDeletion(reason: String?) = error("unused")
+
+    override suspend fun fetchDisclaimerAcknowledgments() = error("unused")
+
+    override suspend fun acknowledgeDisclaimer(type: String) = error("unused")
+
+    override suspend fun fetchConsentPreferences() = error("unused")
+
+    override suspend fun updateConsentPreferences(
+        update: com.efthemiosprime.pasabayan.core.network.profile.ConsentPreferencesUpdateJson,
+    ) = error("unused")
+
+    override suspend fun exportUserData(): Result<ByteArray> = error("unused")
 }
