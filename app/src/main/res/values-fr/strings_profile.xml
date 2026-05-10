@@ -39,4 +39,26 @@
     <string name="profile_error_generic">Impossible de charger le profil</string>
     <string name="profile_retry">Réessayer</string>
     <string name="profile_placeholder_not_implemented">Pas encore disponible</string>
+    <!-- Edit user profile sheet (09-profile-carrier-consent slice A) -->
+    <string name="profile_edit_title">Modifier le profil</string>
+    <string name="profile_edit_section_basic">Informations de base</string>
+    <string name="profile_edit_section_contact">Préférences de contact</string>
+    <string name="profile_edit_section_settings">Paramètres supplémentaires</string>
+    <string name="profile_edit_full_name_label">Nom complet</string>
+    <string name="profile_edit_full_name_helper">Votre nom légal pour la vérification de livraison</string>
+    <string name="profile_edit_full_name_placeholder">Saisissez votre nom complet</string>
+    <string name="profile_edit_delivery_address_label">Adresse de livraison</string>
+    <string name="profile_edit_delivery_address_helper">Votre adresse de livraison par défaut</string>
+    <string name="profile_edit_delivery_address_placeholder">Saisissez votre adresse de livraison principale</string>
+    <string name="profile_edit_contact_method_label">Méthode de contact préférée</string>
+    <string name="profile_edit_contact_method_helper">Comment nous devrions vous notifier des livraisons</string>
+    <string name="profile_edit_contact_method_phone">Téléphone — appel ou SMS</string>
+    <string name="profile_edit_contact_method_email">Notifications par courriel</string>
+    <string name="profile_edit_contact_method_app">Notifications dans l’application uniquement</string>
+    <string name="profile_edit_timezone_label">Fuseau horaire</string>
+    <string name="profile_edit_timezone_helper">Utilisé pour planifier les livraisons</string>
+    <string name="profile_edit_save">Enregistrer les modifications</string>
+    <string name="profile_edit_cancel">Annuler</string>
+    <string name="profile_edit_error_name_required">Le nom complet est requis</string>
+    <string name="profile_edit_success">Profil mis à jour</string>
 </resources>

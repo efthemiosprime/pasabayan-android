@@ -30,6 +30,7 @@ import com.efthemiosprime.pasabayan.features.dashboard.model.MainTabs
 import com.efthemiosprime.pasabayan.features.dashboard.model.DashboardSheetRoute
 import com.efthemiosprime.pasabayan.features.dashboard.viewmodel.DashboardViewModel
 import com.efthemiosprime.pasabayan.features.payments.ui.PaymentsProfileScreen
+import com.efthemiosprime.pasabayan.features.profile.ui.EditUserProfileSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.ProfileTabScreen
 import com.efthemiosprime.pasabayan.features.chat.ui.MessagesTabScreen
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ConversationsViewModel
@@ -89,6 +90,7 @@ fun MainTabScreen(
     var showCarrierPreferencesGate by remember { mutableStateOf(false) }
     var selectedCarrierTripId by remember { mutableStateOf<Int?>(null) }
     var profilePaymentsOpen by remember { mutableStateOf(false) }
+    var showEditUserProfileSheet by remember { mutableStateOf(false) }
     val dismissActiveSheetRoute = { viewModel.dismissActiveSheetRoute() }
     val openTripFilterSheet = { viewModel.openTripFilterSheet() }
     val openCreateTripFromPackageSheet: (Int) -> Unit = { packageId ->
@@ -235,11 +237,23 @@ fun MainTabScreen(
                             onSwitchRole = { viewModel.switchRole() },
                             onLogout = onLogout,
                             onOpenPaymentsHub = { profilePaymentsOpen = true },
+                            onOpenPersonalInfo = { showEditUserProfileSheet = true },
                         )
                     }
                 }
                 else -> {}
             }
+        }
+    }
+
+    if (showEditUserProfileSheet) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showEditUserProfileSheet = false },
+        ) {
+            EditUserProfileSheet(
+                authUser = user,
+                onClose = { showEditUserProfileSheet = false },
+            )
         }
     }
 

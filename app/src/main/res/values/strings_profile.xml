@@ -38,4 +38,26 @@
     <string name="profile_error_generic">Could not load profile</string>
     <string name="profile_retry">Retry</string>
     <string name="profile_placeholder_not_implemented">Not available yet</string>
+    <!-- Edit user profile sheet (09-profile-carrier-consent slice A) -->
+    <string name="profile_edit_title">Edit profile</string>
+    <string name="profile_edit_section_basic">Basic information</string>
+    <string name="profile_edit_section_contact">Contact preferences</string>
+    <string name="profile_edit_section_settings">Additional settings</string>
+    <string name="profile_edit_full_name_label">Full name</string>
+    <string name="profile_edit_full_name_helper">Your legal name for delivery verification</string>
+    <string name="profile_edit_full_name_placeholder">Enter your full name</string>
+    <string name="profile_edit_delivery_address_label">Delivery address</string>
+    <string name="profile_edit_delivery_address_helper">Your default address for package delivery</string>
+    <string name="profile_edit_delivery_address_placeholder">Enter your primary delivery address</string>
+    <string name="profile_edit_contact_method_label">Preferred contact method</string>
+    <string name="profile_edit_contact_method_helper">How we should notify you about deliveries</string>
+    <string name="profile_edit_contact_method_phone">Phone — call or SMS</string>
+    <string name="profile_edit_contact_method_email">Email notifications</string>
+    <string name="profile_edit_contact_method_app">App notifications only</string>
+    <string name="profile_edit_timezone_label">Timezone</string>
+    <string name="profile_edit_timezone_helper">Used for scheduling deliveries</string>
+    <string name="profile_edit_save">Save changes</string>
+    <string name="profile_edit_cancel">Cancel</string>
+    <string name="profile_edit_error_name_required">Full name is required</string>
+    <string name="profile_edit_success">Profile updated</string>
 </resources>
