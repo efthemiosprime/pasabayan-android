@@ -13,21 +13,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -104,8 +94,7 @@ fun UserHeaderCard(
                     )
                 }
 
-                // Three-dot menu
-                RoleSwitcherMenu(
+                RoleSwitcherIconButton(
                     currentRole = currentRole,
                     onSwitchRole = onSwitchRole,
                 )
@@ -136,42 +125,6 @@ private fun LetterAvatar(name: String) {
             text = initial,
             style = PasabayanTextStyles.Heading.h4,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
-        )
-    }
-}
-
-@Composable
-private fun RoleChip(role: UserRole) {
-    val (bgColor, icon, labelRes) = when (role) {
-        UserRole.CARRIER -> Triple(
-            PasabayanColors.BadgeBlue,
-            Icons.Default.Inventory2,
-            R.string.dashboard_role_carrier,
-        )
-        UserRole.SHIPPER -> Triple(
-            PasabayanColors.BadgePurple,
-            Icons.Default.Send,
-            R.string.dashboard_role_shipper,
-        )
-    }
-    Row(
-        modifier = Modifier
-            .background(bgColor.copy(alpha = 0.15f), RoundedCornerShape(PasabayanRadius.sm))
-            .padding(horizontal = PasabayanSpacing.sm, vertical = PasabayanSpacing.xs),
-        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(14.dp),
-            tint = bgColor,
-        )
-        Text(
-            text = stringResource(labelRes),
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium,
-            color = bgColor,
         )
     }
 }
@@ -211,58 +164,6 @@ private fun VerificationBadgeChip(level: String?) {
             fontWeight = FontWeight.Medium,
             color = if (normalized == "basic") MaterialTheme.colorScheme.onSurfaceVariant else color,
         )
-    }
-}
-
-@Composable
-private fun RoleSwitcherMenu(
-    currentRole: UserRole,
-    onSwitchRole: () -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
-    Box {
-        IconButton(onClick = { expanded = true }) {
-            Icon(
-                imageVector = Icons.Default.MoreHoriz,
-                contentDescription = stringResource(R.string.dashboard_switch_role),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-        ) {
-            UserRole.entries.forEach { role ->
-                val isSelected = role == currentRole
-                DropdownMenuItem(
-                    text = {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            if (isSelected) {
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp),
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
-                            }
-                            Text(
-                                text = when (role) {
-                                    UserRole.CARRIER -> stringResource(R.string.dashboard_role_carrier)
-                                    UserRole.SHIPPER -> stringResource(R.string.dashboard_role_shipper)
-                                },
-                            )
-                        }
-                    },
-                    onClick = {
-                        expanded = false
-                        if (!isSelected) onSwitchRole()
-                    },
-                )
-            }
-        }
     }
 }
 

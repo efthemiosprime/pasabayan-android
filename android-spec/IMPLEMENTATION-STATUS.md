@@ -18,8 +18,8 @@
 
 | Field | Value |
 |-------|--------|
-| **Current phase** | Phase 5 — Chat & notifications (07 chat implementation slices landed; 08 notifications pending) |
-| **Last updated** | 2026-04-26 — Profile tab ([20-profile-tab.md](20-profile-tab.md)): `ProfileApi` + DTOs, `ProfileRepository`, `ProfileTabViewModel`, `ProfileTabScreen`/`ProfileTabContent`, `MainTabScreen` payments sub-route, JVM + androidTest, spec + status updates. (Earlier: Phase 5 chat 07 closeout: nested subscription success, polling merge, temp-bubble dedupe, chat DS primitives, EN/FR, tests.) |
+| **Current phase** | **Phase 5** — [07](07-chat-broadcasting.md) shipped; **[08](08-notifications-device-tokens.md)** (FCM + token routing) still **blocks the Phase 5 exit gate**. **Phase 6** is **partial**: [20-profile-tab](20-profile-tab.md) + partial [09](09-profile-carrier-consent.md) (network/repo/tab UI); [10](10-verification.md) / [11](11-favorites-ratings.md) not started. |
+| **Last updated** | 2026-04-26 — Reconciled Phase 6 (profile tab partial vs “not started”); expanded Phase 6 implementation notes. Profile slice: `ProfileApi` + DTOs, `ResponseExt` integration, `ProfileRepository`, `ProfileTabViewModel`, `ProfileTabScreen` / `ProfileTabContent`, `MainTabScreen` payments sub-route, onboarding → `ProfileApi` for city/consent updates, EN/FR `strings_profile.xml`, JVM + androidTest. |
 | **Spec audit** | **Complete** — YAML expanded from ~25 to ~100 endpoint rows; all feature specs updated with query params, multipart fields, WebSocket protocol, local storage keys, activity logs, cache policy, GPS services, badge rules, analytics mock structures |
 
 ---
@@ -34,7 +34,7 @@
 | **3** — Bookings & matches | Core marketplace loop + counter-offer parity | **Complete** — BookingsApi (20+ endpoints), DeliveryMatch (60+ fields) + BookingAction (10 cases) + BookingMapper + computed props (availableActions, pricing, codes); BookingType enum; 9 nested info types; 10 supporting models (CounterOfferContext, codes, tracking, stats); BookingsRepository (15 methods); MatchingViewModel + LiveTrackingViewModel + AutoChargeConfirmationViewModel; unified MatchCard (replaces 4 iOS cards) + MatchStatusBadge + PriceComparison + CounterOfferBanner + code views; RequestToCarrySheet + CounterOfferPromptSheet + AutoChargeSheet + RateDeliverySheet; unified MatchListScreen wired to tab; BookingSuccessScreen + code screens; 60+ tests; full i18n (EN+FR). |
 | **4** — Payments & Stripe | … | **Partial** — closeout check run: PaymentSheet parity ✅, transactions parity ✅, payments test checklist ✅. Exit gate not met yet: Stripe Connect onboarding/dashboard journey still lacks full iOS parity states (loading/not setup/partial/complete, security notice, onboarding/dashboard sheet handling). |
 | **5** — Chat & notifications | … | **Partial** — `07-chat-broadcasting` hardening slices landed (realtime protocol/parser robustness, reconnect/polling state handling, thread + conversations parity upgrades, expanded tests). Remaining: notification/device-token routing from `08-notifications-device-tokens.md`, deep-link parity, and final phase-gate verification. |
-| **6** — Profile, verification, favorites & ratings | … | **Pending** — feature implementation not started. |
+| **6** — Profile, verification, favorites & ratings | … | **Partial** — [20-profile-tab](20-profile-tab.md) tab shell + [09](09-profile-carrier-consent.md) network/repo/bootstrap in code (`ProfileApi`, `ProfileRepository`, `ProfileTabViewModel`, `ProfileTabScreen`, payments sub-route, tests). **Not met:** full profile/carrier **editing** (avatar, sheets), disclaimers/account flows per 09, **verification** (10), **favorites & ratings** (11), and Phase 6 TDD/exit-gate sign-off. |
 | **7** — Legal, support, misc | … | **Pending** — feature implementation not started. |
 
 ---
@@ -46,8 +46,8 @@
 | Gradle **Version Catalog** (`gradle/libs.versions.toml`) | Complete | AGP 8.8.2, Gradle 8.10.2, Kotlin 2.2.10, KSP, Compose |
 | **`:core:designsystem`** | Complete | Core primitives: `PasabayanTheme`, tokens (`PasabayanBorder`, `PasabayanLayout`, `PasabayanMotion`, `PasabayanTextStyles`), `ds*` modifiers, `PButton`, `PCard`, `POutlinedTextField`, `PScaffold`, `PSnackbar`/`PSnackbarHost`, `PModalBottomSheet`, `PTopBar`, `PDivider`, `PCircularProgress`; JVM + androidTest. Spec **14** full color inventory / domain composites (e.g. `EmptyStateView`) still optional as features land. |
 | **`:core:domain-error`** | Complete | `DomainError` + `ValidationError`; [01-error-taxonomy.md](01-error-taxonomy.md); **`userMessage()`**; **`ErrorAlertPolicy`** / `ErrorAlertContext` (foreground vs background, iOS parity) + JVM tests |
-| **`:core:network`** | Complete | OkHttp + Retrofit + kotlinx-serialization; Hilt `NetworkModule`; `AuthInterceptor` (Bearer except `/auth/*` without `/auth/me`); **`ApiErrorMapper`** + error DTOs; **`Response.toDomainResult` / `foldDomainResult`**; `BuildConfig.API_BASE_URL` = production; `consumer-rules.pro` |
-| **`:app`** | Partial | `@HiltAndroidApp` `PasabayanApplication`; `@AndroidEntryPoint` `MainActivity`; Compose shell showing API base URL |
+| **`:core:network`** | Complete | OkHttp + Retrofit + kotlinx-serialization; Hilt `NetworkModule`; `AuthInterceptor` (Bearer except `/auth/*` without `/auth/me`); **`ApiErrorMapper`** + error DTOs; **`Response.toDomainResult` / `foldDomainResult`**, **`ResponseExt` helpers**; `ProfileApi` + profile/carrier DTOs + fixtures; `BuildConfig.API_BASE_URL` = production; `consumer-rules.pro` |
+| **`:app`** | Partial | `@HiltAndroidApp` `PasabayanApplication`; `@AndroidEntryPoint` `MainActivity`; main shell; **Profile** feature (`ProfileRepository`, `ProfileTabViewModel`, `ProfileTabScreen`) wired in `MainTabScreen` (tab + payments hub) |
 | **Hilt** | Complete | App + `:core:network` (KSP) |
 | **Google Services / Firebase** | Partial | `com.google.gms.google-services` plugin; `app/google-services.json`; Firebase BOM + **firebase-messaging**; **`PasabayanFirebaseMessagingService`** stub (token POST + routing **TODO** Phase 5) |
 | **Google Sign-In** | Partial | `GoogleSignInHelper` + `AuthScreen` / `AuthViewModel`; Credential Manager / One Tap **not** wired (optional) |
@@ -64,7 +64,20 @@
 | **`:core:session`** | Complete | `TokenStore`, `EncryptedTokenStore`; `StoredAuthTokenProvider`; `TokenClearingHandler` → `SessionInvalidationHandler` + **`UnauthorizedSessionNotifier`** (401 → UI); `AuthRepository` / `AuthRepositoryImpl`; `SessionModule` (Hilt); **`TokenClearingHandlerTest`** |
 | **`app` dependency** | Complete | `implementation(project(":core:session"))` |
 | **OAuth UI** | Complete | `AuthScreen` + `AuthRoute` + `AuthViewModel`; Google + Facebook → backend; **`DashboardScreen`** placeholder; **401** + `error_unauthorized`; **`didJustCompleteConsent`** via dashboard |
-| **Onboarding (17)** | Complete | `RootViewModel` / `AppEntryContent`; `OnboardingRoute`; city + consent gates; prefs keys; consent failure still advances |
+| **Onboarding (17)** | Complete | `RootViewModel` / `AppEntryContent`; `OnboardingRoute`; city + consent gates; prefs keys; consent failure still advances; **city + consent profile writes** go through `ProfileApi` (aligned with [09](09-profile-carrier-consent.md) HTTP contract) |
+
+---
+
+## Phase 6 — What is implemented (partial; exit gate not met)
+
+| Item | Status | Notes |
+|------|--------|-------|
+| [20-profile-tab.md](20-profile-tab.md) | **Partial** | `ProfileApi` + JSON models in `:core:network` (incl. carrier + stats fixtures/tests); `ProfileRepository` + Hilt; `ProfileTabViewModel` + `ProfileTabUiState` / visibility; `ProfileTabScreen` + `ProfileTabContent` (section order, role gating, version footer); `MainTabScreen` profile root + **Payments** sub-route with `PTopBar` back; `strings_profile` EN+FR; `ProfileRepositoryImplTest` + `ProfileTabViewModelTest` + `ProfileTabUiTest`. Deferred: per-row deep-links, full logout E2E, some TDD rows (see spec checklist). |
+| [09-profile-carrier-consent.md](09-profile-carrier-consent.md) | **Partial** | Read/bootstrap + `CreateCarrierProfileRequestJson` (409 → GET) paths; onboarding profile PATCH via `ProfileApi`. Pending: full edit/avatar/multipart, disclaimers, account deletion, dedicated 09 TDD. |
+| [10-verification.md](10-verification.md) | Pending | — |
+| [11-favorites-ratings.md](11-favorites-ratings.md) | Pending | — |
+
+**Phase 6 exit gate (from [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md)):** *Profile editing, disclaimers/consent, verification flows, favorites and ratings* — **not** satisfied until 09/10/11 work above is complete, not just the [20](20-profile-tab.md) tab shell.
 
 ---
 

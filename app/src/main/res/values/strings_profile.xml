@@ -2,9 +2,6 @@
 <resources>
     <string name="profile_back_payments">Back to profile</string>
     <string name="profile_header_title">Profile</string>
-    <string name="profile_role_chip_shipper">Shipper</string>
-    <string name="profile_role_chip_carrier">Carrier</string>
-    <string name="profile_role_switcher_title">I am a</string>
     <string name="profile_stats_title">Your stats</string>
     <string name="profile_stat_packages">Packages</string>
     <string name="profile_stat_delivered">Delivered</string>

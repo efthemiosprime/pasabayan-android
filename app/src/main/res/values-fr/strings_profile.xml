@@ -3,9 +3,6 @@
     <!-- TODO: translate -->
     <string name="profile_back_payments">Retour au profil</string>
     <string name="profile_header_title">Profil</string>
-    <string name="profile_role_chip_shipper">Expéditeur</string>
-    <string name="profile_role_chip_carrier">Transporteur</string>
-    <string name="profile_role_switcher_title">Je suis</string>
     <string name="profile_stats_title">Vos statistiques</string>
     <string name="profile_stat_packages">Colis</string>
     <string name="profile_stat_delivered">Livrés</string>
