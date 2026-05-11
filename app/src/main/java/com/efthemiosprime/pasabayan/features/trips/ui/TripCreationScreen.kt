@@ -200,6 +200,8 @@ fun TripCreationScreen(
                                 val formState = TripFormState(
                                     originCity = originCity,
                                     destinationCity = destinationCity,
+                                    pickupAddress = pickupAddress,
+                                    dropoffAddress = dropoffAddress,
                                     weightCapacityKg = weightCapacity.toDoubleOrNull(),
                                     spaceCapacityLiters = spaceCapacity.toDoubleOrNull(),
                                     pricePerKg = pricePerKg.toDoubleOrNull(),
@@ -676,6 +678,8 @@ private fun TripValidationError.toStringRes(): Int = when (this) {
     TripValidationError.OriginRequired -> R.string.trips_create_validation_origin_required
     TripValidationError.DestinationRequired -> R.string.trips_create_validation_destination_required
     TripValidationError.SameOriginDestination -> R.string.trips_create_validation_same_route
+    TripValidationError.PickupAddressRequired -> R.string.trips_create_validation_pickup_address_required
+    TripValidationError.DropoffAddressRequired -> R.string.trips_create_validation_dropoff_address_required
     TripValidationError.WeightRequired -> R.string.trips_create_validation_weight_required
     TripValidationError.SpaceInvalid -> R.string.trips_create_validation_space_invalid
     TripValidationError.PriceRequired -> R.string.trips_create_validation_price_required

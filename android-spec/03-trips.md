@@ -467,6 +467,8 @@ All optional. Snake_case on wire (from `TripsAPIService.getAvailableTrips`):
 |------|-----------|
 | Start / end location | Required, non-empty |
 | Start ≠ end | Origin city must differ from destination city |
+| **Pickup address** | **Required, non-empty (iOS parity — `TripCreationFormState.isFormValid` blocks submit when blank).** |
+| **Drop-off address** | **Required, non-empty (iOS parity).** |
 | Weight capacity | Required, must be > 0 |
 | Space capacity | Optional; if provided must be > 0 |
 | Pricing (flight / non-land) | `pricePerKg` required, > 0 |

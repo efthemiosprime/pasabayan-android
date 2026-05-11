@@ -4,6 +4,10 @@ sealed interface TripValidationError {
     data object OriginRequired : TripValidationError
     data object DestinationRequired : TripValidationError
     data object SameOriginDestination : TripValidationError
+    /** Pickup address is required (iOS parity — `TripCreationFormState.isFormValid`). */
+    data object PickupAddressRequired : TripValidationError
+    /** Drop-off address is required (iOS parity). */
+    data object DropoffAddressRequired : TripValidationError
     data object WeightRequired : TripValidationError
     data object SpaceInvalid : TripValidationError
     data object PriceRequired : TripValidationError

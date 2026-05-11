@@ -10,6 +10,8 @@ class TripFormValidatorTest {
     private fun validForm() = TripFormState(
         originCity = "Toronto",
         destinationCity = "Vancouver",
+        pickupAddress = "123 Main St",
+        dropoffAddress = "456 Oak Ave",
         weightCapacityKg = 25.0,
         spaceCapacityLiters = null,
         pricePerKg = 15.0,
@@ -19,6 +21,41 @@ class TripFormValidatorTest {
         arrivalDateMillis = System.currentTimeMillis() + 4 * 3_600_000, // +4 hours
         specialNotes = null,
     )
+
+    // -- Pickup / drop-off address — iOS parity (slice B) --
+
+    @Test
+    fun `empty pickup address returns PickupAddressRequired`() {
+        val errors = TripFormValidator.validate(validForm().copy(pickupAddress = ""))
+        assertTrue(errors.any { it is TripValidationError.PickupAddressRequired })
+    }
+
+    @Test
+    fun `whitespace pickup address returns PickupAddressRequired`() {
+        val errors = TripFormValidator.validate(validForm().copy(pickupAddress = "   "))
+        assertTrue(errors.any { it is TripValidationError.PickupAddressRequired })
+    }
+
+    @Test
+    fun `empty dropoff address returns DropoffAddressRequired`() {
+        val errors = TripFormValidator.validate(validForm().copy(dropoffAddress = ""))
+        assertTrue(errors.any { it is TripValidationError.DropoffAddressRequired })
+    }
+
+    @Test
+    fun `whitespace dropoff address returns DropoffAddressRequired`() {
+        val errors = TripFormValidator.validate(validForm().copy(dropoffAddress = " \t "))
+        assertTrue(errors.any { it is TripValidationError.DropoffAddressRequired })
+    }
+
+    @Test
+    fun `both addresses blank returns both errors independently`() {
+        val errors = TripFormValidator.validate(
+            validForm().copy(pickupAddress = "", dropoffAddress = ""),
+        )
+        assertTrue(errors.any { it is TripValidationError.PickupAddressRequired })
+        assertTrue(errors.any { it is TripValidationError.DropoffAddressRequired })
+    }
 
     @Test
     fun `valid form returns no errors`() {

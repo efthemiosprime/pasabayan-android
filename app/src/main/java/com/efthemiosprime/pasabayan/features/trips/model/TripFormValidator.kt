@@ -23,6 +23,10 @@ object TripFormValidator {
             add(TripValidationError.SameOriginDestination)
         }
 
+        // Pickup / drop-off addresses — iOS parity (`TripCreationFormState.isFormValid` requires both).
+        if (form.pickupAddress.isBlank()) add(TripValidationError.PickupAddressRequired)
+        if (form.dropoffAddress.isBlank()) add(TripValidationError.DropoffAddressRequired)
+
         // Weight
         val weight = form.weightCapacityKg
         if (weight == null || weight <= 0.0) add(TripValidationError.WeightRequired)

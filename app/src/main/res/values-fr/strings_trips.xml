@@ -84,8 +84,8 @@
     <string name="trips_create_arrival_date">Date d\'arriv\u00e9e</string>
     <string name="trips_create_origin_country_code">Code pays d\'origine</string>
     <string name="trips_create_destination_country_code">Code pays de destination</string>
-    <string name="trips_create_pickup_address">Adresse de ramassage (optionnel)</string>
-    <string name="trips_create_dropoff_address">Adresse de livraison (optionnel)</string>
+    <string name="trips_create_pickup_address">Adresse de ramassage</string>
+    <string name="trips_create_dropoff_address">Adresse de livraison</string>
     <string name="trips_create_weight_capacity">Capacit\u00e9 de poids (kg)</string>
     <string name="trips_create_space_capacity">Espace (litres)</string>
     <string name="trips_create_price_per_kg">Prix par kg</string>
@@ -111,6 +111,8 @@
     <string name="trips_create_validation_origin_required">La ville d\'origine est requise.</string>
     <string name="trips_create_validation_destination_required">La ville de destination est requise.</string>
     <string name="trips_create_validation_same_route">L\'origine et la destination ne peuvent pas \u00eatre identiques.</string>
+    <string name="trips_create_validation_pickup_address_required">L\'adresse de ramassage est requise.</string>
+    <string name="trips_create_validation_dropoff_address_required">L\'adresse de livraison est requise.</string>
     <string name="trips_create_validation_weight_required">La capacit\u00e9 de poids est requise.</string>
     <string name="trips_create_validation_space_invalid">L\'espace doit \u00eatre sup\u00e9rieur \u00e0 z\u00e9ro lorsqu\'il est fourni.</string>
     <string name="trips_create_validation_price_required">Saisissez un prix de trajet valide.</string>
