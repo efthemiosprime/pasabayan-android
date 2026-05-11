@@ -16,6 +16,7 @@ import com.efthemiosprime.pasabayan.core.network.profile.UserProfileJson
 import com.efthemiosprime.pasabayan.core.network.profile.UserStatsDataJson
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.profile.model.ContactMethod
+import com.efthemiosprime.pasabayan.features.profile.services.ImageCompressor
 import com.efthemiosprime.pasabayan.features.profile.services.ProfileRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -47,6 +48,12 @@ class EditUserProfileViewModelTest {
         every { context.getString(R.string.profile_edit_error_name_required) } returns
             "Full name is required"
         every { context.getString(R.string.profile_edit_success) } returns "Profile updated"
+        every { context.getString(R.string.profile_avatar_error_decode) } returns
+            "Could not read the selected image"
+        every { context.getString(R.string.profile_avatar_success_uploaded) } returns
+            "Profile picture updated"
+        every { context.getString(R.string.profile_avatar_success_deleted) } returns
+            "Profile picture removed"
     }
 
     @After
@@ -74,10 +81,28 @@ class EditUserProfileViewModelTest {
     private fun newViewModel(
         repository: ProfileRepository,
         systemTz: String = "America/Toronto",
+        compressor: ImageCompressor = PassthroughCompressor(),
     ): EditUserProfileViewModel {
-        val vm = EditUserProfileViewModel(repository = repository, appContext = context)
+        val vm = EditUserProfileViewModel(
+            repository = repository,
+            imageCompressor = compressor,
+            appContext = context,
+        )
         vm.overrideSystemTimezoneProvider { systemTz }
         return vm
+    }
+
+    private class PassthroughCompressor : ImageCompressor {
+        var lastInput: ByteArray? = null
+        override fun compressToJpeg(input: ByteArray): ByteArray {
+            lastInput = input
+            return input
+        }
+    }
+
+    private class FailingCompressor : ImageCompressor {
+        override fun compressToJpeg(input: ByteArray): ByteArray =
+            throw IllegalArgumentException("decode failed")
     }
 
     @Test
@@ -191,12 +216,110 @@ class EditUserProfileViewModelTest {
         advanceUntilIdle()
         assertNull(repository.lastUpdateRequest?.deliveryAddress)
     }
+
+    @Test
+    fun `onAvatarSelected compresses and uploads preserving current form values`() =
+        runTest(testDispatcher) {
+            val repository = FakeEditRepo(
+                initialProfile = UserProfileJson(fullName = "Existing", profilePicture = null),
+            )
+            val compressor = PassthroughCompressor()
+            val vm = newViewModel(repository, compressor = compressor)
+            vm.initialize(authUser())
+            advanceUntilIdle()
+            vm.onFullNameChange("New Name")
+            vm.onDeliveryAddressChange("New Address")
+            vm.onContactMethodChange(ContactMethod.EMAIL)
+            val raw = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47)
+            vm.onAvatarSelected(raw)
+            advanceUntilIdle()
+            val upload = repository.lastAvatarUpload
+            assertNotNull(upload)
+            assertTrue(compressor.lastInput contentEquals raw)
+            assertEquals("New Name", upload!!.fullName)
+            assertEquals("New Address", upload.deliveryAddress)
+            assertEquals("email", upload.preferredContactMethod)
+            assertEquals("image/jpeg", upload.mimeType)
+            assertEquals("avatar.jpg", upload.fileName)
+            assertEquals(
+                "https://cdn.example/uploaded.jpg",
+                vm.state.value.profilePictureUrl,
+            )
+            assertEquals("Profile picture updated", vm.state.value.successMessage)
+            assertFalse(vm.state.value.isAvatarUpdating)
+        }
+
+    @Test
+    fun `onAvatarSelected surfaces decode error and does not call repository`() =
+        runTest(testDispatcher) {
+            val repository = FakeEditRepo(initialProfile = UserProfileJson(fullName = "U"))
+            val vm = newViewModel(repository, compressor = FailingCompressor())
+            vm.initialize(authUser())
+            advanceUntilIdle()
+            vm.onAvatarSelected(byteArrayOf(1, 2, 3))
+            advanceUntilIdle()
+            assertEquals(
+                "Could not read the selected image",
+                vm.state.value.errorMessage,
+            )
+            assertFalse(vm.state.value.isAvatarUpdating)
+            assertNull(repository.lastAvatarUpload)
+        }
+
+    @Test
+    fun `requestDeleteAvatar gated on hasCustomAvatar and confirmDelete invokes repository`() =
+        runTest(testDispatcher) {
+            val repository = FakeEditRepo(
+                initialProfile = UserProfileJson(
+                    fullName = "U",
+                    profilePicture = "https://cdn.example/me.jpg",
+                ),
+            )
+            val vm = newViewModel(repository)
+            vm.initialize(authUser())
+            advanceUntilIdle()
+            assertTrue(vm.state.value.hasCustomAvatar)
+            vm.requestDeleteAvatar()
+            assertTrue(vm.state.value.showDeleteAvatarConfirm)
+            vm.cancelDeleteAvatar()
+            assertFalse(vm.state.value.showDeleteAvatarConfirm)
+            // Re-open and confirm.
+            vm.requestDeleteAvatar()
+            vm.confirmDeleteAvatar()
+            advanceUntilIdle()
+            assertTrue(repository.deletePictureCalled)
+            assertNull(vm.state.value.profilePictureUrl)
+            assertEquals("Profile picture removed", vm.state.value.successMessage)
+            assertFalse(vm.state.value.showDeleteAvatarConfirm)
+        }
+
+    @Test
+    fun `requestDeleteAvatar is no-op when no custom avatar`() = runTest(testDispatcher) {
+        val repository = FakeEditRepo(
+            initialProfile = UserProfileJson(fullName = "U", profilePicture = null),
+        )
+        val vm = newViewModel(repository)
+        vm.initialize(authUser())
+        advanceUntilIdle()
+        vm.requestDeleteAvatar()
+        assertFalse(vm.state.value.showDeleteAvatarConfirm)
+    }
 }
+
+data class AvatarUploadCall(
+    val mimeType: String,
+    val fileName: String,
+    val fullName: String?,
+    val deliveryAddress: String?,
+    val preferredContactMethod: String?,
+)
 
 private class FakeEditRepo(
     initialProfile: UserProfileJson?,
 ) : ProfileRepository {
     var lastUpdateRequest: UpdateProfileRequestJson? = null
+    var lastAvatarUpload: AvatarUploadCall? = null
+    var deletePictureCalled: Boolean = false
     private var currentProfile: UserProfileJson? = initialProfile
 
     override suspend fun fetchProfile(forceRefresh: Boolean) =
@@ -230,9 +353,26 @@ private class FakeEditRepo(
         deliveryAddress: String?,
         preferredContactMethod: String?,
         additionalInfo: Map<String, String>?,
-    ) = error("unused")
+    ): Result<ProfileDataJson> {
+        lastAvatarUpload = AvatarUploadCall(
+            mimeType, fileName, fullName, deliveryAddress, preferredContactMethod,
+        )
+        val updated = (currentProfile ?: UserProfileJson()).copy(
+            profilePicture = "https://cdn.example/uploaded.jpg",
+            fullName = fullName ?: currentProfile?.fullName,
+            deliveryAddress = deliveryAddress ?: currentProfile?.deliveryAddress,
+            preferredContactMethod = preferredContactMethod
+                ?: currentProfile?.preferredContactMethod,
+        )
+        currentProfile = updated
+        return Result.success(ProfileDataJson(profile = updated))
+    }
 
-    override suspend fun deleteProfilePicture(): Result<Unit> = error("unused")
+    override suspend fun deleteProfilePicture(): Result<Unit> {
+        deletePictureCalled = true
+        currentProfile = currentProfile?.copy(profilePicture = null)
+        return Result.success(Unit)
+    }
     override suspend fun requestAccountDeletion(reason: String?): Result<AccountDeletionDataJson> =
         error("unused")
     override suspend fun fetchDisclaimerAcknowledgments(): Result<DisclaimerAcknowledgmentsDataJson> =

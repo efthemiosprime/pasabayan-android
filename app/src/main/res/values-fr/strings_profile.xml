@@ -61,4 +61,19 @@
     <string name="profile_edit_cancel">Annuler</string>
     <string name="profile_edit_error_name_required">Le nom complet est requis</string>
     <string name="profile_edit_success">Profil mis à jour</string>
+    <!-- Avatar upload (09-profile-carrier-consent slice B) -->
+    <string name="profile_avatar_section_title">Photo de profil</string>
+    <string name="profile_avatar_status_custom">Photo personnalisée</string>
+    <string name="profile_avatar_status_social">Depuis un compte social</string>
+    <string name="profile_avatar_status_none">Aucune photo</string>
+    <string name="profile_avatar_hint">Max 512 px, qualité JPEG 70</string>
+    <string name="profile_avatar_action_upload">Téléverser</string>
+    <string name="profile_avatar_action_change">Changer</string>
+    <string name="profile_avatar_action_delete">Supprimer</string>
+    <string name="profile_avatar_confirm_title">Supprimer la photo de profil?</string>
+    <string name="profile_avatar_confirm_message">Voulez-vous vraiment supprimer votre photo de profil? Cette action est irréversible.</string>
+    <string name="profile_avatar_confirm_remove">Supprimer</string>
+    <string name="profile_avatar_error_decode">Impossible de lire l’image sélectionnée</string>
+    <string name="profile_avatar_success_uploaded">Photo de profil mise à jour</string>
+    <string name="profile_avatar_success_deleted">Photo de profil supprimée</string>
 </resources>

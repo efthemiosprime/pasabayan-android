@@ -5,13 +5,17 @@ data class EditUserProfileUiState(
     val deliveryAddress: String = "",
     val contactMethod: ContactMethod = ContactMethod.APP_NOTIFICATION,
     val timezone: String = SupportedTimezones.first(),
+    val profilePictureUrl: String? = null,
+    val isAvatarUpdating: Boolean = false,
     val isLoading: Boolean = false,
     val isInitialized: Boolean = false,
     val errorMessage: String? = null,
     val successMessage: String? = null,
+    val showDeleteAvatarConfirm: Boolean = false,
 ) {
     val isFullNameValid: Boolean get() = fullName.trim().isNotEmpty()
     val isFormValid: Boolean get() = isFullNameValid && !isLoading
+    val hasCustomAvatar: Boolean get() = !profilePictureUrl.isNullOrBlank()
 }
 
 /**

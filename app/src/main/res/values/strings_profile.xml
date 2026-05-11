@@ -60,4 +60,19 @@
     <string name="profile_edit_cancel">Cancel</string>
     <string name="profile_edit_error_name_required">Full name is required</string>
     <string name="profile_edit_success">Profile updated</string>
+    <!-- Avatar upload (09-profile-carrier-consent slice B) -->
+    <string name="profile_avatar_section_title">Profile picture</string>
+    <string name="profile_avatar_status_custom">Custom photo</string>
+    <string name="profile_avatar_status_social">From social account</string>
+    <string name="profile_avatar_status_none">No photo</string>
+    <string name="profile_avatar_hint">Max 512 px, JPEG quality 70</string>
+    <string name="profile_avatar_action_upload">Upload</string>
+    <string name="profile_avatar_action_change">Change</string>
+    <string name="profile_avatar_action_delete">Delete</string>
+    <string name="profile_avatar_confirm_title">Remove profile picture?</string>
+    <string name="profile_avatar_confirm_message">Are you sure you want to remove your profile picture? This cannot be undone.</string>
+    <string name="profile_avatar_confirm_remove">Remove</string>
+    <string name="profile_avatar_error_decode">Could not read the selected image</string>
+    <string name="profile_avatar_success_uploaded">Profile picture updated</string>
+    <string name="profile_avatar_success_deleted">Profile picture removed</string>
 </resources>

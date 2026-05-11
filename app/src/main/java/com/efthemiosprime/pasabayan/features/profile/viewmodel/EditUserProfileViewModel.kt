@@ -12,6 +12,7 @@ import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.profile.model.ContactMethod
 import com.efthemiosprime.pasabayan.features.profile.model.EditUserProfileUiState
 import com.efthemiosprime.pasabayan.features.profile.model.SupportedTimezones
+import com.efthemiosprime.pasabayan.features.profile.services.ImageCompressor
 import com.efthemiosprime.pasabayan.features.profile.services.ProfileRepository
 import com.efthemiosprime.pasabayan.shared.error.localizedMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,6 +34,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class EditUserProfileViewModel @Inject constructor(
     private val repository: ProfileRepository,
+    private val imageCompressor: ImageCompressor,
     @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
 
@@ -64,6 +66,7 @@ class EditUserProfileViewModel @Inject constructor(
                     deliveryAddress = prefillAddress,
                     contactMethod = prefillContact,
                     timezone = prefillTimezone,
+                    profilePictureUrl = profile?.profilePicture ?: authUser.avatar,
                     isInitialized = true,
                     isLoading = false,
                 )
@@ -134,16 +137,111 @@ class EditUserProfileViewModel @Inject constructor(
                     }
                     onSaved()
                 },
-                onFailure = { throwable ->
-                    val err = (throwable as? DomainErrorMapperException)?.domainError
-                        ?: DomainError.NetworkError(throwable)
+                onFailure = { throwable -> applyError(throwable) },
+            )
+        }
+    }
+
+    /**
+     * Compresses [imageBytes] (Bitmap → JPEG ≤ 512 px) and `POST /api/profile` multipart with the
+     * current form's basic info to preserve fields per iOS `uploadImageWithCurrentProfileData`.
+     */
+    fun onAvatarSelected(imageBytes: ByteArray) {
+        val snapshot = _state.value
+        if (snapshot.isAvatarUpdating) return
+        _state.update { it.copy(isAvatarUpdating = true, errorMessage = null) }
+        viewModelScope.launch {
+            val compressed = try {
+                imageCompressor.compressToJpeg(imageBytes)
+            } catch (e: IllegalArgumentException) {
+                _state.update {
+                    it.copy(
+                        isAvatarUpdating = false,
+                        errorMessage = appContext.getString(
+                            com.efthemiosprime.pasabayan.R.string.profile_avatar_error_decode,
+                        ),
+                    )
+                }
+                return@launch
+            }
+            val result = repository.uploadProfileAvatar(
+                imageBytes = compressed,
+                mimeType = "image/jpeg",
+                fileName = "avatar.jpg",
+                fullName = snapshot.fullName.takeIf { it.isNotBlank() },
+                deliveryAddress = snapshot.deliveryAddress.takeIf { it.isNotBlank() },
+                preferredContactMethod = snapshot.contactMethod.raw,
+            )
+            result.fold(
+                onSuccess = { updated ->
+                    loadedProfile = updated.profile
                     _state.update {
                         it.copy(
-                            isLoading = false,
-                            errorMessage = err.localizedMessage(appContext),
+                            isAvatarUpdating = false,
+                            profilePictureUrl = updated.profile?.profilePicture,
+                            successMessage = appContext.getString(
+                                com.efthemiosprime.pasabayan.R.string.profile_avatar_success_uploaded,
+                            ),
                         )
                     }
                 },
+                onFailure = { throwable ->
+                    _state.update { it.copy(isAvatarUpdating = false) }
+                    applyError(throwable)
+                },
+            )
+        }
+    }
+
+    fun requestDeleteAvatar() {
+        if (!_state.value.hasCustomAvatar) return
+        _state.update { it.copy(showDeleteAvatarConfirm = true) }
+    }
+
+    fun cancelDeleteAvatar() {
+        _state.update { it.copy(showDeleteAvatarConfirm = false) }
+    }
+
+    fun confirmDeleteAvatar() {
+        val snapshot = _state.value
+        if (snapshot.isAvatarUpdating) return
+        _state.update {
+            it.copy(
+                showDeleteAvatarConfirm = false,
+                isAvatarUpdating = true,
+                errorMessage = null,
+            )
+        }
+        viewModelScope.launch {
+            val result = repository.deleteProfilePicture()
+            result.fold(
+                onSuccess = {
+                    loadedProfile = loadedProfile?.copy(profilePicture = null)
+                    _state.update {
+                        it.copy(
+                            isAvatarUpdating = false,
+                            profilePictureUrl = null,
+                            successMessage = appContext.getString(
+                                com.efthemiosprime.pasabayan.R.string.profile_avatar_success_deleted,
+                            ),
+                        )
+                    }
+                },
+                onFailure = { throwable ->
+                    _state.update { it.copy(isAvatarUpdating = false) }
+                    applyError(throwable)
+                },
+            )
+        }
+    }
+
+    private fun applyError(throwable: Throwable) {
+        val err = (throwable as? DomainErrorMapperException)?.domainError
+            ?: DomainError.NetworkError(throwable)
+        _state.update {
+            it.copy(
+                isLoading = false,
+                errorMessage = err.localizedMessage(appContext),
             )
         }
     }

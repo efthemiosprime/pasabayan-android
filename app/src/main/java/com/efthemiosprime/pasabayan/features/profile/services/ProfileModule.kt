@@ -13,4 +13,8 @@ abstract class ProfileModule {
     @Binds
     @Singleton
     abstract fun bindProfileRepository(impl: ProfileRepositoryImpl): ProfileRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindImageCompressor(impl: BitmapImageCompressor): ImageCompressor
 }
