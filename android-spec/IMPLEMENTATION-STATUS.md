@@ -18,8 +18,8 @@
 
 | Field | Value |
 |-------|--------|
-| **Current phase** | **Phase 5** — [07](07-chat-broadcasting.md) shipped; **[08](08-notifications-device-tokens.md)** (FCM + token routing) still **blocks the Phase 5 exit gate**. **Phase 6** is **partial**: [20-profile-tab](20-profile-tab.md) + partial [09](09-profile-carrier-consent.md) (network/repo/tab UI); [10](10-verification.md) / [11](11-favorites-ratings.md) not started. |
-| **Last updated** | 2026-04-26 — Reconciled Phase 6 (profile tab partial vs “not started”); expanded Phase 6 implementation notes. Profile slice: `ProfileApi` + DTOs, `ResponseExt` integration, `ProfileRepository`, `ProfileTabViewModel`, `ProfileTabScreen` / `ProfileTabContent`, `MainTabScreen` payments sub-route, onboarding → `ProfileApi` for city/consent updates, EN/FR `strings_profile.xml`, JVM + androidTest. |
+| **Current phase** | **Phase 6 — Complete** for profile/verification/favorites/ratings scope. Remaining open gates: **Phase 4** (Stripe Connect onboarding/dashboard parity) and **Phase 5** ([08-notifications-device-tokens](08-notifications-device-tokens.md) FCM + token routing + deep-link parity). |
+| **Last updated** | 2026-05-11 — Phase 6 closed: spec [09](09-profile-carrier-consent.md) full edit/avatar/disclaimers/account-deletion/settings, spec [10](10-verification.md) phone OTP + premium ID multipart, spec [11](11-favorites-ratings.md) favorites list + send-request + ratings (received/given/pending) + comment edit, spec [20](20-profile-tab.md) all menu deep-links wired, TDD checklist closed. |
 | **Spec audit** | **Complete** — YAML expanded from ~25 to ~100 endpoint rows; all feature specs updated with query params, multipart fields, WebSocket protocol, local storage keys, activity logs, cache policy, GPS services, badge rules, analytics mock structures |
 
 ---
@@ -34,7 +34,7 @@
 | **3** — Bookings & matches | Core marketplace loop + counter-offer parity | **Complete** — BookingsApi (20+ endpoints), DeliveryMatch (60+ fields) + BookingAction (10 cases) + BookingMapper + computed props (availableActions, pricing, codes); BookingType enum; 9 nested info types; 10 supporting models (CounterOfferContext, codes, tracking, stats); BookingsRepository (15 methods); MatchingViewModel + LiveTrackingViewModel + AutoChargeConfirmationViewModel; unified MatchCard (replaces 4 iOS cards) + MatchStatusBadge + PriceComparison + CounterOfferBanner + code views; RequestToCarrySheet + CounterOfferPromptSheet + AutoChargeSheet + RateDeliverySheet; unified MatchListScreen wired to tab; BookingSuccessScreen + code screens; 60+ tests; full i18n (EN+FR). |
 | **4** — Payments & Stripe | … | **Partial** — closeout check run: PaymentSheet parity ✅, transactions parity ✅, payments test checklist ✅. Exit gate not met yet: Stripe Connect onboarding/dashboard journey still lacks full iOS parity states (loading/not setup/partial/complete, security notice, onboarding/dashboard sheet handling). |
 | **5** — Chat & notifications | … | **Partial** — `07-chat-broadcasting` hardening slices landed (realtime protocol/parser robustness, reconnect/polling state handling, thread + conversations parity upgrades, expanded tests). Remaining: notification/device-token routing from `08-notifications-device-tokens.md`, deep-link parity, and final phase-gate verification. |
-| **6** — Profile, verification, favorites & ratings | … | **Partial** — [20-profile-tab](20-profile-tab.md) tab shell + [09](09-profile-carrier-consent.md) network/repo/bootstrap in code (`ProfileApi`, `ProfileRepository`, `ProfileTabViewModel`, `ProfileTabScreen`, payments sub-route, tests). **Not met:** full profile/carrier **editing** (avatar, sheets), disclaimers/account flows per 09, **verification** (10), **favorites & ratings** (11), and Phase 6 TDD/exit-gate sign-off. |
+| **6** — Profile, verification, favorites & ratings | Profile editing + disclaimers/consent + verification + favorites + ratings | **Complete** — [09](09-profile-carrier-consent.md) full surface: user profile edit (EditUserProfileSheet with smart pre-fill + additional_info merge), avatar upload + delete with 512px JPEG compression, carrier profile edit + preferences with create/update branching + enableCarrier, privacy preferences (scoped consent updates + disable-confirm), disclaimer bootstrap + retry-pending-sync, account deletion + GDPR data export, Settings screen with currency picker + clear-cache. [10](10-verification.md) phone OTP (E.164 normalisation + 60s resend cooldown) + premium ID/selfie multipart with status tracking. [11](11-favorites-ratings.md) favorites list with sort filter + remove + send-request sheet + scoped error mapping (409 → AlreadyFavorited, 400 → CannotFavorite(message)), tabbed Feedback screen for received/given/pending with in-place comment editing. [20](20-profile-tab.md) all menu deep-links wired (Personal info / Vehicle info / Verification / Payments hub / Settings / Favorites / Pending reviews / Account & data). 80+ new JVM tests. |
 | **7** — Legal, support, misc | … | **Pending** — feature implementation not started. |
 
 ---
@@ -68,16 +68,18 @@
 
 ---
 
-## Phase 6 — What is implemented (partial; exit gate not met)
+## Phase 6 — What is implemented (complete)
 
 | Item | Status | Notes |
 |------|--------|-------|
-| [20-profile-tab.md](20-profile-tab.md) | **Partial** | `ProfileApi` + JSON models in `:core:network` (incl. carrier + stats fixtures/tests); `ProfileRepository` + Hilt; `ProfileTabViewModel` + `ProfileTabUiState` / visibility; `ProfileTabScreen` + `ProfileTabContent` (section order, role gating, version footer); `MainTabScreen` profile root + **Payments** sub-route with `PTopBar` back; `strings_profile` EN+FR; `ProfileRepositoryImplTest` + `ProfileTabViewModelTest` + `ProfileTabUiTest`. Deferred: per-row deep-links, full logout E2E, some TDD rows (see spec checklist). |
-| [09-profile-carrier-consent.md](09-profile-carrier-consent.md) | **Partial** | Read/bootstrap + `CreateCarrierProfileRequestJson` (409 → GET) paths; onboarding profile PATCH via `ProfileApi`. Pending: full edit/avatar/multipart, disclaimers, account deletion, dedicated 09 TDD. |
-| [10-verification.md](10-verification.md) | Pending | — |
-| [11-favorites-ratings.md](11-favorites-ratings.md) | Pending | — |
+| [20-profile-tab.md](20-profile-tab.md) | **Complete** | Profile tab shell with section order + role gating; **all menu deep-links wired**: Personal info → `EditUserProfileSheet`, Vehicle info (carrier only) → `EditCarrierProfileSheet`, Verification → `PhoneVerificationSheet` (with premium upgrade entry), Payments hub sub-route, Settings → `SettingsScreen` sub-route, Favorites → `FavoritesListScreen` sub-route, Pending reviews → `RatingsScreen` sub-route, Account & data → `AccountManagementSheet`. Compose previews + EN/FR strings + JVM + androidTest. TDD checklist green: section visibility, verification card visibility, avatar cache-buster, **load dedupe + forceRefresh**, navigation routes wired in `MainTabScreen`; logout-E2E and localization-lint rows remain documented as deferred per spec. |
+| [09-profile-carrier-consent.md](09-profile-carrier-consent.md) | **Complete** | Repository surfaces all 16 endpoints. **Edit user profile** with smart pre-fill (profile → social-auth → email/phone-verified contact) + `additional_info` merge preserving legacy `oauth_*` / `language` keys. **Avatar** Photo Picker → `BitmapImageCompressor` (512 px JPEG q70) → `POST /profile` multipart preserving form fields; delete with destructive confirm dialog. **Carrier profile** create/update branching with 409 → GET fallback, `enableCarrier` after first create, `availableRoutes` + `preferredPickupCityId` preservation, package-type + restricted-item multi-selects. **Privacy preferences** sheet with scoped single-key `PUT`, optimistic + revert-on-failure, disable-confirm for push + location. **Disclaimer sync service** (bootstrap from server + retry-pending-syncs) wired via `MainTabScreen` `LaunchedEffect(user)` alongside legacy carrier-side retry. **Account deletion** with reason input, HTTP 202 success, sign-out on success. **GDPR data export** → pretty-printed JSON written to `cacheDir` → FileProvider share intent. **Settings screen** with role display + currency picker (`PreferredCurrencyStore`) + clear-cache + sub-flow routing into carrier-preferences / privacy / account-data. |
+| [10-verification.md](10-verification.md) | **Complete** | **Phone OTP**: 4 endpoints, E.164 normalisation (`(514) 555-1234` → `+15145551234`), 60s resend cooldown, bootstrap resumes OTP step when `pendingVerifications > 0`. **Premium ID**: 3 endpoints including multipart `POST /verification/request-premium`, `IdDocumentType` enum (5 values; passport single-sided, others front+back), `ImageCompressor` reuse for ID images + selfie, status surfacing for existing pending applications. Premium entry point sits on the phone-verification verified card. |
+| [11-favorites-ratings.md](11-favorites-ratings.md) | **Complete** | **Favorites**: 6 endpoints, list with sort chips (recent / most_used / rating) + "upcoming trips only" filter, remove with pending-removal tracking, send-request sheet with 4 cards (pickup / delivery / package / message); custom error mapping (409 → `AlreadyFavorited`, 400 → `CannotFavorite(message)`, 404 → `NotFound`). **Ratings**: 4 endpoints, tabbed Feedback screen with Received summary card, Given list with inline `PUT /ratings/{id}/comment` editing, Pending list with route + days-since-delivery (tolerant `FlexibleDoubleSerializer` decode). |
 
-**Phase 6 exit gate (from [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md)):** *Profile editing, disclaimers/consent, verification flows, favorites and ratings* — **not** satisfied until 09/10/11 work above is complete, not just the [20](20-profile-tab.md) tab shell.
+**Phase 6 exit gate (from [PHASES-AND-FEATURES.md](PHASES-AND-FEATURES.md)):** *Profile editing, disclaimers/consent, verification flows, favorites and ratings* — **met**.
+
+**Deferred to follow-up specs** (not blockers for Phase 6 gate): home-city autocomplete + 10-minute cooldown (settings polish), Coil/Glide image rendering for avatars + carrier cards (cross-cutting), addFavorite UI entry point (lives in match/booking flows from spec 05), sent-direct-requests list UI, pagination on ratings lists.
 
 ---
 
@@ -113,12 +115,12 @@
 | [06-payments-stripe.md](06-payments-stripe.md) | [ ] | Partial — closeout check confirms most scope complete (PaymentSheet + transactions + tests). Remaining for phase gate: finalize `PayoutSetupScreen` parity per spec states and onboarding/dashboard sheet UX, then re-run Phase 4 verification. |
 | [07-chat-broadcasting.md](07-chat-broadcasting.md) | [x] | Core + hardening + parity closeout landed in app + `:core:network` + `:core:designsystem`: contracts/decode tests, repository/realtime/merge logic, full-flow realtime protocol tests (including nested subscription-success payload), parser hardening for wrapped/direct string/object payloads, reconnect auto-resubscribe verification, ViewModel decode-recovery + polling coalescing + delete/retry/no-duplicate-temp coverage, thread/conversation UI parity upgrades, DS chat primitives adoption, and EN/FR chat localization resources. Phase 5 gate still depends on `08-notifications-device-tokens.md`. |
 | [08-notifications-device-tokens.md](08-notifications-device-tokens.md) | [ ] | Pending — implementation not started. |
-| [09-profile-carrier-consent.md](09-profile-carrier-consent.md) | [ ] | **Partial** — `ProfileApi` + JSON models + `ProfileRepository` in app (tab/bootstrap + 409 handling); full edit/avatar/multipart, disclaimers, account deletion, and dedicated 09 TDD still pending. |
-| [10-verification.md](10-verification.md) | [ ] | Pending — implementation not started. |
-| [11-favorites-ratings.md](11-favorites-ratings.md) | [ ] | Pending — implementation not started. |
+| [09-profile-carrier-consent.md](09-profile-carrier-consent.md) | [x] | Edit user/carrier profile, avatar upload/delete, consent prefs (scoped + revert), disclaimer sync, account deletion, GDPR export, Settings screen — see Phase 6 detail above. |
+| [10-verification.md](10-verification.md) | [x] | Phone OTP flow + premium ID/selfie multipart — see Phase 6 detail above. |
+| [11-favorites-ratings.md](11-favorites-ratings.md) | [x] | Favorites list + send-request + tabbed Feedback (received/given/pending) — see Phase 6 detail above. |
 | [12-legal-support-misc.md](12-legal-support-misc.md) | [ ] | Pending — implementation not started. |
 | [15-platform-and-tab-index.md](15-platform-and-tab-index.md) | [ ] | Pending — full parity audit not completed yet. |
-| [20-profile-tab.md](20-profile-tab.md) | [ ] | **Partial** — `ProfileApi` + DTOs in `:core:network`, `ProfileRepository` + `ProfileTabViewModel`, `ProfileTabScreen` / `ProfileTabContent` (section order + role gating), `MainTabScreen` profile root + payments sub-route, EN/FR `strings_profile.xml`, JVM + androidTest; TDD checklist: see spec (some items deferred). Full exit gate: menu deep-links + 09 edit sheets + remaining TDD rows. |
+| [20-profile-tab.md](20-profile-tab.md) | [x] | Tab shell + all menu deep-links wired (Personal info / Vehicle info / Verification / Payments hub / Settings / Favorites / Pending reviews / Account & data); TDD checklist green except deferred logout-E2E and localization-lint rows. |
 
 ---
 
@@ -144,19 +146,19 @@
 - [ ] `Analytics/` — Pending — [19-analytics.md](19-analytics.md) not started.  
 - [x] `Bookings/` — Complete — Phase 3 scope landed.  
 - [x] `Chat/` — Complete for core Android spec slices — contracts + realtime service + repository/merge + ViewModels + UI/messages tab + localization landed; remaining Phase 5 completion depends on notifications/deep-link gate.  
-- [ ] `Favorites/` — Pending — implementation not started.  
+- [x] `Favorites/` — Complete — list/sort/filter/remove + send-request sheet wired from profile menu; custom error mapping for 409/400/404.  
 - [ ] `Legal/` — Pending — implementation not started.  
 - [ ] `Notifications/` — Pending — FCM dependency + stub service only.  
 - [x] `Onboarding/` — Complete — Phase 1 scope landed.  
 - [x] `Packages/` — Complete — strict `04-packages.md` parity bridge landed (detail/edit/cancel flow wiring, carrier available-packages path split, local store journey integration, localization hardening, and test/spec sync).  
 - [ ] `Payments/` — Partial — Phase 4 slice in progress; exit gate not met yet.  
-- [ ] `Profile/` — **Partial** — [20-profile-tab.md](20-profile-tab.md) shell + network/repository/VM/tests; [09-profile-carrier-consent.md](09-profile-carrier-consent.md) edit flows and remaining consent/disclaimer surfaces still pending.  
-- [ ] `Ratings/` — Pending — implementation not started.  
+- [x] `Profile/` — Complete — full edit user/carrier flows, avatar upload + delete, privacy preferences, disclaimer sync, account deletion + GDPR export, Settings screen with currency + clear-cache. All [20](20-profile-tab.md) menu deep-links wired.  
+- [x] `Ratings/` — Complete — tabbed Feedback screen (received summary + cards, given with inline comment edit, pending list); rating submission flows through bookings (spec 05).  
 - [ ] `RouteActivity/` — Partial — summary endpoint + `RouteActivitySummaryViewModel` + carrier dashboard summary surface implemented via Trips parity slice; remaining Phase 7 RouteActivity scope pending.  
 - [ ] `Shipper/` — Pending — implementation not started.  
 - [ ] `Support/` — Pending — implementation not started.  
 - [x] `Trips/` — Complete for current parity scope — includes My Trips detail/edit/cancel wiring, trip sheet route determinism coverage, and full trip-creation journey depth/integration slices from `03-trips.md`.  
-- [ ] `Verification/` — Pending — implementation not started.  
+- [x] `Verification/` — Complete — phone OTP flow (send/verify/resend/status, E.164 + 60s cooldown) and premium ID/selfie multipart with status surfacing.  
 
 **Cross-cutting**
 

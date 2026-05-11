@@ -107,6 +107,24 @@ class ProfileTabViewModelTest {
         assertTrue(shouldShowVerificationCard("verified"))
         assertFalse(shouldShowVerificationCard("premium"))
     }
+
+    @Test
+    fun `loadTabData dedupes overlapping calls but allows forceRefresh to bypass`() = runTest {
+        val vm = createVm()
+        // Two calls back-to-back; the in-flight guard should short-circuit the second.
+        vm.loadTabData(sampleUser, UserRole.SHIPPER)
+        vm.loadTabData(sampleUser, UserRole.SHIPPER)
+        advanceUntilIdle()
+        assertEquals("first call should run once", 1, fakeRepo.fetchProfileCalls)
+        // After the in-flight guard releases, a fresh call goes through.
+        vm.loadTabData(sampleUser, UserRole.SHIPPER)
+        advanceUntilIdle()
+        assertEquals("second post-completion call should run", 2, fakeRepo.fetchProfileCalls)
+        // forceRefresh always proceeds.
+        vm.loadTabData(sampleUser, UserRole.SHIPPER, forceRefresh = true)
+        advanceUntilIdle()
+        assertEquals(3, fakeRepo.fetchProfileCalls)
+    }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

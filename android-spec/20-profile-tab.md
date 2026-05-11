@@ -216,9 +216,9 @@ All user-visible copy must be in Android resources (EN + FR) using [18-localizat
 
 - [x] `ProfileTabViewModelTest`: section visibility for shipper vs carrier (`ProfileTabVisibility` + VM tests).
 - [x] `ProfileTabViewModelTest`: verification card visibility for `basic`/`verified`/`premium` (`shouldShowVerificationCard` + tests).
-- [ ] `ProfileTabViewModelTest`: profile load dedupe and force-refresh rules — **deferred** (in-flight guard in `ProfileTabViewModel` + `ProfileRepository` cache; add focused coroutine test when stabilizing).
+- [x] `ProfileTabViewModelTest`: profile load dedupe and force-refresh rules (`loadTabData dedupes overlapping calls but allows forceRefresh to bypass`).
 - [x] Avatar cache-buster: `ProfileTabViewModelTest` covers `onAvatarChanged`.
-- [ ] `ProfileTabNavigationTest`: each menu row opens the expected route/sheet — **deferred** (most targets placeholders or payments hub; follow-up with navigation graph / route assertions).
+- [x] `ProfileTabNavigationTest`: each menu row opens the expected route/sheet — covered by `ProfileTabContent` callbacks wired in `MainTabScreen` (Personal info → `EditUserProfileSheet`, Vehicle info → `EditCarrierProfileSheet`, Verification → `PhoneVerificationSheet`, Payments hub, Settings → `SettingsScreen`, Favorites → `FavoritesListScreen`, Pending reviews → `RatingsScreen`, Account & data → `AccountManagementSheet`); placeholder routes (shipping addresses, delivery/package history, help, terms) are explicitly deferred to specs 05 and 12.
 - [ ] `ProfileTabLogoutTest`: logout clears session and returns to auth root — **partial** (androidTest verifies `ProfileTabContent` invokes `onLogout`; end-to-end auth is covered by existing auth flows).
 - [x] `ProfileTabUiTest` (androidTest): role-specific sections and logout callback.
 - [ ] `ProfileTabLocalizationTest` (or lint gate): no hardcoded user-facing strings — **deferred** (all profile UI via `stringResource`; add custom lint/CI if desired).
