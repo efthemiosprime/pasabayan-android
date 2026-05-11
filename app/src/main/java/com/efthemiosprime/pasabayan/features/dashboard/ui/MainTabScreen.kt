@@ -35,6 +35,7 @@ import com.efthemiosprime.pasabayan.features.profile.ui.EditCarrierProfileSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.EditUserProfileSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.PrivacyPreferencesSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.ProfileTabScreen
+import com.efthemiosprime.pasabayan.features.profile.ui.SettingsScreen
 import com.efthemiosprime.pasabayan.features.profile.viewmodel.DisclaimerSyncViewModel
 import com.efthemiosprime.pasabayan.features.chat.ui.MessagesTabScreen
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ConversationsViewModel
@@ -99,6 +100,7 @@ fun MainTabScreen(
     var showEditCarrierProfileSheet by remember { mutableStateOf(false) }
     var showPrivacyPreferencesSheet by remember { mutableStateOf(false) }
     var showAccountManagementSheet by remember { mutableStateOf(false) }
+    var settingsOpen by remember { mutableStateOf(false) }
     val dismissActiveSheetRoute = { viewModel.dismissActiveSheetRoute() }
     val openTripFilterSheet = { viewModel.openTripFilterSheet() }
     val openCreateTripFromPackageSheet: (Int) -> Unit = { packageId ->
@@ -134,6 +136,7 @@ fun MainTabScreen(
         val tab = tabs.getOrNull(state.selectedTabIndex)
         if (tab?.route != "profile") {
             profilePaymentsOpen = false
+            settingsOpen = false
         }
     }
 
@@ -219,28 +222,53 @@ fun MainTabScreen(
                     currentUserId = user.id,
                 )
                 "profile" -> {
-                    if (profilePaymentsOpen) {
-                        Column {
-                            PTopBar(
-                                title = stringResource(R.string.payments_profile_title),
-                                navigationIcon = {
-                                    IconButton(
-                                        onClick = { profilePaymentsOpen = false },
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                            contentDescription = stringResource(R.string.profile_back_payments),
-                                        )
-                                    }
-                                },
-                            )
-                            PaymentsProfileScreen(
-                                onLogout = onLogout,
-                                modifier = Modifier.fillMaxSize(),
-                            )
+                    when {
+                        settingsOpen -> {
+                            Column {
+                                PTopBar(
+                                    title = stringResource(R.string.profile_settings_title),
+                                    navigationIcon = {
+                                        IconButton(onClick = { settingsOpen = false }) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                                contentDescription = stringResource(R.string.profile_settings_back),
+                                            )
+                                        }
+                                    },
+                                )
+                                SettingsScreen(
+                                    currentRole = state.currentRole,
+                                    onOpenCarrierPreferences = { showEditCarrierProfileSheet = true },
+                                    onOpenPrivacyPreferences = { showPrivacyPreferencesSheet = true },
+                                    onOpenAccountManagement = { showAccountManagementSheet = true },
+                                    onSignOut = onLogout,
+                                    onOpenTerms = { /* placeholder until 12-legal-support */ },
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
                         }
-                    } else {
-                        ProfileTabScreen(
+                        profilePaymentsOpen -> {
+                            Column {
+                                PTopBar(
+                                    title = stringResource(R.string.payments_profile_title),
+                                    navigationIcon = {
+                                        IconButton(
+                                            onClick = { profilePaymentsOpen = false },
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                                contentDescription = stringResource(R.string.profile_back_payments),
+                                            )
+                                        }
+                                    },
+                                )
+                                PaymentsProfileScreen(
+                                    onLogout = onLogout,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+                        }
+                        else -> ProfileTabScreen(
                             user = user,
                             currentRole = state.currentRole,
                             onSwitchRole = { viewModel.switchRole() },
@@ -248,7 +276,7 @@ fun MainTabScreen(
                             onOpenPaymentsHub = { profilePaymentsOpen = true },
                             onOpenPersonalInfo = { showEditUserProfileSheet = true },
                             onOpenVehicleInfo = { showEditCarrierProfileSheet = true },
-                            onOpenSettings = { showPrivacyPreferencesSheet = true },
+                            onOpenSettings = { settingsOpen = true },
                             onOpenAccountManagement = { showAccountManagementSheet = true },
                         )
                     }

@@ -163,4 +163,28 @@
     <string name="profile_account_deletion_success">Demande de désactivation reçue. Déconnexion en cours.</string>
     <string name="profile_account_deletion_success_formatted">Demande de désactivation reçue (statut: %1$s). Déconnexion en cours.</string>
     <string name="profile_account_close">Fermer</string>
+    <!-- Settings screen (09-profile-carrier-consent slice D4) -->
+    <string name="profile_settings_title">Paramètres</string>
+    <string name="profile_settings_back">Retour au profil</string>
+    <string name="profile_settings_section_preferences">Préférences</string>
+    <string name="profile_settings_section_more">Plus</string>
+    <string name="profile_settings_section_storage">Stockage et données</string>
+    <string name="profile_settings_section_account">Compte</string>
+    <string name="profile_settings_section_about">À propos</string>
+    <string name="profile_settings_role_label">Rôle</string>
+    <string name="profile_settings_currency_label">Devise</string>
+    <string name="profile_settings_currency_helper">Sert à l’affichage des montants. L’API conserve la devise d’origine.</string>
+    <string name="profile_currency_cad">Dollar canadien (CAD)</string>
+    <string name="profile_currency_usd">Dollar américain (USD)</string>
+    <string name="profile_currency_php">Peso philippin (PHP)</string>
+    <string name="profile_settings_carrier_preferences">Préférences transporteur</string>
+    <string name="profile_settings_privacy">Préférences de confidentialité</string>
+    <string name="profile_settings_clear_cache">Vider le cache</string>
+    <string name="profile_settings_cache_cleared_formatted">Cache vidé (%1$d Ko libérés)</string>
+    <string name="profile_settings_cache_cleared_error">Impossible de vider le cache</string>
+    <string name="profile_settings_export">Télécharger mes données</string>
+    <string name="profile_settings_account_data">Compte et données</string>
+    <string name="profile_settings_sign_out">Se déconnecter</string>
+    <string name="profile_settings_about_version">%1$s version %2$s</string>
+    <string name="profile_settings_about_terms">Conditions et confidentialité</string>
 </resources>
