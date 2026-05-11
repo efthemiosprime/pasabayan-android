@@ -1,9 +1,6 @@
 package com.efthemiosprime.pasabayan.features.payments.ui
 
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.res.Configuration
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -59,6 +56,7 @@ import com.efthemiosprime.pasabayan.features.payments.viewmodel.TransactionHisto
 import com.stripe.android.PaymentConfiguration
 import com.stripe.android.paymentsheet.PaymentSheet
 import com.stripe.android.paymentsheet.PaymentSheetResult
+import com.stripe.android.paymentsheet.rememberPaymentSheet
 
 private enum class PaymentsRoute {
     PROFILE,
@@ -80,7 +78,6 @@ fun PaymentsProfileScreen(
     stripeConnectViewModel: StripeConnectViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
-    val activity = context.findActivity()
     val paymentState by paymentViewModel.uiState.collectAsStateWithLifecycle()
     val methodsState by paymentMethodsViewModel.uiState.collectAsStateWithLifecycle()
     val tippingState by tippingViewModel.uiState.collectAsStateWithLifecycle()
@@ -93,18 +90,18 @@ fun PaymentsProfileScreen(
     var selectedTransaction by remember { mutableStateOf<Transaction?>(null) }
     var selectedTransactionFilter by remember { mutableStateOf(TransactionFilter.ALL) }
 
-    val paymentSheet = remember(activity) {
-        activity?.let { hostActivity ->
-            PaymentSheet(hostActivity) { result ->
-                when (result) {
-                    is PaymentSheetResult.Completed -> {
-                        val deliveryMatchId = currentDeliveryMatchId ?: return@PaymentSheet
-                        paymentViewModel.confirmCapture(deliveryMatchId)
-                    }
-                    is PaymentSheetResult.Canceled -> paymentViewModel.onPaymentSheetCanceled()
-                    is PaymentSheetResult.Failed -> paymentViewModel.onPaymentSheetFailed(result.error.localizedMessage)
-                }
+    // [rememberPaymentSheet] registers the activity-result launcher during composition setup;
+    // constructing [PaymentSheet] with an Activity inside [remember] crashes with
+    // "LifecycleOwner is attempting to register while current state is RESUMED" once the
+    // composable mounts after onStart.
+    val paymentSheet = rememberPaymentSheet { result ->
+        when (result) {
+            is PaymentSheetResult.Completed -> {
+                val deliveryMatchId = currentDeliveryMatchId ?: return@rememberPaymentSheet
+                paymentViewModel.confirmCapture(deliveryMatchId)
             }
+            is PaymentSheetResult.Canceled -> paymentViewModel.onPaymentSheetCanceled()
+            is PaymentSheetResult.Failed -> paymentViewModel.onPaymentSheetFailed(result.error.localizedMessage)
         }
     }
 
@@ -138,14 +135,13 @@ fun PaymentsProfileScreen(
                 onConfirmCapture = { id -> paymentViewModel.confirmCapture(id) },
                 onPresentPaymentSheet = {
                     val secret = paymentState.clientSecret ?: return@PaymentsProfileContent
-                    val sheet = paymentSheet ?: return@PaymentsProfileContent
                     if (paymentViewModel.isMockClientSecret(secret)) {
                         val deliveryMatchId = currentDeliveryMatchId ?: return@PaymentsProfileContent
                         paymentViewModel.confirmCapture(deliveryMatchId)
                         return@PaymentsProfileContent
                     }
                     val configuration = buildPaymentSheetConfiguration(paymentState)
-                    sheet.presentWithPaymentIntent(secret, configuration)
+                    paymentSheet.presentWithPaymentIntent(secret, configuration)
                 },
                 onAddTip = { transactionId, amount ->
                     tippingViewModel.setCustomTipAmount(amount.toString())
@@ -420,10 +416,3 @@ private fun buildPaymentSheetConfiguration(paymentState: PaymentUiState): Paymen
     }
 }
 
-private tailrec fun Context.findActivity(): ComponentActivity? {
-    return when (this) {
-        is ComponentActivity -> this
-        is ContextWrapper -> baseContext.findActivity()
-        else -> null
-    }
-}
