@@ -19,6 +19,7 @@ import com.efthemiosprime.pasabayan.core.network.favorites.FavoritesApi
 import com.efthemiosprime.pasabayan.core.network.legal.LegalApi
 import com.efthemiosprime.pasabayan.core.network.notifications.NotificationApi
 import com.efthemiosprime.pasabayan.core.network.ratings.RatingsApi
+import com.efthemiosprime.pasabayan.core.network.support.SupportApi
 import com.efthemiosprime.pasabayan.core.network.verification.VerificationApi
 import dagger.Module
 import dagger.Provides
@@ -170,4 +171,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideLegalApi(retrofit: Retrofit): LegalApi = retrofit.create(LegalApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideSupportApi(retrofit: Retrofit): SupportApi = retrofit.create(SupportApi::class.java)
 }

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="support_title">Contacter le support</string>
+    <string name="support_intro">Décrivez le problème et nous vous répondrons par courriel.</string>
+    <string name="support_category_label">Catégorie</string>
+    <string name="support_subject_label">Objet</string>
+    <string name="support_subject_placeholder">Décrivez brièvement le problème</string>
+    <string name="support_email_label">Adresse de réponse</string>
+    <string name="support_email_placeholder">vous@exemple.com</string>
+    <string name="support_priority_label">Priorité</string>
+    <string name="support_description_label">Description</string>
+    <string name="support_description_placeholder">Que s\'est-il passé, quand, et quel résultat attendiez-vous ?</string>
+    <string name="support_attachments_label">Pièces jointes (facultatif)</string>
+    <string name="support_attachments_hint">Jusqu\'à %1$d fichiers — les captures d\'écran nous aident beaucoup.</string>
+    <string name="support_attachments_add">Ajouter une pièce jointe</string>
+    <string name="support_attachments_remove">Retirer la pièce jointe</string>
+    <string name="support_submit">Envoyer le ticket</string>
+    <string name="support_submitting">Envoi…</string>
+    <string name="support_success_title">Merci — bien reçu</string>
+    <string name="support_success_description">Ticket n°%1$d créé. Nous répondrons à %2$s dès que possible.</string>
+    <string name="support_success_dismiss">Fermer</string>
+    <string name="support_error_subject_too_short">L\'objet doit contenir au moins %1$d caractères.</string>
+    <string name="support_error_email_invalid">Saisissez une adresse courriel valide.</string>
+    <string name="support_error_description_too_short">La description doit contenir au moins %1$d caractères.</string>
+
+    <!-- Catégories -->
+    <string name="support_category_account_profile">Compte et profil</string>
+    <string name="support_category_payment_billing">Paiement et facturation</string>
+    <string name="support_category_delivery_issues">Problèmes de livraison</string>
+    <string name="support_category_package_tracking">Suivi de colis</string>
+    <string name="support_category_safety_concerns">Sécurité</string>
+    <string name="support_category_technical_problem">Problème technique</string>
+    <string name="support_category_account_verification">Vérification de compte</string>
+    <string name="support_category_refund_request">Demande de remboursement</string>
+    <string name="support_category_other">Autre</string>
+
+    <!-- Priorités -->
+    <string name="support_priority_low">Faible</string>
+    <string name="support_priority_medium">Moyenne</string>
+    <string name="support_priority_high">Élevée</string>
+</resources>

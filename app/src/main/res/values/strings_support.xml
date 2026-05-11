@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="support_title">Contact Support</string>
+    <string name="support_intro">Tell us what\'s wrong and we\'ll get back to you by email.</string>
+    <string name="support_category_label">Category</string>
+    <string name="support_subject_label">Subject</string>
+    <string name="support_subject_placeholder">Briefly describe the issue</string>
+    <string name="support_email_label">Reply email</string>
+    <string name="support_email_placeholder">you@example.com</string>
+    <string name="support_priority_label">Priority</string>
+    <string name="support_description_label">Description</string>
+    <string name="support_description_placeholder">What happened, when did it happen, and what did you expect?</string>
+    <string name="support_attachments_label">Attachments (optional)</string>
+    <string name="support_attachments_hint">Up to %1$d files — screenshots help us a lot.</string>
+    <string name="support_attachments_add">Add attachment</string>
+    <string name="support_attachments_remove">Remove attachment</string>
+    <string name="support_submit">Submit Ticket</string>
+    <string name="support_submitting">Submitting…</string>
+    <string name="support_success_title">Thanks — we got it</string>
+    <string name="support_success_description">Ticket #%1$d created. We\'ll reply to %2$s as soon as we can.</string>
+    <string name="support_success_dismiss">Close</string>
+    <string name="support_error_subject_too_short">Subject must be at least %1$d characters.</string>
+    <string name="support_error_email_invalid">Enter a valid email address.</string>
+    <string name="support_error_description_too_short">Description must be at least %1$d characters.</string>
+
+    <!-- Categories -->
+    <string name="support_category_account_profile">Account &amp; Profile</string>
+    <string name="support_category_payment_billing">Payment &amp; Billing</string>
+    <string name="support_category_delivery_issues">Delivery Issues</string>
+    <string name="support_category_package_tracking">Package Tracking</string>
+    <string name="support_category_safety_concerns">Safety Concerns</string>
+    <string name="support_category_technical_problem">Technical Problem</string>
+    <string name="support_category_account_verification">Account Verification</string>
+    <string name="support_category_refund_request">Refund Request</string>
+    <string name="support_category_other">Other</string>
+
+    <!-- Priorities -->
+    <string name="support_priority_low">Low</string>
+    <string name="support_priority_medium">Medium</string>
+    <string name="support_priority_high">High</string>
+</resources>
