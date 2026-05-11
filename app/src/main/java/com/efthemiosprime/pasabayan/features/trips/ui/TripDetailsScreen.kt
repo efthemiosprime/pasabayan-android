@@ -391,75 +391,101 @@ fun TripDetailsScreen(
     }
 }
 
+/**
+ * iOS parity (`TripDetailsView.tripEarningsOverviewCard` lines 651–706): only render when total
+ * earnings > 0, two-column rows (label left, value right), and locale-aware currency formatting.
+ */
 @Composable
 private fun CarrierEarningsSection(
     trip: Trip,
-    hasMatches: Boolean,
+    @Suppress("UNUSED_PARAMETER") hasMatches: Boolean,
     matches: List<TripMatchPackage>,
 ) {
-    if (!hasMatches && trip.tripEarningsTotal == null && trip.tripEarningsBreakdown == null) return
+    val total = computeTripEarningsTotal(trip)
+    if (total <= 0.0) return
+    val currency = trip.tripEarningsCurrency
     PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
-        Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-            PDetailSectionTitle(text = stringResource(R.string.trips_detail_earnings))
-            val totalCurrency = trip.tripEarningsCurrency ?: "CAD"
-            val totalAmount = trip.tripEarningsTotal ?: 0.0
-            Text(
-                text = stringResource(
-                    R.string.trips_detail_earnings_total,
-                    totalCurrency,
-                    totalAmount,
-                ),
-                style = PasabayanTextStyles.Body.medium,
-                color = MaterialTheme.colorScheme.onSurface,
+        Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
+            PDetailSectionTitle(text = stringResource(R.string.trips_detail_earnings_title))
+            EarningsRow(
+                label = stringResource(R.string.trips_detail_earnings_label_total),
+                value = formatTripCurrency(total, currency),
             )
             trip.tripEarningsBreakdown?.let { breakdown ->
-                Text(
-                    text = stringResource(
-                        R.string.trips_detail_earnings_delivered,
-                        breakdown.deliveredCurrency,
-                        breakdown.deliveredAmount,
-                    ),
-                    style = PasabayanTextStyles.Body.small,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                EarningsRow(
+                    label = stringResource(R.string.trips_detail_earnings_label_delivered),
+                    value = formatTripCurrency(breakdown.deliveredAmount, breakdown.deliveredCurrency),
                 )
-                // iOS parity: show package counts alongside money amounts. Use the count from
-                // the breakdown when the server returns one; otherwise derive from local match
-                // status so the UI stays informative on older API responses.
+                EarningsRow(
+                    label = stringResource(R.string.trips_detail_earnings_label_pending),
+                    value = formatTripCurrency(breakdown.pendingAmount, breakdown.pendingCurrency),
+                )
+                // iOS parity: show package counts when the breakdown reports them. Fall back to
+                // local match counts so the UI stays informative on older API responses.
                 val deliveredCount = breakdown.deliveredCount.takeIf { it > 0 }
                     ?: matches.count { it.matchStatus == MatchStatus.DELIVERED }
-                if (deliveredCount > 0) {
-                    Text(
-                        text = stringResource(
-                            R.string.trips_detail_earnings_delivered_count,
-                            deliveredCount,
-                        ),
-                        style = PasabayanTextStyles.Caption.regular,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Text(
-                    text = stringResource(
-                        R.string.trips_detail_earnings_pending,
-                        breakdown.pendingCurrency,
-                        breakdown.pendingAmount,
-                    ),
-                    style = PasabayanTextStyles.Body.small,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
                 val pendingCount = breakdown.pendingCount.takeIf { it > 0 }
                     ?: matches.count { it.matchStatus != MatchStatus.DELIVERED }
-                if (pendingCount > 0) {
-                    Text(
-                        text = stringResource(
-                            R.string.trips_detail_earnings_pending_count,
-                            pendingCount,
-                        ),
-                        style = PasabayanTextStyles.Caption.regular,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                if (deliveredCount > 0 || pendingCount > 0) {
+                    EarningsRow(
+                        label = stringResource(R.string.trips_detail_earnings_label_delivered_packages),
+                        value = deliveredCount.toString(),
+                    )
+                    EarningsRow(
+                        label = stringResource(R.string.trips_detail_earnings_label_pending_packages),
+                        value = pendingCount.toString(),
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun EarningsRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            style = PasabayanTextStyles.Body.small,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Text(
+            text = value,
+            style = PasabayanTextStyles.Body.medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Medium,
+        )
+    }
+}
+
+/**
+ * iOS parity (`tripEarningsTotal` in TripDetailsView): prefer the server's total, otherwise fall
+ * back to delivered + pending from the breakdown. Returns 0 when neither is available.
+ */
+internal fun computeTripEarningsTotal(trip: Trip): Double {
+    trip.tripEarningsTotal?.let { return it }
+    val breakdown = trip.tripEarningsBreakdown ?: return 0.0
+    return breakdown.deliveredAmount + breakdown.pendingAmount
+}
+
+/**
+ * iOS parity (`formatCurrency`): locale-aware currency formatting. Falls back to `<code> <amount>`
+ * when the currency code is unknown or invalid.
+ */
+internal fun formatTripCurrency(amount: Double, currency: String?): String {
+    val code = currency?.takeIf { it.isNotBlank() } ?: "CAD"
+    return try {
+        val formatter = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.getDefault())
+        formatter.currency = java.util.Currency.getInstance(code)
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 2
+        formatter.format(amount)
+    } catch (_: IllegalArgumentException) {
+        String.format(java.util.Locale.getDefault(), "%s %.2f", code, amount)
     }
 }
 

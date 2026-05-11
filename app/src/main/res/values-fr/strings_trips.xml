@@ -62,6 +62,14 @@
     <string name="trips_detail_weight">Poids</string>
     <string name="trips_detail_notes">Notes sp\u00e9ciales</string>
     <string name="trips_detail_earnings">Revenus</string>
+    <!-- Parit\u00e9 iOS (tripEarningsOverviewCard) : libell\u00e9 \u00e0 gauche, valeur \u00e0 droite. -->
+    <string name="trips_detail_earnings_title">Revenus du trajet</string>
+    <string name="trips_detail_earnings_label_total">Total</string>
+    <string name="trips_detail_earnings_label_delivered">Livr\u00e9</string>
+    <string name="trips_detail_earnings_label_pending">En attente</string>
+    <string name="trips_detail_earnings_label_delivered_packages">Colis livr\u00e9s</string>
+    <string name="trips_detail_earnings_label_pending_packages">Colis en attente</string>
+    <!-- Strings legacy conserv\u00e9es pour les autres surfaces (liste, etc.). -->
     <string name="trips_detail_earnings_total">Total : %1$s %2$.2f</string>
     <string name="trips_detail_earnings_delivered">Livr\u00e9 : %1$s %2$.2f</string>
     <string name="trips_detail_earnings_delivered_count">%1$d colis livr\u00e9s</string>
