@@ -49,6 +49,7 @@ import com.efthemiosprime.pasabayan.core.domain.util.DateTimeParsing
 import com.efthemiosprime.pasabayan.core.network.trips.CreateTripRequestJson
 import com.efthemiosprime.pasabayan.features.trips.components.SavedRoutesSheet
 import com.efthemiosprime.pasabayan.features.trips.components.TripCreationBaseScaffold
+import com.efthemiosprime.pasabayan.features.trips.components.TripDateTimePicker
 import com.efthemiosprime.pasabayan.features.trips.components.TripRequirementChipUi
 import com.efthemiosprime.pasabayan.features.trips.components.TripTutorialOverlay
 import com.efthemiosprime.pasabayan.features.trips.model.TripCityAutocomplete
@@ -89,8 +90,10 @@ fun TripCreationScreen(
     var dropoffAddress by remember { mutableStateOf("") }
     var originCitySuggestions by remember { mutableStateOf(emptyList<String>()) }
     var destinationCitySuggestions by remember { mutableStateOf(emptyList<String>()) }
-    var departureDate by remember { mutableStateOf("") }
-    var arrivalDate by remember { mutableStateOf("") }
+    // iOS parity: source of truth is epoch-millis; UI shows separate date + time pills.
+    // Wire format (`yyyy-MM-dd HH:mm:ss`) is derived at submit time.
+    var departureMillis by remember { mutableStateOf<Long?>(null) }
+    var arrivalMillis by remember { mutableStateOf<Long?>(null) }
     var weightCapacity by remember { mutableStateOf("") }
     var spaceCapacity by remember { mutableStateOf("") }
     var transportationMethod by remember { mutableStateOf(TransportationMethod.CAR) }
@@ -104,8 +107,6 @@ fun TripCreationScreen(
     val destinationCountryFocusRequester = remember { FocusRequester() }
     val pickupAddressFocusRequester = remember { FocusRequester() }
     val dropoffAddressFocusRequester = remember { FocusRequester() }
-    val departureDateFocusRequester = remember { FocusRequester() }
-    val arrivalDateFocusRequester = remember { FocusRequester() }
     val weightFocusRequester = remember { FocusRequester() }
     val spaceFocusRequester = remember { FocusRequester() }
     val priceFocusRequester = remember { FocusRequester() }
@@ -119,7 +120,7 @@ fun TripCreationScreen(
         weightCapacity.isNotBlank() && (spaceCapacity.isBlank() || spaceCapacity.toDoubleOrNull() != null),
         transportationMethod != TransportationMethod.NONE,
         if (transportationMethod.isLandTransport) flatTripPrice.isNotBlank() else pricePerKg.isNotBlank(),
-        departureDate.isNotBlank() && arrivalDate.isNotBlank(),
+        departureMillis != null && arrivalMillis != null,
         specialNotes.length <= 1000,
     ).count { it }
 
@@ -165,7 +166,7 @@ fun TripCreationScreen(
             TripRequirementChipUi(
                 icon = Icons.Default.CalendarMonth,
                 label = stringResource(R.string.trips_detail_schedule),
-                isComplete = departureDate.isNotBlank() && arrivalDate.isNotBlank(),
+                isComplete = departureMillis != null && arrivalMillis != null,
             ),
             TripRequirementChipUi(
                 icon = Icons.Default.Info,
@@ -207,8 +208,8 @@ fun TripCreationScreen(
                                     pricePerKg = pricePerKg.toDoubleOrNull(),
                                     flatTripPrice = flatTripPrice.toDoubleOrNull(),
                                     transportationMethod = transportationMethod,
-                                    departureDateMillis = DateTimeParsing.parseApiDateTime(departureDate),
-                                    arrivalDateMillis = DateTimeParsing.parseApiDateTime(arrivalDate),
+                                    departureDateMillis = departureMillis,
+                                    arrivalDateMillis = arrivalMillis,
                                     specialNotes = specialNotes,
                                 )
                                 val errors = TripFormValidator.validate(formState)
@@ -223,8 +224,8 @@ fun TripCreationScreen(
                                             originCountry = originCountryCode.trim().uppercase(),
                                             destinationCity = destinationCity.trim(),
                                             destinationCountry = destinationCountryCode.trim().uppercase(),
-                                            departureDate = departureDate.trim(),
-                                            arrivalDate = arrivalDate.trim(),
+                                            departureDate = DateTimeParsing.formatApiDateTime(departureMillis!!),
+                                            arrivalDate = DateTimeParsing.formatApiDateTime(arrivalMillis!!),
                                             availableWeightKg = weightCapacity.toDoubleOrNull() ?: 0.0,
                                             availableSpaceLiters = spaceCapacity.toDoubleOrNull() ?: 0.0,
                                             pricePerKg = if (transportationMethod.isLandTransport) {
@@ -405,10 +406,8 @@ fun TripCreationScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .focusRequester(dropoffAddressFocusRequester),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                            keyboardActions = KeyboardActions(onNext = {
-                                departureDateFocusRequester.requestFocus()
-                            }),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                         )
                     }
                 }
@@ -417,29 +416,15 @@ fun TripCreationScreen(
             if (flowState.mode == TripCreationMode.REVIEW || flowState.currentStep == 1) {
                 PExpandableSection(title = stringResource(R.string.trips_detail_schedule), initiallyExpanded = true) {
                     Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                        POutlinedTextField(
-                            value = departureDate,
-                            onValueChange = { departureDate = it },
-                            label = { Text(stringResource(R.string.trips_create_departure_date)) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .focusRequester(departureDateFocusRequester),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                            keyboardActions = KeyboardActions(onNext = {
-                                arrivalDateFocusRequester.requestFocus()
-                            }),
+                        TripDateTimePicker(
+                            label = stringResource(R.string.trips_create_departure_date),
+                            epochMillis = departureMillis,
+                            onChange = { departureMillis = it },
                         )
-                        POutlinedTextField(
-                            value = arrivalDate,
-                            onValueChange = { arrivalDate = it },
-                            label = { Text(stringResource(R.string.trips_create_arrival_date)) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .focusRequester(arrivalDateFocusRequester),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                            keyboardActions = KeyboardActions(onNext = {
-                                weightFocusRequester.requestFocus()
-                            }),
+                        TripDateTimePicker(
+                            label = stringResource(R.string.trips_create_arrival_date),
+                            epochMillis = arrivalMillis,
+                            onChange = { arrivalMillis = it },
                         )
                     }
                 }

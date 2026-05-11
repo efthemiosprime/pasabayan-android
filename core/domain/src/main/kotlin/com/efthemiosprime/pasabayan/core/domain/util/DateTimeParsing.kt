@@ -119,6 +119,36 @@ object DateTimeParsing {
     }
 
     /**
+     * Format epoch millis to the **wire** datetime format used by the backend:
+     * `yyyy-MM-dd HH:mm:ss` in UTC. iOS parity: `CreateTripRequest.departureDate`.
+     */
+    fun formatApiDateTime(epochMillis: Long): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
+        sdf.timeZone = utc
+        return sdf.format(Date(epochMillis))
+    }
+
+    /**
+     * Format epoch millis to a short date pill (e.g. "5/12/26"). iOS parity:
+     * `TripCreationView` date pill in the Pickup/Delivery picker.
+     */
+    fun formatShortDate(epochMillis: Long): String {
+        val sdf = SimpleDateFormat("M/d/yy", Locale.getDefault())
+        sdf.timeZone = utc
+        return sdf.format(Date(epochMillis))
+    }
+
+    /**
+     * Format epoch millis to a short time pill (e.g. "7:09 AM"). iOS parity:
+     * `TripCreationView` time pill.
+     */
+    fun formatShortTime(epochMillis: Long): String {
+        val sdf = SimpleDateFormat("h:mm a", Locale.getDefault())
+        sdf.timeZone = utc
+        return sdf.format(Date(epochMillis))
+    }
+
+    /**
      * Parse a time-only string (e.g. "14:30", "2:30 PM", "14:30:00.123456").
      * Returns epoch millis on epoch date (1970-01-01) or null.
      */

@@ -189,4 +189,35 @@ class DateTimeParsingTest {
     fun `parseTimeString returns null for garbage`() {
         assertNull(DateTimeParsing.parseTimeString("not-a-time"))
     }
+
+    // -- formatApiDateTime / formatShortDate / formatShortTime (iOS parity wire + pill formats) --
+
+    @Test
+    fun `formatApiDateTime emits wire format yyyy-MM-dd HH-mm-ss in UTC`() {
+        val epoch = DateTimeParsing.parseApiDateTime("2026-05-12T07:09:00Z")!!
+        assertEquals("2026-05-12 07:09:00", DateTimeParsing.formatApiDateTime(epoch))
+    }
+
+    @Test
+    fun `formatApiDateTime is round-trippable via parseApiDateTime`() {
+        val original = "2026-05-12 07:09:00"
+        val epoch = DateTimeParsing.parseApiDateTime(original)!!
+        assertEquals(original, DateTimeParsing.formatApiDateTime(epoch))
+    }
+
+    @Test
+    fun `formatShortDate emits short pill format`() {
+        val epoch = DateTimeParsing.parseApiDateTime("2026-05-12T07:09:00Z")!!
+        // M/d/yy in UTC → 5/12/26
+        assertEquals("5/12/26", DateTimeParsing.formatShortDate(epoch))
+    }
+
+    @Test
+    fun `formatShortTime emits short pill format`() {
+        val epoch = DateTimeParsing.parseApiDateTime("2026-05-12T07:09:00Z")!!
+        // h:mm a in UTC → 7:09 AM (US locale)
+        val formatted = DateTimeParsing.formatShortTime(epoch)
+        // Locale-dependent: accept both "7:09 AM" and "7:09 a.m." style variants.
+        assertEquals(true, formatted.startsWith("7:09"))
+    }
 }

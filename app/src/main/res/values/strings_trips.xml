@@ -114,8 +114,13 @@
     <string name="trips_create_required_steps">Required steps</string>
     <string name="trips_create_origin">Origin City</string>
     <string name="trips_create_destination">Destination City</string>
-    <string name="trips_create_departure_date">Departure Date</string>
-    <string name="trips_create_arrival_date">Arrival Date</string>
+    <string name="trips_create_departure_date">Pickup</string>
+    <string name="trips_create_arrival_date">Delivery</string>
+    <string name="trips_create_pickup_date_placeholder">Date</string>
+    <string name="trips_create_pickup_time_placeholder">Time</string>
+    <string name="trips_create_picker_done">Done</string>
+    <string name="trips_create_picker_cancel">Cancel</string>
+    <string name="trips_create_picker_time_title">Select time</string>
     <string name="trips_create_origin_country_code">Origin Country Code</string>
     <string name="trips_create_destination_country_code">Destination Country Code</string>
     <string name="trips_create_pickup_address">Pickup Address</string>

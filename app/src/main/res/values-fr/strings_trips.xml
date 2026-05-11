@@ -114,8 +114,13 @@
     <string name="trips_create_required_steps">\u00c9tapes requises</string>
     <string name="trips_create_origin">Ville d\'origine</string>
     <string name="trips_create_destination">Ville de destination</string>
-    <string name="trips_create_departure_date">Date de d\u00e9part</string>
-    <string name="trips_create_arrival_date">Date d\'arriv\u00e9e</string>
+    <string name="trips_create_departure_date">Ramassage</string>
+    <string name="trips_create_arrival_date">Livraison</string>
+    <string name="trips_create_pickup_date_placeholder">Date</string>
+    <string name="trips_create_pickup_time_placeholder">Heure</string>
+    <string name="trips_create_picker_done">Terminer</string>
+    <string name="trips_create_picker_cancel">Annuler</string>
+    <string name="trips_create_picker_time_title">S\u00e9lectionner l\'heure</string>
     <string name="trips_create_origin_country_code">Code pays d\'origine</string>
     <string name="trips_create_destination_country_code">Code pays de destination</string>
     <string name="trips_create_pickup_address">Adresse de ramassage</string>
