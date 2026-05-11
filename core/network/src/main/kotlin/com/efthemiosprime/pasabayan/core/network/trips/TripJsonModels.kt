@@ -25,6 +25,10 @@ data class TripJson(
     @SerialName("destination_lng") @Serializable(with = FlexibleDoubleSerializer::class) val destinationLng: Double? = null,
     @SerialName("departure_date") val departureDate: String? = null,
     @SerialName("arrival_date") val arrivalDate: String? = null,
+    /** Optional shared pickup window at origin (must be strictly before [departureDate] when set). */
+    @SerialName("pickup_date") val pickupDate: String? = null,
+    /** Optional shared handoff at destination (must be on or after [arrivalDate] when set). */
+    @SerialName("delivery_date") val deliveryDate: String? = null,
     @SerialName("available_weight_kg") @Serializable(with = FlexibleDoubleSerializer::class) val availableWeightKg: Double? = null,
     @SerialName("available_space_liters") @Serializable(with = FlexibleDoubleSerializer::class) val availableSpaceLiters: Double? = null,
     @SerialName("price_per_kg") @Serializable(with = FlexibleDoubleSerializer::class) val pricePerKg: Double? = null,
@@ -93,6 +97,10 @@ data class CreateTripRequestJson(
     @SerialName("auto_request_package_id") val autoRequestPackageId: Int? = null,
     @SerialName("proposed_price") val proposedPrice: Double? = null,
     @SerialName("request_message") val requestMessage: String? = null,
+    /** Optional shared pickup window at origin. ISO 8601 / `yyyy-MM-dd HH:mm:ss`. iOS parity. */
+    @SerialName("pickup_date") val pickupDate: String? = null,
+    /** Optional shared delivery / handoff window at destination. iOS parity. */
+    @SerialName("delivery_date") val deliveryDate: String? = null,
 )
 
 @Serializable
@@ -116,6 +124,12 @@ data class TripUpdateRequestJson(
     @SerialName("transportation_method") val transportationMethod: String? = null,
     @SerialName("pickup_address") val pickupAddress: String? = null,
     @SerialName("dropoff_address") val dropoffAddress: String? = null,
+    /**
+     * Shared pickup window. To **clear** an existing value on the server, pass an empty string
+     * — slice C will add a tri-state encoder that distinguishes "omit" / "set" / "explicit null".
+     */
+    @SerialName("pickup_date") val pickupDate: String? = null,
+    @SerialName("delivery_date") val deliveryDate: String? = null,
 )
 
 // -- Response wrappers --

@@ -28,6 +28,10 @@ data class Trip(
     val destinationLng: Double?,
     val departureDate: String?,
     val arrivalDate: String?,
+    /** Optional shared pickup window at origin. Strictly before [departureDate] when set. */
+    val pickupDate: String? = null,
+    /** Optional shared delivery window at destination. On/after [arrivalDate] when set. */
+    val deliveryDate: String? = null,
     val availableWeightKg: Double?,
     val availableSpaceLiters: Double?,
     val pricePerKg: Double?,

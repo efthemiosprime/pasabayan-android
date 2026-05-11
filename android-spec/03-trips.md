@@ -200,6 +200,8 @@ Only what **cannot be generalized** stays feature-scoped:
 | `autoRequestPackageId` | Int? | Auto-request a specific package on creation |
 | `proposedPrice` | Double? | For auto-request workflow |
 | `requestMessage` | String? | For auto-request workflow |
+| `pickupDate` | String? | **Optional shared pickup window at origin** (iOS-parity). ISO 8601 / `yyyy-MM-dd HH:mm:ss`. When set, must be strictly **before** `departureDate`. Independent from the trip envelope — carriers offering a shared pickup time advertise this to senders. |
+| `deliveryDate` | String? | **Optional shared delivery window at destination** (iOS-parity). When set, must be **on or after** `arrivalDate`. |
 
 ### `TripUpdateRequest`
 
@@ -226,6 +228,8 @@ All fields optional — only send changed values:
 | `transportationMethod` | String? | **Not** editable after `planning` |
 | `pickupAddress` | String? | |
 | `dropoffAddress` | String? | |
+| `pickupDate` | String? | Shared pickup window. **Slice C** will add a tri-state encoder (`omit` / `set` / `explicit null`) so callers can clear an existing value on the server. |
+| `deliveryDate` | String? | Shared delivery window. Same tri-state semantics as `pickupDate`. |
 
 ### Response types
 

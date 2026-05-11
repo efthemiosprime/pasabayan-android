@@ -175,6 +175,79 @@ class TripJsonModelsDecodeTest {
         assertTrue(encoded.contains("\"arrival_date\":\"2026-08-01T12:00:00Z\""))
     }
 
+    // -- iOS-parity shared pickup / delivery window (spec 12 / slice A) --
+
+    @Test
+    fun `TripJson decodes pickup_date and delivery_date when present`() {
+        val raw = """
+        {"id":1,"origin_city":"Toronto","destination_city":"Vancouver",
+          "departure_date":"2026-08-01T08:00:00Z","arrival_date":"2026-08-02T08:00:00Z",
+          "pickup_date":"2026-08-01T06:00:00Z","delivery_date":"2026-08-02T10:00:00Z"}
+        """.trimIndent()
+        val trip = json.decodeFromString<TripJson>(raw)
+        assertEquals("2026-08-01T06:00:00Z", trip.pickupDate)
+        assertEquals("2026-08-02T10:00:00Z", trip.deliveryDate)
+    }
+
+    @Test
+    fun `TripJson leaves pickup_date and delivery_date null when absent`() {
+        val raw = """{"id":1,"departure_date":"2026-08-01T08:00:00Z","arrival_date":"2026-08-02T08:00:00Z"}"""
+        val trip = json.decodeFromString<TripJson>(raw)
+        assertNull(trip.pickupDate)
+        assertNull(trip.deliveryDate)
+    }
+
+    @Test
+    fun `CreateTripRequestJson encodes pickup_date and delivery_date when set`() {
+        val request = CreateTripRequestJson(
+            originCity = "Toronto",
+            originCountry = "Canada",
+            destinationCity = "Vancouver",
+            destinationCountry = "Canada",
+            departureDate = "2026-04-01T08:00:00Z",
+            arrivalDate = "2026-04-01T14:00:00Z",
+            availableWeightKg = 25.0,
+            transportationMethod = "flight",
+            pickupDate = "2026-04-01T06:30:00Z",
+            deliveryDate = "2026-04-01T15:00:00Z",
+        )
+        val encoded = json.encodeToString(CreateTripRequestJson.serializer(), request)
+        assertTrue(encoded.contains("\"pickup_date\":\"2026-04-01T06:30:00Z\""))
+        assertTrue(encoded.contains("\"delivery_date\":\"2026-04-01T15:00:00Z\""))
+    }
+
+    @Test
+    fun `CreateTripRequestJson omits pickup_date and delivery_date when null`() {
+        val terse = Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = false
+        }
+        val request = CreateTripRequestJson(
+            originCity = "Toronto",
+            originCountry = "Canada",
+            destinationCity = "Vancouver",
+            destinationCountry = "Canada",
+            departureDate = "2026-04-01T08:00:00Z",
+            arrivalDate = "2026-04-01T14:00:00Z",
+            availableWeightKg = 25.0,
+            transportationMethod = "flight",
+        )
+        val encoded = terse.encodeToString(CreateTripRequestJson.serializer(), request)
+        assertTrue("expected pickup_date omitted, got $encoded", !encoded.contains("pickup_date"))
+        assertTrue("expected delivery_date omitted, got $encoded", !encoded.contains("delivery_date"))
+    }
+
+    @Test
+    fun `TripUpdateRequestJson encodes pickup_date and delivery_date when set`() {
+        val request = TripUpdateRequestJson(
+            pickupDate = "2026-08-01T06:00:00Z",
+            deliveryDate = "2026-08-02T10:00:00Z",
+        )
+        val encoded = json.encodeToString(TripUpdateRequestJson.serializer(), request)
+        assertTrue(encoded.contains("\"pickup_date\":\"2026-08-01T06:00:00Z\""))
+        assertTrue(encoded.contains("\"delivery_date\":\"2026-08-02T10:00:00Z\""))
+    }
+
     @Test
     fun `TripEarningsBreakdownJson decodes`() {
         val raw = """{
