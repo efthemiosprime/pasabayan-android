@@ -3,7 +3,6 @@ package com.efthemiosprime.pasabayan.features.trips.ui
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,14 +21,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -267,7 +262,6 @@ fun TripDetailsScreen(
         if (isCarrier) {
             CarrierEarningsSection(
                 trip = trip,
-                hasMatches = tripMatches.isNotEmpty(),
                 matches = tripMatches,
             )
 
@@ -391,104 +385,6 @@ fun TripDetailsScreen(
     }
 }
 
-/**
- * iOS parity (`TripDetailsView.tripEarningsOverviewCard` lines 651–706): only render when total
- * earnings > 0, two-column rows (label left, value right), and locale-aware currency formatting.
- */
-@Composable
-private fun CarrierEarningsSection(
-    trip: Trip,
-    @Suppress("UNUSED_PARAMETER") hasMatches: Boolean,
-    matches: List<TripMatchPackage>,
-) {
-    val total = computeTripEarningsTotal(trip)
-    if (total <= 0.0) return
-    val currency = trip.tripEarningsCurrency
-    PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
-        Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
-            PDetailSectionTitle(text = stringResource(R.string.trips_detail_earnings_title))
-            EarningsRow(
-                label = stringResource(R.string.trips_detail_earnings_label_total),
-                value = formatTripCurrency(total, currency),
-            )
-            trip.tripEarningsBreakdown?.let { breakdown ->
-                EarningsRow(
-                    label = stringResource(R.string.trips_detail_earnings_label_delivered),
-                    value = formatTripCurrency(breakdown.deliveredAmount, breakdown.deliveredCurrency),
-                )
-                EarningsRow(
-                    label = stringResource(R.string.trips_detail_earnings_label_pending),
-                    value = formatTripCurrency(breakdown.pendingAmount, breakdown.pendingCurrency),
-                )
-                // iOS parity: show package counts when the breakdown reports them. Fall back to
-                // local match counts so the UI stays informative on older API responses.
-                val deliveredCount = breakdown.deliveredCount.takeIf { it > 0 }
-                    ?: matches.count { it.matchStatus == MatchStatus.DELIVERED }
-                val pendingCount = breakdown.pendingCount.takeIf { it > 0 }
-                    ?: matches.count { it.matchStatus != MatchStatus.DELIVERED }
-                if (deliveredCount > 0 || pendingCount > 0) {
-                    EarningsRow(
-                        label = stringResource(R.string.trips_detail_earnings_label_delivered_packages),
-                        value = deliveredCount.toString(),
-                    )
-                    EarningsRow(
-                        label = stringResource(R.string.trips_detail_earnings_label_pending_packages),
-                        value = pendingCount.toString(),
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun EarningsRow(label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-    ) {
-        Text(
-            text = label,
-            style = PasabayanTextStyles.Body.small,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Text(
-            text = value,
-            style = PasabayanTextStyles.Body.medium,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Medium,
-        )
-    }
-}
-
-/**
- * iOS parity (`tripEarningsTotal` in TripDetailsView): prefer the server's total, otherwise fall
- * back to delivered + pending from the breakdown. Returns 0 when neither is available.
- */
-internal fun computeTripEarningsTotal(trip: Trip): Double {
-    trip.tripEarningsTotal?.let { return it }
-    val breakdown = trip.tripEarningsBreakdown ?: return 0.0
-    return breakdown.deliveredAmount + breakdown.pendingAmount
-}
-
-/**
- * iOS parity (`formatCurrency`): locale-aware currency formatting. Falls back to `<code> <amount>`
- * when the currency code is unknown or invalid.
- */
-internal fun formatTripCurrency(amount: Double, currency: String?): String {
-    val code = currency?.takeIf { it.isNotBlank() } ?: "CAD"
-    return try {
-        val formatter = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.getDefault())
-        formatter.currency = java.util.Currency.getInstance(code)
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 2
-        formatter.format(amount)
-    } catch (_: IllegalArgumentException) {
-        String.format(java.util.Locale.getDefault(), "%s %.2f", code, amount)
-    }
-}
-
 @Composable
 @OptIn(ExperimentalLayoutApi::class)
 private fun CarrierAcceptedPackagesSection(
@@ -540,231 +436,6 @@ private fun CarrierAcceptedPackagesSection(
                 }
             }
         }
-    }
-}
-
-/**
- * iOS parity (`TripMatchPackageCard` in `TripDetailsView.swift` lines 1196–1395): header row with
- * description + colored status badge, pickup→delivery city row, shipper name + rating, code state
- * rows, optional chat pill. The whole card is tap-to-chat when a conversation id is present, and
- * dimmed to ~85% otherwise.
- */
-@Composable
-private fun TripMatchPackageCard(
-    match: TripMatchPackage,
-    onChatTap: ((Int) -> Unit)?,
-) {
-    val conversationId = match.chatConversationId
-    val isChatAvailable = conversationId != null && onChatTap != null
-    val cardModifier = Modifier
-        .fillMaxWidth()
-        .let { base ->
-            if (isChatAvailable) {
-                base.clickable { onChatTap?.invoke(conversationId!!) }
-            } else {
-                base
-            }
-        }
-        .padding(vertical = PasabayanSpacing.xs)
-    Column(
-        modifier = cardModifier,
-        verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
-    ) {
-        MatchHeaderRow(
-            description = match.packageDescription
-                ?: stringResource(R.string.trips_detail_package_fallback),
-            status = match.matchStatus,
-            isDimmed = !isChatAvailable,
-        )
-        MatchRouteRow(
-            pickupCity = match.packagePickupCity,
-            deliveryCity = match.packageDeliveryCity,
-        )
-        MatchShipperRow(
-            name = match.shipper?.name,
-            rating = match.shipper?.ratingValue,
-        )
-        MatchCodeStateRow(
-            title = stringResource(R.string.trips_detail_pickup_code),
-            state = pickupCodeState(match),
-        )
-        MatchCodeStateRow(
-            title = stringResource(R.string.trips_detail_delivery_code),
-            state = deliveryCodeState(match),
-        )
-        if (isChatAvailable) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                MatchChatPill(onClick = { onChatTap?.invoke(conversationId!!) })
-            }
-        }
-    }
-}
-
-@Composable
-private fun MatchHeaderRow(
-    description: String,
-    status: MatchStatus,
-    isDimmed: Boolean,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
-    ) {
-        Text(
-            text = description,
-            style = PasabayanTextStyles.Body.medium,
-            color = if (isDimmed) {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            } else {
-                MaterialTheme.colorScheme.onSurface
-            },
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1,
-            modifier = Modifier.weight(1f),
-        )
-        MatchStatusBadge(status = status)
-    }
-}
-
-@Composable
-private fun MatchStatusBadge(status: MatchStatus) {
-    val color = matchStatusBadgeColor(status)
-    Box(
-        modifier = Modifier
-            .background(color = color, shape = RoundedCornerShape(8.dp))
-            .padding(horizontal = PasabayanSpacing.sm, vertical = 2.dp),
-    ) {
-        Text(
-            text = matchStatusLabel(status),
-            style = PasabayanTextStyles.Caption.regular.copy(fontWeight = FontWeight.Medium),
-            color = Color.White,
-        )
-    }
-}
-
-@Composable
-private fun MatchRouteRow(pickupCity: String?, deliveryCity: String?) {
-    val unknown = stringResource(R.string.trips_detail_match_route_unknown)
-    val routeText = stringResource(
-        R.string.trips_detail_match_route_format,
-        pickupCity?.takeIf { it.isNotBlank() } ?: unknown,
-        deliveryCity?.takeIf { it.isNotBlank() } ?: unknown,
-    )
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Icon(
-            imageVector = Icons.Outlined.Place,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(12.dp),
-        )
-        Text(
-            text = routeText,
-            style = PasabayanTextStyles.Caption.regular,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun MatchShipperRow(name: String?, rating: Double?) {
-    if (name.isNullOrBlank() && rating == null) return
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
-    ) {
-        if (!name.isNullOrBlank()) {
-            Row(
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Person,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(12.dp),
-                )
-                Text(
-                    text = name,
-                    style = PasabayanTextStyles.Caption.regular,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-        if (rating != null) {
-            Row(
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Star,
-                    contentDescription = null,
-                    tint = PasabayanColors.Warning,
-                    modifier = Modifier.size(12.dp),
-                )
-                Text(
-                    text = stringResource(R.string.trips_detail_match_rating_format, rating),
-                    style = PasabayanTextStyles.Caption.regular,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-    }
-}
-
-private fun matchStatusBadgeColor(status: MatchStatus): Color = when (status) {
-    MatchStatus.CONFIRMED,
-    MatchStatus.SHIPPER_ACCEPTED,
-    MatchStatus.CARRIER_ACCEPTED -> PasabayanColors.BadgeBlue
-    MatchStatus.PICKED_UP -> PasabayanColors.BadgeOrange
-    MatchStatus.IN_TRANSIT -> PasabayanColors.BadgePurple
-    MatchStatus.DELIVERED -> PasabayanColors.BadgeGreen
-    else -> PasabayanColors.BadgeGray
-}
-
-@Composable
-private fun MatchCodeStateRow(
-    title: String,
-    state: CodeState,
-) {
-    val (color, label) = when (state) {
-        CodeState.Requested -> PasabayanColors.Warning to stringResource(R.string.trips_code_state_requested)
-        is CodeState.Verified -> {
-            val verified = stringResource(R.string.trips_code_state_verified)
-            val labelText = state.dateText?.takeIf { it.isNotBlank() }
-                ?.let { "$verified · $it" }
-                ?: verified
-            PasabayanColors.Success to labelText
-        }
-    }
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
-    ) {
-        Text(
-            text = title,
-            style = PasabayanTextStyles.Caption.regular,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .background(color, CircleShape),
-        )
-        Text(
-            text = label,
-            style = PasabayanTextStyles.Caption.regular.copy(fontWeight = FontWeight.SemiBold),
-            color = color,
-        )
     }
 }
 
@@ -828,50 +499,6 @@ private fun AcceptedPackagesEmptyState(
             )
         }
     }
-}
-
-@Composable
-private fun MatchChatPill(onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .wrapContentSize()
-            .background(
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(50),
-            )
-            .clickable(onClick = onClick)
-            .padding(horizontal = PasabayanSpacing.sm, vertical = 4.dp),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
-    ) {
-        Icon(
-            imageVector = Icons.Outlined.Chat,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(14.dp),
-        )
-        Text(
-            text = stringResource(R.string.trips_detail_match_chat_pill),
-            style = PasabayanTextStyles.Caption.regular.copy(fontWeight = FontWeight.SemiBold),
-            color = MaterialTheme.colorScheme.primary,
-        )
-    }
-}
-
-@Composable
-private fun matchStatusLabel(status: MatchStatus): String = when (status) {
-    MatchStatus.PENDING -> stringResource(R.string.bookings_status_pending)
-    MatchStatus.CONFIRMED -> stringResource(R.string.bookings_status_confirmed)
-    MatchStatus.PICKED_UP -> stringResource(R.string.bookings_status_picked_up)
-    MatchStatus.IN_TRANSIT -> stringResource(R.string.bookings_status_in_transit)
-    MatchStatus.DELIVERED -> stringResource(R.string.bookings_status_delivered)
-    MatchStatus.CANCELLED -> stringResource(R.string.bookings_status_cancelled)
-    MatchStatus.CARRIER_REQUESTED -> stringResource(R.string.bookings_status_carrier_requested)
-    MatchStatus.SHIPPER_REQUESTED -> stringResource(R.string.bookings_status_shipper_requested)
-    MatchStatus.SHIPPER_ACCEPTED,
-    MatchStatus.CARRIER_ACCEPTED -> stringResource(R.string.bookings_status_confirmed)
-    MatchStatus.SHIPPER_DECLINED,
-    MatchStatus.CARRIER_DECLINED -> stringResource(R.string.bookings_status_cancelled)
 }
 
 @Composable
