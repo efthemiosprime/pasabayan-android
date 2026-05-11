@@ -103,6 +103,10 @@
     <string name="trips_status_update_hint_active">Le trajet est publié — les expéditeurs peuvent demander une réservation.</string>
     <string name="trips_status_update_hint_in_transit">Vous avez commencé le trajet et transportez des colis.</string>
     <string name="trips_status_update_hint_completed">Tous les colis ont été remis et le trajet est terminé.</string>
+    <!-- Parité iOS (TripUpdateTimeoutCoordinator) : repli de 15 s lorsque la mise à jour traîne. -->
+    <string name="trips_status_update_in_progress">Mise à jour…</string>
+    <string name="trips_status_update_error_timeout">La mise à jour prend plus de temps que prévu. Veuillez réessayer.</string>
+    <string name="trips_status_update_error_generic">Impossible de mettre à jour le statut du trajet. Veuillez réessayer.</string>
 
     <string name="trips_detail_match_status_label">Statut : %1$s</string>
     <string name="trips_detail_match_chat_pill">Discussion</string>

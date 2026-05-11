@@ -181,6 +181,67 @@ class CarrierTripsViewModelTest {
         assertEquals("in_transit", fakeRepo.lastUpdateStatus)
     }
 
+    // iOS parity (`TripUpdateTimeoutCoordinator`): TripStatusUpdateSheet calls the suspend
+    // variant and drives its own isUpdating spinner + 15s fallback timeout.
+    @Test
+    fun `suspendUpdateTripStatus returns success and mirrors trip into state`() = runTest {
+        val existing = testTrip(1, TripStatus.ACTIVE)
+        val updated = existing.copy(tripStatus = TripStatus.IN_TRANSIT)
+        fakeRepo.carrierTripsResult = Result.success(listOf(existing))
+        fakeRepo.updateResult = Result.success(updated)
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        val result = viewModel.suspendUpdateTripStatus(1, TripStatus.IN_TRANSIT)
+        advanceUntilIdle()
+
+        assertTrue(result.isSuccess)
+        assertEquals(TripStatus.IN_TRANSIT, result.getOrNull()!!.tripStatus)
+        assertEquals(TripStatus.IN_TRANSIT, viewModel.uiState.value.trips.first().tripStatus)
+        assertEquals("in_transit", fakeRepo.lastUpdateStatus)
+    }
+
+    @Test
+    fun `suspendUpdateTripStatus returns failure for invalid transition`() = runTest {
+        val existing = testTrip(1, TripStatus.COMPLETED)
+        fakeRepo.carrierTripsResult = Result.success(listOf(existing))
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        val result = viewModel.suspendUpdateTripStatus(1, TripStatus.ACTIVE)
+
+        assertTrue(result.isFailure)
+        assertNull(fakeRepo.lastUpdateStatus)
+    }
+
+    @Test
+    fun `suspendUpdateTripStatus returns failure when trip is unknown`() = runTest {
+        fakeRepo.carrierTripsResult = Result.success(emptyList())
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        val result = viewModel.suspendUpdateTripStatus(999, TripStatus.ACTIVE)
+
+        assertTrue(result.isFailure)
+        assertNull(fakeRepo.lastUpdateStatus)
+    }
+
+    @Test
+    fun `suspendUpdateTripStatus propagates repository failure`() = runTest {
+        val existing = testTrip(1, TripStatus.ACTIVE)
+        fakeRepo.carrierTripsResult = Result.success(listOf(existing))
+        fakeRepo.updateResult = Result.failure(Exception("Network down"))
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        val result = viewModel.suspendUpdateTripStatus(1, TripStatus.IN_TRANSIT)
+
+        assertTrue(result.isFailure)
+        assertEquals("Network down", result.exceptionOrNull()?.message)
+        // Local state should not have mutated when the repo failed.
+        assertEquals(TripStatus.ACTIVE, viewModel.uiState.value.trips.first().tripStatus)
+    }
+
     @Test
     fun `cancelTrip marks active trip as cancelled when no blocking matches`() = runTest {
         val existing = testTrip(1, TripStatus.ACTIVE)

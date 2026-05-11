@@ -157,6 +157,36 @@ class CarrierTripsViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Suspend variant of [updateTripStatus] that returns the result to the caller. Used by
+     * `TripStatusUpdateSheet` to drive the in-sheet isUpdating spinner + iOS-parity 15s timeout
+     * fallback (see iOS `TripUpdateTimeoutCoordinator`). On success, the local trips list is
+     * mirrored just like the fire-and-forget variant.
+     */
+    suspend fun suspendUpdateTripStatus(
+        tripId: Int,
+        targetStatus: TripStatus,
+    ): Result<Trip> {
+        val currentTrip = _uiState.value.trips.firstOrNull { it.id == tripId }
+            ?: return Result.failure(IllegalStateException("Trip not found"))
+        if (!canTransition(currentTrip.tripStatus, targetStatus)) {
+            return Result.failure(IllegalStateException("Invalid status transition"))
+        }
+        return tripsRepository.updateTrip(
+            id = tripId,
+            request = TripUpdateRequestJson(tripStatus = targetStatus.name.lowercase()),
+        ).onSuccess { updated ->
+            _uiState.update { state ->
+                state.copy(
+                    trips = state.trips.map { existing ->
+                        if (existing.id == updated.id) updated else existing
+                    },
+                    errorMessage = null,
+                )
+            }
+        }
+    }
+
     fun updateTripDetails(
         tripId: Int,
         availableWeightKg: Double?,

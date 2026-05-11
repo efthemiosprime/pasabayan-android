@@ -79,10 +79,10 @@ fun TripDetailsScreen(
     onOpenChat: ((conversationId: Int) -> Unit)? = null,
     /**
      * Invoked when the user picks a new trip status in [TripStatusUpdateSheet]. Wire to
-     * `CarrierTripsViewModel.updateTripStatus(tripId, target)`. iOS parity: `TripDetailsView`
-     * "Update Status" toolbar entry.
+     * `CarrierTripsViewModel.suspendUpdateTripStatus(tripId, target)`. iOS parity: `TripDetailsView`
+     * "Update Status" toolbar entry + `TripUpdateTimeoutCoordinator` 15s fallback.
      */
-    onUpdateStatus: ((TripStatus) -> Unit)? = null,
+    onUpdateStatus: (suspend (TripStatus) -> Result<Trip>)? = null,
     tripMatches: List<TripMatchPackage> = emptyList(),
     modifier: Modifier = Modifier,
 ) {

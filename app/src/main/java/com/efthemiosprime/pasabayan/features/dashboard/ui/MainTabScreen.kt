@@ -690,7 +690,7 @@ fun MainTabScreen(
                     if (messagesIndex >= 0) viewModel.selectTab(messagesIndex)
                 },
                 onUpdateStatus = { targetStatus ->
-                    carrierTripsViewModel.updateTripStatus(trip.id, targetStatus)
+                    carrierTripsViewModel.suspendUpdateTripStatus(trip.id, targetStatus)
                 },
             )
         }

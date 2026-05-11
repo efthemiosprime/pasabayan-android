@@ -2,7 +2,6 @@ package com.efthemiosprime.pasabayan.features.trips.ui
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.efthemiosprime.pasabayan.R
+import com.efthemiosprime.pasabayan.core.designsystem.PasabayanColors
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
@@ -42,20 +44,30 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomShee
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+
+/**
+ * iOS-parity fallback for the in-sheet API call (`TripUpdateTimeoutCoordinator`): if the server
+ * takes longer than this, abandon waiting and surface a timeout error so the carrier isn't
+ * stranded with an indefinite spinner.
+ */
+private const val STATUS_UPDATE_TIMEOUT_MS: Long = 15_000L
 
 /**
  * Status-only update sheet. iOS parity: `TripStatusUpdateSheet.swift` — the full iOS sheet
  * also edits capacity/pricing/notes, but Android already exposes those in [EditTripSheet];
  * this sheet stays focused on the transition.
  *
- * The host wires [onUpdateStatus] to `CarrierTripsViewModel.updateTripStatus(tripId, target)`.
- * The sheet dismisses on submit; the host observes the VM state for success / error feedback.
+ * The host wires [onUpdateStatus] to `CarrierTripsViewModel.suspendUpdateTripStatus(tripId, target)`.
+ * The sheet drives its own isUpdating spinner + 15s timeout fallback (parity with iOS
+ * `TripUpdateTimeoutCoordinator`) and dismisses only on a successful response.
  */
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun TripStatusUpdateSheet(
     trip: Trip,
-    onUpdateStatus: (TripStatus) -> Unit,
+    onUpdateStatus: suspend (TripStatus) -> Result<Trip>,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -73,7 +85,7 @@ fun TripStatusUpdateSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 internal fun TripStatusUpdateSheetContent(
     trip: Trip,
-    onUpdateStatus: (TripStatus) -> Unit,
+    onUpdateStatus: suspend (TripStatus) -> Result<Trip>,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -81,10 +93,15 @@ internal fun TripStatusUpdateSheetContent(
     var selected by remember(trip.id, trip.tripStatus) {
         mutableStateOf(options.firstOrNull())
     }
+    var isUpdating by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+    val timeoutMessage = stringResource(R.string.trips_status_update_error_timeout)
+    val genericErrorMessage = stringResource(R.string.trips_status_update_error_generic)
     PDetailSheetScaffold(
         title = stringResource(R.string.trips_status_update_title),
         closeContentDescription = stringResource(R.string.trips_status_update_close),
-        onClose = onDismiss,
+        onClose = { if (!isUpdating) onDismiss() },
         modifier = modifier,
     ) {
         PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
@@ -104,10 +121,43 @@ internal fun TripStatusUpdateSheetContent(
                         StatusOptionRow(
                             status = option,
                             selected = option == selected,
-                            onSelect = { selected = option },
+                            onSelect = { if (!isUpdating) selected = option },
+                            enabled = !isUpdating,
                         )
                     }
                 }
+            }
+        }
+
+        errorMessage?.let { message ->
+            Text(
+                text = message,
+                style = PasabayanTextStyles.Body.small,
+                color = PasabayanColors.Error,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = PasabayanSpacing.sm),
+            )
+        }
+
+        if (isUpdating) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = PasabayanSpacing.sm),
+                horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = stringResource(R.string.trips_status_update_in_progress),
+                    style = PasabayanTextStyles.Body.small,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
 
@@ -121,19 +171,42 @@ internal fun TripStatusUpdateSheetContent(
                 text = stringResource(R.string.trips_status_update_cancel),
                 onClick = onDismiss,
                 style = PButtonStyle.Secondary,
+                enabled = !isUpdating,
                 modifier = Modifier.weight(1f),
             )
             val pendingTarget = selected
             PButton(
                 text = stringResource(R.string.trips_status_update_submit),
-                onClick = {
-                    if (pendingTarget != null) {
-                        onUpdateStatus(pendingTarget)
-                        onDismiss()
+                onClick = onClick@{
+                    val target = pendingTarget ?: return@onClick
+                    if (isUpdating) return@onClick
+                    isUpdating = true
+                    errorMessage = null
+                    scope.launch {
+                        val outcome = withTimeoutOrNull(STATUS_UPDATE_TIMEOUT_MS) {
+                            onUpdateStatus(target)
+                        }
+                        if (outcome == null) {
+                            errorMessage = timeoutMessage
+                            isUpdating = false
+                        } else {
+                            outcome.fold(
+                                onSuccess = {
+                                    isUpdating = false
+                                    onDismiss()
+                                },
+                                onFailure = { e ->
+                                    errorMessage = e.message
+                                        ?.takeIf { it.isNotBlank() }
+                                        ?: genericErrorMessage
+                                    isUpdating = false
+                                },
+                            )
+                        }
                     }
                 },
                 style = PButtonStyle.Primary,
-                enabled = pendingTarget != null,
+                enabled = pendingTarget != null && !isUpdating,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -171,17 +244,22 @@ private fun StatusOptionRow(
     status: TripStatus,
     selected: Boolean,
     onSelect: () -> Unit,
+    enabled: Boolean = true,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onSelect)
-            .clickable(onClick = onSelect)
+            .selectable(
+                selected = selected,
+                enabled = enabled,
+                role = Role.RadioButton,
+                onClick = onSelect,
+            )
             .padding(vertical = PasabayanSpacing.xs),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
     ) {
-        RadioButton(selected = selected, onClick = onSelect)
+        RadioButton(selected = selected, onClick = onSelect, enabled = enabled)
         Column {
             Text(
                 text = tripStatusDisplayName(status),
@@ -214,6 +292,8 @@ private fun tripStatusOptionHint(status: TripStatus): String = when (status) {
     else -> ""
 }
 
+private val previewSuccess: suspend (TripStatus) -> Result<Trip> = { Result.success(previewTrip(it)) }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(name = "Status update - planning", showBackground = true)
 @Preview(
@@ -226,7 +306,7 @@ private fun TripStatusUpdateSheetPlanningPreview() {
     PasabayanTheme {
         TripStatusUpdateSheetContent(
             trip = previewTrip(TripStatus.PLANNING),
-            onUpdateStatus = {},
+            onUpdateStatus = previewSuccess,
             onDismiss = {},
         )
     }
@@ -239,7 +319,7 @@ private fun TripStatusUpdateSheetInTransitPreview() {
     PasabayanTheme {
         TripStatusUpdateSheetContent(
             trip = previewTrip(TripStatus.IN_TRANSIT),
-            onUpdateStatus = {},
+            onUpdateStatus = previewSuccess,
             onDismiss = {},
         )
     }
@@ -252,7 +332,7 @@ private fun TripStatusUpdateSheetCompletedPreview() {
     PasabayanTheme {
         TripStatusUpdateSheetContent(
             trip = previewTrip(TripStatus.COMPLETED),
-            onUpdateStatus = {},
+            onUpdateStatus = previewSuccess,
             onDismiss = {},
         )
     }

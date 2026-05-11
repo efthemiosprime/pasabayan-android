@@ -103,6 +103,10 @@
     <string name="trips_status_update_hint_active">Trip is published — shippers can request to book.</string>
     <string name="trips_status_update_hint_in_transit">You\'ve started the trip and are carrying packages.</string>
     <string name="trips_status_update_hint_completed">All packages handed off and the trip is done.</string>
+    <!-- iOS parity (`TripUpdateTimeoutCoordinator` + `trips.details.error.*`): 15-second fallback timeout while the status update is in flight. -->
+    <string name="trips_status_update_in_progress">Updating…</string>
+    <string name="trips_status_update_error_timeout">The update is taking longer than expected. Please try again.</string>
+    <string name="trips_status_update_error_generic">Couldn\'t update the trip status. Please try again.</string>
 
     <string name="trips_detail_match_status_label">Status: %1$s</string>
     <string name="trips_detail_match_chat_pill">Chat</string>
