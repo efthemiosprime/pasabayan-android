@@ -70,6 +70,7 @@ private enum class PaymentsRoute {
 fun PaymentsProfileScreen(
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenPayoutSetup: () -> Unit = {},
     paymentViewModel: PaymentViewModel = hiltViewModel(),
     paymentMethodsViewModel: PaymentMethodsViewModel = hiltViewModel(),
     tippingViewModel: TippingViewModel = hiltViewModel(),
@@ -162,8 +163,7 @@ fun PaymentsProfileScreen(
                     selectedTransaction = transaction
                     route = PaymentsRoute.TRANSACTION_DETAIL
                 },
-                onStartOnboarding = { stripeConnectViewModel.startOnboarding() },
-                onOpenDashboard = { stripeConnectViewModel.openDashboard() },
+                onOpenPayoutSetup = onOpenPayoutSetup,
                 onRefresh = {
                     paymentMethodsViewModel.loadPaymentMethods()
                     transactionHistoryViewModel.refreshTransactions()
@@ -210,6 +210,7 @@ fun PaymentsProfileScreen(
                 )
             }
         }
+
     }
 }
 
@@ -231,8 +232,7 @@ private fun PaymentsProfileContent(
     onLoadMoreReceipts: () -> Unit,
     onOpenTransactionList: () -> Unit,
     onOpenTransaction: (Transaction) -> Unit,
-    onStartOnboarding: () -> Unit,
-    onOpenDashboard: () -> Unit,
+    onOpenPayoutSetup: () -> Unit,
     onRefresh: () -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
@@ -289,8 +289,7 @@ private fun PaymentsProfileContent(
         )
         StripeConnectSection(
             connectState = connectState,
-            onStartOnboarding = onStartOnboarding,
-            onOpenDashboard = onOpenDashboard,
+            onOpenPayoutSetup = onOpenPayoutSetup,
         )
     }
 }
@@ -369,8 +368,7 @@ private fun PaymentsProfilePreview() {
             onLoadMoreReceipts = {},
             onOpenTransactionList = {},
             onOpenTransaction = {},
-            onStartOnboarding = {},
-            onOpenDashboard = {},
+            onOpenPayoutSetup = {},
             onRefresh = {},
             onLogout = {},
             modifier = Modifier.fillMaxSize().padding(8.dp),

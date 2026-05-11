@@ -177,6 +177,87 @@ class RemainingViewModelsTest {
         assertNull(vm.uiState.value.dashboardUrl)
     }
 
+    @Test
+    fun `loadStatus debounces within 2 seconds`() = runTest {
+        var calls = 0
+        fakeConnectRepo.statusResult = Result.success(StripeConnectStatusJson())
+        fakeConnectRepo.beforeStatusCheck = { calls++ }
+        val clock = FakeClock(startMs = 1_000L)
+        val vm = StripeConnectViewModel(fakeConnectRepo, clock)
+
+        vm.loadStatus()
+        advanceUntilIdle()
+        assertEquals(1, calls)
+
+        // Within debounce window — should be skipped
+        clock.advanceMs(500)
+        vm.loadStatus()
+        advanceUntilIdle()
+        assertEquals(1, calls)
+
+        // After debounce window — should re-issue
+        clock.advanceMs(2_500)
+        vm.loadStatus()
+        advanceUntilIdle()
+        assertEquals(2, calls)
+    }
+
+    @Test
+    fun `loadStatus forceRefresh bypasses debounce`() = runTest {
+        var calls = 0
+        fakeConnectRepo.statusResult = Result.success(StripeConnectStatusJson())
+        fakeConnectRepo.beforeStatusCheck = { calls++ }
+        val clock = FakeClock(startMs = 1_000L)
+        val vm = StripeConnectViewModel(fakeConnectRepo, clock)
+
+        vm.loadStatus()
+        advanceUntilIdle()
+        clock.advanceMs(100)
+
+        vm.loadStatus(forceRefresh = true)
+        advanceUntilIdle()
+        assertEquals(2, calls)
+    }
+
+    @Test
+    fun `startOnboarding short-circuits when already onboarded`() = runTest {
+        val vm = StripeConnectViewModel(fakeConnectRepo)
+        // Seed with onboarded status
+        fakeConnectRepo.statusResult = Result.success(
+            StripeConnectStatusJson(
+                hasStripeAccount = true,
+                onboardingComplete = true,
+                chargesEnabled = true,
+                payoutsEnabled = true,
+                canReceivePayouts = true,
+            ),
+        )
+        vm.loadStatus()
+        advanceUntilIdle()
+
+        var onboardCalled = false
+        fakeConnectRepo.onboardResult = Result.success("https://connect.stripe.com/onboard")
+        fakeConnectRepo.beforeOnboard = { onboardCalled = true }
+
+        vm.startOnboarding()
+        advanceUntilIdle()
+
+        assertFalse("repository.startOnboarding should not be called", onboardCalled)
+        assertTrue(vm.uiState.value.errorMessage != null)
+    }
+
+    @Test
+    fun `shouldStartOnboarding returns false when isOnboarded`() {
+        val onboarded = StripeConnectStatusJson(onboardingComplete = true)
+        assertFalse(com.efthemiosprime.pasabayan.features.payments.viewmodel.StripeConnectViewModel.shouldStartOnboarding(onboarded))
+        assertTrue(com.efthemiosprime.pasabayan.features.payments.viewmodel.StripeConnectViewModel.shouldStartOnboarding(null))
+        assertTrue(
+            com.efthemiosprime.pasabayan.features.payments.viewmodel.StripeConnectViewModel.shouldStartOnboarding(
+                StripeConnectStatusJson(onboardingComplete = false),
+            ),
+        )
+    }
+
     // -- ReceiptListViewModel --
 
     @Test
@@ -286,10 +367,27 @@ class FakeStripeConnectRepository : StripeConnectRepository {
     var onboardResult: Result<String> = Result.failure(Exception("Not set"))
     var statusResult: Result<StripeConnectStatusJson> = Result.failure(Exception("Not set"))
     var dashboardResult: Result<String> = Result.failure(Exception("Not set"))
+    var beforeStatusCheck: () -> Unit = {}
+    var beforeOnboard: () -> Unit = {}
 
-    override suspend fun startOnboarding() = onboardResult
-    override suspend fun checkStatus() = statusResult
+    override suspend fun startOnboarding(): Result<String> {
+        beforeOnboard()
+        return onboardResult
+    }
+
+    override suspend fun checkStatus(): Result<StripeConnectStatusJson> {
+        beforeStatusCheck()
+        return statusResult
+    }
+
     override suspend fun getDashboardUrl() = dashboardResult
+}
+
+class FakeClock(private var startMs: Long) : com.efthemiosprime.pasabayan.features.payments.viewmodel.Clock {
+    override fun nowMillis(): Long = startMs
+    fun advanceMs(delta: Long) {
+        startMs += delta
+    }
 }
 
 class FakeReceiptRepository : ReceiptRepository {

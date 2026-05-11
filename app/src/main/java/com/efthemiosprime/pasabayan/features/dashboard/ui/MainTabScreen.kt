@@ -102,6 +102,7 @@ fun MainTabScreen(
     var showCarrierPreferencesGate by remember { mutableStateOf(false) }
     var selectedCarrierTripId by remember { mutableStateOf<Int?>(null) }
     var profilePaymentsOpen by remember { mutableStateOf(false) }
+    var profilePayoutSetupOpen by remember { mutableStateOf(false) }
     var showEditUserProfileSheet by remember { mutableStateOf(false) }
     var showEditCarrierProfileSheet by remember { mutableStateOf(false) }
     var showPrivacyPreferencesSheet by remember { mutableStateOf(false) }
@@ -147,6 +148,7 @@ fun MainTabScreen(
         val tab = tabs.getOrNull(state.selectedTabIndex)
         if (tab?.route != "profile") {
             profilePaymentsOpen = false
+            profilePayoutSetupOpen = false
             settingsOpen = false
             favoritesOpen = false
             ratingsOpen = false
@@ -298,6 +300,12 @@ fun MainTabScreen(
                                 )
                             }
                         }
+                        profilePayoutSetupOpen -> {
+                            com.efthemiosprime.pasabayan.features.payments.ui.PayoutSetupScreen(
+                                onClose = { profilePayoutSetupOpen = false },
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
                         profilePaymentsOpen -> {
                             Column {
                                 PTopBar(
@@ -316,6 +324,10 @@ fun MainTabScreen(
                                 PaymentsProfileScreen(
                                     onLogout = onLogout,
                                     modifier = Modifier.fillMaxSize(),
+                                    onOpenPayoutSetup = {
+                                        profilePaymentsOpen = false
+                                        profilePayoutSetupOpen = true
+                                    },
                                 )
                             }
                         }
@@ -325,6 +337,7 @@ fun MainTabScreen(
                             onSwitchRole = { viewModel.switchRole() },
                             onLogout = onLogout,
                             onOpenPaymentsHub = { profilePaymentsOpen = true },
+                            onOpenPayoutSetup = { profilePayoutSetupOpen = true },
                             onOpenPersonalInfo = { showEditUserProfileSheet = true },
                             onOpenVehicleInfo = { showEditCarrierProfileSheet = true },
                             onOpenVerification = { showPhoneVerificationSheet = true },

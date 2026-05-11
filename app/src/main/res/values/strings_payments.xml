@@ -70,4 +70,30 @@
     <string name="payments_transaction_status_cancelled">Cancelled</string>
     <string name="payments_transaction_status_failed">Failed</string>
     <string name="payments_transaction_status_unknown">Unknown</string>
+
+    <!-- Payout setup (Stripe Connect) -->
+    <string name="payments_payout_title">Payout Setup</string>
+    <string name="payments_payout_close">Close</string>
+    <string name="payments_payout_loading_status">Loading status…</string>
+    <string name="payments_payout_checking_status">Checking your account status…</string>
+    <string name="payments_payout_status_loading">Checking status</string>
+    <string name="payments_payout_status_active">Account Active</string>
+    <string name="payments_payout_status_incomplete">Setup Incomplete</string>
+    <string name="payments_payout_setup">Set Up Payouts</string>
+    <string name="payments_payout_continue_setup">Continue Setup</string>
+    <string name="payments_payout_view_dashboard">View Dashboard</string>
+    <string name="payments_payout_description_new">Connect a Stripe Express account so we can deposit your delivery earnings directly to your bank.</string>
+    <string name="payments_payout_description_incomplete">Stripe needs a few more details before we can release payouts to you.</string>
+    <string name="payments_payout_description_active">Your Stripe Express account is fully set up. Payments and payouts are enabled.</string>
+    <string name="payments_payout_what_you_need">What you’ll need</string>
+    <string name="payments_payout_need_id">Government-issued photo ID</string>
+    <string name="payments_payout_need_bank">A bank account for direct deposit</string>
+    <string name="payments_payout_need_address">Your home address</string>
+    <string name="payments_payout_secure_verification">Stripe handles verification securely. Your information stays encrypted end-to-end.</string>
+    <string name="payments_payout_account_active">Your Stripe Express account is active.</string>
+    <string name="payments_payout_status_payments">Payments</string>
+    <string name="payments_payout_status_payouts">Payouts</string>
+    <string name="payments_payout_enabled">Enabled</string>
+    <string name="payments_payout_disabled">Disabled</string>
+    <string name="payments_payout_connected_on">Connected on %1$s</string>
 </resources>

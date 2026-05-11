@@ -90,6 +90,9 @@ dependencies {
     // Stripe — PaymentSheet, SetupIntent, Google Pay
     implementation(libs.stripe.android)
 
+    // Chrome Custom Tabs — Stripe Connect onboarding / dashboard
+    implementation(libs.androidx.browser)
+
     implementation(platform(libs.androidx.compose.bom))
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.compose.ui)

@@ -62,6 +62,7 @@ fun ProfileTabScreen(
     onSwitchRole: () -> Unit,
     onLogout: () -> Unit,
     onOpenPaymentsHub: () -> Unit,
+    onOpenPayoutSetup: () -> Unit = onOpenPaymentsHub,
     onOpenPersonalInfo: () -> Unit = {},
     onOpenVehicleInfo: () -> Unit = {},
     onOpenVerification: () -> Unit = {},
@@ -111,6 +112,7 @@ fun ProfileTabScreen(
         onSwitchRole = onSwitchRole,
         onLogout = onLogout,
         onOpenPaymentsHub = onOpenPaymentsHub,
+        onOpenPayoutSetup = onOpenPayoutSetup,
         onOpenPersonalInfo = onOpenPersonalInfo,
         onOpenVehicleInfo = onOpenVehicleInfo,
         onOpenVerification = onOpenVerification,
@@ -132,6 +134,7 @@ fun ProfileTabContent(
     onSwitchRole: () -> Unit,
     onLogout: () -> Unit,
     onOpenPaymentsHub: () -> Unit,
+    onOpenPayoutSetup: () -> Unit = onOpenPaymentsHub,
     onOpenPersonalInfo: () -> Unit = {},
     onOpenVehicleInfo: () -> Unit = {},
     onOpenVerification: () -> Unit = {},
@@ -248,7 +251,7 @@ fun ProfileTabContent(
             if (shouldShowPayoutSetup(currentRole)) {
                 MenuRow(
                     stringResource(R.string.profile_menu_payout),
-                ) { onOpenPaymentsHub() }
+                ) { onOpenPayoutSetup() }
             }
         }
         ProfileMenuSection(

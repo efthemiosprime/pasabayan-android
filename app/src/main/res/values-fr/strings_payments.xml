@@ -70,4 +70,30 @@
     <string name="payments_transaction_status_cancelled">Annulé</string>
     <string name="payments_transaction_status_failed">Échoué</string>
     <string name="payments_transaction_status_unknown">Inconnu</string>
+
+    <!-- Configuration des paiements (Stripe Connect) -->
+    <string name="payments_payout_title">Configuration des paiements</string>
+    <string name="payments_payout_close">Fermer</string>
+    <string name="payments_payout_loading_status">Chargement du statut…</string>
+    <string name="payments_payout_checking_status">Vérification de l’état de votre compte…</string>
+    <string name="payments_payout_status_loading">Vérification du statut</string>
+    <string name="payments_payout_status_active">Compte actif</string>
+    <string name="payments_payout_status_incomplete">Configuration incomplète</string>
+    <string name="payments_payout_setup">Configurer les paiements</string>
+    <string name="payments_payout_continue_setup">Continuer la configuration</string>
+    <string name="payments_payout_view_dashboard">Ouvrir le tableau de bord</string>
+    <string name="payments_payout_description_new">Connectez un compte Stripe Express pour recevoir vos gains de livraison directement sur votre compte bancaire.</string>
+    <string name="payments_payout_description_incomplete">Stripe a besoin de quelques informations supplémentaires avant d’activer vos paiements.</string>
+    <string name="payments_payout_description_active">Votre compte Stripe Express est entièrement configuré. Les paiements et virements sont activés.</string>
+    <string name="payments_payout_what_you_need">Ce dont vous aurez besoin</string>
+    <string name="payments_payout_need_id">Pièce d’identité officielle avec photo</string>
+    <string name="payments_payout_need_bank">Un compte bancaire pour les dépôts directs</string>
+    <string name="payments_payout_need_address">Votre adresse personnelle</string>
+    <string name="payments_payout_secure_verification">Stripe gère la vérification de façon sécurisée. Vos informations restent chiffrées de bout en bout.</string>
+    <string name="payments_payout_account_active">Votre compte Stripe Express est actif.</string>
+    <string name="payments_payout_status_payments">Paiements</string>
+    <string name="payments_payout_status_payouts">Virements</string>
+    <string name="payments_payout_enabled">Activé</string>
+    <string name="payments_payout_disabled">Désactivé</string>
+    <string name="payments_payout_connected_on">Connecté le %1$s</string>
 </resources>

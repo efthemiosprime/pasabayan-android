@@ -1,7 +1,9 @@
 package com.efthemiosprime.pasabayan.features.payments.services
 
+import com.efthemiosprime.pasabayan.features.payments.viewmodel.Clock
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
@@ -29,4 +31,10 @@ abstract class PaymentsModule {
     @Binds
     @Singleton
     abstract fun bindReceiptRepository(impl: ReceiptRepositoryImpl): ReceiptRepository
+
+    companion object {
+        @Provides
+        @Singleton
+        fun provideClock(): Clock = Clock { System.currentTimeMillis() }
+    }
 }

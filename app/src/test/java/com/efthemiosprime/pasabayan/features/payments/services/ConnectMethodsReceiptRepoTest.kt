@@ -97,6 +97,51 @@ class ConnectMethodsReceiptRepoTest {
     }
 
     @Test
+    fun `startOnboarding maps must be a carrier to NotCarrier`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(403).setBody(
+                """{"message":"User must be a carrier to onboard"}""",
+            ),
+        )
+        val result = connectRepo.startOnboarding()
+        assertTrue(result.isFailure)
+        assertTrue(
+            "expected NotCarrier, got ${result.exceptionOrNull()}",
+            result.exceptionOrNull() is com.efthemiosprime.pasabayan.features.payments.model.StripeConnectError.NotCarrier,
+        )
+    }
+
+    @Test
+    fun `startOnboarding maps already completed to AlreadyOnboarded`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": false, "message": "Carrier has already completed Stripe Connect onboarding"}""",
+            ),
+        )
+        val result = connectRepo.startOnboarding()
+        assertTrue(result.isFailure)
+        assertTrue(
+            "expected AlreadyOnboarded, got ${result.exceptionOrNull()}",
+            result.exceptionOrNull() is com.efthemiosprime.pasabayan.features.payments.model.StripeConnectError.AlreadyOnboarded,
+        )
+    }
+
+    @Test
+    fun `getDashboardUrl maps complete stripe onboarding first to NotOnboarded`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(400).setBody(
+                """{"message": "Please complete Stripe onboarding first"}""",
+            ),
+        )
+        val result = connectRepo.getDashboardUrl()
+        assertTrue(result.isFailure)
+        assertTrue(
+            "expected NotOnboarded, got ${result.exceptionOrNull()}",
+            result.exceptionOrNull() is com.efthemiosprime.pasabayan.features.payments.model.StripeConnectError.NotOnboarded,
+        )
+    }
+
+    @Test
     fun `getDashboardUrl returns url on success`() = runBlocking {
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(
