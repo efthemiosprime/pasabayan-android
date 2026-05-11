@@ -76,6 +76,54 @@ class BookingJsonModelsDecodeTest {
         assertEquals(100.0, match.agreedPrice!!, 0.001)
     }
 
+    // -- CancelMatchResponseJson + RefundResult parity (iOS b3d7675) --
+
+    @Test
+    fun `CancelMatchResponseJson decodes data, chat_conversation_id, refund`() {
+        val raw = fixture("cancel_match_response.json")
+        val response = json.decodeFromString<CancelMatchResponseJson>(raw)
+
+        assertEquals("Match cancelled and refund processed", response.message)
+        assertNotNull(response.data)
+        assertEquals(100, response.data!!.id)
+        assertEquals(MatchStatus.CANCELLED, response.data!!.matchStatus)
+        assertEquals(77, response.chatConversationId)
+        assertNotNull(response.refund)
+    }
+
+    @Test
+    fun `RefundResultJson decodes processed, amount, transaction_id`() {
+        val raw = fixture("cancel_match_response.json")
+        val response = json.decodeFromString<CancelMatchResponseJson>(raw)
+
+        val refund = response.refund!!
+        assertTrue(refund.processed)
+        assertEquals(150.50, refund.amount!!, 0.001)
+        assertEquals(555, refund.transactionId)
+        assertEquals(null, refund.error)
+    }
+
+    @Test
+    fun `CancelMatchResponseJson tolerates missing data, conversation, and refund`() {
+        val raw = """{"message": "Cancelled"}"""
+        val response = json.decodeFromString<CancelMatchResponseJson>(raw)
+
+        assertEquals("Cancelled", response.message)
+        assertEquals(null, response.data)
+        assertEquals(null, response.chatConversationId)
+        assertEquals(null, response.refund)
+    }
+
+    @Test
+    fun `RefundResultJson surfaces error string when refund fails`() {
+        val raw = """{"processed": false, "amount": null, "error": "stripe_error"}"""
+        val refund = json.decodeFromString<RefundResultJson>(raw)
+
+        assertFalse(refund.processed)
+        assertEquals(null, refund.amount)
+        assertEquals("stripe_error", refund.error)
+    }
+
     // -- DeliveryMatchJson transaction parity (iOS c871184) --
 
     @Test

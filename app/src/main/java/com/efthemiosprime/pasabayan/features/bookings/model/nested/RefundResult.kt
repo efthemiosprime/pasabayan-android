@@ -1,8 +1,12 @@
 package com.efthemiosprime.pasabayan.features.bookings.model.nested
 
+/**
+ * Result of a refund attempt tied to a match cancellation.
+ * Parity with iOS `RefundResult` from MatchingModels.swift.
+ */
 data class RefundResult(
-    val refunded: Boolean = false,
-    val amount: Double? = null,
-    val currency: String? = null,
-    val reason: String? = null,
+    val processed: Boolean,
+    val amount: Double?,
+    val transactionId: Int?,
+    val error: String?,
 )

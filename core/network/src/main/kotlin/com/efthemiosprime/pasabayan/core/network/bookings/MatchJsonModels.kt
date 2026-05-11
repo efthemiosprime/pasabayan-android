@@ -198,6 +198,16 @@ data class PaginatedMatchesJson(
 
 @Serializable
 data class CancelMatchResponseJson(
-    val success: Boolean = false,
     val message: String = "",
+    val data: DeliveryMatchJson? = null,
+    @SerialName("chat_conversation_id") val chatConversationId: Int? = null,
+    val refund: RefundResultJson? = null,
+)
+
+@Serializable
+data class RefundResultJson(
+    val processed: Boolean = false,
+    @Serializable(with = FlexibleDoubleSerializer::class) val amount: Double? = null,
+    @SerialName("transaction_id") val transactionId: Int? = null,
+    val error: String? = null,
 )

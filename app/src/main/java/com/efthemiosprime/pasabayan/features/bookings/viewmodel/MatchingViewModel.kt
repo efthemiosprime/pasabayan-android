@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
+import com.efthemiosprime.pasabayan.features.bookings.model.nested.RefundResult
 import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +19,8 @@ data class MatchingUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val statusFilter: MatchStatus? = null,
+    val lastCancelRefund: RefundResult? = null,
+    val lastCancelConversationId: Int? = null,
 ) {
     val filteredMatches: List<DeliveryMatch>
         get() = when (statusFilter) {
@@ -114,9 +117,13 @@ class MatchingViewModel @Inject constructor(
     fun cancelMatch(matchId: Int) {
         viewModelScope.launch {
             bookingsRepository.cancelMatch(matchId).fold(
-                onSuccess = {
+                onSuccess = { result ->
                     _uiState.update { state ->
-                        state.copy(matches = state.matches.filter { it.id != matchId })
+                        state.copy(
+                            matches = state.matches.map { if (it.id == matchId) result.match else it },
+                            lastCancelRefund = result.refund,
+                            lastCancelConversationId = result.chatConversationId,
+                        )
                     }
                 },
                 onFailure = { e ->
@@ -124,6 +131,10 @@ class MatchingViewModel @Inject constructor(
                 },
             )
         }
+    }
+
+    fun clearCancelArtifacts() {
+        _uiState.update { it.copy(lastCancelRefund = null, lastCancelConversationId = null) }
     }
 
     fun updateMatchStatus(matchId: Int, newStatus: MatchStatus) {

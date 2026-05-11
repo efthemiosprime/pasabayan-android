@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.features.bookings.services
 
+import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 
 interface BookingsRepository {
@@ -10,7 +11,7 @@ interface BookingsRepository {
 
     suspend fun confirmMatch(matchId: Int): Result<DeliveryMatch>
 
-    suspend fun cancelMatch(matchId: Int): Result<Unit>
+    suspend fun cancelMatch(matchId: Int): Result<CancelMatchResult>
 
     suspend fun markPickedUp(matchId: Int): Result<DeliveryMatch>
 

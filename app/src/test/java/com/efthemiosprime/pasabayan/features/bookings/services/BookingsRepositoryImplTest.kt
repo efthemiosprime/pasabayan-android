@@ -9,6 +9,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -116,15 +117,36 @@ class BookingsRepositoryImplTest {
     // -- cancelMatch --
 
     @Test
-    fun `cancelMatch returns success`() = runBlocking {
+    fun `cancelMatch returns CancelMatchResult with refund and conversation`() = runBlocking {
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(
-                """{"success": true, "message": "Cancelled"}""",
+                """{
+                    "message": "Cancelled and refunded",
+                    "data": {"id": 100, "match_status": "cancelled", "agreed_price": "150.50"},
+                    "chat_conversation_id": 77,
+                    "refund": {"processed": true, "amount": 150.50, "transaction_id": 555}
+                }""",
             ),
         )
 
         val result = repo.cancelMatch(100)
         assertTrue(result.isSuccess)
+        val cancel = result.getOrThrow()
+        assertEquals(100, cancel.match.id)
+        assertEquals(77, cancel.chatConversationId)
+        assertNotNull(cancel.refund)
+        assertTrue(cancel.refund!!.processed)
+        assertEquals(555, cancel.refund!!.transactionId)
+    }
+
+    @Test
+    fun `cancelMatch returns failure when response is missing match data`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody("""{"message": "Cancelled"}"""),
+        )
+
+        val result = repo.cancelMatch(100)
+        assertTrue(result.isFailure)
     }
 
     @Test

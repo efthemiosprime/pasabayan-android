@@ -2,7 +2,9 @@ package com.efthemiosprime.pasabayan.features.bookings.viewmodel
 
 import com.efthemiosprime.pasabayan.core.domain.`enum`.InitiatedBy
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
+import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
+import com.efthemiosprime.pasabayan.features.bookings.model.nested.RefundResult
 import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -14,6 +16,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -103,17 +106,66 @@ class MatchingViewModelTest {
     }
 
     @Test
-    fun `cancelMatch removes from list on success`() = runTest {
-        fakeRepo.loadResult = Result.success(listOf(testMatch(1), testMatch(2)))
-        fakeRepo.cancelResult = Result.success(Unit)
+    fun `cancelMatch replaces match with cancelled version on success`() = runTest {
+        val cancelled = testMatch(1, MatchStatus.CANCELLED)
+        fakeRepo.loadResult = Result.success(listOf(testMatch(1, MatchStatus.CONFIRMED), testMatch(2)))
+        fakeRepo.cancelResult = Result.success(
+            CancelMatchResult(match = cancelled, chatConversationId = 77, refund = null),
+        )
         viewModel.loadMatches("carrier")
         advanceUntilIdle()
 
         viewModel.cancelMatch(1)
         advanceUntilIdle()
 
-        assertEquals(1, viewModel.uiState.value.matches.size)
-        assertEquals(2, viewModel.uiState.value.matches[0].id)
+        val matches = viewModel.uiState.value.matches
+        assertEquals(2, matches.size)
+        assertEquals(MatchStatus.CANCELLED, matches.first { it.id == 1 }.matchStatus)
+    }
+
+    @Test
+    fun `cancelMatch surfaces refund result when refund processed`() = runTest {
+        val cancelled = testMatch(1, MatchStatus.CANCELLED)
+        fakeRepo.loadResult = Result.success(listOf(testMatch(1, MatchStatus.CONFIRMED)))
+        fakeRepo.cancelResult = Result.success(
+            CancelMatchResult(
+                match = cancelled,
+                chatConversationId = 77,
+                refund = RefundResult(processed = true, amount = 150.50, transactionId = 555, error = null),
+            ),
+        )
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+
+        viewModel.cancelMatch(1)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.lastCancelRefund?.processed == true)
+        assertEquals(150.50, state.lastCancelRefund?.amount!!, 0.001)
+        assertEquals(77, state.lastCancelConversationId)
+    }
+
+    @Test
+    fun `clearCancelArtifacts wipes refund and conversation`() = runTest {
+        val cancelled = testMatch(1, MatchStatus.CANCELLED)
+        fakeRepo.loadResult = Result.success(listOf(testMatch(1)))
+        fakeRepo.cancelResult = Result.success(
+            CancelMatchResult(
+                match = cancelled,
+                chatConversationId = 77,
+                refund = RefundResult(processed = true, amount = 150.50, transactionId = 555, error = null),
+            ),
+        )
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+        viewModel.cancelMatch(1)
+        advanceUntilIdle()
+        assertNotNull(viewModel.uiState.value.lastCancelRefund)
+
+        viewModel.clearCancelArtifacts()
+        assertNull(viewModel.uiState.value.lastCancelRefund)
+        assertNull(viewModel.uiState.value.lastCancelConversationId)
     }
 
     @Test
@@ -180,7 +232,7 @@ class FakeBookingsRepository : BookingsRepository {
     var loadResult: Result<List<DeliveryMatch>> = Result.success(emptyList())
     var getResult: Result<DeliveryMatch>? = null
     var confirmResult: Result<DeliveryMatch>? = null
-    var cancelResult: Result<Unit> = Result.success(Unit)
+    var cancelResult: Result<CancelMatchResult> = Result.failure(Exception("Not set"))
     var shipperAcceptResult: Result<DeliveryMatch>? = null
     var shipperDeclineResult: Result<DeliveryMatch>? = null
     var carrierAcceptResult: Result<DeliveryMatch>? = null

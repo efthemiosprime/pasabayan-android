@@ -3,18 +3,24 @@ package com.efthemiosprime.pasabayan.features.trips.ui
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.LocationOn
@@ -64,6 +70,12 @@ fun TripDetailsScreen(
     onCancel: () -> Unit,
     onBack: () -> Unit,
     onRequestBook: (() -> Unit)? = null,
+    /**
+     * Invoked when the user taps the chat affordance on an accepted-package match row.
+     * The id is the `chatConversationId` from the match. iOS parity:
+     * `TripMatchPackageCard.onTap` opening the conversation.
+     */
+    onOpenChat: ((conversationId: Int) -> Unit)? = null,
     tripMatches: List<TripMatchPackage> = emptyList(),
     modifier: Modifier = Modifier,
 ) {
@@ -249,6 +261,7 @@ fun TripDetailsScreen(
                     remainingCount = filterTripMatches(tripMatches, TripPackagesFilter.REMAINING).size,
                     deliveredCount = filterTripMatches(tripMatches, TripPackagesFilter.DELIVERED).size,
                     onFilterChange = { packagesFilter = it },
+                    onOpenChat = onOpenChat,
                 )
             }
         }
@@ -415,6 +428,7 @@ private fun CarrierAcceptedPackagesSection(
     remainingCount: Int,
     deliveredCount: Int,
     onFilterChange: (TripPackagesFilter) -> Unit,
+    onOpenChat: ((Int) -> Unit)? = null,
 ) {
     PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
@@ -450,30 +464,72 @@ private fun CarrierAcceptedPackagesSection(
                 )
             } else {
                 filteredMatches.forEachIndexed { index, match ->
-                    LabeledIconRow(
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Scale,
-                                contentDescription = null,
-                                tint = PasabayanColors.Info,
-                                modifier = Modifier.size(18.dp),
-                            )
-                        },
-                        label = stringResource(
-                            R.string.trips_detail_match_status_label,
-                            matchStatusLabel(match.matchStatus),
-                        ),
-                        value = match.packageDescription ?: stringResource(R.string.trips_detail_package_fallback),
-                        caption = match.packageWeightKg?.let {
-                            stringResource(R.string.trips_detail_package_weight_caption, it)
-                        },
-                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
+                        LabeledIconRow(
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Scale,
+                                    contentDescription = null,
+                                    tint = PasabayanColors.Info,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            },
+                            label = stringResource(
+                                R.string.trips_detail_match_status_label,
+                                matchStatusLabel(match.matchStatus),
+                            ),
+                            value = match.packageDescription ?: stringResource(R.string.trips_detail_package_fallback),
+                            caption = match.packageWeightKg?.let {
+                                stringResource(R.string.trips_detail_package_weight_caption, it)
+                            },
+                        )
+                        // iOS parity: per-match Chat pill when the server has hung a
+                        // conversation off the match. Pill is right-aligned and only renders
+                        // when the host wired up [onOpenChat].
+                        val conversationId = match.chatConversationId
+                        if (conversationId != null && onOpenChat != null) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End,
+                            ) {
+                                MatchChatPill(onClick = { onOpenChat(conversationId) })
+                            }
+                        }
+                    }
                     if (index != filteredMatches.lastIndex) {
                         PDivider()
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MatchChatPill(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .wrapContentSize()
+            .background(
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(50),
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = PasabayanSpacing.sm, vertical = 4.dp),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Chat,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(14.dp),
+        )
+        Text(
+            text = stringResource(R.string.trips_detail_match_chat_pill),
+            style = PasabayanTextStyles.Caption.regular.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.primary,
+        )
     }
 }
 

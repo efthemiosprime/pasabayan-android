@@ -4,8 +4,10 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.InitiatedBy
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.core.network.bookings.AutoChargeInfoJson
+import com.efthemiosprime.pasabayan.core.network.bookings.CancelMatchResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.DeliveryMatchJson
 import com.efthemiosprime.pasabayan.core.network.bookings.MatchTransactionJson
+import com.efthemiosprime.pasabayan.core.network.bookings.RefundResultJson
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -118,6 +120,56 @@ class BookingMapperTest {
         val match = json.toDomain()
 
         assertFalse(match.isPaymentCompleted)
+    }
+
+    // -- CancelMatchResponseJson mapping (iOS parity b3d7675) --
+
+    @Test
+    fun `CancelMatchResponseJson toDomain maps match, conversation, and refund`() {
+        val response = CancelMatchResponseJson(
+            message = "Cancelled and refunded",
+            data = DeliveryMatchJson(id = 100, matchStatus = MatchStatus.CANCELLED),
+            chatConversationId = 77,
+            refund = RefundResultJson(processed = true, amount = 150.50, transactionId = 555),
+        )
+        val result = response.toDomain()
+
+        assertNotNull(result)
+        assertEquals(100, result!!.match.id)
+        assertEquals(77, result.chatConversationId)
+        assertNotNull(result.refund)
+        assertTrue(result.refund!!.processed)
+        assertEquals(150.50, result.refund!!.amount!!, 0.001)
+        assertEquals(555, result.refund!!.transactionId)
+    }
+
+    @Test
+    fun `CancelMatchResponseJson toDomain returns null when data is absent`() {
+        val response = CancelMatchResponseJson(message = "Cancelled", data = null)
+        assertNull(response.toDomain())
+    }
+
+    @Test
+    fun `CancelMatchResponseJson toDomain handles missing refund and conversation`() {
+        val response = CancelMatchResponseJson(
+            message = "Cancelled",
+            data = DeliveryMatchJson(id = 100, matchStatus = MatchStatus.CANCELLED),
+        )
+        val result = response.toDomain()
+
+        assertNotNull(result)
+        assertNull(result!!.chatConversationId)
+        assertNull(result.refund)
+    }
+
+    @Test
+    fun `RefundResultJson toDomain surfaces processing failure`() {
+        val json = RefundResultJson(processed = false, error = "stripe_error")
+        val refund = json.toDomain()
+
+        assertEquals(false, refund.processed)
+        assertEquals("stripe_error", refund.error)
+        assertNull(refund.amount)
     }
 
     @Test

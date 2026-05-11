@@ -306,7 +306,8 @@ private class FakeBookingsRepository : BookingsRepository {
     override suspend fun loadMatches(role: String?, status: String?): Result<List<DeliveryMatch>> = Result.success(emptyList())
     override suspend fun getMatch(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
     override suspend fun confirmMatch(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
-    override suspend fun cancelMatch(matchId: Int): Result<Unit> = Result.failure(Exception("Not used"))
+    override suspend fun cancelMatch(matchId: Int): Result<com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult> =
+        Result.failure(Exception("Not used"))
     override suspend fun markPickedUp(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
     override suspend fun markInTransit(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
     override suspend fun markDelivered(matchId: Int): Result<DeliveryMatch> = Result.failure(Exception("Not used"))

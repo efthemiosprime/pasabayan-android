@@ -6,6 +6,7 @@ import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.network.bookings.BookingsApi
 import com.efthemiosprime.pasabayan.core.network.bookings.MatchResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.ShipperCounterOfferRequestJson
+import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.toDomain
 import kotlinx.serialization.json.Json
@@ -47,11 +48,13 @@ class BookingsRepositoryImpl @Inject constructor(
     override suspend fun confirmMatch(matchId: Int): Result<DeliveryMatch> =
         matchAction { bookingsApi.confirmMatch(matchId) }
 
-    override suspend fun cancelMatch(matchId: Int): Result<Unit> {
+    override suspend fun cancelMatch(matchId: Int): Result<CancelMatchResult> {
         return try {
             val res = bookingsApi.cancelMatch(matchId)
             if (!res.isSuccessful) return Result.failure(mapError(res))
-            Result.success(Unit)
+            val result = res.body()?.toDomain()
+                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            Result.success(result)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }

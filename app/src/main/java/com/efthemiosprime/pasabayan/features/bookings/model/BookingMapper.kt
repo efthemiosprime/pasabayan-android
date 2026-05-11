@@ -1,8 +1,11 @@
 package com.efthemiosprime.pasabayan.features.bookings.model
 
+import com.efthemiosprime.pasabayan.core.network.bookings.CancelMatchResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.DeliveryMatchJson
+import com.efthemiosprime.pasabayan.core.network.bookings.RefundResultJson
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.CarrierTripInfo
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.PackageRequestInfo
+import com.efthemiosprime.pasabayan.features.bookings.model.nested.RefundResult
 
 fun DeliveryMatchJson.toDomain(): DeliveryMatch = DeliveryMatch(
     id = id,
@@ -37,6 +40,22 @@ fun DeliveryMatchJson.toDomain(): DeliveryMatch = DeliveryMatch(
     deliveryCodeExpiresAt = deliveryCodeExpiresAt,
     carrierTrip = carrierTrip?.toDomain(),
     packageRequest = packageRequest?.toDomain(),
+)
+
+fun CancelMatchResponseJson.toDomain(): CancelMatchResult? {
+    val match = data?.toDomain() ?: return null
+    return CancelMatchResult(
+        match = match,
+        chatConversationId = chatConversationId,
+        refund = refund?.toDomain(),
+    )
+}
+
+fun RefundResultJson.toDomain(): RefundResult = RefundResult(
+    processed = processed,
+    amount = amount,
+    transactionId = transactionId,
+    error = error,
 )
 
 private fun com.efthemiosprime.pasabayan.core.network.bookings.MatchTransactionJson.toDomain():
