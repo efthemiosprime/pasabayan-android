@@ -76,6 +76,31 @@ class BookingJsonModelsDecodeTest {
         assertEquals(100.0, match.agreedPrice!!, 0.001)
     }
 
+    // -- CarrierTripInfoJson shared pickup/delivery window (iOS parity c6c63db) --
+
+    @Test
+    fun `CarrierTripInfoJson decodes pickup_date and delivery_date when present`() {
+        val raw = fixture("delivery_match_full.json")
+        val match = json.decodeFromString<DeliveryMatchJson>(raw)
+
+        assertNotNull(match.carrierTrip)
+        assertEquals("2026-04-02", match.carrierTrip!!.pickupDate)
+        assertEquals("2026-04-03", match.carrierTrip!!.deliveryDate)
+        // Legacy fields remain populated for fallback
+        assertEquals("2026-04-01", match.carrierTrip!!.departureDate)
+        assertEquals("2026-04-03", match.carrierTrip!!.arrivalDate)
+    }
+
+    @Test
+    fun `CarrierTripInfoJson defaults pickup_date and delivery_date to null when absent`() {
+        val raw = """{"id": 7, "origin_city": "A", "destination_city": "B"}"""
+        val trip = json.decodeFromString<CarrierTripInfoJson>(raw)
+
+        assertEquals(7, trip.id)
+        assertEquals(null, trip.pickupDate)
+        assertEquals(null, trip.deliveryDate)
+    }
+
     // -- CounterOfferResponseJson --
 
     @Test

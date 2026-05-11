@@ -93,6 +93,8 @@ data class CarrierTripInfoJson(
     @SerialName("destination_city") val destinationCity: String,
     @SerialName("departure_date") val departureDate: String? = null,
     @SerialName("arrival_date") val arrivalDate: String? = null,
+    @SerialName("pickup_date") val pickupDate: String? = null,
+    @SerialName("delivery_date") val deliveryDate: String? = null,
     @SerialName("transportation_method") val transportationMethod: String? = null,
     @SerialName("available_weight_kg")
     @Serializable(with = FlexibleDoubleSerializer::class)
