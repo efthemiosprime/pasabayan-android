@@ -37,6 +37,9 @@ import com.efthemiosprime.pasabayan.features.profile.ui.PrivacyPreferencesSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.ProfileTabScreen
 import com.efthemiosprime.pasabayan.features.profile.ui.SettingsScreen
 import com.efthemiosprime.pasabayan.features.profile.viewmodel.DisclaimerSyncViewModel
+import com.efthemiosprime.pasabayan.core.network.favorites.FavoriteCarrierInfoJson
+import com.efthemiosprime.pasabayan.features.favorites.ui.FavoritesListScreen
+import com.efthemiosprime.pasabayan.features.favorites.ui.SendRequestSheet
 import com.efthemiosprime.pasabayan.features.verification.ui.PhoneVerificationSheet
 import com.efthemiosprime.pasabayan.features.verification.ui.PremiumVerificationSheet
 import com.efthemiosprime.pasabayan.features.chat.ui.MessagesTabScreen
@@ -105,6 +108,8 @@ fun MainTabScreen(
     var settingsOpen by remember { mutableStateOf(false) }
     var showPhoneVerificationSheet by remember { mutableStateOf(false) }
     var showPremiumVerificationSheet by remember { mutableStateOf(false) }
+    var favoritesOpen by remember { mutableStateOf(false) }
+    var sendRequestCarrier by remember { mutableStateOf<FavoriteCarrierInfoJson?>(null) }
     val dismissActiveSheetRoute = { viewModel.dismissActiveSheetRoute() }
     val openTripFilterSheet = { viewModel.openTripFilterSheet() }
     val openCreateTripFromPackageSheet: (Int) -> Unit = { packageId ->
@@ -141,6 +146,7 @@ fun MainTabScreen(
         if (tab?.route != "profile") {
             profilePaymentsOpen = false
             settingsOpen = false
+            favoritesOpen = false
         }
     }
 
@@ -227,6 +233,25 @@ fun MainTabScreen(
                 )
                 "profile" -> {
                     when {
+                        favoritesOpen -> {
+                            Column {
+                                PTopBar(
+                                    title = stringResource(R.string.favorites_title),
+                                    navigationIcon = {
+                                        IconButton(onClick = { favoritesOpen = false }) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                                contentDescription = stringResource(R.string.favorites_back),
+                                            )
+                                        }
+                                    },
+                                )
+                                FavoritesListScreen(
+                                    onRequestDelivery = { carrier -> sendRequestCarrier = carrier },
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+                        }
                         settingsOpen -> {
                             Column {
                                 PTopBar(
@@ -283,6 +308,7 @@ fun MainTabScreen(
                             onOpenVerification = { showPhoneVerificationSheet = true },
                             onOpenSettings = { settingsOpen = true },
                             onOpenAccountManagement = { showAccountManagementSheet = true },
+                            onOpenFavorites = { favoritesOpen = true },
                         )
                     }
                 }
@@ -356,6 +382,18 @@ fun MainTabScreen(
         ) {
             PremiumVerificationSheet(
                 onClose = { showPremiumVerificationSheet = false },
+            )
+        }
+    }
+
+    sendRequestCarrier?.let { carrier ->
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { sendRequestCarrier = null },
+        ) {
+            SendRequestSheet(
+                carrierId = carrier.id,
+                carrierName = carrier.name,
+                onClose = { sendRequestCarrier = null },
             )
         }
     }

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Favorites (11-favorites-ratings slice A) -->
+    <string name="favorites_title">Transporteurs favoris</string>
+    <string name="favorites_back">Retour au profil</string>
+    <string name="favorites_empty_title">Aucun transporteur favori</string>
+    <string name="favorites_empty_subtitle">Les transporteurs que vous ajoutez en favori apparaîtront ici.</string>
+    <string name="favorites_sort_recent">Récents</string>
+    <string name="favorites_sort_most_used">Les plus utilisés</string>
+    <string name="favorites_sort_rating">Note</string>
+    <string name="favorites_filter_upcoming">Avec voyages à venir</string>
+    <string name="favorites_card_deliveries">%1$d livraisons ensemble</string>
+    <string name="favorites_card_rating">%1$s · %2$d avis</string>
+    <string name="favorites_card_upcoming">%1$d voyages à venir</string>
+    <string name="favorites_remove">Retirer des favoris</string>
+    <string name="favorites_request_delivery">Demander une livraison</string>
+    <string name="favorites_removed">Retiré des favoris</string>
+    <string name="favorites_error_already_favorited">Déjà dans vos favoris</string>
+    <string name="favorites_error_not_found">Transporteur introuvable</string>
+    <string name="favorites_error_cannot_favorite">Ce transporteur ne peut pas être ajouté maintenant</string>
+    <!-- Send request sheet -->
+    <string name="favorites_send_request_title">Demander une livraison</string>
+    <string name="favorites_send_request_subtitle">Envoyer une demande directe à %1$s.</string>
+    <string name="favorites_send_request_pickup_section">Ramassage</string>
+    <string name="favorites_send_request_pickup_city">Ville de ramassage</string>
+    <string name="favorites_send_request_pickup_address">Adresse de ramassage (facultatif)</string>
+    <string name="favorites_send_request_pickup_date">Date de ramassage</string>
+    <string name="favorites_send_request_date_placeholder">AAAA-MM-JJ</string>
+    <string name="favorites_send_request_delivery_section">Livraison</string>
+    <string name="favorites_send_request_delivery_city">Ville de livraison</string>
+    <string name="favorites_send_request_delivery_address">Adresse de livraison (facultatif)</string>
+    <string name="favorites_send_request_delivery_date">Date de livraison</string>
+    <string name="favorites_send_request_package_section">Colis</string>
+    <string name="favorites_send_request_package_type">Type de colis</string>
+    <string name="favorites_send_request_package_description">Description</string>
+    <string name="favorites_send_request_package_weight">Poids (kg)</string>
+    <string name="favorites_send_request_offered_price">Prix offert (facultatif)</string>
+    <string name="favorites_send_request_message_section">Message</string>
+    <string name="favorites_send_request_message">Note au transporteur (facultatif)</string>
+    <string name="favorites_send_request_submit">Envoyer la demande</string>
+    <string name="favorites_send_request_cancel">Annuler</string>
+    <string name="favorites_send_request_close">Fermer</string>
+    <string name="favorites_send_request_success">Demande envoyée</string>
+    <string name="favorites_send_request_error_required">Remplissez d’abord ramassage, livraison, colis et dates</string>
+</resources>

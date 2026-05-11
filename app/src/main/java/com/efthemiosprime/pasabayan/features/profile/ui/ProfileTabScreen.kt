@@ -67,6 +67,7 @@ fun ProfileTabScreen(
     onOpenVerification: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
     onOpenAccountManagement: () -> Unit = {},
+    onOpenFavorites: () -> Unit = {},
     onOpenPlaceholder: (String) -> Unit = { },
     viewModel: ProfileTabViewModel = hiltViewModel(),
     modifier: Modifier = Modifier,
@@ -114,6 +115,7 @@ fun ProfileTabScreen(
         onOpenVerification = onOpenVerification,
         onOpenSettings = onOpenSettings,
         onOpenAccountManagement = onOpenAccountManagement,
+        onOpenFavorites = onOpenFavorites,
         onOpenPlaceholder = onOpenPlaceholder,
         modifier = modifier,
     )
@@ -133,6 +135,7 @@ fun ProfileTabContent(
     onOpenVerification: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
     onOpenAccountManagement: () -> Unit = {},
+    onOpenFavorites: () -> Unit = {},
     onOpenPlaceholder: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -267,7 +270,7 @@ fun ProfileTabContent(
             ) {
                 MenuRow(
                     stringResource(R.string.profile_menu_favorites),
-                ) { onOpenPlaceholder("favorites") }
+                ) { onOpenFavorites() }
             }
         }
         ProfileMenuSection(

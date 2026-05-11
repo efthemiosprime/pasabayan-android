@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Favorites (11-favorites-ratings slice A) -->
+    <string name="favorites_title">Favorite carriers</string>
+    <string name="favorites_back">Back to profile</string>
+    <string name="favorites_empty_title">No favorite carriers yet</string>
+    <string name="favorites_empty_subtitle">Carriers you favorite from booking history will show up here.</string>
+    <string name="favorites_sort_recent">Recent</string>
+    <string name="favorites_sort_most_used">Most used</string>
+    <string name="favorites_sort_rating">Rating</string>
+    <string name="favorites_filter_upcoming">Upcoming trips only</string>
+    <string name="favorites_card_deliveries">%1$d deliveries together</string>
+    <string name="favorites_card_rating">%1$s · %2$d reviews</string>
+    <string name="favorites_card_upcoming">%1$d upcoming trips</string>
+    <string name="favorites_remove">Remove favorite</string>
+    <string name="favorites_request_delivery">Request delivery</string>
+    <string name="favorites_removed">Removed from favorites</string>
+    <string name="favorites_error_already_favorited">Already in your favorites</string>
+    <string name="favorites_error_not_found">Carrier not found</string>
+    <string name="favorites_error_cannot_favorite">This carrier can\'t be added right now</string>
+    <!-- Send request sheet -->
+    <string name="favorites_send_request_title">Request a delivery</string>
+    <string name="favorites_send_request_subtitle">Send a direct request to %1$s.</string>
+    <string name="favorites_send_request_pickup_section">Pickup</string>
+    <string name="favorites_send_request_pickup_city">Pickup city</string>
+    <string name="favorites_send_request_pickup_address">Pickup address (optional)</string>
+    <string name="favorites_send_request_pickup_date">Pickup date</string>
+    <string name="favorites_send_request_date_placeholder">YYYY-MM-DD</string>
+    <string name="favorites_send_request_delivery_section">Delivery</string>
+    <string name="favorites_send_request_delivery_city">Delivery city</string>
+    <string name="favorites_send_request_delivery_address">Delivery address (optional)</string>
+    <string name="favorites_send_request_delivery_date">Delivery date</string>
+    <string name="favorites_send_request_package_section">Package</string>
+    <string name="favorites_send_request_package_type">Package type</string>
+    <string name="favorites_send_request_package_description">Description</string>
+    <string name="favorites_send_request_package_weight">Weight (kg)</string>
+    <string name="favorites_send_request_offered_price">Offered price (optional)</string>
+    <string name="favorites_send_request_message_section">Message</string>
+    <string name="favorites_send_request_message">Note to the carrier (optional)</string>
+    <string name="favorites_send_request_submit">Send request</string>
+    <string name="favorites_send_request_cancel">Cancel</string>
+    <string name="favorites_send_request_close">Close</string>
+    <string name="favorites_send_request_success">Request sent</string>
+    <string name="favorites_send_request_error_required">Fill in the pickup, delivery, package, and dates first</string>
+</resources>
