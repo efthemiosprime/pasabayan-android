@@ -4,6 +4,8 @@ import android.content.Context
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.network.verification.OtpDataJson
 import com.efthemiosprime.pasabayan.core.network.verification.PhoneStatusDataJson
+import com.efthemiosprime.pasabayan.core.network.verification.PremiumVerificationStatusDataJson
+import com.efthemiosprime.pasabayan.core.network.verification.PremiumVerificationSubmissionDataJson
 import com.efthemiosprime.pasabayan.core.network.verification.VerifyOtpDataJson
 import com.efthemiosprime.pasabayan.features.verification.model.PhoneVerificationUiState
 import com.efthemiosprime.pasabayan.features.verification.services.VerificationRepository
@@ -201,4 +203,17 @@ private class FakeRepo(
     }
 
     override suspend fun fetchPhoneStatus(): Result<PhoneStatusDataJson> = statusResult
+
+    override suspend fun submitPremiumVerification(
+        idType: String,
+        idDocumentFront: ByteArray,
+        idDocumentBack: ByteArray?,
+        selfieWithId: ByteArray,
+        idNumber: String?,
+        birthDate: String?,
+        mimeType: String,
+    ): Result<PremiumVerificationSubmissionDataJson?> = error("unused")
+
+    override suspend fun fetchPremiumStatus(): Result<PremiumVerificationStatusDataJson> =
+        error("unused")
 }

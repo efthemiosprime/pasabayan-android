@@ -51,6 +51,7 @@ fun PhoneVerificationSheet(
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
     onVerified: () -> Unit = {},
+    onUpgradeToPremium: (() -> Unit)? = null,
     viewModel: PhoneVerificationViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -67,6 +68,7 @@ fun PhoneVerificationSheet(
         onResend = viewModel::resendOtp,
         onChangeNumber = viewModel::reset,
         onClose = onClose,
+        onUpgradeToPremium = onUpgradeToPremium,
         modifier = modifier,
     )
 }
@@ -81,6 +83,7 @@ fun PhoneVerificationContent(
     onResend: () -> Unit,
     onChangeNumber: () -> Unit,
     onClose: () -> Unit,
+    onUpgradeToPremium: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val scroll = rememberScrollState()
@@ -107,7 +110,7 @@ fun PhoneVerificationContent(
             )
         }
         if (state.isVerified) {
-            VerifiedCard(onClose = onClose)
+            VerifiedCard(onClose = onClose, onUpgradeToPremium = onUpgradeToPremium)
         } else if (state.isOtpSent) {
             OtpStepCard(
                 state = state,
@@ -269,13 +272,20 @@ private fun OtpStepCard(
 }
 
 @Composable
-private fun VerifiedCard(onClose: () -> Unit) {
+private fun VerifiedCard(onClose: () -> Unit, onUpgradeToPremium: (() -> Unit)?) {
     PCard(modifier = Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
             Text(
                 text = stringResource(R.string.verification_phone_success),
                 style = PasabayanTextStyles.Heading.h5,
             )
+            if (onUpgradeToPremium != null) {
+                PButton(
+                    text = stringResource(R.string.verification_premium_title),
+                    onClick = onUpgradeToPremium,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
             PButton(
                 text = stringResource(R.string.verification_phone_close),
                 onClick = onClose,

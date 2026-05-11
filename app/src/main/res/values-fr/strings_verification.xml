@@ -22,4 +22,40 @@
     <string name="verification_phone_close">Fermer</string>
     <string name="verification_phone_error_invalid">Saisissez un numéro à 10 chiffres valide</string>
     <string name="verification_phone_error_otp_invalid">Saisissez le code à 6 chiffres</string>
+    <!-- Premium verification (10-verification slice B) -->
+    <string name="verification_premium_title">Vérification premium</string>
+    <string name="verification_premium_subtitle">Téléversez une pièce d’identité officielle et un égoportrait pour obtenir le statut premium.</string>
+    <string name="verification_premium_id_type_label">Type de pièce d’identité</string>
+    <string name="verification_premium_id_number_label">Numéro (facultatif)</string>
+    <string name="verification_premium_id_number_placeholder">p.ex. AB123456</string>
+    <string name="verification_premium_birth_date_label">Date de naissance (facultatif)</string>
+    <string name="verification_premium_birth_date_placeholder">AAAA-MM-JJ</string>
+    <string name="verification_premium_front_label">Pièce d’identité — avant</string>
+    <string name="verification_premium_back_label">Pièce d’identité — arrière</string>
+    <string name="verification_premium_selfie_label">Égoportrait avec votre pièce</string>
+    <string name="verification_premium_upload">Téléverser</string>
+    <string name="verification_premium_replace">Remplacer</string>
+    <string name="verification_premium_added">Image ajoutée</string>
+    <string name="verification_premium_submit">Soumettre pour examen</string>
+    <string name="verification_premium_close">Fermer</string>
+    <string name="verification_premium_submitted">Demande envoyée</string>
+    <string name="verification_premium_pending_card_title">Statut de la demande</string>
+    <string name="verification_premium_missing_images">Ajoutez les images d’identité et un égoportrait avant la soumission</string>
+    <string name="verification_premium_image_decode_error">Impossible de lire l’image sélectionnée</string>
+    <!-- ID type labels and descriptions -->
+    <string name="verification_premium_id_drivers_license">Permis de conduire</string>
+    <string name="verification_premium_id_drivers_license_desc">Permis canadien ou international (recto-verso).</string>
+    <string name="verification_premium_id_passport">Passeport</string>
+    <string name="verification_premium_id_passport_desc">Passeport valide de tout pays (page des informations).</string>
+    <string name="verification_premium_id_national">Carte d’identité nationale</string>
+    <string name="verification_premium_id_national_desc">Pièce d’identité nationale (recto-verso).</string>
+    <string name="verification_premium_id_postal">Carte postale</string>
+    <string name="verification_premium_id_postal_desc">Carte d’identité postale (recto-verso).</string>
+    <string name="verification_premium_id_voters">Carte d’électeur</string>
+    <string name="verification_premium_id_voters_desc">Carte d’identification d’électeur (recto-verso).</string>
+    <!-- Application status labels -->
+    <string name="verification_premium_status_pending">En attente d’examen</string>
+    <string name="verification_premium_status_under_review">En cours d’examen</string>
+    <string name="verification_premium_status_approved">Approuvée</string>
+    <string name="verification_premium_status_rejected">Rejetée</string>
 </resources>

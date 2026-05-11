@@ -22,4 +22,40 @@
     <string name="verification_phone_close">Close</string>
     <string name="verification_phone_error_invalid">Enter a valid 10-digit phone number</string>
     <string name="verification_phone_error_otp_invalid">Enter the 6-digit code</string>
+    <!-- Premium verification (10-verification slice B) -->
+    <string name="verification_premium_title">Premium verification</string>
+    <string name="verification_premium_subtitle">Upload a government-issued ID and a selfie for premium status.</string>
+    <string name="verification_premium_id_type_label">ID type</string>
+    <string name="verification_premium_id_number_label">ID number (optional)</string>
+    <string name="verification_premium_id_number_placeholder">e.g. AB123456</string>
+    <string name="verification_premium_birth_date_label">Birth date (optional)</string>
+    <string name="verification_premium_birth_date_placeholder">YYYY-MM-DD</string>
+    <string name="verification_premium_front_label">ID document — front</string>
+    <string name="verification_premium_back_label">ID document — back</string>
+    <string name="verification_premium_selfie_label">Selfie holding your ID</string>
+    <string name="verification_premium_upload">Upload</string>
+    <string name="verification_premium_replace">Replace</string>
+    <string name="verification_premium_added">Image added</string>
+    <string name="verification_premium_submit">Submit for review</string>
+    <string name="verification_premium_close">Close</string>
+    <string name="verification_premium_submitted">Application submitted</string>
+    <string name="verification_premium_pending_card_title">Application status</string>
+    <string name="verification_premium_missing_images">Add ID images and a selfie before submitting</string>
+    <string name="verification_premium_image_decode_error">Could not read the selected image</string>
+    <!-- ID type labels and descriptions -->
+    <string name="verification_premium_id_drivers_license">Driver\'s license</string>
+    <string name="verification_premium_id_drivers_license_desc">Canadian or international driver\'s license (front + back).</string>
+    <string name="verification_premium_id_passport">Passport</string>
+    <string name="verification_premium_id_passport_desc">Valid passport from any country (data page).</string>
+    <string name="verification_premium_id_national">National ID</string>
+    <string name="verification_premium_id_national_desc">Government-issued national ID (front + back).</string>
+    <string name="verification_premium_id_postal">Postal ID</string>
+    <string name="verification_premium_id_postal_desc">Postal ID card (front + back).</string>
+    <string name="verification_premium_id_voters">Voter\'s ID</string>
+    <string name="verification_premium_id_voters_desc">Voter\'s ID card (front + back).</string>
+    <!-- Application status labels -->
+    <string name="verification_premium_status_pending">Pending review</string>
+    <string name="verification_premium_status_under_review">Under review</string>
+    <string name="verification_premium_status_approved">Approved</string>
+    <string name="verification_premium_status_rejected">Rejected</string>
 </resources>
