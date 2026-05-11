@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.features.trips.viewmodel
 
+import com.efthemiosprime.pasabayan.features.profile.services.ProfileRepository
 import com.efthemiosprime.pasabayan.features.trips.services.TripsLocalStateUpdater
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -19,12 +20,13 @@ import org.junit.Test
 class TripsLocalStateViewModelTest {
     private val dispatcher = StandardTestDispatcher()
     private val updater: TripsLocalStateUpdater = mockk()
+    private val profileRepository: ProfileRepository = mockk(relaxed = true)
     private lateinit var viewModel: TripsLocalStateViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
-        viewModel = TripsLocalStateViewModel(updater)
+        viewModel = TripsLocalStateViewModel(updater, profileRepository)
     }
 
     @After

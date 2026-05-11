@@ -34,6 +34,7 @@ import com.efthemiosprime.pasabayan.features.profile.ui.EditCarrierProfileSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.EditUserProfileSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.PrivacyPreferencesSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.ProfileTabScreen
+import com.efthemiosprime.pasabayan.features.profile.viewmodel.DisclaimerSyncViewModel
 import com.efthemiosprime.pasabayan.features.chat.ui.MessagesTabScreen
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ConversationsViewModel
 import com.efthemiosprime.pasabayan.features.packages.components.CreatePackageOptionsSheet
@@ -81,6 +82,7 @@ fun MainTabScreen(
     val tripCreationSavedRoutesViewModel: TripCreationSavedRoutesViewModel = hiltViewModel()
     val tripCreationSavedRoutesState by tripCreationSavedRoutesViewModel.uiState.collectAsStateWithLifecycle()
     val tripsLocalStateViewModel: TripsLocalStateViewModel = hiltViewModel()
+    val disclaimerSyncViewModel: DisclaimerSyncViewModel = hiltViewModel()
     val packageUiState by packageViewModel.uiState.collectAsStateWithLifecycle()
     val tabs = MainTabs.forRole(state.currentRole)
     var showCreateOptionsSheet by remember { mutableStateOf(false) }
@@ -115,6 +117,7 @@ fun MainTabScreen(
     LaunchedEffect(user) {
         viewModel.initializeRole(user)
         tripsLocalStateViewModel.retryCarrierDisclaimerPendingSync(user.id)
+        disclaimerSyncViewModel.bootstrapAndRetry(user.id)
     }
 
     LaunchedEffect(state.currentRole) {

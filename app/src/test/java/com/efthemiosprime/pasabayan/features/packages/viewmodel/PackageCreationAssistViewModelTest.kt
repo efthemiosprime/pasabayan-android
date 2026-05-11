@@ -5,6 +5,8 @@ import com.efthemiosprime.pasabayan.features.packages.services.PackageTutorialSt
 import com.efthemiosprime.pasabayan.features.packages.services.SavedPackageDescriptionsStore
 import com.efthemiosprime.pasabayan.features.packages.services.SavedPackageRouteTemplatesStore
 import com.efthemiosprime.pasabayan.features.packages.services.ShipperDisclaimerStore
+import com.efthemiosprime.pasabayan.features.profile.services.DisclaimerSyncService
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -19,6 +21,7 @@ class PackageCreationAssistViewModelTest {
     private lateinit var tutorialStore: PackageTutorialStore
     private lateinit var descriptionsStore: SavedPackageDescriptionsStore
     private lateinit var templatesStore: SavedPackageRouteTemplatesStore
+    private lateinit var disclaimerSync: DisclaimerSyncService
     private lateinit var viewModel: PackageCreationAssistViewModel
 
     @Before
@@ -27,6 +30,8 @@ class PackageCreationAssistViewModelTest {
         tutorialStore = mockk(relaxed = true)
         descriptionsStore = mockk(relaxed = true)
         templatesStore = mockk(relaxed = true)
+        disclaimerSync = mockk(relaxed = true)
+        coEvery { disclaimerSync.acknowledgeShipper(any()) } returns true
         every { descriptionsStore.getAll() } returns emptyList()
         every { templatesStore.getPickupTemplates() } returns emptyList()
         every { templatesStore.getHandoffTemplates() } returns emptyList()
@@ -35,6 +40,7 @@ class PackageCreationAssistViewModelTest {
             tutorialStore = tutorialStore,
             descriptionsStore = descriptionsStore,
             routeTemplatesStore = templatesStore,
+            disclaimerSync = disclaimerSync,
         )
     }
 
