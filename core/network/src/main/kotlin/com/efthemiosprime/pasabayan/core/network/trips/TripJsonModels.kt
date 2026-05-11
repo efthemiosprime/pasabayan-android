@@ -5,8 +5,18 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.core.domain.util.FlexibleBoolSerializer
 import com.efthemiosprime.pasabayan.core.domain.util.FlexibleDoubleSerializer
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonObject
 
 /**
  * Trip DTO — mirrors iOS `Trip.swift` fields. Wire format uses snake_case.
@@ -103,8 +113,55 @@ data class CreateTripRequestJson(
     @SerialName("delivery_date") val deliveryDate: String? = null,
 )
 
-@Serializable
+/**
+ * Partial-update body for `PUT /trips/{id}`. All fields nullable — only the fields with a value
+ * are sent on the wire (per the global Json `encodeDefaults = false` policy).
+ *
+ * For the shared pickup / delivery window dates, iOS distinguishes three states:
+ *   - **Omit** — `pickupDate == null && !includePickupDateNull` → no `pickup_date` key sent (no change).
+ *   - **Set** — `pickupDate != null` → `"pickup_date": "<value>"`.
+ *   - **Explicit null** — `pickupDate == null && includePickupDateNull` → `"pickup_date": null`
+ *     (clears the existing value on the server).
+ *
+ * iOS parity: `TripUpdateRequest.includePickupDateNull` / `includeDeliveryDateNull` in
+ * `Trip.swift`.
+ */
+@Serializable(with = TripUpdateRequestJsonSerializer::class)
 data class TripUpdateRequestJson(
+    val tripStatus: String? = null,
+    val availableWeightKg: Double? = null,
+    val availableSpaceLiters: Double? = null,
+    val pricePerKg: Double? = null,
+    val specialNotes: String? = null,
+    val flatTripPrice: Double? = null,
+    val originCity: String? = null,
+    val originCountry: String? = null,
+    val originLat: Double? = null,
+    val originLng: Double? = null,
+    val destinationCity: String? = null,
+    val destinationCountry: String? = null,
+    val destinationLat: Double? = null,
+    val destinationLng: Double? = null,
+    val departureDate: String? = null,
+    val arrivalDate: String? = null,
+    val transportationMethod: String? = null,
+    val pickupAddress: String? = null,
+    val dropoffAddress: String? = null,
+    val pickupDate: String? = null,
+    val deliveryDate: String? = null,
+    /** When `true`, encodes `"pickup_date": null` even though [pickupDate] is `null`. */
+    val includePickupDateNull: Boolean = false,
+    /** When `true`, encodes `"delivery_date": null` even though [deliveryDate] is `null`. */
+    val includeDeliveryDateNull: Boolean = false,
+)
+
+/**
+ * Schema-providing twin of [TripUpdateRequestJson] without the boolean flags. Drives the
+ * auto-derived encoder/decoder; the flag-aware logic lives in
+ * [TripUpdateRequestJsonSerializer].
+ */
+@Serializable
+private data class TripUpdateRequestRawJson(
     @SerialName("trip_status") val tripStatus: String? = null,
     @SerialName("available_weight_kg") val availableWeightKg: Double? = null,
     @SerialName("available_space_liters") val availableSpaceLiters: Double? = null,
@@ -124,13 +181,83 @@ data class TripUpdateRequestJson(
     @SerialName("transportation_method") val transportationMethod: String? = null,
     @SerialName("pickup_address") val pickupAddress: String? = null,
     @SerialName("dropoff_address") val dropoffAddress: String? = null,
-    /**
-     * Shared pickup window. To **clear** an existing value on the server, pass an empty string
-     * — slice C will add a tri-state encoder that distinguishes "omit" / "set" / "explicit null".
-     */
     @SerialName("pickup_date") val pickupDate: String? = null,
     @SerialName("delivery_date") val deliveryDate: String? = null,
 )
+
+private object TripUpdateRequestJsonSerializer : KSerializer<TripUpdateRequestJson> {
+
+    private val raw = TripUpdateRequestRawJson.serializer()
+    override val descriptor: SerialDescriptor = raw.descriptor
+
+    override fun serialize(encoder: Encoder, value: TripUpdateRequestJson) {
+        val jsonEncoder = encoder as? JsonEncoder
+            ?: error("TripUpdateRequestJson requires the kotlinx JSON encoder")
+        val rawValue = TripUpdateRequestRawJson(
+            tripStatus = value.tripStatus,
+            availableWeightKg = value.availableWeightKg,
+            availableSpaceLiters = value.availableSpaceLiters,
+            pricePerKg = value.pricePerKg,
+            specialNotes = value.specialNotes,
+            flatTripPrice = value.flatTripPrice,
+            originCity = value.originCity,
+            originCountry = value.originCountry,
+            originLat = value.originLat,
+            originLng = value.originLng,
+            destinationCity = value.destinationCity,
+            destinationCountry = value.destinationCountry,
+            destinationLat = value.destinationLat,
+            destinationLng = value.destinationLng,
+            departureDate = value.departureDate,
+            arrivalDate = value.arrivalDate,
+            transportationMethod = value.transportationMethod,
+            pickupAddress = value.pickupAddress,
+            dropoffAddress = value.dropoffAddress,
+            pickupDate = value.pickupDate,
+            deliveryDate = value.deliveryDate,
+        )
+        val base: JsonObject = jsonEncoder.json.encodeToJsonElement(raw, rawValue).jsonObject
+        val withOverrides = buildJsonObject {
+            base.forEach { (key, element) -> put(key, element) }
+            if (value.includePickupDateNull && value.pickupDate == null) {
+                put("pickup_date", JsonNull)
+            }
+            if (value.includeDeliveryDateNull && value.deliveryDate == null) {
+                put("delivery_date", JsonNull)
+            }
+        }
+        jsonEncoder.encodeJsonElement(withOverrides)
+    }
+
+    override fun deserialize(decoder: Decoder): TripUpdateRequestJson {
+        val jsonDecoder = decoder as? JsonDecoder
+            ?: error("TripUpdateRequestJson requires the kotlinx JSON decoder")
+        val rawValue = jsonDecoder.json.decodeFromJsonElement(raw, jsonDecoder.decodeJsonElement())
+        return TripUpdateRequestJson(
+            tripStatus = rawValue.tripStatus,
+            availableWeightKg = rawValue.availableWeightKg,
+            availableSpaceLiters = rawValue.availableSpaceLiters,
+            pricePerKg = rawValue.pricePerKg,
+            specialNotes = rawValue.specialNotes,
+            flatTripPrice = rawValue.flatTripPrice,
+            originCity = rawValue.originCity,
+            originCountry = rawValue.originCountry,
+            originLat = rawValue.originLat,
+            originLng = rawValue.originLng,
+            destinationCity = rawValue.destinationCity,
+            destinationCountry = rawValue.destinationCountry,
+            destinationLat = rawValue.destinationLat,
+            destinationLng = rawValue.destinationLng,
+            departureDate = rawValue.departureDate,
+            arrivalDate = rawValue.arrivalDate,
+            transportationMethod = rawValue.transportationMethod,
+            pickupAddress = rawValue.pickupAddress,
+            dropoffAddress = rawValue.dropoffAddress,
+            pickupDate = rawValue.pickupDate,
+            deliveryDate = rawValue.deliveryDate,
+        )
+    }
+}
 
 // -- Response wrappers --
 

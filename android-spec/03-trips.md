@@ -228,8 +228,10 @@ All fields optional — only send changed values:
 | `transportationMethod` | String? | **Not** editable after `planning` |
 | `pickupAddress` | String? | |
 | `dropoffAddress` | String? | |
-| `pickupDate` | String? | Shared pickup window. **Slice C** will add a tri-state encoder (`omit` / `set` / `explicit null`) so callers can clear an existing value on the server. |
-| `deliveryDate` | String? | Shared delivery window. Same tri-state semantics as `pickupDate`. |
+| `pickupDate` | String? | Shared pickup window. Tri-state encoder in [`TripUpdateRequestJsonSerializer`](../core/network/src/main/kotlin/com/efthemiosprime/pasabayan/core/network/trips/TripJsonModels.kt): **omit** (default), **set** (concrete value), or **explicit null** (set `includePickupDateNull = true` while leaving `pickupDate = null` — used to clear an existing server-side value). |
+| `deliveryDate` | String? | Shared delivery window. Same tri-state encoding via `includeDeliveryDateNull`. iOS parity: `TripUpdateRequest.includePickupDateNull` / `includeDeliveryDateNull`. |
+| `includePickupDateNull` | Bool | Encoder-only flag. When `true` and `pickupDate == null`, emits `"pickup_date": null` on the wire (clear-on-server). Not part of the JSON output. |
+| `includeDeliveryDateNull` | Bool | Same semantics as `includePickupDateNull`, for the delivery window. |
 
 ### Response types
 

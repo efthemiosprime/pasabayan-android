@@ -248,6 +248,59 @@ class TripJsonModelsDecodeTest {
         assertTrue(encoded.contains("\"delivery_date\":\"2026-08-02T10:00:00Z\""))
     }
 
+    // -- iOS-parity explicit-null flags (slice C) --
+
+    @Test
+    fun `TripUpdateRequestJson omits pickup_date when null and flag is false`() {
+        val request = TripUpdateRequestJson(pickupDate = null, includePickupDateNull = false)
+        val encoded = json.encodeToString(TripUpdateRequestJson.serializer(), request)
+        assertTrue("pickup_date should be omitted, got $encoded", !encoded.contains("\"pickup_date\""))
+    }
+
+    @Test
+    fun `TripUpdateRequestJson emits explicit null pickup_date when flag is true`() {
+        val request = TripUpdateRequestJson(pickupDate = null, includePickupDateNull = true)
+        val encoded = json.encodeToString(TripUpdateRequestJson.serializer(), request)
+        assertTrue(
+            "expected explicit pickup_date null, got $encoded",
+            encoded.contains("\"pickup_date\":null"),
+        )
+    }
+
+    @Test
+    fun `TripUpdateRequestJson emits explicit null delivery_date when flag is true`() {
+        val request = TripUpdateRequestJson(deliveryDate = null, includeDeliveryDateNull = true)
+        val encoded = json.encodeToString(TripUpdateRequestJson.serializer(), request)
+        assertTrue(
+            "expected explicit delivery_date null, got $encoded",
+            encoded.contains("\"delivery_date\":null"),
+        )
+    }
+
+    @Test
+    fun `TripUpdateRequestJson prefers concrete value over explicit-null flag`() {
+        val request = TripUpdateRequestJson(
+            pickupDate = "2026-08-01T06:00:00Z",
+            includePickupDateNull = true,
+        )
+        val encoded = json.encodeToString(TripUpdateRequestJson.serializer(), request)
+        assertTrue(encoded.contains("\"pickup_date\":\"2026-08-01T06:00:00Z\""))
+        assertTrue("expected no extra null, got $encoded", !encoded.contains("\"pickup_date\":null"))
+    }
+
+    @Test
+    fun `TripUpdateRequestJson does not encode the include-null booleans themselves`() {
+        val request = TripUpdateRequestJson(
+            includePickupDateNull = true,
+            includeDeliveryDateNull = true,
+        )
+        val encoded = json.encodeToString(TripUpdateRequestJson.serializer(), request)
+        assertTrue(!encoded.contains("includePickupDateNull"))
+        assertTrue(!encoded.contains("include_pickup_date_null"))
+        assertTrue(!encoded.contains("includeDeliveryDateNull"))
+        assertTrue(!encoded.contains("include_delivery_date_null"))
+    }
+
     @Test
     fun `TripEarningsBreakdownJson decodes`() {
         val raw = """{
