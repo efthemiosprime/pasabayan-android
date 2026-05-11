@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.core.network.notifications
 
 import kotlinx.serialization.json.JsonElement
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -20,10 +21,15 @@ import retrofit2.http.Query
  */
 interface NotificationApi {
 
+    /**
+     * Returns the raw [ResponseBody] so the typed [com.efthemiosprime.pasabayan.features
+     * .notifications.services.DeviceTokenRegisterResponseParser] can branch on HTTP status
+     * (200/201 vs 403 with `consent_required`) without coupling to Retrofit deserialization.
+     */
     @POST("device-tokens")
     suspend fun registerDeviceToken(
         @Body body: DeviceTokenRequestJson,
-    ): Response<DeviceTokenResponseJson>
+    ): Response<ResponseBody>
 
     /**
      * Path token must be URL-encoded by the caller — FCM tokens contain `/`, `+`, `=`.
