@@ -76,6 +76,11 @@
     <string name="bookings_counter_offer_submit">Soumettre la contre-offre</string>
     <string name="bookings_counter_offer_price_increase">Prix augment\u00e9 de %1$.2f $</string>
     <string name="bookings_counter_offer_price_decrease">Prix diminu\u00e9 de %1$.2f $</string>
+    <string name="bookings_counter_offer_error_limit_reached">Vous avez atteint la limite de contre-offres pour cette correspondance.</string>
+    <string name="bookings_counter_offer_error_sign_in">Veuillez vous reconnecter.</string>
+    <string name="bookings_counter_offer_error_network">Erreur r\u00e9seau. V\u00e9rifiez votre connexion et r\u00e9essayez.</string>
+    <string name="bookings_counter_offer_error_not_found">Colis ou trajet introuvable.</string>
+    <string name="bookings_counter_offer_error_rate_limited">Trop de requ\u00eates. Veuillez patienter un instant et r\u00e9essayer.</string>
 
     <!-- Request to carry -->
     <string name="bookings_request_to_carry_title">Demande de transport</string>

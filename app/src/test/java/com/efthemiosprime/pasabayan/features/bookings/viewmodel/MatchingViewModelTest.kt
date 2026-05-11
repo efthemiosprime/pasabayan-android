@@ -4,6 +4,8 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.InitiatedBy
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
+import com.efthemiosprime.pasabayan.features.bookings.model.NegotiationMetadata
+import com.efthemiosprime.pasabayan.features.bookings.model.RequestMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.RefundResult
 import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepository
 import kotlinx.coroutines.Dispatchers
@@ -196,6 +198,112 @@ class MatchingViewModelTest {
         assertEquals(MatchStatus.CONFIRMED, viewModel.uiState.value.matches[0].matchStatus)
     }
 
+    // -- submitCounterOffer (iOS parity 8c9646d) --
+
+    @Test
+    fun `submitCounterOffer (shipper) replaces match and surfaces negotiation`() = runTest {
+        val original = testMatch(1, MatchStatus.CARRIER_REQUESTED)
+        val counterOffered = testMatch(1, MatchStatus.SHIPPER_REQUESTED)
+        fakeRepo.loadResult = Result.success(listOf(original))
+        fakeRepo.shipperRequestResult = Result.success(
+            RequestMatchResult(
+                match = counterOffered,
+                negotiation = NegotiationMetadata(
+                    warnings = emptyList(),
+                    negotiationNeeded = false,
+                    isCounterOffer = true,
+                ),
+            ),
+        )
+        viewModel.loadMatches("shipper")
+        advanceUntilIdle()
+
+        viewModel.submitCounterOffer(matchId = 1, proposedPrice = 135.0, message = "Lower?", isShipper = true)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(MatchStatus.SHIPPER_REQUESTED, state.matches.first { it.id == 1 }.matchStatus)
+        assertTrue(state.lastNegotiation?.isCounterOffer == true)
+        assertFalse(state.isSubmittingCounterOffer)
+    }
+
+    @Test
+    fun `submitCounterOffer (carrier) surfaces warnings list`() = runTest {
+        val original = testMatch(1, MatchStatus.SHIPPER_REQUESTED)
+        val counterOffered = testMatch(1, MatchStatus.CARRIER_REQUESTED)
+        fakeRepo.loadResult = Result.success(listOf(original))
+        fakeRepo.carrierRequestResult = Result.success(
+            RequestMatchResult(
+                match = counterOffered,
+                negotiation = NegotiationMetadata(
+                    warnings = listOf("pickup_address_outside_range"),
+                    negotiationNeeded = true,
+                    isCounterOffer = true,
+                ),
+            ),
+        )
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+
+        viewModel.submitCounterOffer(matchId = 1, proposedPrice = 160.0, message = "Above your offer", isShipper = false)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf("pickup_address_outside_range"), state.lastNegotiation?.warnings)
+        assertTrue(state.lastNegotiation?.negotiationNeeded == true)
+    }
+
+    @Test
+    fun `submitCounterOffer sets error when match is unknown`() = runTest {
+        fakeRepo.loadResult = Result.success(emptyList())
+        viewModel.loadMatches("shipper")
+        advanceUntilIdle()
+
+        viewModel.submitCounterOffer(matchId = 999, proposedPrice = 100.0, message = null, isShipper = true)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.errorMessage != null)
+    }
+
+    @Test
+    fun `submitCounterOffer sets error on repository failure`() = runTest {
+        fakeRepo.loadResult = Result.success(listOf(testMatch(1)))
+        fakeRepo.shipperRequestResult = Result.failure(Exception("Negotiation closed"))
+        viewModel.loadMatches("shipper")
+        advanceUntilIdle()
+
+        viewModel.submitCounterOffer(matchId = 1, proposedPrice = 100.0, message = null, isShipper = true)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.errorMessage != null)
+        assertFalse(state.isSubmittingCounterOffer)
+    }
+
+    @Test
+    fun `clearNegotiationArtifacts wipes lastNegotiation`() = runTest {
+        val original = testMatch(1, MatchStatus.CARRIER_REQUESTED)
+        fakeRepo.loadResult = Result.success(listOf(original))
+        fakeRepo.shipperRequestResult = Result.success(
+            RequestMatchResult(
+                match = testMatch(1, MatchStatus.SHIPPER_REQUESTED),
+                negotiation = NegotiationMetadata(
+                    warnings = listOf("over_capacity"),
+                    negotiationNeeded = false,
+                    isCounterOffer = true,
+                ),
+            ),
+        )
+        viewModel.loadMatches("shipper")
+        advanceUntilIdle()
+        viewModel.submitCounterOffer(matchId = 1, proposedPrice = 100.0, message = null, isShipper = true)
+        advanceUntilIdle()
+        assertNotNull(viewModel.uiState.value.lastNegotiation)
+
+        viewModel.clearNegotiationArtifacts()
+        assertNull(viewModel.uiState.value.lastNegotiation)
+    }
+
     @Test
     fun `clearError clears errorMessage`() = runTest {
         fakeRepo.loadResult = Result.failure(Exception("fail"))
@@ -237,6 +345,8 @@ class FakeBookingsRepository : BookingsRepository {
     var shipperDeclineResult: Result<DeliveryMatch>? = null
     var carrierAcceptResult: Result<DeliveryMatch>? = null
     var carrierDeclineResult: Result<DeliveryMatch>? = null
+    var shipperRequestResult: Result<RequestMatchResult> = Result.failure(Exception("Not set"))
+    var carrierRequestResult: Result<RequestMatchResult> = Result.failure(Exception("Not set"))
 
     override suspend fun loadMatches(role: String?, status: String?) = loadResult
     override suspend fun getMatch(matchId: Int) = getResult ?: Result.failure(Exception("Not set"))
@@ -258,5 +368,18 @@ class FakeBookingsRepository : BookingsRepository {
         tripId: Int,
         offeredPrice: Double,
         message: String?,
-    ) = Result.failure<DeliveryMatch>(Exception("Not set"))
+        isCounterOffer: Boolean,
+        originalMatchId: Int?,
+        originalPrice: Double?,
+    ) = shipperRequestResult
+
+    override suspend fun carrierRequestPackage(
+        tripId: Int,
+        packageId: Int,
+        proposedPrice: Double,
+        message: String?,
+        isCounterOffer: Boolean,
+        originalMatchId: Int?,
+        originalPrice: Double?,
+    ) = carrierRequestResult
 }

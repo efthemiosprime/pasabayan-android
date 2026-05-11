@@ -69,6 +69,14 @@
     <string name="trips_cancel_blocked_message">Cannot cancel — at least one matched package is already confirmed, picked up, or in transit.</string>
     <string name="trips_detail_accepted_packages_title">Accepted Packages</string>
     <string name="trips_detail_accepted_packages_empty">No accepted packages for this filter.</string>
+    <string name="trips_detail_accepted_packages_empty_all_title">No accepted packages yet</string>
+    <string name="trips_detail_accepted_packages_empty_all_description">Shipper requests will appear here once carriers confirm matches for your trip.</string>
+    <string name="trips_detail_accepted_packages_empty_remaining_title">No remaining packages</string>
+    <string name="trips_detail_accepted_packages_empty_remaining_description">Every package on this trip has been delivered.</string>
+    <string name="trips_detail_accepted_packages_empty_delivered_title">No delivered packages</string>
+    <string name="trips_detail_accepted_packages_empty_delivered_description">Packages will show up here once you mark them as delivered.</string>
+    <string name="trips_detail_accepted_packages_show_all">Show all packages</string>
+    <string name="trips_detail_no_packages_assigned">No packages assigned</string>
     <string name="trips_detail_match_status_label">Status: %1$s</string>
     <string name="trips_detail_match_chat_pill">Chat</string>
     <string name="trips_detail_package_fallback">Package</string>

@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "message": "Counter-offer submitted",
+  "data": {
+    "id": 301,
+    "trip_id": 1,
+    "package_request_id": 10,
+    "match_status": "shipper_requested",
+    "agreed_price": "135.00",
+    "is_counter_offer": true,
+    "original_price": "150.00",
+    "counter_offer_round": 1,
+    "remaining_counter_offers": 2,
+    "can_counter_offer": true,
+    "initiated_by": "shipper",
+    "shipper_message": "Can you do less?"
+  },
+  "warnings": null,
+  "negotiation_needed": false,
+  "is_counter_offer": true
+}

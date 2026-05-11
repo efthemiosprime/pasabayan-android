@@ -76,6 +76,11 @@
     <string name="bookings_counter_offer_submit">Submit Counter Offer</string>
     <string name="bookings_counter_offer_price_increase">Price increased by $%1$.2f</string>
     <string name="bookings_counter_offer_price_decrease">Price decreased by $%1$.2f</string>
+    <string name="bookings_counter_offer_error_limit_reached">You\'ve reached the counter-offer limit for this match.</string>
+    <string name="bookings_counter_offer_error_sign_in">Please sign in again.</string>
+    <string name="bookings_counter_offer_error_network">Network error. Please check your connection and try again.</string>
+    <string name="bookings_counter_offer_error_not_found">Package or trip not found.</string>
+    <string name="bookings_counter_offer_error_rate_limited">Too many requests. Please wait a moment and try again.</string>
 
     <!-- Request to carry -->
     <string name="bookings_request_to_carry_title">Request to Carry</string>

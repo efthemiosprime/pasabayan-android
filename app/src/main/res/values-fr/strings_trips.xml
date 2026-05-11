@@ -69,6 +69,14 @@
     <string name="trips_cancel_blocked_message">Annulation impossible \u2014 au moins un colis associ\u00e9 est d\u00e9j\u00e0 confirm\u00e9, ramass\u00e9 ou en transit.</string>
     <string name="trips_detail_accepted_packages_title">Colis accept\u00e9s</string>
     <string name="trips_detail_accepted_packages_empty">Aucun colis accept\u00e9 pour ce filtre.</string>
+    <string name="trips_detail_accepted_packages_empty_all_title">Aucun colis accept\u00e9 pour l\'instant</string>
+    <string name="trips_detail_accepted_packages_empty_all_description">Les demandes des exp\u00e9diteurs appara\u00eetront ici d\u00e8s que les correspondances seront confirm\u00e9es.</string>
+    <string name="trips_detail_accepted_packages_empty_remaining_title">Aucun colis restant</string>
+    <string name="trips_detail_accepted_packages_empty_remaining_description">Tous les colis de ce trajet ont \u00e9t\u00e9 livr\u00e9s.</string>
+    <string name="trips_detail_accepted_packages_empty_delivered_title">Aucun colis livr\u00e9</string>
+    <string name="trips_detail_accepted_packages_empty_delivered_description">Les colis appara\u00eetront ici une fois marqu\u00e9s comme livr\u00e9s.</string>
+    <string name="trips_detail_accepted_packages_show_all">Afficher tous les colis</string>
+    <string name="trips_detail_no_packages_assigned">Aucun colis assigné</string>
     <string name="trips_detail_match_status_label">Statut : %1$s</string>
     <string name="trips_detail_match_chat_pill">Discussion</string>
     <string name="trips_detail_package_fallback">Colis</string>

@@ -5,9 +5,11 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.core.network.bookings.AutoChargeInfoJson
 import com.efthemiosprime.pasabayan.core.network.bookings.CancelMatchResponseJson
+import com.efthemiosprime.pasabayan.core.network.bookings.CarrierRequestResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.DeliveryMatchJson
 import com.efthemiosprime.pasabayan.core.network.bookings.MatchTransactionJson
 import com.efthemiosprime.pasabayan.core.network.bookings.RefundResultJson
+import com.efthemiosprime.pasabayan.core.network.bookings.ShipperRequestResponseJson
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -120,6 +122,64 @@ class BookingMapperTest {
         val match = json.toDomain()
 
         assertFalse(match.isPaymentCompleted)
+    }
+
+    // -- Request envelope mapping (iOS parity 8c9646d) --
+
+    @Test
+    fun `CarrierRequestResponseJson toDomain captures match and negotiation`() {
+        val envelope = CarrierRequestResponseJson(
+            success = true,
+            message = "OK",
+            data = DeliveryMatchJson(id = 300, matchStatus = MatchStatus.CARRIER_REQUESTED),
+            warnings = listOf("pickup_address_outside_range"),
+            negotiationNeeded = true,
+            isCounterOffer = false,
+        )
+        val result = envelope.toDomain()
+
+        assertNotNull(result)
+        assertEquals(300, result!!.match.id)
+        assertEquals(listOf("pickup_address_outside_range"), result.negotiation.warnings)
+        assertTrue(result.negotiation.negotiationNeeded)
+        assertFalse(result.negotiation.isCounterOffer)
+    }
+
+    @Test
+    fun `ShipperRequestResponseJson toDomain captures counter-offer envelope`() {
+        val envelope = ShipperRequestResponseJson(
+            success = true,
+            message = "OK",
+            data = DeliveryMatchJson(id = 301, matchStatus = MatchStatus.SHIPPER_REQUESTED),
+            warnings = null,
+            negotiationNeeded = false,
+            isCounterOffer = true,
+        )
+        val result = envelope.toDomain()
+
+        assertNotNull(result)
+        assertTrue(result!!.negotiation.isCounterOffer)
+        assertEquals(emptyList<String>(), result.negotiation.warnings)
+        assertFalse(result.negotiation.hasWarnings)
+    }
+
+    @Test
+    fun `CarrierRequestResponseJson toDomain returns null when data is absent`() {
+        val envelope = CarrierRequestResponseJson(success = false, message = "Bad request", data = null)
+        assertNull(envelope.toDomain())
+    }
+
+    @Test
+    fun `CarrierRequestResponseJson toDomain defaults missing envelope fields`() {
+        val envelope = CarrierRequestResponseJson(
+            success = true,
+            data = DeliveryMatchJson(id = 1, matchStatus = MatchStatus.PENDING),
+        )
+        val result = envelope.toDomain()!!
+
+        assertEquals(emptyList<String>(), result.negotiation.warnings)
+        assertFalse(result.negotiation.negotiationNeeded)
+        assertFalse(result.negotiation.isCounterOffer)
     }
 
     // -- CancelMatchResponseJson mapping (iOS parity b3d7675) --

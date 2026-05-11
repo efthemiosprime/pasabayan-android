@@ -2,6 +2,7 @@ package com.efthemiosprime.pasabayan.features.bookings.services
 
 import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
+import com.efthemiosprime.pasabayan.features.bookings.model.RequestMatchResult
 
 interface BookingsRepository {
 
@@ -40,5 +41,18 @@ interface BookingsRepository {
         tripId: Int,
         offeredPrice: Double,
         message: String?,
-    ): Result<DeliveryMatch>
+        isCounterOffer: Boolean = false,
+        originalMatchId: Int? = null,
+        originalPrice: Double? = null,
+    ): Result<RequestMatchResult>
+
+    suspend fun carrierRequestPackage(
+        tripId: Int,
+        packageId: Int,
+        proposedPrice: Double,
+        message: String?,
+        isCounterOffer: Boolean = false,
+        originalMatchId: Int? = null,
+        originalPrice: Double? = null,
+    ): Result<RequestMatchResult>
 }

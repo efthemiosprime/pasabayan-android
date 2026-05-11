@@ -89,14 +89,14 @@ interface BookingsApi {
         @Path("tripId") tripId: Int,
         @Path("packageId") packageId: Int,
         @Body body: CarrierCounterOfferRequestJson,
-    ): Response<MatchResponseJson>
+    ): Response<CarrierRequestResponseJson>
 
     @POST("packages/{packageId}/request-trip/{tripId}")
     suspend fun shipperRequestTrip(
         @Path("packageId") packageId: Int,
         @Path("tripId") tripId: Int,
         @Body body: ShipperCounterOfferRequestJson,
-    ): Response<MatchResponseJson>
+    ): Response<ShipperRequestResponseJson>
 
     // -- Rating --
 

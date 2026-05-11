@@ -98,9 +98,20 @@ fun TripDetailsScreen(
                     style = PasabayanTextStyles.Heading.h3,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                ) {
                     StatusChip(label = statusLabel, status = trip.tripStatus)
                     TransportChip(label = trip.transportationMethodLabel())
+                    // iOS parity: inline "No packages assigned" capsule when the trip is still
+                    // in planning and the carrier hasn't yet accepted any matches.
+                    if (isCarrier &&
+                        trip.tripStatus == TripStatus.PLANNING &&
+                        tripMatches.isEmpty()
+                    ) {
+                        NoPackagesAssignedChip()
+                    }
                 }
             }
         }
@@ -457,10 +468,9 @@ private fun CarrierAcceptedPackagesSection(
                 )
             }
             if (filteredMatches.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.trips_detail_accepted_packages_empty),
-                    style = PasabayanTextStyles.Body.small,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                AcceptedPackagesEmptyState(
+                    filter = filter,
+                    onShowAll = { onFilterChange(TripPackagesFilter.ALL) },
                 )
             } else {
                 filteredMatches.forEachIndexed { index, match ->
@@ -501,6 +511,68 @@ private fun CarrierAcceptedPackagesSection(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun NoPackagesAssignedChip() {
+    Row(
+        modifier = Modifier
+            .wrapContentSize()
+            .background(
+                color = PasabayanColors.BadgeGray.copy(alpha = 0.15f),
+                shape = RoundedCornerShape(50),
+            )
+            .padding(horizontal = PasabayanSpacing.sm, vertical = 2.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.trips_detail_no_packages_assigned),
+            style = PasabayanTextStyles.Caption.regular.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun AcceptedPackagesEmptyState(
+    filter: TripPackagesFilter,
+    onShowAll: () -> Unit,
+) {
+    // iOS parity (`TripDetailsView.swift` lines 1064–1084): per-filter empty copy + recovery
+    // button when a filter other than ALL is active.
+    val (titleRes, descRes) = when (filter) {
+        TripPackagesFilter.ALL ->
+            R.string.trips_detail_accepted_packages_empty_all_title to
+                R.string.trips_detail_accepted_packages_empty_all_description
+        TripPackagesFilter.REMAINING ->
+            R.string.trips_detail_accepted_packages_empty_remaining_title to
+                R.string.trips_detail_accepted_packages_empty_remaining_description
+        TripPackagesFilter.DELIVERED ->
+            R.string.trips_detail_accepted_packages_empty_delivered_title to
+                R.string.trips_detail_accepted_packages_empty_delivered_description
+    }
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+    ) {
+        Text(
+            text = stringResource(titleRes),
+            style = PasabayanTextStyles.Body.medium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = stringResource(descRes),
+            style = PasabayanTextStyles.Body.small,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (filter != TripPackagesFilter.ALL) {
+            Spacer(modifier = Modifier.height(PasabayanSpacing.xs))
+            PButton(
+                text = stringResource(R.string.trips_detail_accepted_packages_show_all),
+                onClick = onShowAll,
+                style = PButtonStyle.Secondary,
+            )
         }
     }
 }

@@ -4,10 +4,12 @@ import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.network.ApiErrorMapper
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.network.bookings.BookingsApi
+import com.efthemiosprime.pasabayan.core.network.bookings.CarrierCounterOfferRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.MatchResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.ShipperCounterOfferRequestJson
 import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
+import com.efthemiosprime.pasabayan.features.bookings.model.RequestMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.toDomain
 import kotlinx.serialization.json.Json
 import retrofit2.Response
@@ -134,7 +136,10 @@ class BookingsRepositoryImpl @Inject constructor(
         tripId: Int,
         offeredPrice: Double,
         message: String?,
-    ): Result<DeliveryMatch> {
+        isCounterOffer: Boolean,
+        originalMatchId: Int?,
+        originalPrice: Double?,
+    ): Result<RequestMatchResult> {
         return try {
             val res = bookingsApi.shipperRequestTrip(
                 packageId = packageId,
@@ -142,13 +147,45 @@ class BookingsRepositoryImpl @Inject constructor(
                 body = ShipperCounterOfferRequestJson(
                     proposedPrice = offeredPrice,
                     message = message,
-                    isCounterOffer = false,
+                    isCounterOffer = isCounterOffer,
+                    originalMatchId = originalMatchId,
+                    originalPrice = originalPrice,
                 ),
             )
             if (!res.isSuccessful) return Result.failure(mapError(res))
-            val match = res.body()?.data?.toDomain()
+            val result = res.body()?.toDomain()
                 ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
-            Result.success(match)
+            Result.success(result)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun carrierRequestPackage(
+        tripId: Int,
+        packageId: Int,
+        proposedPrice: Double,
+        message: String?,
+        isCounterOffer: Boolean,
+        originalMatchId: Int?,
+        originalPrice: Double?,
+    ): Result<RequestMatchResult> {
+        return try {
+            val res = bookingsApi.carrierRequestPackage(
+                tripId = tripId,
+                packageId = packageId,
+                body = CarrierCounterOfferRequestJson(
+                    proposedPrice = proposedPrice,
+                    message = message,
+                    isCounterOffer = isCounterOffer,
+                    originalMatchId = originalMatchId,
+                    originalPrice = originalPrice,
+                ),
+            )
+            if (!res.isSuccessful) return Result.failure(mapError(res))
+            val result = res.body()?.toDomain()
+                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            Result.success(result)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }

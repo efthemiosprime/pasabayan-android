@@ -9,6 +9,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -184,5 +185,81 @@ class BookingsRepositoryImplTest {
 
         val result = repo.shipperAccept(100)
         assertTrue(result.isSuccess)
+    }
+
+    // -- shipperRequestTrip envelope (iOS parity 8c9646d) --
+
+    @Test
+    fun `shipperRequestTrip returns RequestMatchResult with negotiation metadata`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "success": true,
+                    "message": "Counter-offer submitted",
+                    "data": {"id": 301, "match_status": "shipper_requested", "agreed_price": "135.00"},
+                    "warnings": ["over_capacity"],
+                    "negotiation_needed": true,
+                    "is_counter_offer": true
+                }""",
+            ),
+        )
+
+        val result = repo.shipperRequestTrip(
+            packageId = 10,
+            tripId = 1,
+            offeredPrice = 135.0,
+            message = "Can you do less?",
+            isCounterOffer = true,
+            originalMatchId = 300,
+            originalPrice = 150.0,
+        )
+        assertTrue(result.isSuccess)
+        val payload = result.getOrThrow()
+        assertEquals(301, payload.match.id)
+        assertEquals(listOf("over_capacity"), payload.negotiation.warnings)
+        assertTrue(payload.negotiation.negotiationNeeded)
+        assertTrue(payload.negotiation.isCounterOffer)
+    }
+
+    @Test
+    fun `shipperRequestTrip fails when envelope omits data`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody("""{"success": false, "message": "Validation failed"}"""),
+        )
+
+        val result = repo.shipperRequestTrip(
+            packageId = 10, tripId = 1, offeredPrice = 100.0, message = null,
+        )
+        assertTrue(result.isFailure)
+    }
+
+    // -- carrierRequestPackage envelope --
+
+    @Test
+    fun `carrierRequestPackage returns RequestMatchResult and warnings`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "success": true,
+                    "message": "Request sent",
+                    "data": {"id": 300, "match_status": "carrier_requested", "agreed_price": "150.00"},
+                    "warnings": ["pickup_address_outside_range"],
+                    "negotiation_needed": true,
+                    "is_counter_offer": false
+                }""",
+            ),
+        )
+
+        val result = repo.carrierRequestPackage(
+            tripId = 1,
+            packageId = 10,
+            proposedPrice = 150.0,
+            message = "I can carry this",
+        )
+        assertTrue(result.isSuccess)
+        val payload = result.getOrThrow()
+        assertEquals(300, payload.match.id)
+        assertEquals(listOf("pickup_address_outside_range"), payload.negotiation.warnings)
+        assertFalse(payload.negotiation.isCounterOffer)
     }
 }

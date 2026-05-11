@@ -1,54 +1,44 @@
 package com.efthemiosprime.pasabayan.core.network.bookings
 
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
-import com.efthemiosprime.pasabayan.core.domain.util.FlexibleDoubleSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-// -- Carrier request flow --
+// -- Carrier request envelope --
 
-@Serializable
-data class CarrierRequestBodyJson(
-    @SerialName("proposed_price") val proposedPrice: Double,
-    val message: String? = null,
-    @SerialName("is_counter_offer") val isCounterOffer: Boolean = false,
-)
-
+/**
+ * Envelope returned by `POST /trips/{tripId}/packages/{packageId}/request`.
+ * Mirrors iOS `CarrierRequestResponse` (commit 8c9646d).
+ *
+ * Carries the resulting DeliveryMatch alongside negotiation metadata:
+ *  - `warnings`: pickup/delivery compatibility warnings to surface in UI
+ *  - `negotiationNeeded`: backend hint that price or details need follow-up
+ *  - `isCounterOffer`: envelope-level flag reflecting the submitted body
+ */
 @Serializable
 data class CarrierRequestResponseJson(
     val success: Boolean = false,
     val message: String = "",
-    val data: CarrierRequestDataJson? = null,
+    val data: DeliveryMatchJson? = null,
+    val warnings: List<String>? = null,
+    @SerialName("negotiation_needed") val negotiationNeeded: Boolean? = null,
+    @SerialName("is_counter_offer") val isCounterOffer: Boolean? = null,
 )
 
-@Serializable
-data class CarrierRequestDataJson(
-    val id: Int,
-    @SerialName("match_id") val matchId: Int? = null,
-    @SerialName("trip_id") val tripId: Int? = null,
-    @SerialName("package_request_id") val packageRequestId: Int? = null,
-    @SerialName("proposed_price") @Serializable(with = FlexibleDoubleSerializer::class) val proposedPrice: Double? = null,
-    val message: String? = null,
-    val status: String? = null,
-    val carrier: UserSummary? = null,
-    val shipper: UserSummary? = null,
-    @SerialName("created_at") val createdAt: String? = null,
-)
+// -- Shipper request envelope --
 
-// -- Shipper request flow --
-
+/**
+ * Envelope returned by `POST /packages/{packageId}/request-trip/{tripId}`.
+ * Mirrors iOS `ShipperTripRequestResponse` (commit 8c9646d).
+ */
 @Serializable
-data class ShipperTripRequestJson(
-    @SerialName("proposed_price") val proposedPrice: Double,
-    val message: String? = null,
-    @SerialName("is_counter_offer") val isCounterOffer: Boolean = false,
-)
-
-@Serializable
-data class ShipperTripRequestResponseJson(
+data class ShipperRequestResponseJson(
     val success: Boolean = false,
     val message: String = "",
     val data: DeliveryMatchJson? = null,
+    val warnings: List<String>? = null,
+    @SerialName("negotiation_needed") val negotiationNeeded: Boolean? = null,
+    @SerialName("is_counter_offer") val isCounterOffer: Boolean? = null,
 )
 
 // -- Location tracking --
@@ -110,3 +100,4 @@ data class CompatibilityDataJson(
     @SerialName("date_compatible") val dateCompatible: Boolean = false,
     @SerialName("price_compatible") val priceCompatible: Boolean = false,
 )
+

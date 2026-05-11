@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
+import com.efthemiosprime.pasabayan.features.bookings.model.NegotiationMetadata
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.RefundResult
 import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +22,8 @@ data class MatchingUiState(
     val statusFilter: MatchStatus? = null,
     val lastCancelRefund: RefundResult? = null,
     val lastCancelConversationId: Int? = null,
+    val lastNegotiation: NegotiationMetadata? = null,
+    val isSubmittingCounterOffer: Boolean = false,
 ) {
     val filteredMatches: List<DeliveryMatch>
         get() = when (statusFilter) {
@@ -135,6 +138,76 @@ class MatchingViewModel @Inject constructor(
 
     fun clearCancelArtifacts() {
         _uiState.update { it.copy(lastCancelRefund = null, lastCancelConversationId = null) }
+    }
+
+    /**
+     * Submit a counter-offer against an existing match. Posts to the same
+     * endpoint as the initial request with `is_counter_offer = true` and
+     * `original_match_id` / `original_price` populated from the match in
+     * state. Mirrors iOS `submitShipperCounterOffer` / `submitCarrierCounterOffer`
+     * (commit 8c9646d).
+     */
+    fun submitCounterOffer(matchId: Int, proposedPrice: Double, message: String?, isShipper: Boolean) {
+        viewModelScope.launch {
+            val original = _uiState.value.matches.firstOrNull { it.id == matchId }
+            if (original == null) {
+                _uiState.update { it.copy(errorMessage = "Match not found") }
+                return@launch
+            }
+            val packageId = original.packageRequestId
+            val tripId = original.tripId
+            if (packageId == null || tripId == null) {
+                _uiState.update { it.copy(errorMessage = "Match missing trip or package reference") }
+                return@launch
+            }
+            _uiState.update { it.copy(isSubmittingCounterOffer = true, errorMessage = null) }
+            val result = if (isShipper) {
+                bookingsRepository.shipperRequestTrip(
+                    packageId = packageId,
+                    tripId = tripId,
+                    offeredPrice = proposedPrice,
+                    message = message,
+                    isCounterOffer = true,
+                    originalMatchId = matchId,
+                    originalPrice = original.agreedPrice,
+                )
+            } else {
+                bookingsRepository.carrierRequestPackage(
+                    tripId = tripId,
+                    packageId = packageId,
+                    proposedPrice = proposedPrice,
+                    message = message,
+                    isCounterOffer = true,
+                    originalMatchId = matchId,
+                    originalPrice = original.agreedPrice,
+                )
+            }
+            result.fold(
+                onSuccess = { requestResult ->
+                    _uiState.update { state ->
+                        state.copy(
+                            matches = state.matches.map {
+                                if (it.id == matchId) requestResult.match else it
+                            },
+                            lastNegotiation = requestResult.negotiation,
+                            isSubmittingCounterOffer = false,
+                        )
+                    }
+                },
+                onFailure = { e ->
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingCounterOffer = false,
+                            errorMessage = e.message ?: "Failed to submit counter-offer",
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    fun clearNegotiationArtifacts() {
+        _uiState.update { it.copy(lastNegotiation = null) }
     }
 
     fun updateMatchStatus(matchId: Int, newStatus: MatchStatus) {

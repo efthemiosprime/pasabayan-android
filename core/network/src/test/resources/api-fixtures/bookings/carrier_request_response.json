@@ -3,20 +3,18 @@
   "message": "Request sent",
   "data": {
     "id": 300,
-    "match_id": 100,
     "trip_id": 1,
     "package_request_id": 10,
-    "proposed_price": 150.0,
-    "message": "I can carry this",
-    "status": "pending",
-    "carrier": {
-      "id": 42,
-      "name": "John Carrier"
-    },
-    "shipper": {
-      "id": 5,
-      "name": "Alice Shipper"
-    },
-    "created_at": "2026-03-29T08:00:00Z"
-  }
+    "match_status": "carrier_requested",
+    "agreed_price": "150.00",
+    "is_counter_offer": false,
+    "carrier_message": "I can carry this",
+    "can_counter_offer": true,
+    "remaining_counter_offers": 3,
+    "counter_offer_round": 0,
+    "initiated_by": "carrier"
+  },
+  "warnings": ["pickup_address_outside_range"],
+  "negotiation_needed": true,
+  "is_counter_offer": false
 }

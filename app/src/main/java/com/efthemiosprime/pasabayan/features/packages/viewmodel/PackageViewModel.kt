@@ -334,7 +334,8 @@ class PackageViewModel @Inject constructor(
                 offeredPrice = offeredPrice,
                 message = message,
             )
-            result.fold(
+            val flatResult: Result<DeliveryMatch> = result.map { it.match }
+            flatResult.fold(
                 onSuccess = {
                     _uiState.update {
                         it.copy(
@@ -353,7 +354,7 @@ class PackageViewModel @Inject constructor(
                     }
                 },
             )
-            onResult(result)
+            onResult(flatResult)
         }
     }
 

@@ -1,8 +1,10 @@
 package com.efthemiosprime.pasabayan.features.bookings.model
 
 import com.efthemiosprime.pasabayan.core.network.bookings.CancelMatchResponseJson
+import com.efthemiosprime.pasabayan.core.network.bookings.CarrierRequestResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.DeliveryMatchJson
 import com.efthemiosprime.pasabayan.core.network.bookings.RefundResultJson
+import com.efthemiosprime.pasabayan.core.network.bookings.ShipperRequestResponseJson
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.CarrierTripInfo
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.PackageRequestInfo
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.RefundResult
@@ -48,6 +50,30 @@ fun CancelMatchResponseJson.toDomain(): CancelMatchResult? {
         match = match,
         chatConversationId = chatConversationId,
         refund = refund?.toDomain(),
+    )
+}
+
+fun CarrierRequestResponseJson.toDomain(): RequestMatchResult? {
+    val match = data?.toDomain() ?: return null
+    return RequestMatchResult(
+        match = match,
+        negotiation = NegotiationMetadata(
+            warnings = warnings.orEmpty(),
+            negotiationNeeded = negotiationNeeded ?: false,
+            isCounterOffer = isCounterOffer ?: false,
+        ),
+    )
+}
+
+fun ShipperRequestResponseJson.toDomain(): RequestMatchResult? {
+    val match = data?.toDomain() ?: return null
+    return RequestMatchResult(
+        match = match,
+        negotiation = NegotiationMetadata(
+            warnings = warnings.orEmpty(),
+            negotiationNeeded = negotiationNeeded ?: false,
+            isCounterOffer = isCounterOffer ?: false,
+        ),
     )
 }
 
