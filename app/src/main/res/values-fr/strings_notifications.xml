@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Noms d'affichage des types de notification (tranche 2). Le reste arrive en tranche 6. -->
+    <string name="notifications_type_match_request">Nouvelle demande</string>
+    <string name="notifications_type_match_accepted">Demande acceptée</string>
+    <string name="notifications_type_match_declined">Demande refusée</string>
+    <string name="notifications_type_chat_message">Nouveau message</string>
+    <string name="notifications_type_delivery_picked_up">Récupéré</string>
+    <string name="notifications_type_delivery_in_transit">En transit</string>
+    <string name="notifications_type_delivery_delivered">Livré</string>
+    <string name="notifications_type_match_auto_cancelled">Annulé automatiquement</string>
+    <string name="notifications_type_payment_received">Paiement reçu</string>
+    <string name="notifications_type_payment_released">Paiement libéré</string>
+    <string name="notifications_type_rating_received">Nouvelle évaluation</string>
+    <string name="notifications_type_premium_approved">Premium approuvé</string>
+    <string name="notifications_type_premium_rejected">Premium refusé</string>
+    <string name="notifications_type_test">Test</string>
+    <string name="notifications_type_payout_completed">Virement terminé</string>
+    <string name="notifications_type_payout_scheduled">Virement planifié</string>
+    <string name="notifications_type_refund_processed">Remboursement traité</string>
+    <string name="notifications_type_tip_received">Pourboire reçu</string>
+    <string name="notifications_type_payment_auto_charge_failed">Échec du paiement</string>
+    <string name="notifications_type_counter_offer">Contre-offre</string>
+    <string name="notifications_type_unknown">Notification</string>
+</resources>

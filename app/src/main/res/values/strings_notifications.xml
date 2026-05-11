@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- NotificationType display names (slice 2). Screen-level strings ship with slice 6. -->
+    <string name="notifications_type_match_request">New Request</string>
+    <string name="notifications_type_match_accepted">Request Accepted</string>
+    <string name="notifications_type_match_declined">Request Declined</string>
+    <string name="notifications_type_chat_message">New Message</string>
+    <string name="notifications_type_delivery_picked_up">Picked Up</string>
+    <string name="notifications_type_delivery_in_transit">In Transit</string>
+    <string name="notifications_type_delivery_delivered">Delivered</string>
+    <string name="notifications_type_match_auto_cancelled">Auto-Cancelled</string>
+    <string name="notifications_type_payment_received">Payment Received</string>
+    <string name="notifications_type_payment_released">Payment Released</string>
+    <string name="notifications_type_rating_received">New Rating</string>
+    <string name="notifications_type_premium_approved">Premium Approved</string>
+    <string name="notifications_type_premium_rejected">Premium Rejected</string>
+    <string name="notifications_type_test">Test</string>
+    <string name="notifications_type_payout_completed">Payout Completed</string>
+    <string name="notifications_type_payout_scheduled">Payout Scheduled</string>
+    <string name="notifications_type_refund_processed">Refund Processed</string>
+    <string name="notifications_type_tip_received">Tip Received</string>
+    <string name="notifications_type_payment_auto_charge_failed">Payment Failed</string>
+    <string name="notifications_type_counter_offer">Counter Offer</string>
+    <string name="notifications_type_unknown">Notification</string>
+</resources>
