@@ -93,6 +93,10 @@
 
     <string name="trips_detail_match_status_label">Statut : %1$s</string>
     <string name="trips_detail_match_chat_pill">Discussion</string>
+    <string name="trips_detail_pickup_code">Code de ramassage</string>
+    <string name="trips_detail_delivery_code">Code de livraison</string>
+    <string name="trips_code_state_requested">Demandé</string>
+    <string name="trips_code_state_verified">Vérifié</string>
     <string name="trips_detail_package_fallback">Colis</string>
     <string name="trips_detail_package_weight_caption">%1$.1f kg</string>
     <string name="trips_detail_pending_requests">%1$d demande(s) en attente</string>

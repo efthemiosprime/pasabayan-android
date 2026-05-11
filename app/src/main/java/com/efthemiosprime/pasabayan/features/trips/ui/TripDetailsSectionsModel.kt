@@ -65,3 +65,56 @@ internal fun nextStatusOptions(current: TripStatus): List<TripStatus> = when (cu
     TripStatus.IN_TRANSIT -> listOf(TripStatus.COMPLETED)
     TripStatus.COMPLETED, TripStatus.CANCELLED -> emptyList()
 }
+
+/**
+ * Verification state of a pickup / delivery code on a match. Mirrors iOS `CodeState` in
+ * `TripDetailsView.swift`.
+ */
+internal sealed interface CodeState {
+    data object Requested : CodeState
+    data class Verified(val dateText: String?) : CodeState
+}
+
+/**
+ * Pickup-code state for a match, derived in the same priority order as iOS:
+ *  1. Non-blank `pickedUpAt` → [CodeState.Verified] with that date text.
+ *  2. Match status `PICKED_UP` / `IN_TRANSIT` / `DELIVERED` → [CodeState.Verified] without
+ *     a date (server hasn't surfaced the timestamp yet, but the status implies verification).
+ *  3. Otherwise → [CodeState.Requested].
+ */
+internal fun pickupCodeState(
+    match: TripMatchPackage,
+    formatDate: (String) -> String? = ::defaultFormatDate,
+): CodeState {
+    match.pickedUpAt?.takeIf { it.isNotBlank() }?.let {
+        return CodeState.Verified(dateText = formatDate(it))
+    }
+    return when (match.matchStatus) {
+        MatchStatus.PICKED_UP, MatchStatus.IN_TRANSIT, MatchStatus.DELIVERED ->
+            CodeState.Verified(dateText = null)
+        else -> CodeState.Requested
+    }
+}
+
+/**
+ * Delivery-code state — same shape as [pickupCodeState] but driven by `deliveredAt`:
+ *  1. Non-blank `deliveredAt` → [CodeState.Verified] with that date text.
+ *  2. Match status `DELIVERED` → [CodeState.Verified] without a date.
+ *  3. Otherwise → [CodeState.Requested].
+ */
+internal fun deliveryCodeState(
+    match: TripMatchPackage,
+    formatDate: (String) -> String? = ::defaultFormatDate,
+): CodeState {
+    match.deliveredAt?.takeIf { it.isNotBlank() }?.let {
+        return CodeState.Verified(dateText = formatDate(it))
+    }
+    return when (match.matchStatus) {
+        MatchStatus.DELIVERED -> CodeState.Verified(dateText = null)
+        else -> CodeState.Requested
+    }
+}
+
+private fun defaultFormatDate(iso: String): String? =
+    com.efthemiosprime.pasabayan.core.domain.util.DateTimeParsing.parseApiDateTime(iso)
+        ?.let { com.efthemiosprime.pasabayan.core.domain.util.DateTimeParsing.formatDateOnly(it) }

@@ -146,6 +146,78 @@ class TripDetailsSectionsModelTest {
         assertEquals("Apr 2", metrics.arrivalDateText)
     }
 
+    // -- pickupCodeState / deliveryCodeState (iOS-parity) --
+
+    private val noFormat: (String) -> String? = { null }
+
+    @Test
+    fun `pickupCodeState verified when pickedUpAt is present`() {
+        val match = testMatch(1, MatchStatus.PICKED_UP)
+            .copy(pickedUpAt = "2026-04-01T10:00:00Z")
+        val state = pickupCodeState(match) { "Apr 1, 2026" }
+        assertTrue(state is CodeState.Verified)
+        assertEquals("Apr 1, 2026", (state as CodeState.Verified).dateText)
+    }
+
+    @Test
+    fun `pickupCodeState verified without date when status implies it but timestamp missing`() {
+        for (status in listOf(MatchStatus.PICKED_UP, MatchStatus.IN_TRANSIT, MatchStatus.DELIVERED)) {
+            val state = pickupCodeState(testMatch(1, status), noFormat)
+            assertTrue("expected Verified for $status, got $state", state is CodeState.Verified)
+            assertEquals("date should be null for $status", null, (state as CodeState.Verified).dateText)
+        }
+    }
+
+    @Test
+    fun `pickupCodeState requested for confirmed and pending`() {
+        for (status in listOf(MatchStatus.CONFIRMED, MatchStatus.PENDING)) {
+            val state = pickupCodeState(testMatch(1, status), noFormat)
+            assertEquals("expected Requested for $status", CodeState.Requested, state)
+        }
+    }
+
+    @Test
+    fun `pickupCodeState ignores blank pickedUpAt and falls back to status`() {
+        val state = pickupCodeState(
+            testMatch(1, MatchStatus.CONFIRMED).copy(pickedUpAt = "   "),
+            noFormat,
+        )
+        assertEquals(CodeState.Requested, state)
+    }
+
+    @Test
+    fun `deliveryCodeState verified when deliveredAt is present`() {
+        val match = testMatch(1, MatchStatus.DELIVERED)
+            .copy(deliveredAt = "2026-04-03T16:00:00Z")
+        val state = deliveryCodeState(match) { "Apr 3, 2026" }
+        assertTrue(state is CodeState.Verified)
+        assertEquals("Apr 3, 2026", (state as CodeState.Verified).dateText)
+    }
+
+    @Test
+    fun `deliveryCodeState verified without date when status is DELIVERED`() {
+        val state = deliveryCodeState(testMatch(1, MatchStatus.DELIVERED), noFormat)
+        assertTrue(state is CodeState.Verified)
+        assertEquals(null, (state as CodeState.Verified).dateText)
+    }
+
+    @Test
+    fun `deliveryCodeState requested while in transit`() {
+        // iOS distinguishes pickup-verified vs delivery-still-requested during IN_TRANSIT.
+        assertEquals(
+            CodeState.Requested,
+            deliveryCodeState(testMatch(1, MatchStatus.IN_TRANSIT), noFormat),
+        )
+    }
+
+    @Test
+    fun `deliveryCodeState requested for picked_up — pickup verified but delivery not yet`() {
+        assertEquals(
+            CodeState.Requested,
+            deliveryCodeState(testMatch(1, MatchStatus.PICKED_UP), noFormat),
+        )
+    }
+
     private fun testMatch(id: Int, status: MatchStatus): TripMatchPackage = TripMatchPackage(
         id = id,
         matchStatus = status,

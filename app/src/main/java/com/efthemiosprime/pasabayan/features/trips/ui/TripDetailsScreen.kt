@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -518,6 +520,15 @@ private fun CarrierAcceptedPackagesSection(
                                 stringResource(R.string.trips_detail_package_weight_caption, it)
                             },
                         )
+                        // iOS parity: pickup / delivery code state rows under each match.
+                        MatchCodeStateRow(
+                            title = stringResource(R.string.trips_detail_pickup_code),
+                            state = pickupCodeState(match),
+                        )
+                        MatchCodeStateRow(
+                            title = stringResource(R.string.trips_detail_delivery_code),
+                            state = deliveryCodeState(match),
+                        )
                         // iOS parity: per-match Chat pill when the server has hung a
                         // conversation off the match. Pill is right-aligned and only renders
                         // when the host wired up [onOpenChat].
@@ -537,6 +548,44 @@ private fun CarrierAcceptedPackagesSection(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MatchCodeStateRow(
+    title: String,
+    state: CodeState,
+) {
+    val (color, label) = when (state) {
+        CodeState.Requested -> PasabayanColors.Warning to stringResource(R.string.trips_code_state_requested)
+        is CodeState.Verified -> {
+            val verified = stringResource(R.string.trips_code_state_verified)
+            val labelText = state.dateText?.takeIf { it.isNotBlank() }
+                ?.let { "$verified · $it" }
+                ?: verified
+            PasabayanColors.Success to labelText
+        }
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+    ) {
+        Text(
+            text = title,
+            style = PasabayanTextStyles.Caption.regular,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Box(
+            modifier = Modifier
+                .size(6.dp)
+                .background(color, CircleShape),
+        )
+        Text(
+            text = label,
+            style = PasabayanTextStyles.Caption.regular.copy(fontWeight = FontWeight.SemiBold),
+            color = color,
+        )
     }
 }
 
