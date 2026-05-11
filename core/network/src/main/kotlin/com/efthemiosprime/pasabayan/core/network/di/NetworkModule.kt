@@ -22,6 +22,7 @@ import com.efthemiosprime.pasabayan.core.network.notifications.NotificationApi
 import com.efthemiosprime.pasabayan.core.network.ratings.RatingsApi
 import com.efthemiosprime.pasabayan.core.network.shipper.ShipperApi
 import com.efthemiosprime.pasabayan.core.network.support.SupportApi
+import com.efthemiosprime.pasabayan.core.network.system.SystemApi
 import com.efthemiosprime.pasabayan.core.network.verification.VerificationApi
 import dagger.Module
 import dagger.Provides
@@ -187,4 +188,9 @@ object NetworkModule {
     @Singleton
     fun provideShipperApi(retrofit: Retrofit): ShipperApi =
         retrofit.create(ShipperApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideSystemApi(retrofit: Retrofit): SystemApi =
+        retrofit.create(SystemApi::class.java)
 }
