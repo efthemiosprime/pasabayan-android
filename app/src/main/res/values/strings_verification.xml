@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Phone verification (10-verification slice A) -->
+    <string name="verification_phone_title">Verify your phone</string>
+    <string name="verification_phone_subtitle">We\'ll send a 6-digit code to confirm your number.</string>
+    <string name="verification_phone_country_label">Country code</string>
+    <string name="verification_phone_number_label">Phone number</string>
+    <string name="verification_phone_number_placeholder">(416) 555-1234</string>
+    <string name="verification_phone_send_action">Send code</string>
+    <string name="verification_phone_otp_section_title">Enter the code</string>
+    <string name="verification_phone_otp_section_subtitle">We just sent a code to %1$s.</string>
+    <string name="verification_phone_otp_label">6-digit code</string>
+    <string name="verification_phone_otp_placeholder">123456</string>
+    <string name="verification_phone_verify_action">Verify</string>
+    <string name="verification_phone_resend_action">Resend code</string>
+    <string name="verification_phone_resend_in">Resend in %1$ds</string>
+    <string name="verification_phone_change_number">Use a different number</string>
+    <string name="verification_phone_otp_sent">Verification code sent</string>
+    <string name="verification_phone_otp_resent">New code sent</string>
+    <string name="verification_phone_success">Phone verified</string>
+    <string name="verification_phone_already">Already verified</string>
+    <string name="verification_phone_close">Close</string>
+    <string name="verification_phone_error_invalid">Enter a valid 10-digit phone number</string>
+    <string name="verification_phone_error_otp_invalid">Enter the 6-digit code</string>
+</resources>

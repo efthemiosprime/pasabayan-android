@@ -37,6 +37,7 @@ import com.efthemiosprime.pasabayan.features.profile.ui.PrivacyPreferencesSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.ProfileTabScreen
 import com.efthemiosprime.pasabayan.features.profile.ui.SettingsScreen
 import com.efthemiosprime.pasabayan.features.profile.viewmodel.DisclaimerSyncViewModel
+import com.efthemiosprime.pasabayan.features.verification.ui.PhoneVerificationSheet
 import com.efthemiosprime.pasabayan.features.chat.ui.MessagesTabScreen
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ConversationsViewModel
 import com.efthemiosprime.pasabayan.features.packages.components.CreatePackageOptionsSheet
@@ -101,6 +102,7 @@ fun MainTabScreen(
     var showPrivacyPreferencesSheet by remember { mutableStateOf(false) }
     var showAccountManagementSheet by remember { mutableStateOf(false) }
     var settingsOpen by remember { mutableStateOf(false) }
+    var showPhoneVerificationSheet by remember { mutableStateOf(false) }
     val dismissActiveSheetRoute = { viewModel.dismissActiveSheetRoute() }
     val openTripFilterSheet = { viewModel.openTripFilterSheet() }
     val openCreateTripFromPackageSheet: (Int) -> Unit = { packageId ->
@@ -276,6 +278,7 @@ fun MainTabScreen(
                             onOpenPaymentsHub = { profilePaymentsOpen = true },
                             onOpenPersonalInfo = { showEditUserProfileSheet = true },
                             onOpenVehicleInfo = { showEditCarrierProfileSheet = true },
+                            onOpenVerification = { showPhoneVerificationSheet = true },
                             onOpenSettings = { settingsOpen = true },
                             onOpenAccountManagement = { showAccountManagementSheet = true },
                         )
@@ -327,6 +330,16 @@ fun MainTabScreen(
                     showAccountManagementSheet = false
                     onLogout()
                 },
+            )
+        }
+    }
+
+    if (showPhoneVerificationSheet) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showPhoneVerificationSheet = false },
+        ) {
+            PhoneVerificationSheet(
+                onClose = { showPhoneVerificationSheet = false },
             )
         }
     }
