@@ -170,6 +170,11 @@ fun MainTabScreen(
         notificationsBootstrapViewModel.registerIfNeeded()
         // iOS parity: seed the bell badge with the current unread count on launch.
         notificationViewModel.loadUnreadCounts()
+        // Pre-warm profile so the notifications-sheet verify-prompt reflects the real
+        // verification level instead of the BASIC default before the user visits the
+        // profile tab. Idempotent via `loadInFlight` CAS — `ProfileTabScreen`'s own
+        // `LaunchedEffect` shares the in-flight flag, so no duplicate request fires.
+        profileTabViewModel.loadTabData(user, state.currentRole)
     }
 
     // iOS parity: observe push-tap + in-app routing events and react by switching tabs and/or
