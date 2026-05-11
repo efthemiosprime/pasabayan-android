@@ -77,6 +77,20 @@
     <string name="trips_detail_accepted_packages_empty_delivered_description">Les colis appara\u00eetront ici une fois marqu\u00e9s comme livr\u00e9s.</string>
     <string name="trips_detail_accepted_packages_show_all">Afficher tous les colis</string>
     <string name="trips_detail_no_packages_assigned">Aucun colis assigné</string>
+
+    <!-- TripStatusUpdateSheet -->
+    <string name="trips_status_update_title">Mettre à jour le statut du trajet</string>
+    <string name="trips_status_update_close">Fermer la mise à jour du statut</string>
+    <string name="trips_status_update_button">Mettre à jour le statut</string>
+    <string name="trips_status_update_current_label">Statut actuel</string>
+    <string name="trips_status_update_next_label">Passer à</string>
+    <string name="trips_status_update_no_transitions">Ce trajet ne peut pas être avancé davantage depuis son statut actuel.</string>
+    <string name="trips_status_update_submit">Mettre à jour</string>
+    <string name="trips_status_update_cancel">Annuler</string>
+    <string name="trips_status_update_hint_active">Le trajet est publié — les expéditeurs peuvent demander une réservation.</string>
+    <string name="trips_status_update_hint_in_transit">Vous avez commencé le trajet et transportez des colis.</string>
+    <string name="trips_status_update_hint_completed">Tous les colis ont été remis et le trajet est terminé.</string>
+
     <string name="trips_detail_match_status_label">Statut : %1$s</string>
     <string name="trips_detail_match_chat_pill">Discussion</string>
     <string name="trips_detail_package_fallback">Colis</string>

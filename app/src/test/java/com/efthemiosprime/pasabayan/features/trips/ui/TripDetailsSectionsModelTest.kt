@@ -83,6 +83,51 @@ class TripDetailsSectionsModelTest {
         assertEquals(false, allPackagesDelivered(emptyList()))
     }
 
+    // -- nextStatusOptions (TripStatusUpdateSheet) --
+
+    @Test
+    fun `nextStatusOptions advances planning to active`() {
+        assertEquals(
+            listOf(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.ACTIVE),
+            nextStatusOptions(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.PLANNING),
+        )
+    }
+
+    @Test
+    fun `nextStatusOptions advances active to in_transit`() {
+        assertEquals(
+            listOf(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.IN_TRANSIT),
+            nextStatusOptions(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.ACTIVE),
+        )
+    }
+
+    @Test
+    fun `nextStatusOptions advances in_transit to completed`() {
+        assertEquals(
+            listOf(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.COMPLETED),
+            nextStatusOptions(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.IN_TRANSIT),
+        )
+    }
+
+    @Test
+    fun `nextStatusOptions is empty for terminal statuses`() {
+        assertTrue(
+            nextStatusOptions(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.COMPLETED).isEmpty(),
+        )
+        assertTrue(
+            nextStatusOptions(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.CANCELLED).isEmpty(),
+        )
+    }
+
+    @Test
+    fun `nextStatusOptions never offers CANCELLED — that's the cancel button's job`() {
+        for (current in com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.entries) {
+            assertTrue(
+                nextStatusOptions(current).none { it == com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.CANCELLED },
+            )
+        }
+    }
+
     @Test
     fun `toProgressMetrics calculates delivered and active counts`() {
         val matches = listOf(

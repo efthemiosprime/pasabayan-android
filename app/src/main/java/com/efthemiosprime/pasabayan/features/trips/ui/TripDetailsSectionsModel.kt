@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.trips.ui
 
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
+import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.features.trips.components.TripPackageProgressMetrics
 import com.efthemiosprime.pasabayan.features.trips.model.TripMatchPackage
 import com.efthemiosprime.pasabayan.features.trips.model.TripPackagesFilter
@@ -52,3 +53,15 @@ internal fun hasBlockingMatches(matches: List<TripMatchPackage>): Boolean =
  */
 internal fun allPackagesDelivered(matches: List<TripMatchPackage>): Boolean =
     matches.isNotEmpty() && matches.all { it.matchStatus == MatchStatus.DELIVERED }
+
+/**
+ * Valid next statuses a carrier can advance the trip to from [current]. Mirrors iOS
+ * `CarrierViewModel` transition rules (excludes [TripStatus.CANCELLED] — that's the cancel
+ * button's responsibility). Returns an empty list for terminal states.
+ */
+internal fun nextStatusOptions(current: TripStatus): List<TripStatus> = when (current) {
+    TripStatus.PLANNING -> listOf(TripStatus.ACTIVE)
+    TripStatus.ACTIVE -> listOf(TripStatus.IN_TRANSIT)
+    TripStatus.IN_TRANSIT -> listOf(TripStatus.COMPLETED)
+    TripStatus.COMPLETED, TripStatus.CANCELLED -> emptyList()
+}

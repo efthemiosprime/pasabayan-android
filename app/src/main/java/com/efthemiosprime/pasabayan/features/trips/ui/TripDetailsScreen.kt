@@ -76,6 +76,12 @@ fun TripDetailsScreen(
      * `TripMatchPackageCard.onTap` opening the conversation.
      */
     onOpenChat: ((conversationId: Int) -> Unit)? = null,
+    /**
+     * Invoked when the user picks a new trip status in [TripStatusUpdateSheet]. Wire to
+     * `CarrierTripsViewModel.updateTripStatus(tripId, target)`. iOS parity: `TripDetailsView`
+     * "Update Status" toolbar entry.
+     */
+    onUpdateStatus: ((TripStatus) -> Unit)? = null,
     tripMatches: List<TripMatchPackage> = emptyList(),
     modifier: Modifier = Modifier,
 ) {
@@ -306,6 +312,25 @@ fun TripDetailsScreen(
             trip.tripStatus != TripStatus.COMPLETED
         val deliveredAll = allPackagesDelivered(tripMatches)
         if (canModifyTrip && !deliveredAll) {
+            // iOS parity: dedicated "Update Status" entry surfaces transitions
+            // (planning → active, active → in_transit, in_transit → completed).
+            val canAdvanceStatus = onUpdateStatus != null &&
+                nextStatusOptions(trip.tripStatus).isNotEmpty()
+            var showStatusSheet by remember { mutableStateOf(false) }
+            if (canAdvanceStatus) {
+                PButton(
+                    text = stringResource(R.string.trips_status_update_button),
+                    onClick = { showStatusSheet = true },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            if (showStatusSheet && onUpdateStatus != null) {
+                TripStatusUpdateSheet(
+                    trip = trip,
+                    onUpdateStatus = onUpdateStatus,
+                    onDismiss = { showStatusSheet = false },
+                )
+            }
             PButton(
                 text = stringResource(R.string.trips_edit_trip),
                 onClick = onEdit,

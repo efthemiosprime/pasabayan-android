@@ -77,6 +77,20 @@
     <string name="trips_detail_accepted_packages_empty_delivered_description">Packages will show up here once you mark them as delivered.</string>
     <string name="trips_detail_accepted_packages_show_all">Show all packages</string>
     <string name="trips_detail_no_packages_assigned">No packages assigned</string>
+
+    <!-- TripStatusUpdateSheet -->
+    <string name="trips_status_update_title">Update Trip Status</string>
+    <string name="trips_status_update_close">Close status update</string>
+    <string name="trips_status_update_button">Update Status</string>
+    <string name="trips_status_update_current_label">Current status</string>
+    <string name="trips_status_update_next_label">Move to</string>
+    <string name="trips_status_update_no_transitions">This trip can\'t be advanced further from its current status.</string>
+    <string name="trips_status_update_submit">Update</string>
+    <string name="trips_status_update_cancel">Cancel</string>
+    <string name="trips_status_update_hint_active">Trip is published — shippers can request to book.</string>
+    <string name="trips_status_update_hint_in_transit">You\'ve started the trip and are carrying packages.</string>
+    <string name="trips_status_update_hint_completed">All packages handed off and the trip is done.</string>
+
     <string name="trips_detail_match_status_label">Status: %1$s</string>
     <string name="trips_detail_match_chat_pill">Chat</string>
     <string name="trips_detail_package_fallback">Package</string>
