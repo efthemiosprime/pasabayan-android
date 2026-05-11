@@ -14,6 +14,7 @@ import com.efthemiosprime.pasabayan.core.session.UnauthorizedSessionNotifier
 import com.efthemiosprime.pasabayan.features.auth.services.FacebookLoginCancelledException
 import com.efthemiosprime.pasabayan.features.auth.services.FacebookLoginStarter
 import com.efthemiosprime.pasabayan.features.auth.services.GoogleSignInHelper
+import com.efthemiosprime.pasabayan.features.notifications.services.NotificationLifecycleManager
 import com.efthemiosprime.pasabayan.features.onboarding.model.OnboardingPreferences
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
@@ -71,6 +72,7 @@ class AuthViewModel @Inject constructor(
     private val facebookLoginStarter: FacebookLoginStarter,
     private val onboardingPreferences: OnboardingPreferences,
     private val unauthorizedSessionNotifier: UnauthorizedSessionNotifier,
+    private val notificationLifecycleManager: NotificationLifecycleManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthScreenState())
@@ -221,6 +223,9 @@ class AuthViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch {
             _uiState.update { it.copy(isBusy = true, transientError = null) }
+            // Unregister FCM token while we still have a valid bearer; ignore failures so the
+            // user can always sign out even if the device-token endpoint is down.
+            runCatching { notificationLifecycleManager.unregisterAndClear() }
             authRepository.logout()
             googleSignInHelper.signOutGoogle()
             _uiState.update {

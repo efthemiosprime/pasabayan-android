@@ -69,7 +69,15 @@ class AuthViewModelTest {
         facebookLoginStarter = mockFacebookStarter,
         onboardingPreferences = fakeOnboardingPrefs,
         unauthorizedSessionNotifier = unauthorizedNotifier,
+        notificationLifecycleManager = noopLifecycleManager,
     )
+
+    private val noopLifecycleManager =
+        object : com.efthemiosprime.pasabayan.features.notifications.services.NotificationLifecycleManager {
+            override fun onTokenRefreshed(token: String) {}
+            override suspend fun registerStoredTokenIfAuthenticated() = null
+            override suspend fun unregisterAndClear() = Result.success(Unit)
+        }
 
     // ── refreshSession ──
 

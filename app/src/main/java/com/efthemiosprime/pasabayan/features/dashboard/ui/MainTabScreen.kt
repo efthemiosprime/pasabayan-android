@@ -91,6 +91,7 @@ fun MainTabScreen(
     val tripCreationSavedRoutesState by tripCreationSavedRoutesViewModel.uiState.collectAsStateWithLifecycle()
     val tripsLocalStateViewModel: TripsLocalStateViewModel = hiltViewModel()
     val disclaimerSyncViewModel: DisclaimerSyncViewModel = hiltViewModel()
+    val notificationsBootstrapViewModel: com.efthemiosprime.pasabayan.features.notifications.viewmodel.NotificationsBootstrapViewModel = hiltViewModel()
     val packageUiState by packageViewModel.uiState.collectAsStateWithLifecycle()
     val tabs = MainTabs.forRole(state.currentRole)
     var showCreateOptionsSheet by remember { mutableStateOf(false) }
@@ -134,6 +135,7 @@ fun MainTabScreen(
         viewModel.initializeRole(user)
         tripsLocalStateViewModel.retryCarrierDisclaimerPendingSync(user.id)
         disclaimerSyncViewModel.bootstrapAndRetry(user.id)
+        notificationsBootstrapViewModel.registerIfNeeded()
     }
 
     LaunchedEffect(state.currentRole) {

@@ -33,4 +33,16 @@ abstract class NotificationModule {
     abstract fun bindDeviceInfoProvider(
         impl: AndroidDeviceInfoProvider,
     ): DeviceInfoProvider
+
+    @Binds
+    @Singleton
+    abstract fun bindNotificationLifecycleManager(
+        impl: DefaultNotificationLifecycleManager,
+    ): NotificationLifecycleManager
+
+    @Binds
+    @Singleton
+    abstract fun bindNotificationAppScope(
+        impl: DefaultNotificationAppScope,
+    ): NotificationAppScope
 }
