@@ -58,10 +58,19 @@ fun MatchListScreen(
      */
     initialMatchId: Int? = null,
     onInitialMatchConsumed: () -> Unit = {},
+    /**
+     * When set, the counter-offer composer for the matching match opens directly (skips the
+     * details sheet). iOS parity: `OpenCounterOffer(matchId)` from `NotificationRouter`.
+     */
+    initialCounterOfferMatchId: Int? = null,
+    onInitialCounterOfferConsumed: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val role = if (isCarrier) "carrier" else "shipper"
     var selectedMatch by remember { mutableStateOf<DeliveryMatch?>(null) }
+    // Distinct surface from [selectedMatch]: the composer is shown on its own so it doesn't
+    // require stacking the details sheet underneath.
+    var counterOfferTarget by remember { mutableStateOf<DeliveryMatch?>(null) }
 
     LaunchedEffect(role) { viewModel.loadMatches(role) }
 
@@ -71,6 +80,13 @@ fun MatchListScreen(
         val match = state.matches.firstOrNull { it.id == target } ?: return@LaunchedEffect
         selectedMatch = match
         onInitialMatchConsumed()
+    }
+
+    LaunchedEffect(initialCounterOfferMatchId, state.matches) {
+        val target = initialCounterOfferMatchId ?: return@LaunchedEffect
+        val match = state.matches.firstOrNull { it.id == target } ?: return@LaunchedEffect
+        counterOfferTarget = match
+        onInitialCounterOfferConsumed()
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -119,7 +135,9 @@ fun MatchListScreen(
                             onAction = { action ->
                                 onAction(action, match.id)
                                 when (action) {
-                                    BookingAction.CounterOffer,
+                                    BookingAction.CounterOffer -> {
+                                        counterOfferTarget = match
+                                    }
                                     BookingAction.TrackLive,
                                     BookingAction.EnterPickupCode,
                                     BookingAction.EnterDeliveryCode -> {
@@ -152,21 +170,48 @@ fun MatchListScreen(
                 onClose = { selectedMatch = null },
                 onAction = { action ->
                     onAction(action, match.id)
-                    handleMatchAction(
-                        action = action,
-                        isCarrier = isCarrier,
-                        matchId = match.id,
-                        viewModel = viewModel,
-                    )
-                    if (action == BookingAction.DeclineBooking ||
-                        action == BookingAction.CancelBooking ||
-                        action == BookingAction.MarkDelivered
-                    ) {
-                        selectedMatch = null
+                    when (action) {
+                        BookingAction.CounterOffer -> {
+                            // Hand off to the dedicated composer instead of leaving the user
+                            // staring at the details sheet with no follow-up affordance.
+                            selectedMatch = null
+                            counterOfferTarget = match
+                        }
+                        else -> {
+                            handleMatchAction(
+                                action = action,
+                                isCarrier = isCarrier,
+                                matchId = match.id,
+                                viewModel = viewModel,
+                            )
+                            if (action == BookingAction.DeclineBooking ||
+                                action == BookingAction.CancelBooking ||
+                                action == BookingAction.MarkDelivered
+                            ) {
+                                selectedMatch = null
+                            }
+                        }
                     }
                 },
             )
         }
+    }
+
+    counterOfferTarget?.let { match ->
+        CounterOfferPromptSheet(
+            currentPrice = match.agreedPrice,
+            remainingOffers = match.remainingCounterOffers,
+            onSubmit = { newPrice, message ->
+                viewModel.submitCounterOffer(
+                    matchId = match.id,
+                    proposedPrice = newPrice,
+                    message = message,
+                    isShipper = !isCarrier,
+                )
+                counterOfferTarget = null
+            },
+            onDismiss = { counterOfferTarget = null },
+        )
     }
 }
 

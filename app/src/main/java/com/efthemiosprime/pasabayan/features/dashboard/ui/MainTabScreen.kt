@@ -135,8 +135,11 @@ fun MainTabScreen(
     // tab and open that conversation directly.
     var pendingConversationId by remember { mutableStateOf<Int?>(null) }
     // iOS parity: same deep-link pattern for matches — a push tap or in-app notification card
-    // for an `OpenMatch` / `OpenCounterOffer` event sets this; MatchListScreen consumes it.
+    // for an `OpenMatch` event sets this; MatchListScreen consumes it.
     var pendingMatchId by remember { mutableStateOf<Int?>(null) }
+    // Distinct surface from [pendingMatchId]: `OpenCounterOffer` jumps to the composer instead
+    // of the details sheet so the user lands on the action they were notified about.
+    var pendingCounterOfferMatchId by remember { mutableStateOf<Int?>(null) }
     var profilePaymentsOpen by remember { mutableStateOf(false) }
     var profilePayoutSetupOpen by remember { mutableStateOf(false) }
     var showEditUserProfileSheet by remember { mutableStateOf(false) }
@@ -201,7 +204,7 @@ fun MainTabScreen(
                     if (matchesIndex >= 0) viewModel.selectTab(matchesIndex)
                 }
                 is NavigationEvent.OpenCounterOffer -> {
-                    pendingMatchId = event.matchId
+                    pendingCounterOfferMatchId = event.matchId
                     if (matchesIndex >= 0) viewModel.selectTab(matchesIndex)
                 }
                 NavigationEvent.OpenConversations -> {
@@ -301,6 +304,8 @@ fun MainTabScreen(
                     onAction = { action, matchId -> /* TODO: handle booking actions */ },
                     initialMatchId = pendingMatchId,
                     onInitialMatchConsumed = { pendingMatchId = null },
+                    initialCounterOfferMatchId = pendingCounterOfferMatchId,
+                    onInitialCounterOfferConsumed = { pendingCounterOfferMatchId = null },
                 )
                 "my_trips" -> com.efthemiosprime.pasabayan.features.trips.ui.CarrierMyTripsScreen(
                     onViewTripDetails = { trip -> selectedCarrierTripId = trip.id },
