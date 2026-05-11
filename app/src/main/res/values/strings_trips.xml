@@ -169,6 +169,10 @@
     <string name="trips_from_package_weight_label">%1$.1f kg</string>
     <string name="trips_from_package_fragile">Fragile</string>
     <string name="trips_from_package_urgent">Urgent</string>
+    <!-- iOS parity (CreateTripFromPackageView.pricingSection): one price input whose label
+         flips based on transport method (per-kg for air/sea, flat for land). -->
+    <string name="trips_from_package_price_per_kg_label">Price per kg</string>
+    <string name="trips_from_package_price_flat_label">Flat trip price</string>
     <string name="trips_create_success_title">Trip created successfully</string>
     <string name="trips_create_success_save_route_prompt">Would you like to save this route for next time?</string>
     <string name="trips_create_success_save_route_action">Save route</string>

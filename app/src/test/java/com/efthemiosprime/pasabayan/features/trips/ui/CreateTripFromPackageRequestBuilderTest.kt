@@ -38,6 +38,7 @@ class CreateTripFromPackageRequestBuilderTest {
             availableWeightKg = "5",
             availableSpaceLiters = "25",
             transportationMethod = TransportationMethod.CAR,
+            price = "",
             pickupAddress = "123 Main St",
             dropoffAddress = "456 Oak Ave",
             specialNotes = "Handle with care",
@@ -69,6 +70,7 @@ class CreateTripFromPackageRequestBuilderTest {
             availableWeightKg = "5",
             availableSpaceLiters = "25",
             transportationMethod = TransportationMethod.CAR,
+            price = "",
             pickupAddress = "  ",
             dropoffAddress = "",
             specialNotes = "",
@@ -81,6 +83,8 @@ class CreateTripFromPackageRequestBuilderTest {
         assertNull(request.specialNotes)
         assertNull(request.requestMessage)
         assertNull(request.proposedPrice)
+        assertNull(request.pricePerKg)
+        assertNull(request.flatTripPrice)
     }
 
     @Test
@@ -100,6 +104,7 @@ class CreateTripFromPackageRequestBuilderTest {
                 availableWeightKg = "0",
                 availableSpaceLiters = "0",
                 transportationMethod = method,
+                price = "",
                 pickupAddress = "",
                 dropoffAddress = "",
                 specialNotes = "",
@@ -120,6 +125,7 @@ class CreateTripFromPackageRequestBuilderTest {
             availableWeightKg = "1.5",
             availableSpaceLiters = "10",
             transportationMethod = TransportationMethod.CAR,
+            price = "",
             pickupAddress = "",
             dropoffAddress = "",
             specialNotes = "",
@@ -131,5 +137,73 @@ class CreateTripFromPackageRequestBuilderTest {
         assertEquals("", request.originCity)
         assertEquals("", request.destinationCity)
         assertEquals(1.5, request.availableWeightKg, 0.001)
+    }
+
+    // iOS parity (`pricingSection`): the single `price` input maps to flatTripPrice for land
+    // transport and to pricePerKg for air / sea. Previously the screen forced both to null.
+    @Test
+    fun `price routes to flatTripPrice for land transport`() {
+        val request = buildRequestFromState(
+            packageId = 1,
+            template = template,
+            departureDate = "",
+            arrivalDate = "",
+            availableWeightKg = "5",
+            availableSpaceLiters = "10",
+            transportationMethod = TransportationMethod.CAR,
+            price = "150",
+            pickupAddress = "",
+            dropoffAddress = "",
+            specialNotes = "",
+            proposedPrice = "",
+            requestMessage = "",
+        )
+
+        assertEquals(150.0, request.flatTripPrice!!, 0.001)
+        assertNull(request.pricePerKg)
+    }
+
+    @Test
+    fun `price routes to pricePerKg for air transport`() {
+        val request = buildRequestFromState(
+            packageId = 1,
+            template = template,
+            departureDate = "",
+            arrivalDate = "",
+            availableWeightKg = "5",
+            availableSpaceLiters = "10",
+            transportationMethod = TransportationMethod.FLIGHT,
+            price = "12.50",
+            pickupAddress = "",
+            dropoffAddress = "",
+            specialNotes = "",
+            proposedPrice = "",
+            requestMessage = "",
+        )
+
+        assertEquals(12.50, request.pricePerKg!!, 0.001)
+        assertNull(request.flatTripPrice)
+    }
+
+    @Test
+    fun `unparseable price leaves both pricing fields null`() {
+        val request = buildRequestFromState(
+            packageId = 1,
+            template = template,
+            departureDate = "",
+            arrivalDate = "",
+            availableWeightKg = "5",
+            availableSpaceLiters = "10",
+            transportationMethod = TransportationMethod.SHIP,
+            price = "abc",
+            pickupAddress = "",
+            dropoffAddress = "",
+            specialNotes = "",
+            proposedPrice = "",
+            requestMessage = "",
+        )
+
+        assertNull(request.pricePerKg)
+        assertNull(request.flatTripPrice)
     }
 }

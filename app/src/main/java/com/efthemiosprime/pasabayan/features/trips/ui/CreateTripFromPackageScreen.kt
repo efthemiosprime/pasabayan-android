@@ -69,6 +69,9 @@ fun CreateTripFromPackageScreen(
     var availableSpaceLiters by remember { mutableStateOf("") }
     // iOS parity: real transport selector instead of a free-text "car" string.
     var transportationMethod by remember { mutableStateOf(TransportationMethod.CAR) }
+    // iOS parity (pricingSection): single price input routed to pricePerKg (air/sea) or
+    // flatTripPrice (land) based on the selected transport.
+    var price by remember { mutableStateOf("") }
     var proposedPrice by remember { mutableStateOf("") }
     var requestMessage by remember { mutableStateOf("") }
     // iOS parity: these were previously dropped on the floor; the form now captures them.
@@ -137,6 +140,22 @@ fun CreateTripFromPackageScreen(
                 onSelect = { transportationMethod = it },
             )
             POutlinedTextField(
+                value = price,
+                onValueChange = { price = it },
+                label = {
+                    Text(
+                        stringResource(
+                            if (transportationMethod.isLandTransport) {
+                                R.string.trips_from_package_price_flat_label
+                            } else {
+                                R.string.trips_from_package_price_per_kg_label
+                            },
+                        ),
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            POutlinedTextField(
                 value = pickupAddress,
                 onValueChange = { pickupAddress = it },
                 label = { Text(stringResource(R.string.trips_create_pickup_address)) },
@@ -182,6 +201,7 @@ fun CreateTripFromPackageScreen(
                         availableWeightKg = availableWeightKg,
                         availableSpaceLiters = availableSpaceLiters,
                         transportationMethod = transportationMethod,
+                        price = price,
                         pickupAddress = pickupAddress,
                         dropoffAddress = dropoffAddress,
                         specialNotes = specialNotes,
@@ -208,6 +228,10 @@ fun CreateTripFromPackageScreen(
 /**
  * Translates the form state into the wire request. Kept top-level + internal so a unit test can
  * verify field plumbing without standing up a Compose host.
+ *
+ * iOS parity (`pricingSection`): the single [price] input maps to [CreateTripFromPackageRequest.flatTripPrice]
+ * for land transport and to [CreateTripFromPackageRequest.pricePerKg] for air / sea. Blank or
+ * unparseable input leaves both null.
  */
 internal fun buildRequestFromState(
     packageId: Int,
@@ -217,30 +241,35 @@ internal fun buildRequestFromState(
     availableWeightKg: String,
     availableSpaceLiters: String,
     transportationMethod: TransportationMethod,
+    price: String,
     pickupAddress: String,
     dropoffAddress: String,
     specialNotes: String,
     proposedPrice: String,
     requestMessage: String,
-): CreateTripFromPackageRequest = CreateTripFromPackageRequest(
-    packageId = packageId,
-    originCity = template?.originCity.orEmpty(),
-    originCountry = template?.originCountry.orEmpty(),
-    destinationCity = template?.destinationCity.orEmpty(),
-    destinationCountry = template?.destinationCountry.orEmpty(),
-    departureDate = departureDate,
-    arrivalDate = arrivalDate,
-    availableWeightKg = availableWeightKg.toDoubleOrNull() ?: 0.0,
-    availableSpaceLiters = availableSpaceLiters.toDoubleOrNull() ?: 0.0,
-    transportationMethod = transportationMethod.name.lowercase(),
-    pricePerKg = null,
-    flatTripPrice = null,
-    specialNotes = specialNotes.ifBlank { null },
-    pickupAddress = pickupAddress.ifBlank { null },
-    dropoffAddress = dropoffAddress.ifBlank { null },
-    proposedPrice = proposedPrice.toDoubleOrNull(),
-    requestMessage = requestMessage.ifBlank { null },
-)
+): CreateTripFromPackageRequest {
+    val parsedPrice = price.toDoubleOrNull()
+    val isLand = transportationMethod.isLandTransport
+    return CreateTripFromPackageRequest(
+        packageId = packageId,
+        originCity = template?.originCity.orEmpty(),
+        originCountry = template?.originCountry.orEmpty(),
+        destinationCity = template?.destinationCity.orEmpty(),
+        destinationCountry = template?.destinationCountry.orEmpty(),
+        departureDate = departureDate,
+        arrivalDate = arrivalDate,
+        availableWeightKg = availableWeightKg.toDoubleOrNull() ?: 0.0,
+        availableSpaceLiters = availableSpaceLiters.toDoubleOrNull() ?: 0.0,
+        transportationMethod = transportationMethod.name.lowercase(),
+        pricePerKg = parsedPrice?.takeIf { !isLand },
+        flatTripPrice = parsedPrice?.takeIf { isLand },
+        specialNotes = specialNotes.ifBlank { null },
+        pickupAddress = pickupAddress.ifBlank { null },
+        dropoffAddress = dropoffAddress.ifBlank { null },
+        proposedPrice = proposedPrice.toDoubleOrNull(),
+        requestMessage = requestMessage.ifBlank { null },
+    )
+}
 
 @Composable
 private fun PackageInfoCard(template: TripTemplateData?) {
@@ -399,7 +428,8 @@ private fun CreateTripFromPackagePreview() {
     var pickupAddress by remember { mutableStateOf("123 Main St") }
     var dropoffAddress by remember { mutableStateOf("456 Oak Ave") }
     var notes by remember { mutableStateOf("Fragile — handle with care") }
-    var price by remember { mutableStateOf("80") }
+    var tripPrice by remember { mutableStateOf("80") }
+    var proposedPrice by remember { mutableStateOf("60") }
     var message by remember { mutableStateOf("Can carry same day.") }
     PasabayanTheme {
         PDetailSheetScaffold(
@@ -457,6 +487,22 @@ private fun CreateTripFromPackagePreview() {
                 )
                 TransportMethodSelector(selected = method, onSelect = { method = it })
                 POutlinedTextField(
+                    value = tripPrice,
+                    onValueChange = { tripPrice = it },
+                    label = {
+                        Text(
+                            stringResource(
+                                if (method.isLandTransport) {
+                                    R.string.trips_from_package_price_flat_label
+                                } else {
+                                    R.string.trips_from_package_price_per_kg_label
+                                },
+                            ),
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                POutlinedTextField(
                     value = pickupAddress,
                     onValueChange = { pickupAddress = it },
                     label = { Text(stringResource(R.string.trips_create_pickup_address)) },
@@ -477,8 +523,8 @@ private fun CreateTripFromPackagePreview() {
                     maxLines = 4,
                 )
                 POutlinedTextField(
-                    value = price,
-                    onValueChange = { price = it },
+                    value = proposedPrice,
+                    onValueChange = { proposedPrice = it },
                     label = { Text(stringResource(R.string.trips_create_from_package_proposed_price)) },
                     modifier = Modifier.fillMaxWidth(),
                 )
