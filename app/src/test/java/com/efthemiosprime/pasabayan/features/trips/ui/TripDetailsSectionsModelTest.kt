@@ -37,6 +37,52 @@ class TripDetailsSectionsModelTest {
         assertTrue(filtered.all { it.matchStatus != MatchStatus.DELIVERED })
     }
 
+    // -- canCancelTrip / allPackagesDelivered (iOS-parity) --
+
+    @Test
+    fun `hasBlockingMatches returns true for any confirmed picked_up or in_transit match`() {
+        assertTrue(hasBlockingMatches(listOf(testMatch(1, MatchStatus.CONFIRMED))))
+        assertTrue(hasBlockingMatches(listOf(testMatch(1, MatchStatus.PICKED_UP))))
+        assertTrue(hasBlockingMatches(listOf(testMatch(1, MatchStatus.IN_TRANSIT))))
+    }
+
+    @Test
+    fun `hasBlockingMatches returns false when matches are only delivered or other`() {
+        assertEquals(false, hasBlockingMatches(emptyList()))
+        assertEquals(false, hasBlockingMatches(listOf(testMatch(1, MatchStatus.DELIVERED))))
+    }
+
+    @Test
+    fun `allPackagesDelivered is true when every match is delivered`() {
+        assertTrue(
+            allPackagesDelivered(
+                listOf(
+                    testMatch(1, MatchStatus.DELIVERED),
+                    testMatch(2, MatchStatus.DELIVERED),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `allPackagesDelivered is false when at least one match is not delivered`() {
+        assertEquals(
+            false,
+            allPackagesDelivered(
+                listOf(
+                    testMatch(1, MatchStatus.DELIVERED),
+                    testMatch(2, MatchStatus.PICKED_UP),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `allPackagesDelivered is false for an empty match list`() {
+        // A trip with no matches still allows cancel/edit — iOS-parity.
+        assertEquals(false, allPackagesDelivered(emptyList()))
+    }
+
     @Test
     fun `toProgressMetrics calculates delivered and active counts`() {
         val matches = listOf(

@@ -76,6 +76,80 @@ class BookingJsonModelsDecodeTest {
         assertEquals(100.0, match.agreedPrice!!, 0.001)
     }
 
+    // -- DeliveryMatchJson transaction parity (iOS c871184) --
+
+    @Test
+    fun `DeliveryMatchJson decodes transaction_status string`() {
+        val raw = fixture("delivery_match_full.json")
+        val match = json.decodeFromString<DeliveryMatchJson>(raw)
+
+        assertEquals("captured", match.transactionStatus)
+    }
+
+    @Test
+    fun `DeliveryMatchJson decodes nested transaction object`() {
+        val raw = fixture("delivery_match_full.json")
+        val match = json.decodeFromString<DeliveryMatchJson>(raw)
+
+        assertNotNull(match.transaction)
+        assertEquals(555, match.transaction!!.id)
+        assertEquals("captured", match.transaction!!.status)
+        assertEquals("150.50", match.transaction!!.totalAmount)
+        assertEquals("15.05", match.transaction!!.platformFee)
+        assertEquals("135.45", match.transaction!!.carrierAmount)
+        assertEquals("CAD", match.transaction!!.currency)
+    }
+
+    @Test
+    fun `MatchTransactionJson decodes amount fields when sent as numbers`() {
+        val raw = """
+            {
+              "id": 1,
+              "status": "pending",
+              "total_amount": 99.99,
+              "platform_fee": 9.99,
+              "carrier_amount": 90.0
+            }
+        """.trimIndent()
+        val txn = json.decodeFromString<MatchTransactionJson>(raw)
+
+        assertEquals(1, txn.id)
+        assertEquals("pending", txn.status)
+        assertEquals("99.99", txn.totalAmount)
+        assertEquals("9.99", txn.platformFee)
+        assertEquals("90.0", txn.carrierAmount)
+    }
+
+    @Test
+    fun `MatchTransactionJson decodes stripe error fields when present`() {
+        val raw = """
+            {
+              "id": 2,
+              "status": "requires_action",
+              "requires_action_at": "2026-04-01T12:00:00Z",
+              "error_code": "card_declined",
+              "error_message": "Your card was declined."
+            }
+        """.trimIndent()
+        val txn = json.decodeFromString<MatchTransactionJson>(raw)
+
+        assertEquals("requires_action", txn.status)
+        assertEquals("2026-04-01T12:00:00Z", txn.requiresActionAt)
+        assertEquals("card_declined", txn.errorCode)
+        assertEquals("Your card was declined.", txn.errorMessage)
+    }
+
+    @Test
+    fun `MatchTransactionJson defaults all nullable fields to null`() {
+        val txn = json.decodeFromString<MatchTransactionJson>("""{"id": 9}""")
+
+        assertEquals(9, txn.id)
+        assertEquals(null, txn.status)
+        assertEquals(null, txn.totalAmount)
+        assertEquals(null, txn.currency)
+        assertEquals(null, txn.errorCode)
+    }
+
     // -- CarrierTripInfoJson shared pickup/delivery window (iOS parity c6c63db) --
 
     @Test

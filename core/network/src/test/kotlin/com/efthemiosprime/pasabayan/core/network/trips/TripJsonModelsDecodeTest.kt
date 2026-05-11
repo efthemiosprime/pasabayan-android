@@ -316,6 +316,29 @@ class TripJsonModelsDecodeTest {
     }
 
     @Test
+    fun `TripEarningsBreakdownJson decodes delivered_count and pending_count`() {
+        val raw = """{
+            "delivered_amount": 500.0,
+            "delivered_currency": "CAD",
+            "delivered_count": 3,
+            "pending_amount": 200.5,
+            "pending_currency": "CAD",
+            "pending_count": 2
+        }"""
+        val breakdown = json.decodeFromString<TripEarningsBreakdownJson>(raw)
+        assertEquals(3, breakdown.deliveredCount)
+        assertEquals(2, breakdown.pendingCount)
+    }
+
+    @Test
+    fun `TripEarningsBreakdownJson leaves counts null when server omits them`() {
+        val raw = """{"delivered_amount": 500.0, "pending_amount": 200.5}"""
+        val breakdown = json.decodeFromString<TripEarningsBreakdownJson>(raw)
+        assertNull(breakdown.deliveredCount)
+        assertNull(breakdown.pendingCount)
+    }
+
+    @Test
     fun `PendingTripRequestJson decodes`() {
         val raw = """{
             "id": 10,

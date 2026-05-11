@@ -19,9 +19,11 @@ import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Scale
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -226,7 +228,11 @@ fun TripDetailsScreen(
         }
 
         if (isCarrier) {
-            CarrierEarningsSection(trip = trip, hasMatches = tripMatches.isNotEmpty())
+            CarrierEarningsSection(
+                trip = trip,
+                hasMatches = tripMatches.isNotEmpty(),
+                matches = tripMatches,
+            )
 
             if (tripMatches.isNotEmpty() && progressMetrics != null) {
                 TripPackageProgressWidget(
@@ -268,19 +274,62 @@ fun TripDetailsScreen(
             }
         }
 
-        // Actions (carrier only)
-        if (isCarrier && trip.tripStatus != TripStatus.CANCELLED && trip.tripStatus != TripStatus.COMPLETED) {
+        // Actions (carrier only). Mirrors iOS `shouldShowActionsSection` — hidden once every
+        // package on the trip is delivered, so the cancel/edit affordance disappears for a
+        // trip that has effectively run its course.
+        val canModifyTrip = isCarrier &&
+            trip.tripStatus != TripStatus.CANCELLED &&
+            trip.tripStatus != TripStatus.COMPLETED
+        val deliveredAll = allPackagesDelivered(tripMatches)
+        if (canModifyTrip && !deliveredAll) {
             PButton(
                 text = stringResource(R.string.trips_edit_trip),
                 onClick = onEdit,
                 modifier = Modifier.fillMaxWidth(),
             )
+
+            val blockingMatches = hasBlockingMatches(tripMatches)
+            var showCancelConfirm by remember { mutableStateOf(false) }
             PButton(
                 text = stringResource(R.string.trips_cancel_trip),
-                onClick = onCancel,
+                onClick = { showCancelConfirm = true },
                 style = PButtonStyle.Destructive,
+                enabled = !blockingMatches,
                 modifier = Modifier.fillMaxWidth(),
             )
+            if (blockingMatches) {
+                Text(
+                    text = stringResource(R.string.trips_cancel_blocked_message),
+                    style = PasabayanTextStyles.Caption.regular,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            if (showCancelConfirm) {
+                AlertDialog(
+                    onDismissRequest = { showCancelConfirm = false },
+                    title = { Text(stringResource(R.string.trips_cancel_confirm_title)) },
+                    text = { Text(stringResource(R.string.trips_cancel_confirm_message)) },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showCancelConfirm = false
+                                onCancel()
+                            },
+                        ) {
+                            Text(
+                                text = stringResource(R.string.trips_cancel_confirm_action),
+                                color = PasabayanColors.Error,
+                            )
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showCancelConfirm = false }) {
+                            Text(stringResource(R.string.trips_cancel_confirm_keep))
+                        }
+                    },
+                )
+            }
         }
     }
 }
@@ -289,6 +338,7 @@ fun TripDetailsScreen(
 private fun CarrierEarningsSection(
     trip: Trip,
     hasMatches: Boolean,
+    matches: List<TripMatchPackage>,
 ) {
     if (!hasMatches && trip.tripEarningsTotal == null && trip.tripEarningsBreakdown == null) return
     PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
@@ -315,6 +365,21 @@ private fun CarrierEarningsSection(
                     style = PasabayanTextStyles.Body.small,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                // iOS parity: show package counts alongside money amounts. Use the count from
+                // the breakdown when the server returns one; otherwise derive from local match
+                // status so the UI stays informative on older API responses.
+                val deliveredCount = breakdown.deliveredCount.takeIf { it > 0 }
+                    ?: matches.count { it.matchStatus == MatchStatus.DELIVERED }
+                if (deliveredCount > 0) {
+                    Text(
+                        text = stringResource(
+                            R.string.trips_detail_earnings_delivered_count,
+                            deliveredCount,
+                        ),
+                        style = PasabayanTextStyles.Caption.regular,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 Text(
                     text = stringResource(
                         R.string.trips_detail_earnings_pending,
@@ -324,6 +389,18 @@ private fun CarrierEarningsSection(
                     style = PasabayanTextStyles.Body.small,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                val pendingCount = breakdown.pendingCount.takeIf { it > 0 }
+                    ?: matches.count { it.matchStatus != MatchStatus.DELIVERED }
+                if (pendingCount > 0) {
+                    Text(
+                        text = stringResource(
+                            R.string.trips_detail_earnings_pending_count,
+                            pendingCount,
+                        ),
+                        style = PasabayanTextStyles.Caption.regular,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }

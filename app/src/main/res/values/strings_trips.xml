@@ -59,7 +59,14 @@
     <string name="trips_detail_earnings">Earnings</string>
     <string name="trips_detail_earnings_total">Total: %1$s %2$.2f</string>
     <string name="trips_detail_earnings_delivered">Delivered: %1$s %2$.2f</string>
+    <string name="trips_detail_earnings_delivered_count">%1$d packages delivered</string>
     <string name="trips_detail_earnings_pending">Pending: %1$s %2$.2f</string>
+    <string name="trips_detail_earnings_pending_count">%1$d packages pending</string>
+    <string name="trips_cancel_confirm_title">Cancel this trip?</string>
+    <string name="trips_cancel_confirm_message">Carriers and shippers waiting on this trip will be notified. This action cannot be undone.</string>
+    <string name="trips_cancel_confirm_keep">Keep Trip</string>
+    <string name="trips_cancel_confirm_action">Cancel Trip</string>
+    <string name="trips_cancel_blocked_message">Cannot cancel — at least one matched package is already confirmed, picked up, or in transit.</string>
     <string name="trips_detail_accepted_packages_title">Accepted Packages</string>
     <string name="trips_detail_accepted_packages_empty">No accepted packages for this filter.</string>
     <string name="trips_detail_match_status_label">Status: %1$s</string>

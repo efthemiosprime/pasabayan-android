@@ -5,7 +5,9 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.core.network.bookings.AutoChargeInfoJson
 import com.efthemiosprime.pasabayan.core.network.bookings.DeliveryMatchJson
+import com.efthemiosprime.pasabayan.core.network.bookings.MatchTransactionJson
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -55,6 +57,67 @@ class BookingMapperTest {
         assertNull(match.shipper)
         assertNull(match.carrierMessage)
         assertEquals(0.0, match.agreedPrice, 0.001)
+    }
+
+    @Test
+    fun `DeliveryMatchJson toDomain wires transactionStatus from DTO`() {
+        val json = DeliveryMatchJson(id = 100, transactionStatus = "captured")
+        val match = json.toDomain()
+
+        assertEquals("captured", match.transactionStatus)
+    }
+
+    @Test
+    fun `DeliveryMatchJson toDomain maps nested transaction to domain MatchTransaction`() {
+        val json = DeliveryMatchJson(
+            id = 100,
+            transaction = MatchTransactionJson(
+                id = 555,
+                status = "captured",
+                totalAmount = "150.50",
+                platformFee = "15.05",
+                carrierAmount = "135.45",
+                currency = "CAD",
+                createdAt = "2026-03-29T10:00:00Z",
+            ),
+        )
+        val match = json.toDomain()
+
+        assertNotNull(match.transaction)
+        assertEquals(555, match.transaction!!.id)
+        assertEquals("captured", match.transaction!!.status)
+        assertEquals("150.50", match.transaction!!.totalAmount)
+        assertEquals("CAD", match.transaction!!.currency)
+    }
+
+    @Test
+    fun `DeliveryMatchJson toDomain leaves transaction null when absent`() {
+        val match = DeliveryMatchJson(id = 100).toDomain()
+        assertNull(match.transaction)
+    }
+
+    @Test
+    fun `isPaymentCompleted prefers nested transaction status over transactionStatus`() {
+        val json = DeliveryMatchJson(
+            id = 100,
+            transactionStatus = "pending",
+            transaction = MatchTransactionJson(id = 1, status = "completed"),
+        )
+        val match = json.toDomain()
+
+        assertTrue(match.isPaymentCompleted)
+    }
+
+    @Test
+    fun `isPaymentCompleted false when both statuses are non-terminal`() {
+        val json = DeliveryMatchJson(
+            id = 100,
+            transactionStatus = "pending",
+            transaction = MatchTransactionJson(id = 1, status = "pending"),
+        )
+        val match = json.toDomain()
+
+        assertFalse(match.isPaymentCompleted)
     }
 
     @Test

@@ -39,6 +39,7 @@ data class DeliveryMatch(
     // Pricing
     val platformFeePercent: Int?,
     val transactionStatus: String?,
+    val transaction: MatchTransaction? = null,
     val receiptPhoto: String?,
     val autoCancelAfterDays: Int?,
     // Codes
@@ -59,8 +60,17 @@ data class DeliveryMatch(
             return if (raw > 1) raw / 100.0 else raw.toDouble()
         }
 
+    /**
+     * Resolves to the nested transaction's status when present, falling
+     * back to the flat `transaction_status` field. Mirrors iOS
+     * `effectiveTransactionStatusEnum`.
+     */
+    val effectiveTransactionStatus: String?
+        get() = transaction?.status?.trim()?.takeIf { it.isNotEmpty() }
+            ?: transactionStatus?.trim()?.takeIf { it.isNotEmpty() }
+
     val isPaymentCompleted: Boolean
-        get() = transactionStatus in listOf("completed", "captured")
+        get() = effectiveTransactionStatus?.lowercase() in listOf("completed", "captured")
 
     val hasReceipt: Boolean
         get() = receiptPhoto != null

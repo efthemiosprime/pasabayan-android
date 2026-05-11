@@ -61,8 +61,10 @@ fun TripJson.toDomain(): Trip = Trip(
 fun TripEarningsBreakdownJson.toDomain(): TripEarningsBreakdown = TripEarningsBreakdown(
     deliveredAmount = deliveredAmount ?: 0.0,
     deliveredCurrency = deliveredCurrency ?: "CAD",
+    deliveredCount = deliveredCount ?: 0,
     pendingAmount = pendingAmount ?: 0.0,
     pendingCurrency = pendingCurrency ?: "CAD",
+    pendingCount = pendingCount ?: 0,
 )
 
 fun PendingTripRequestJson.toDomain(): PendingTripRequest = PendingTripRequest(

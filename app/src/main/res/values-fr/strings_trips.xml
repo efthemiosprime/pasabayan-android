@@ -59,7 +59,14 @@
     <string name="trips_detail_earnings">Revenus</string>
     <string name="trips_detail_earnings_total">Total : %1$s %2$.2f</string>
     <string name="trips_detail_earnings_delivered">Livr\u00e9 : %1$s %2$.2f</string>
+    <string name="trips_detail_earnings_delivered_count">%1$d colis livr\u00e9s</string>
     <string name="trips_detail_earnings_pending">En attente : %1$s %2$.2f</string>
+    <string name="trips_detail_earnings_pending_count">%1$d colis en attente</string>
+    <string name="trips_cancel_confirm_title">Annuler ce trajet ?</string>
+    <string name="trips_cancel_confirm_message">Les transporteurs et exp\u00e9diteurs qui attendent ce trajet seront avertis. Cette action est irr\u00e9versible.</string>
+    <string name="trips_cancel_confirm_keep">Conserver le trajet</string>
+    <string name="trips_cancel_confirm_action">Annuler le trajet</string>
+    <string name="trips_cancel_blocked_message">Annulation impossible \u2014 au moins un colis associ\u00e9 est d\u00e9j\u00e0 confirm\u00e9, ramass\u00e9 ou en transit.</string>
     <string name="trips_detail_accepted_packages_title">Colis accept\u00e9s</string>
     <string name="trips_detail_accepted_packages_empty">Aucun colis accept\u00e9 pour ce filtre.</string>
     <string name="trips_detail_match_status_label">Statut : %1$s</string>

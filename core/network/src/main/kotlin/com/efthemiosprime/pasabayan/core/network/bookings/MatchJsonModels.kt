@@ -5,6 +5,7 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.core.domain.util.FlexibleBoolSerializer
 import com.efthemiosprime.pasabayan.core.domain.util.FlexibleDoubleSerializer
+import com.efthemiosprime.pasabayan.core.domain.util.FlexibleStringSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -56,6 +57,8 @@ data class DeliveryMatchJson(
 
     // Auto-charge & pricing
     @SerialName("auto_charge") val autoCharge: AutoChargeInfoJson? = null,
+    @SerialName("transaction_status") val transactionStatus: String? = null,
+    @SerialName("transaction") val transaction: MatchTransactionJson? = null,
     @SerialName("carrier_expected_price") @Serializable(with = FlexibleDoubleSerializer::class) val carrierExpectedPrice: Double? = null,
     @SerialName("price_difference") @Serializable(with = FlexibleDoubleSerializer::class) val priceDifference: Double? = null,
     @SerialName("is_below_rate") @Serializable(with = FlexibleBoolSerializer::class) val isBelowRate: Boolean? = null,
@@ -123,6 +126,33 @@ data class PackageRequestInfoJson(
     @SerialName("package_type") val packageType: String? = null,
     @SerialName("urgency_level") val urgencyLevel: String? = null,
     val fragile: Boolean = false,
+)
+
+/**
+ * MatchTransaction DTO — Stripe-backed transaction tied to a match.
+ * Mirrors iOS `MatchTransaction` from MatchingModels.swift (parity c871184).
+ *
+ * Amount fields (total/platform/carrier) accept either number or string from
+ * the backend and are normalized to String via FlexibleStringSerializer.
+ */
+@Serializable
+data class MatchTransactionJson(
+    val id: Int,
+    val status: String? = null,
+    @SerialName("total_amount")
+    @Serializable(with = FlexibleStringSerializer::class)
+    val totalAmount: String? = null,
+    @SerialName("platform_fee")
+    @Serializable(with = FlexibleStringSerializer::class)
+    val platformFee: String? = null,
+    @SerialName("carrier_amount")
+    @Serializable(with = FlexibleStringSerializer::class)
+    val carrierAmount: String? = null,
+    val currency: String? = null,
+    @SerialName("requires_action_at") val requiresActionAt: String? = null,
+    @SerialName("error_code") val errorCode: String? = null,
+    @SerialName("error_message") val errorMessage: String? = null,
+    @SerialName("created_at") val createdAt: String? = null,
 )
 
 @Serializable

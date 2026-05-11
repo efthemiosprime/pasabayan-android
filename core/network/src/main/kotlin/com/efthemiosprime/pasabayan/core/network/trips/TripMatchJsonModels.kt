@@ -52,8 +52,10 @@ data class PendingTripRequestJson(
 data class TripEarningsBreakdownJson(
     @SerialName("delivered_amount") @Serializable(with = FlexibleDoubleSerializer::class) val deliveredAmount: Double? = null,
     @SerialName("delivered_currency") val deliveredCurrency: String? = null,
+    @SerialName("delivered_count") val deliveredCount: Int? = null,
     @SerialName("pending_amount") @Serializable(with = FlexibleDoubleSerializer::class) val pendingAmount: Double? = null,
     @SerialName("pending_currency") val pendingCurrency: String? = null,
+    @SerialName("pending_count") val pendingCount: Int? = null,
 )
 
 @Serializable

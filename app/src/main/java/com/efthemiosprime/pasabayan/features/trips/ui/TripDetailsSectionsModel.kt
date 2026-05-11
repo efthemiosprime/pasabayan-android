@@ -30,3 +30,25 @@ internal fun toProgressMetrics(
         arrivalDateText = arrivalDateText,
     )
 }
+
+/**
+ * Match statuses that, per iOS `TripDetailsView.canCancelTrip` (`hasBlockingMatches`), block
+ * cancellation because the carrier has already committed to or started carrying the package.
+ */
+internal val BLOCKING_CANCEL_STATUSES: Set<MatchStatus> = setOf(
+    MatchStatus.CONFIRMED,
+    MatchStatus.PICKED_UP,
+    MatchStatus.IN_TRANSIT,
+)
+
+/** True when at least one match has a status that blocks trip cancellation. */
+internal fun hasBlockingMatches(matches: List<TripMatchPackage>): Boolean =
+    matches.any { it.matchStatus in BLOCKING_CANCEL_STATUSES }
+
+/**
+ * True when every match on the trip has been delivered. Drives the iOS
+ * `shouldShowActionsSection` rule that hides Edit/Cancel once the trip is effectively done.
+ * Returns `false` for empty match lists (an empty trip still allows edit/cancel).
+ */
+internal fun allPackagesDelivered(matches: List<TripMatchPackage>): Boolean =
+    matches.isNotEmpty() && matches.all { it.matchStatus == MatchStatus.DELIVERED }

@@ -27,7 +27,8 @@ fun DeliveryMatchJson.toDomain(): DeliveryMatch = DeliveryMatch(
     createdAt = createdAt,
     updatedAt = updatedAt,
     platformFeePercent = platformFeePercent,
-    transactionStatus = null, // Not on DeliveryMatchJson directly
+    transactionStatus = transactionStatus,
+    transaction = transaction?.toDomain(),
     receiptPhoto = receiptPhoto,
     autoCancelAfterDays = autoCancelAfterDays,
     pickupConfirmationCode = pickupConfirmationCode,
@@ -36,6 +37,20 @@ fun DeliveryMatchJson.toDomain(): DeliveryMatch = DeliveryMatch(
     deliveryCodeExpiresAt = deliveryCodeExpiresAt,
     carrierTrip = carrierTrip?.toDomain(),
     packageRequest = packageRequest?.toDomain(),
+)
+
+private fun com.efthemiosprime.pasabayan.core.network.bookings.MatchTransactionJson.toDomain():
+    MatchTransaction = MatchTransaction(
+    id = id,
+    status = status,
+    totalAmount = totalAmount,
+    platformFee = platformFee,
+    carrierAmount = carrierAmount,
+    currency = currency,
+    requiresActionAt = requiresActionAt,
+    errorCode = errorCode,
+    errorMessage = errorMessage,
+    createdAt = createdAt,
 )
 
 private fun com.efthemiosprime.pasabayan.core.network.bookings.CarrierTripInfoJson.toDomain():
