@@ -17,8 +17,10 @@ import com.efthemiosprime.pasabayan.core.network.payments.StripeConnectApi
 import com.efthemiosprime.pasabayan.core.network.trips.TripsApi
 import com.efthemiosprime.pasabayan.core.network.favorites.FavoritesApi
 import com.efthemiosprime.pasabayan.core.network.legal.LegalApi
+import com.efthemiosprime.pasabayan.core.network.location.LocationCatalogApi
 import com.efthemiosprime.pasabayan.core.network.notifications.NotificationApi
 import com.efthemiosprime.pasabayan.core.network.ratings.RatingsApi
+import com.efthemiosprime.pasabayan.core.network.shipper.ShipperApi
 import com.efthemiosprime.pasabayan.core.network.support.SupportApi
 import com.efthemiosprime.pasabayan.core.network.verification.VerificationApi
 import dagger.Module
@@ -175,4 +177,14 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideSupportApi(retrofit: Retrofit): SupportApi = retrofit.create(SupportApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideLocationCatalogApi(retrofit: Retrofit): LocationCatalogApi =
+        retrofit.create(LocationCatalogApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideShipperApi(retrofit: Retrofit): ShipperApi =
+        retrofit.create(ShipperApi::class.java)
 }
