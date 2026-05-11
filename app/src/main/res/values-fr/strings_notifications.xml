@@ -1,6 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Noms d'affichage des types de notification (tranche 2). Le reste arrive en tranche 6. -->
+    <!-- Écran (tranche 6) -->
+    <string name="notifications_title">Notifications et actions</string>
+    <string name="notifications_loading">Chargement des notifications…</string>
+    <string name="notifications_action_mark_all_read">Tout marquer comme lu</string>
+    <string name="notifications_action_mark_as_read">Marquer comme lu</string>
+    <string name="notifications_action_clear_all">Tout effacer</string>
+    <string name="notifications_action_send_test">Envoyer une notification test</string>
+    <string name="notifications_alert_test_title">Notification test</string>
+    <string name="notifications_empty_all_title">Aucune notification</string>
+    <string name="notifications_empty_all_description">Vous n\'avez pas encore de notifications.</string>
+    <string name="notifications_empty_unread_title">Tout est à jour</string>
+    <string name="notifications_empty_unread_description">Vous n\'avez aucune notification non lue.</string>
+    <string name="notifications_filter_unread_only">Non lues uniquement</string>
+    <string name="notifications_filter_show_all">Tout afficher</string>
+    <string name="notifications_time_just_now">À l\'instant</string>
+    <string name="notifications_time_minutes_ago">il y a %1$d minutes</string>
+    <string name="notifications_time_hours_ago">il y a %1$d heures</string>
+    <string name="notifications_time_days_ago">il y a %1$d jours</string>
+    <string name="notifications_section_notifications">Notifications</string>
+    <string name="notifications_section_action_required">Action requise</string>
+    <string name="notifications_section_pending_reviews">Évaluations en attente</string>
+    <string name="notifications_action_empty_title">Aucune action en attente</string>
+    <string name="notifications_action_empty_description">Vous n\'avez aucune demande nécessitant votre attention pour le moment.</string>
+    <string name="notifications_reviews_empty_title">Aucune évaluation en attente</string>
+    <string name="notifications_reviews_empty_description">Vous n\'avez aucune livraison à évaluer pour l\'instant.</string>
+    <string name="notifications_test_success">Notification test envoyée ! Vérifiez votre appareil.</string>
+    <string name="notifications_test_failure">Échec de l\'envoi de la notification test. Vérifiez que les notifications sont activées.</string>
+    <string name="notifications_load_more">Charger plus</string>
+    <string name="notifications_pending_review_title">Évaluez votre livraison</string>
+    <string name="notifications_unread_indicator">Non lue</string>
+
+    <!-- Noms d'affichage des types (tranche 2). -->
     <string name="notifications_type_match_request">Nouvelle demande</string>
     <string name="notifications_type_match_accepted">Demande acceptée</string>
     <string name="notifications_type_match_declined">Demande refusée</string>

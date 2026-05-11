@@ -1,6 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- NotificationType display names (slice 2). Screen-level strings ship with slice 6. -->
+    <!-- Screen-level (slice 6) -->
+    <string name="notifications_title">Notifications &amp; Actions</string>
+    <string name="notifications_loading">Loading notifications…</string>
+    <string name="notifications_action_mark_all_read">Mark All as Read</string>
+    <string name="notifications_action_mark_as_read">Mark as Read</string>
+    <string name="notifications_action_clear_all">Clear All</string>
+    <string name="notifications_action_send_test">Send Test Notification</string>
+    <string name="notifications_alert_test_title">Test Notification</string>
+    <string name="notifications_empty_all_title">No notifications</string>
+    <string name="notifications_empty_all_description">You don\'t have any notifications yet.</string>
+    <string name="notifications_empty_unread_title">All caught up</string>
+    <string name="notifications_empty_unread_description">You don\'t have any unread notifications.</string>
+    <string name="notifications_filter_unread_only">Unread Only</string>
+    <string name="notifications_filter_show_all">Show All</string>
+    <string name="notifications_time_just_now">Just now</string>
+    <string name="notifications_time_minutes_ago">%1$d minutes ago</string>
+    <string name="notifications_time_hours_ago">%1$d hours ago</string>
+    <string name="notifications_time_days_ago">%1$d days ago</string>
+    <string name="notifications_section_notifications">Notifications</string>
+    <string name="notifications_section_action_required">Action Required</string>
+    <string name="notifications_section_pending_reviews">Pending Reviews</string>
+    <string name="notifications_action_empty_title">No pending actions</string>
+    <string name="notifications_action_empty_description">You don\'t have any requests that need your attention right now.</string>
+    <string name="notifications_reviews_empty_title">No reviews pending</string>
+    <string name="notifications_reviews_empty_description">You don\'t have any deliveries to review yet.</string>
+    <string name="notifications_test_success">Test notification sent! Check your device.</string>
+    <string name="notifications_test_failure">Failed to send test notification. Make sure notifications are enabled.</string>
+    <string name="notifications_load_more">Load More</string>
+    <string name="notifications_pending_review_title">Rate Your Delivery</string>
+    <string name="notifications_unread_indicator">Unread</string>
+
+    <!-- NotificationType display names (slice 2). -->
     <string name="notifications_type_match_request">New Request</string>
     <string name="notifications_type_match_accepted">Request Accepted</string>
     <string name="notifications_type_match_declined">Request Declined</string>
