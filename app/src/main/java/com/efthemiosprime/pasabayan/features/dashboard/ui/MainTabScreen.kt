@@ -140,6 +140,8 @@ fun MainTabScreen(
     // Distinct surface from [pendingMatchId]: `OpenCounterOffer` jumps to the composer instead
     // of the details sheet so the user lands on the action they were notified about.
     var pendingCounterOfferMatchId by remember { mutableStateOf<Int?>(null) }
+    // `OpenTransactionDetail(id)` deep-links into PaymentsProfileScreen → TransactionDetailScreen.
+    var pendingTransactionId by remember { mutableStateOf<Int?>(null) }
     var profilePaymentsOpen by remember { mutableStateOf(false) }
     var profilePayoutSetupOpen by remember { mutableStateOf(false) }
     var showEditUserProfileSheet by remember { mutableStateOf(false) }
@@ -215,8 +217,12 @@ fun MainTabScreen(
                     if (messagesIndex >= 0) viewModel.selectTab(messagesIndex)
                 }
                 NavigationEvent.OpenTransactions,
-                is NavigationEvent.OpenTransactionDetail,
                 NavigationEvent.OpenPaymentMethods -> {
+                    if (profileIndex >= 0) viewModel.selectTab(profileIndex)
+                    profilePaymentsOpen = true
+                }
+                is NavigationEvent.OpenTransactionDetail -> {
+                    pendingTransactionId = event.transactionId
                     if (profileIndex >= 0) viewModel.selectTab(profileIndex)
                     profilePaymentsOpen = true
                 }
@@ -435,6 +441,8 @@ fun MainTabScreen(
                                         profilePaymentsOpen = false
                                         profilePayoutSetupOpen = true
                                     },
+                                    initialTransactionId = pendingTransactionId,
+                                    onInitialTransactionConsumed = { pendingTransactionId = null },
                                 )
                             }
                         }

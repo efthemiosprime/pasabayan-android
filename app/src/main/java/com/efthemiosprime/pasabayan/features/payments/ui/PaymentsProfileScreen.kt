@@ -69,6 +69,13 @@ fun PaymentsProfileScreen(
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenPayoutSetup: () -> Unit = {},
+    /**
+     * When set (typically from notifications routing — `OpenTransactionDetail(id)`), the screen
+     * mounts directly on the transaction detail surface for the given id. iOS parity:
+     * `NotificationCenter` → `navigateFromNotification`.
+     */
+    initialTransactionId: Int? = null,
+    onInitialTransactionConsumed: () -> Unit = {},
     paymentViewModel: PaymentViewModel = hiltViewModel(),
     paymentMethodsViewModel: PaymentMethodsViewModel = hiltViewModel(),
     tippingViewModel: TippingViewModel = hiltViewModel(),
@@ -89,6 +96,16 @@ fun PaymentsProfileScreen(
     var route by remember { mutableStateOf(PaymentsRoute.PROFILE) }
     var selectedTransaction by remember { mutableStateOf<Transaction?>(null) }
     var selectedTransactionFilter by remember { mutableStateOf(TransactionFilter.ALL) }
+    // Set only when entering the detail surface via deep-link (no `selectedTransaction`).
+    var deepLinkedTransactionId by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(initialTransactionId) {
+        val target = initialTransactionId ?: return@LaunchedEffect
+        deepLinkedTransactionId = target
+        selectedTransactionFilter = TransactionFilter.ALL
+        route = PaymentsRoute.TRANSACTION_DETAIL
+        onInitialTransactionConsumed()
+    }
 
     // [rememberPaymentSheet] registers the activity-result launcher during composition setup;
     // constructing [PaymentSheet] with an Activity inside [remember] crashes with
@@ -185,14 +202,20 @@ fun PaymentsProfileScreen(
         }
 
         PaymentsRoute.TRANSACTION_DETAIL -> {
-            val transaction = selectedTransaction
-            if (transaction == null) {
+            // Prefer the deep-linked id (set on initialTransactionId arrival); fall back to the
+            // transaction the user picked from the in-screen list. If neither is set, bounce to
+            // the transactions list rather than rendering an empty detail surface.
+            val targetTransactionId = deepLinkedTransactionId ?: selectedTransaction?.id
+            if (targetTransactionId == null) {
                 route = PaymentsRoute.TRANSACTIONS
             } else {
                 TransactionDetailScreen(
-                    transactionId = transaction.id,
+                    transactionId = targetTransactionId,
                     filter = selectedTransactionFilter,
-                    onBack = { route = PaymentsRoute.TRANSACTIONS },
+                    onBack = {
+                        deepLinkedTransactionId = null
+                        route = PaymentsRoute.TRANSACTIONS
+                    },
                     onRequestRefund = { transactionId ->
                         refundViewModel.selectReason(RefundReason.OTHER)
                         refundViewModel.setCustomReason("Requesting refund for transaction issue")
