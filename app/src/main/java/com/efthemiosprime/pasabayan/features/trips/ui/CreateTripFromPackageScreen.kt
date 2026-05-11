@@ -3,10 +3,20 @@ package com.efthemiosprime.pasabayan.features.trips.ui
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.background
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Scale
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,18 +24,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.R
+import com.efthemiosprime.pasabayan.core.designsystem.PasabayanColors
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
+import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
+import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSectionTitle
+import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetScaffold
+import com.efthemiosprime.pasabayan.core.designsystem.component.PFilterChip
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
+import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.features.trips.model.CreateTripFromPackageRequest
 import com.efthemiosprime.pasabayan.features.trips.model.TripTemplateData
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.CreateTripFromPackageViewModel
@@ -45,9 +65,14 @@ fun CreateTripFromPackageScreen(
     var arrivalDate by remember { mutableStateOf("") }
     var availableWeightKg by remember { mutableStateOf("") }
     var availableSpaceLiters by remember { mutableStateOf("") }
-    var transportMethod by remember { mutableStateOf("car") }
+    // iOS parity: real transport selector instead of a free-text "car" string.
+    var transportationMethod by remember { mutableStateOf(TransportationMethod.CAR) }
     var proposedPrice by remember { mutableStateOf("") }
     var requestMessage by remember { mutableStateOf("") }
+    // iOS parity: these were previously dropped on the floor; the form now captures them.
+    var pickupAddress by remember { mutableStateOf("") }
+    var dropoffAddress by remember { mutableStateOf("") }
+    var specialNotes by remember { mutableStateOf("") }
 
     LaunchedEffect(packageId) {
         viewModel.loadTemplate(packageId)
@@ -80,7 +105,7 @@ fun CreateTripFromPackageScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
         ) {
-            TemplateSummary(template = template)
+            PackageInfoCard(template = template)
             POutlinedTextField(
                 value = departureDate,
                 onValueChange = { departureDate = it },
@@ -105,11 +130,29 @@ fun CreateTripFromPackageScreen(
                 label = { Text(stringResource(R.string.trips_create_space_capacity)) },
                 modifier = Modifier.fillMaxWidth(),
             )
+            TransportMethodSelector(
+                selected = transportationMethod,
+                onSelect = { transportationMethod = it },
+            )
             POutlinedTextField(
-                value = transportMethod,
-                onValueChange = { transportMethod = it },
-                label = { Text(stringResource(R.string.trips_create_transport_method)) },
+                value = pickupAddress,
+                onValueChange = { pickupAddress = it },
+                label = { Text(stringResource(R.string.trips_create_pickup_address)) },
                 modifier = Modifier.fillMaxWidth(),
+            )
+            POutlinedTextField(
+                value = dropoffAddress,
+                onValueChange = { dropoffAddress = it },
+                label = { Text(stringResource(R.string.trips_create_dropoff_address)) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            POutlinedTextField(
+                value = specialNotes,
+                onValueChange = { specialNotes = it },
+                label = { Text(stringResource(R.string.trips_create_special_notes)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = false,
+                maxLines = 4,
             )
             POutlinedTextField(
                 value = proposedPrice,
@@ -136,7 +179,10 @@ fun CreateTripFromPackageScreen(
                         arrivalDate = arrivalDate,
                         availableWeightKg = availableWeightKg,
                         availableSpaceLiters = availableSpaceLiters,
-                        transportMethod = transportMethod,
+                        transportationMethod = transportationMethod,
+                        pickupAddress = pickupAddress,
+                        dropoffAddress = dropoffAddress,
+                        specialNotes = specialNotes,
                         proposedPrice = proposedPrice,
                         requestMessage = requestMessage,
                     )
@@ -157,62 +203,186 @@ fun CreateTripFromPackageScreen(
     }
 }
 
-private fun buildRequestFromState(
+/**
+ * Translates the form state into the wire request. Kept top-level + internal so a unit test can
+ * verify field plumbing without standing up a Compose host.
+ */
+internal fun buildRequestFromState(
     packageId: Int,
     template: TripTemplateData?,
     departureDate: String,
     arrivalDate: String,
     availableWeightKg: String,
     availableSpaceLiters: String,
-    transportMethod: String,
+    transportationMethod: TransportationMethod,
+    pickupAddress: String,
+    dropoffAddress: String,
+    specialNotes: String,
     proposedPrice: String,
     requestMessage: String,
-): CreateTripFromPackageRequest {
-    return CreateTripFromPackageRequest(
-        packageId = packageId,
-        originCity = template?.originCity.orEmpty(),
-        originCountry = template?.originCountry.orEmpty(),
-        destinationCity = template?.destinationCity.orEmpty(),
-        destinationCountry = template?.destinationCountry.orEmpty(),
-        departureDate = departureDate,
-        arrivalDate = arrivalDate,
-        availableWeightKg = availableWeightKg.toDoubleOrNull() ?: 0.0,
-        availableSpaceLiters = availableSpaceLiters.toDoubleOrNull() ?: 0.0,
-        transportationMethod = transportMethod,
-        pricePerKg = null,
-        flatTripPrice = null,
-        specialNotes = null,
-        pickupAddress = null,
-        dropoffAddress = null,
-        proposedPrice = proposedPrice.toDoubleOrNull(),
-        requestMessage = requestMessage.ifBlank { null },
-    )
-}
+): CreateTripFromPackageRequest = CreateTripFromPackageRequest(
+    packageId = packageId,
+    originCity = template?.originCity.orEmpty(),
+    originCountry = template?.originCountry.orEmpty(),
+    destinationCity = template?.destinationCity.orEmpty(),
+    destinationCountry = template?.destinationCountry.orEmpty(),
+    departureDate = departureDate,
+    arrivalDate = arrivalDate,
+    availableWeightKg = availableWeightKg.toDoubleOrNull() ?: 0.0,
+    availableSpaceLiters = availableSpaceLiters.toDoubleOrNull() ?: 0.0,
+    transportationMethod = transportationMethod.name.lowercase(),
+    pricePerKg = null,
+    flatTripPrice = null,
+    specialNotes = specialNotes.ifBlank { null },
+    pickupAddress = pickupAddress.ifBlank { null },
+    dropoffAddress = dropoffAddress.ifBlank { null },
+    proposedPrice = proposedPrice.toDoubleOrNull(),
+    requestMessage = requestMessage.ifBlank { null },
+)
 
 @Composable
-private fun TemplateSummary(template: TripTemplateData?) {
+private fun PackageInfoCard(template: TripTemplateData?) {
     if (template == null) return
-    Text(
-        text = stringResource(
-            R.string.trips_create_from_package_template_route,
-            template.originCity,
-            template.destinationCity,
-        ),
-    )
-    template.packageDescription?.let {
-        Text(text = it)
+    PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
+        Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
+            PDetailSectionTitle(text = stringResource(R.string.trips_from_package_card_title))
+            Text(
+                text = stringResource(
+                    R.string.trips_create_from_package_template_route,
+                    template.originCity,
+                    template.destinationCity,
+                ),
+                style = PasabayanTextStyles.Body.medium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            template.packageWeightKg?.takeIf { it > 0.0 }?.let { weight ->
+                PackageInfoRow(
+                    icon = Icons.Outlined.Scale,
+                    text = stringResource(R.string.trips_from_package_weight_label, weight),
+                )
+            }
+            template.packageUrgencyLevel?.takeIf { it.isNotBlank() }?.let { level ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+                ) {
+                    if (level.equals("urgent", ignoreCase = true)) {
+                        PackageTag(
+                            icon = Icons.Outlined.Schedule,
+                            label = stringResource(R.string.trips_from_package_urgent),
+                            color = PasabayanColors.Error,
+                        )
+                    }
+                }
+            }
+            template.packageDescription?.takeIf { it.isNotBlank() }?.let { description ->
+                Text(
+                    text = description,
+                    style = PasabayanTextStyles.Body.small,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 
-@Preview(showBackground = true, name = "CreateTripFromPackage — light", heightDp = 900)
-@Preview(showBackground = true, name = "CreateTripFromPackage — dark", heightDp = 900, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun PackageInfoRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    text: String,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(16.dp),
+        )
+        Text(
+            text = text,
+            style = PasabayanTextStyles.Body.small,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+}
+
+@Composable
+private fun PackageTag(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    color: Color,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier
+            .background(color = color.copy(alpha = 0.1f), shape = RoundedCornerShape(8.dp))
+            .padding(horizontal = PasabayanSpacing.sm, vertical = 4.dp),
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(12.dp),
+        )
+        Text(
+            text = label,
+            style = PasabayanTextStyles.Caption.regular.copy(fontWeight = FontWeight.SemiBold),
+            color = color,
+        )
+    }
+}
+
+@Composable
+private fun TransportMethodSelector(
+    selected: TransportationMethod,
+    onSelect: (TransportationMethod) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
+        Text(
+            text = stringResource(R.string.trips_create_transport_method),
+            style = PasabayanTextStyles.Body.small,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+        ) {
+            TRANSPORT_OPTIONS.forEach { method ->
+                PFilterChip(
+                    label = stringResource(method.toLabelRes()),
+                    selected = method == selected,
+                    onClick = { onSelect(method) },
+                )
+            }
+        }
+    }
+}
+
+private val TRANSPORT_OPTIONS = listOf(
+    TransportationMethod.FLIGHT,
+    TransportationMethod.CAR,
+    TransportationMethod.BUS,
+    TransportationMethod.TRAIN,
+    TransportationMethod.SHIP,
+)
+
+@Preview(showBackground = true, name = "CreateTripFromPackage — light", heightDp = 1100)
+@Preview(showBackground = true, name = "CreateTripFromPackage — dark", heightDp = 1100, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun CreateTripFromPackagePreview() {
     var departureDate by remember { mutableStateOf("2026-07-01T08:00:00Z") }
     var arrivalDate by remember { mutableStateOf("2026-07-01T16:00:00Z") }
     var weight by remember { mutableStateOf("5") }
     var space by remember { mutableStateOf("25") }
-    var method by remember { mutableStateOf("car") }
+    var method by remember { mutableStateOf(TransportationMethod.CAR) }
+    var pickupAddress by remember { mutableStateOf("123 Main St") }
+    var dropoffAddress by remember { mutableStateOf("456 Oak Ave") }
+    var notes by remember { mutableStateOf("Fragile — handle with care") }
     var price by remember { mutableStateOf("80") }
     var message by remember { mutableStateOf("Can carry same day.") }
     PasabayanTheme {
@@ -227,7 +397,7 @@ private fun CreateTripFromPackagePreview() {
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
             ) {
-                TemplateSummary(
+                PackageInfoCard(
                     template = TripTemplateData(
                         packageId = 12,
                         originCity = "Toronto",
@@ -238,9 +408,9 @@ private fun CreateTripFromPackagePreview() {
                         suggestedArrivalDate = arrivalDate,
                         suggestedWeightKg = 5.0,
                         suggestedSpaceLiters = 25.0,
-                        packageDescription = "Electronics bundle",
+                        packageDescription = "Electronics bundle (handle with care).",
                         packageWeightKg = 3.2,
-                        packageUrgencyLevel = "normal",
+                        packageUrgencyLevel = "urgent",
                     ),
                 )
                 POutlinedTextField(
@@ -267,11 +437,26 @@ private fun CreateTripFromPackagePreview() {
                     label = { Text(stringResource(R.string.trips_create_space_capacity)) },
                     modifier = Modifier.fillMaxWidth(),
                 )
+                TransportMethodSelector(selected = method, onSelect = { method = it })
                 POutlinedTextField(
-                    value = method,
-                    onValueChange = { method = it },
-                    label = { Text(stringResource(R.string.trips_create_transport_method)) },
+                    value = pickupAddress,
+                    onValueChange = { pickupAddress = it },
+                    label = { Text(stringResource(R.string.trips_create_pickup_address)) },
                     modifier = Modifier.fillMaxWidth(),
+                )
+                POutlinedTextField(
+                    value = dropoffAddress,
+                    onValueChange = { dropoffAddress = it },
+                    label = { Text(stringResource(R.string.trips_create_dropoff_address)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                POutlinedTextField(
+                    value = notes,
+                    onValueChange = { notes = it },
+                    label = { Text(stringResource(R.string.trips_create_special_notes)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = false,
+                    maxLines = 4,
                 )
                 POutlinedTextField(
                     value = price,

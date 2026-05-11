@@ -677,7 +677,7 @@ private fun TripValidationError.toStringRes(): Int = when (this) {
     TripValidationError.NotesTooLong -> R.string.trips_create_validation_notes_long
 }
 
-private fun TransportationMethod.toLabelRes(): Int = when (this) {
+internal fun TransportationMethod.toLabelRes(): Int = when (this) {
     TransportationMethod.NONE -> R.string.trips_transport_other
     TransportationMethod.FLIGHT -> R.string.trips_transport_flight
     TransportationMethod.BUS -> R.string.trips_transport_bus

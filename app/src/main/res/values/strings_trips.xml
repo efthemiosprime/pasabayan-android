@@ -164,6 +164,11 @@
     <string name="trips_create_from_package_template_route">%1$s to %2$s</string>
     <string name="trips_create_from_package_proposed_price">Proposed Price</string>
     <string name="trips_create_from_package_request_message">Request Message</string>
+    <!-- iOS parity (CreateTripFromPackageView.packageInfoCard) — package info shown above the form. -->
+    <string name="trips_from_package_card_title">Package details</string>
+    <string name="trips_from_package_weight_label">%1$.1f kg</string>
+    <string name="trips_from_package_fragile">Fragile</string>
+    <string name="trips_from_package_urgent">Urgent</string>
     <string name="trips_create_success_title">Trip created successfully</string>
     <string name="trips_create_success_save_route_prompt">Would you like to save this route for next time?</string>
     <string name="trips_create_success_save_route_action">Save route</string>

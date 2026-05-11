@@ -164,6 +164,11 @@
     <string name="trips_create_from_package_template_route">%1$s vers %2$s</string>
     <string name="trips_create_from_package_proposed_price">Prix propos\u00e9</string>
     <string name="trips_create_from_package_request_message">Message de demande</string>
+    <!-- Parit\u00e9 iOS (CreateTripFromPackageView.packageInfoCard). -->
+    <string name="trips_from_package_card_title">D\u00e9tails du colis</string>
+    <string name="trips_from_package_weight_label">%1$.1f kg</string>
+    <string name="trips_from_package_fragile">Fragile</string>
+    <string name="trips_from_package_urgent">Urgent</string>
     <string name="trips_create_success_title">Trajet cr\u00e9\u00e9 avec succ\u00e8s</string>
     <string name="trips_create_success_save_route_prompt">Voulez-vous enregistrer cet itin\u00e9raire pour la prochaine fois ?</string>
     <string name="trips_create_success_save_route_action">Enregistrer l\'itin\u00e9raire</string>
