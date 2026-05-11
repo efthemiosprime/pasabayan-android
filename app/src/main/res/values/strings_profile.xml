@@ -140,4 +140,26 @@
     <string name="profile_privacy_confirm_disable_title">Turn off?</string>
     <string name="profile_privacy_confirm_keep">Keep on</string>
     <string name="profile_privacy_confirm_turn_off">Turn off</string>
+    <!-- Account management (09-profile-carrier-consent slice D3) -->
+    <string name="profile_account_menu_label">Account &amp; data</string>
+    <string name="profile_account_menu_subtitle">Export your data or disable your account</string>
+    <string name="profile_account_title">Account &amp; data</string>
+    <string name="profile_account_section_export">Storage &amp; data</string>
+    <string name="profile_account_section_delete">Account</string>
+    <string name="profile_account_export_helper">Download a JSON copy of your account data, ready to share.</string>
+    <string name="profile_account_export_action">Download my data</string>
+    <string name="profile_account_export_share_title">Share data export</string>
+    <string name="profile_account_export_success">Data export ready</string>
+    <string name="profile_account_export_error">Could not save the exported data</string>
+    <string name="profile_account_delete_helper">This requests permanent deletion of your account. Drivers and shippers you\'ve worked with may still see prior bookings in their history.</string>
+    <string name="profile_account_delete_reason_label">Why are you leaving? (optional)</string>
+    <string name="profile_account_delete_reason_placeholder">Tell us so we can improve</string>
+    <string name="profile_account_delete_action">Disable my account</string>
+    <string name="profile_account_delete_confirm_title">Disable your account?</string>
+    <string name="profile_account_delete_confirm_message">We\'ll process your request. You\'ll be signed out and won\'t be able to log back in.</string>
+    <string name="profile_account_delete_confirm_yes">Disable account</string>
+    <string name="profile_account_delete_confirm_cancel">Cancel</string>
+    <string name="profile_account_deletion_success">Account deletion requested. You\'re being signed out.</string>
+    <string name="profile_account_deletion_success_formatted">Account deletion requested (status: %1$s). Signing out.</string>
+    <string name="profile_account_close">Close</string>
 </resources>

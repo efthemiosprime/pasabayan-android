@@ -66,6 +66,7 @@ fun ProfileTabScreen(
     onOpenVehicleInfo: () -> Unit = {},
     onOpenVerification: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
+    onOpenAccountManagement: () -> Unit = {},
     onOpenPlaceholder: (String) -> Unit = { },
     viewModel: ProfileTabViewModel = hiltViewModel(),
     modifier: Modifier = Modifier,
@@ -112,6 +113,7 @@ fun ProfileTabScreen(
         onOpenVehicleInfo = onOpenVehicleInfo,
         onOpenVerification = onOpenVerification,
         onOpenSettings = onOpenSettings,
+        onOpenAccountManagement = onOpenAccountManagement,
         onOpenPlaceholder = onOpenPlaceholder,
         modifier = modifier,
     )
@@ -130,6 +132,7 @@ fun ProfileTabContent(
     onOpenVehicleInfo: () -> Unit = {},
     onOpenVerification: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
+    onOpenAccountManagement: () -> Unit = {},
     onOpenPlaceholder: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -219,6 +222,9 @@ fun ProfileTabContent(
                     stringResource(R.string.profile_menu_shipping_addresses),
                 ) { onOpenPlaceholder("shipping") }
             }
+            MenuRow(
+                stringResource(R.string.profile_account_menu_label),
+            ) { onOpenAccountManagement() }
         }
         ProfileMenuSection(
             title = stringResource(R.string.profile_menu_payments),

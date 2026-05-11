@@ -30,6 +30,7 @@ import com.efthemiosprime.pasabayan.features.dashboard.model.MainTabs
 import com.efthemiosprime.pasabayan.features.dashboard.model.DashboardSheetRoute
 import com.efthemiosprime.pasabayan.features.dashboard.viewmodel.DashboardViewModel
 import com.efthemiosprime.pasabayan.features.payments.ui.PaymentsProfileScreen
+import com.efthemiosprime.pasabayan.features.profile.ui.AccountManagementSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.EditCarrierProfileSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.EditUserProfileSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.PrivacyPreferencesSheet
@@ -97,6 +98,7 @@ fun MainTabScreen(
     var showEditUserProfileSheet by remember { mutableStateOf(false) }
     var showEditCarrierProfileSheet by remember { mutableStateOf(false) }
     var showPrivacyPreferencesSheet by remember { mutableStateOf(false) }
+    var showAccountManagementSheet by remember { mutableStateOf(false) }
     val dismissActiveSheetRoute = { viewModel.dismissActiveSheetRoute() }
     val openTripFilterSheet = { viewModel.openTripFilterSheet() }
     val openCreateTripFromPackageSheet: (Int) -> Unit = { packageId ->
@@ -247,6 +249,7 @@ fun MainTabScreen(
                             onOpenPersonalInfo = { showEditUserProfileSheet = true },
                             onOpenVehicleInfo = { showEditCarrierProfileSheet = true },
                             onOpenSettings = { showPrivacyPreferencesSheet = true },
+                            onOpenAccountManagement = { showAccountManagementSheet = true },
                         )
                     }
                 }
@@ -282,6 +285,20 @@ fun MainTabScreen(
         ) {
             PrivacyPreferencesSheet(
                 onClose = { showPrivacyPreferencesSheet = false },
+            )
+        }
+    }
+
+    if (showAccountManagementSheet) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showAccountManagementSheet = false },
+        ) {
+            AccountManagementSheet(
+                onClose = { showAccountManagementSheet = false },
+                onAccountDeletionRequested = {
+                    showAccountManagementSheet = false
+                    onLogout()
+                },
             )
         }
     }

@@ -141,4 +141,26 @@
     <string name="profile_privacy_confirm_disable_title">Désactiver?</string>
     <string name="profile_privacy_confirm_keep">Conserver activé</string>
     <string name="profile_privacy_confirm_turn_off">Désactiver</string>
+    <!-- Account management (09-profile-carrier-consent slice D3) -->
+    <string name="profile_account_menu_label">Compte et données</string>
+    <string name="profile_account_menu_subtitle">Exportez vos données ou désactivez votre compte</string>
+    <string name="profile_account_title">Compte et données</string>
+    <string name="profile_account_section_export">Stockage et données</string>
+    <string name="profile_account_section_delete">Compte</string>
+    <string name="profile_account_export_helper">Téléchargez une copie JSON de vos données, prête à être partagée.</string>
+    <string name="profile_account_export_action">Télécharger mes données</string>
+    <string name="profile_account_export_share_title">Partager l’export</string>
+    <string name="profile_account_export_success">Export prêt</string>
+    <string name="profile_account_export_error">Impossible d’enregistrer l’export</string>
+    <string name="profile_account_delete_helper">Demande la suppression définitive de votre compte. Les transporteurs et expéditeurs avec qui vous avez interagi pourraient voir vos précédentes réservations.</string>
+    <string name="profile_account_delete_reason_label">Pourquoi partez-vous? (facultatif)</string>
+    <string name="profile_account_delete_reason_placeholder">Dites-nous pour que nous puissions nous améliorer</string>
+    <string name="profile_account_delete_action">Désactiver mon compte</string>
+    <string name="profile_account_delete_confirm_title">Désactiver votre compte?</string>
+    <string name="profile_account_delete_confirm_message">Nous traiterons votre demande. Vous serez déconnecté et ne pourrez plus vous reconnecter.</string>
+    <string name="profile_account_delete_confirm_yes">Désactiver le compte</string>
+    <string name="profile_account_delete_confirm_cancel">Annuler</string>
+    <string name="profile_account_deletion_success">Demande de désactivation reçue. Déconnexion en cours.</string>
+    <string name="profile_account_deletion_success_formatted">Demande de désactivation reçue (statut: %1$s). Déconnexion en cours.</string>
+    <string name="profile_account_close">Fermer</string>
 </resources>
