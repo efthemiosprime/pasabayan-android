@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ratings / Feedback (11-favorites-ratings slice B) -->
+    <string name="ratings_title">Commentaires</string>
+    <string name="ratings_back">Retour au profil</string>
+    <string name="ratings_tab_received">Reçus</string>
+    <string name="ratings_tab_given">Donnés</string>
+    <string name="ratings_tab_pending">En attente</string>
+    <string name="ratings_summary_average">%1$s · %2$d avis</string>
+    <string name="ratings_empty_received">Aucun avis pour l’instant</string>
+    <string name="ratings_empty_given">Vous n’avez encore laissé aucun avis</string>
+    <string name="ratings_empty_pending">Aucun avis en attente</string>
+    <string name="ratings_card_stars">%1$d/5</string>
+    <string name="ratings_card_pending_route">%1$s</string>
+    <string name="ratings_card_pending_description">%1$s</string>
+    <string name="ratings_card_pending_days">%1$d jours depuis la livraison</string>
+    <string name="ratings_edit_comment">Modifier le commentaire</string>
+    <string name="ratings_save_comment">Enregistrer</string>
+    <string name="ratings_cancel_edit">Annuler</string>
+    <string name="ratings_comment_placeholder">Votre commentaire</string>
+    <string name="ratings_comment_updated">Commentaire mis à jour</string>
+</resources>

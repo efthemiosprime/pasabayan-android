@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ratings / Feedback (11-favorites-ratings slice B) -->
+    <string name="ratings_title">Feedback</string>
+    <string name="ratings_back">Back to profile</string>
+    <string name="ratings_tab_received">Received</string>
+    <string name="ratings_tab_given">Given</string>
+    <string name="ratings_tab_pending">Pending</string>
+    <string name="ratings_summary_average">%1$s · %2$d reviews</string>
+    <string name="ratings_empty_received">No reviews yet</string>
+    <string name="ratings_empty_given">You haven\'t left any reviews yet</string>
+    <string name="ratings_empty_pending">Nothing waiting for your review</string>
+    <string name="ratings_card_stars">%1$d/5</string>
+    <string name="ratings_card_pending_route">%1$s</string>
+    <string name="ratings_card_pending_description">%1$s</string>
+    <string name="ratings_card_pending_days">%1$d days since delivery</string>
+    <string name="ratings_edit_comment">Edit comment</string>
+    <string name="ratings_save_comment">Save</string>
+    <string name="ratings_cancel_edit">Cancel</string>
+    <string name="ratings_comment_placeholder">Your comment</string>
+    <string name="ratings_comment_updated">Comment updated</string>
+</resources>

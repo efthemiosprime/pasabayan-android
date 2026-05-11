@@ -16,6 +16,7 @@ import com.efthemiosprime.pasabayan.core.network.payments.StripeConfigApi
 import com.efthemiosprime.pasabayan.core.network.payments.StripeConnectApi
 import com.efthemiosprime.pasabayan.core.network.trips.TripsApi
 import com.efthemiosprime.pasabayan.core.network.favorites.FavoritesApi
+import com.efthemiosprime.pasabayan.core.network.ratings.RatingsApi
 import com.efthemiosprime.pasabayan.core.network.verification.VerificationApi
 import dagger.Module
 import dagger.Provides
@@ -133,6 +134,11 @@ object NetworkModule {
     @Singleton
     fun provideFavoritesApi(retrofit: Retrofit): FavoritesApi =
         retrofit.create(FavoritesApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideRatingsApi(retrofit: Retrofit): RatingsApi =
+        retrofit.create(RatingsApi::class.java)
 
     @Provides
     @Singleton

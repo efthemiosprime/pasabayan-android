@@ -40,6 +40,7 @@ import com.efthemiosprime.pasabayan.features.profile.viewmodel.DisclaimerSyncVie
 import com.efthemiosprime.pasabayan.core.network.favorites.FavoriteCarrierInfoJson
 import com.efthemiosprime.pasabayan.features.favorites.ui.FavoritesListScreen
 import com.efthemiosprime.pasabayan.features.favorites.ui.SendRequestSheet
+import com.efthemiosprime.pasabayan.features.ratings.ui.RatingsScreen
 import com.efthemiosprime.pasabayan.features.verification.ui.PhoneVerificationSheet
 import com.efthemiosprime.pasabayan.features.verification.ui.PremiumVerificationSheet
 import com.efthemiosprime.pasabayan.features.chat.ui.MessagesTabScreen
@@ -110,6 +111,7 @@ fun MainTabScreen(
     var showPremiumVerificationSheet by remember { mutableStateOf(false) }
     var favoritesOpen by remember { mutableStateOf(false) }
     var sendRequestCarrier by remember { mutableStateOf<FavoriteCarrierInfoJson?>(null) }
+    var ratingsOpen by remember { mutableStateOf(false) }
     val dismissActiveSheetRoute = { viewModel.dismissActiveSheetRoute() }
     val openTripFilterSheet = { viewModel.openTripFilterSheet() }
     val openCreateTripFromPackageSheet: (Int) -> Unit = { packageId ->
@@ -147,6 +149,7 @@ fun MainTabScreen(
             profilePaymentsOpen = false
             settingsOpen = false
             favoritesOpen = false
+            ratingsOpen = false
         }
     }
 
@@ -233,6 +236,25 @@ fun MainTabScreen(
                 )
                 "profile" -> {
                     when {
+                        ratingsOpen -> {
+                            Column {
+                                PTopBar(
+                                    title = stringResource(R.string.ratings_title),
+                                    navigationIcon = {
+                                        IconButton(onClick = { ratingsOpen = false }) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                                contentDescription = stringResource(R.string.ratings_back),
+                                            )
+                                        }
+                                    },
+                                )
+                                RatingsScreen(
+                                    userId = user.id.toInt(),
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+                        }
                         favoritesOpen -> {
                             Column {
                                 PTopBar(
@@ -309,6 +331,7 @@ fun MainTabScreen(
                             onOpenSettings = { settingsOpen = true },
                             onOpenAccountManagement = { showAccountManagementSheet = true },
                             onOpenFavorites = { favoritesOpen = true },
+                            onOpenRatings = { ratingsOpen = true },
                         )
                     }
                 }
