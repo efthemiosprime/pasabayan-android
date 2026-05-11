@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accepter et effectuer des livraisons</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #000;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+        h2 {
+            color: #000;
+            font-size: 22px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        h3 {
+            color: #666;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        p {
+            margin-bottom: 12px;
+        }
+        ol, ul {
+            margin-bottom: 12px;
+            padding-left: 24px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .step {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .step-title {
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 8px;
+        }
+        .section {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .tip {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .important {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .security {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Accepter et effectuer des livraisons</h1>
+
+    <p>Pasabayan met en relation des expéditeurs et des transporteurs grâce à un système de jumelage. Ce guide vous accompagne tout au long du processus de livraison — du jumelage à la confirmation — tant pour les expéditeurs que pour les transporteurs.</p>
+
+    <h2>Comment fonctionne le jumelage</h2>
+
+    <p>Un jumelage de livraison peut être initié de deux façons :</p>
+
+    <div class="section">
+        <h3>Initié par l'expéditeur</h3>
+        <p>Un expéditeur parcourt les trajets disponibles des transporteurs et en trouve un le long d'un itinéraire compatible. L'expéditeur envoie une demande avec un <strong>prix proposé</strong> et un message optionnel. Le transporteur examine ensuite la demande et décide d'accepter, de refuser ou de faire une contre-offre.</p>
+    </div>
+
+    <div class="section">
+        <h3>Initié par le transporteur</h3>
+        <p>Un transporteur parcourt les demandes de colis des expéditeurs et en trouve une qui correspond à son trajet. Le transporteur envoie une demande avec un <strong>prix proposé</strong> et un message optionnel. L'expéditeur examine ensuite la demande et décide d'accepter, de refuser ou de faire une contre-offre.</p>
+    </div>
+
+    <h2>Répondre à une demande de jumelage</h2>
+
+    <p>Lorsque vous recevez une demande de jumelage, vous avez trois options :</p>
+
+    <div class="step">
+        <div class="step-title">Accepter</div>
+        <p>Accepter le prix et les conditions proposés. Si les deux parties acceptent, le jumelage est <strong>confirmé</strong> automatiquement. Une conversation de clavardage est créée pour que vous puissiez coordonner les détails.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Contre-offre</div>
+        <p>Si le prix proposé ne vous convient pas, soumettez une <strong>contre-offre</strong> avec un nouveau prix et un message optionnel expliquant votre raisonnement. L'autre partie peut ensuite accepter, refuser ou faire une nouvelle contre-offre. Le nombre de tours de contre-offres par jumelage est limité.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Refuser</div>
+        <p>Refuser la demande. Vous pouvez fournir une raison pour votre refus. L'autre partie sera notifiée.</p>
+    </div>
+
+    <div class="tip">
+        <strong>Conseil :</strong> Les contre-offres sont un excellent moyen de négocier un prix juste sans perdre le jumelage. Soyez raisonnable et expliquez pourquoi vous suggérez un montant différent.
+    </div>
+
+    <h2>Après la confirmation</h2>
+
+    <p>Une fois que les deux parties sont d'accord et que le jumelage est confirmé :</p>
+    <ul>
+        <li><strong>Clavardage ouvert :</strong> Une conversation privée est créée pour que vous puissiez coordonner les détails de la collecte, l'horaire et les instructions spéciales</li>
+        <li><strong>Paiement initié :</strong> Le paiement de l'expéditeur est autorisé automatiquement. Si l'expéditeur a un mode de paiement par défaut enregistré, cela se fait de manière transparente. Sinon, l'expéditeur devra effectuer le paiement avant de poursuivre</li>
+        <li><strong>Mises à jour du statut :</strong> Vous pouvez suivre la progression de la livraison dans l'onglet Réservations</li>
+    </ul>
+
+    <div class="important">
+        <strong>Paiement requis :</strong> L'expéditeur doit effectuer le paiement avant que le code de collecte puisse être généré. Si le paiement n'a pas été traité, l'expéditeur sera invité à payer lors de la tentative de génération du code de collecte.
+    </div>
+
+    <hr>
+
+    <h2>Processus de collecte</h2>
+
+    <p>La collecte utilise un <strong>code de confirmation à 6 chiffres</strong> sécurisé pour vérifier la remise du colis.</p>
+
+    <h3>Pour les expéditeurs</h3>
+
+    <div class="step">
+        <div class="step-title">Étape 1 : Générer le code de collecte</div>
+        <p>Lorsque vous êtes prêt pour que le transporteur récupère votre colis, générez un code de collecte à 6 chiffres depuis l'écran de détails de la livraison. Le code est automatiquement envoyé dans la conversation de clavardage pour que le transporteur puisse le voir.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Étape 2 : Partager le code avec le transporteur</div>
+        <p>Rencontrez le transporteur au lieu de collecte convenu et partagez le code. Vous pouvez également copier le code et l'envoyer manuellement si nécessaire.</p>
+    </div>
+
+    <div class="important">
+        <strong>Expiration du code :</strong> Les codes de collecte ont une durée de validité limitée. Un compte à rebours indique le temps restant. Si le code expire, vous pouvez en générer un nouveau.
+    </div>
+
+    <h3>Pour les transporteurs</h3>
+
+    <div class="step">
+        <div class="step-title">Étape 1 : Obtenir le code</div>
+        <p>Le code de collecte de l'expéditeur apparaîtra automatiquement dans la conversation de clavardage. Rendez-vous au lieu de collecte convenu.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Étape 2 : Saisir le code</div>
+        <p>Saisissez le code à 6 chiffres dans l'écran de confirmation pour vérifier la collecte. Une fois vérifié, le statut de la livraison passe à <strong>« Collecté »</strong> et vous êtes responsable du colis.</p>
+    </div>
+
+    <div class="security">
+        <strong>Sécurité :</strong> Le système de code de confirmation garantit que les deux parties vérifient la remise en personne. Ne partagez jamais les codes avec quiconque autre que l'expéditeur ou le transporteur jumelé.
+    </div>
+
+    <hr>
+
+    <h2>En transit</h2>
+
+    <p>Après la collecte, le transporteur marque la livraison comme <strong>« En transit »</strong> pour indiquer qu'il est en route vers la destination.</p>
+
+    <h3>Pour les transporteurs</h3>
+    <ul>
+        <li><strong>Mettre à jour le statut :</strong> Marquez la livraison comme « En transit » depuis les détails de la réservation</li>
+        <li><strong>Partage de position :</strong> Votre position est partagée automatiquement pendant le transit pour que l'expéditeur puisse suivre la progression de la livraison</li>
+        <li><strong>Restez connecté :</strong> Utilisez le clavardage intégré pour communiquer toute mise à jour ou retard à l'expéditeur</li>
+    </ul>
+
+    <h3>Pour les expéditeurs</h3>
+    <ul>
+        <li><strong>Suivre la progression :</strong> Visualisez la position actuelle du transporteur sur la carte en temps réel</li>
+        <li><strong>Restez informé :</strong> Vous recevrez des notifications lorsque le statut change</li>
+        <li><strong>Préparez-vous pour la livraison :</strong> Générez le code de livraison lorsque le transporteur approche (disponible une fois le statut « En transit »)</li>
+    </ul>
+
+    <hr>
+
+    <h2>Processus de livraison</h2>
+
+    <p>La confirmation de livraison utilise également un <strong>code de vérification à 6 chiffres</strong>, similaire au processus de collecte.</p>
+
+    <h3>Pour les expéditeurs / destinataires</h3>
+
+    <div class="step">
+        <div class="step-title">Étape 1 : Générer le code de livraison</div>
+        <p>Lorsque le transporteur approche, générez un code de livraison à 6 chiffres depuis l'écran de détails de la livraison. Le code est automatiquement envoyé dans la conversation de clavardage.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Étape 2 : Partager le code à la livraison</div>
+        <p>Lorsque le transporteur arrive, partagez le code pour confirmer que vous avez reçu votre colis.</p>
+    </div>
+
+    <h3>Pour les transporteurs</h3>
+
+    <div class="step">
+        <div class="step-title">Étape 1 : Arriver à destination</div>
+        <p>Rendez-vous à l'adresse de livraison et rencontrez le destinataire.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Étape 2 : Saisir le code de livraison</div>
+        <p>Saisissez le code à 6 chiffres fourni par le destinataire pour confirmer la livraison. Une fois vérifié, le statut de la livraison passe à <strong>« Livré »</strong>.</p>
+    </div>
+
+    <div class="section">
+        <h3>Ce qui se passe après la livraison</h3>
+        <ul>
+            <li><strong>Clavardage fermé :</strong> La conversation de clavardage est automatiquement fermée avec un message système invitant les deux parties à laisser un avis</li>
+            <li><strong>Paiement finalisé :</strong> Le paiement est capturé et vos gains sont traités</li>
+            <li><strong>Invitation à évaluer :</strong> L'expéditeur et le transporteur sont invités à évaluer leur expérience</li>
+        </ul>
+    </div>
+
+    <hr>
+
+    <h2>Statuts de livraison</h2>
+
+    <div class="section">
+        <h3>Progression des statuts</h3>
+        <ul>
+            <li><strong>En attente :</strong> Demande de jumelage initiale envoyée</li>
+            <li><strong>Demandé :</strong> En attente de la réponse de l'autre partie (demandé par le transporteur ou l'expéditeur)</li>
+            <li><strong>Accepté :</strong> Une partie a accepté, en attente de la confirmation finale</li>
+            <li><strong>Confirmé :</strong> Les deux parties ont confirmé — prêt pour la collecte, paiement autorisé</li>
+            <li><strong>Collecté :</strong> Le transporteur a récupéré le colis (vérifié par le code de collecte)</li>
+            <li><strong>En transit :</strong> Le colis est en route vers la destination</li>
+            <li><strong>Livré :</strong> Livraison réussie et confirmée (vérifié par le code de livraison)</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>Autres statuts</h3>
+        <ul>
+            <li><strong>Annulé :</strong> Le jumelage a été annulé par l'une des parties avant la collecte</li>
+            <li><strong>Refusé :</strong> La demande a été refusée par le transporteur ou l'expéditeur</li>
+        </ul>
+    </div>
+
+    <h2>Annulations</h2>
+
+    <div class="section">
+        <h3>Quand pouvez-vous annuler</h3>
+        <p>L'une ou l'autre des parties peut annuler un jumelage pendant la phase de négociation et de confirmation — avant que le colis n'ait été collecté. Les options d'annulation sont disponibles depuis l'écran de détails de la réservation.</p>
+        <ul>
+            <li><strong>Avant la collecte :</strong> Annulez librement avec traitement automatique du remboursement</li>
+            <li><strong>Après la collecte :</strong> L'annulation n'est pas disponible une fois le colis récupéré</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>Annulation automatique</h3>
+        <p>Si une demande de jumelage reste sans réponse trop longtemps, le système l'annulera automatiquement et traitera les remboursements applicables. Les deux parties sont notifiées lorsque cela se produit.</p>
+    </div>
+
+    <h2>Clavardage intégré</h2>
+
+    <div class="section">
+        <p>Chaque livraison confirmée comprend une conversation de clavardage privée entre l'expéditeur et le transporteur. Utilisez-la pour :</p>
+        <ul>
+            <li>Coordonner l'heure et le lieu de collecte</li>
+            <li>Partager les codes de confirmation (envoyés automatiquement par le système)</li>
+            <li>Communiquer les mises à jour ou les retards pendant le transit</li>
+            <li>Clarifier les instructions de livraison</li>
+        </ul>
+        <p>Le clavardage reste actif tout au long de la livraison et est automatiquement fermé après la confirmation de livraison. L'historique des conversations est conservé pour vos dossiers.</p>
+    </div>
+
+    <h2>Évaluations et avis</h2>
+
+    <div class="section">
+        <p>Après la confirmation de la livraison, les deux parties peuvent évaluer leur expérience :</p>
+        <ul>
+            <li><strong>Note par étoiles :</strong> Évaluez de 1 à 5 étoiles</li>
+            <li><strong>Avis écrit :</strong> Ajoutez optionnellement un avis écrit sur votre expérience</li>
+        </ul>
+        <p>Les évaluations contribuent à bâtir la confiance au sein de la communauté. Votre note moyenne et le nombre total d'avis sont affichés sur votre profil.</p>
+    </div>
+
+    <div class="tip">
+        <strong>Conseil :</strong> Une bonne communication et des mises à jour ponctuelles mènent à de meilleures évaluations. Tenez l'autre partie informée tout au long du processus de livraison.
+    </div>
+
+    <h2>Référence rapide</h2>
+
+    <div class="section">
+        <h3>Chronologie complète de la livraison</h3>
+        <ol>
+            <li><strong>Jumelage :</strong> L'expéditeur ou le transporteur envoie une demande avec un prix</li>
+            <li><strong>Négociation :</strong> Accepter, refuser ou faire une contre-offre</li>
+            <li><strong>Confirmation :</strong> Les deux parties sont d'accord — paiement autorisé, clavardage créé</li>
+            <li><strong>Collecte :</strong> L'expéditeur génère le code → Le transporteur saisit le code → Colis récupéré</li>
+            <li><strong>Transit :</strong> Le transporteur marque en transit → Position partagée → L'expéditeur suit</li>
+            <li><strong>Livraison :</strong> L'expéditeur génère le code → Le transporteur saisit le code → Livraison confirmée</li>
+            <li><strong>Évaluation :</strong> Les deux parties laissent des notes et des avis</li>
+        </ol>
+    </div>
+
+    <h2>Besoin d'aide?</h2>
+    <p>Si vous rencontrez des problèmes pendant une livraison :</p>
+    <ul>
+        <li>Utilisez le clavardage intégré pour communiquer avec l'autre partie</li>
+        <li>Vérifiez le statut de la livraison dans votre onglet Réservations</li>
+        <li>Soumettez un ticket de support via l'application si vous avez besoin d'assistance</li>
+    </ul>
+</body>
+</html>

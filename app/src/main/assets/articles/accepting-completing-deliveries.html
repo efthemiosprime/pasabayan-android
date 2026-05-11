@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accepting and Completing Deliveries</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #000;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+        h2 {
+            color: #000;
+            font-size: 22px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        h3 {
+            color: #666;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        p {
+            margin-bottom: 12px;
+        }
+        ol, ul {
+            margin-bottom: 12px;
+            padding-left: 24px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .step {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .step-title {
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 8px;
+        }
+        .section {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .tip {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .important {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .security {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Accepting and Completing Deliveries</h1>
+
+    <p>Pasabayan connects shippers and carriers through a matching system. This guide walks you through the entire delivery process — from matching to confirmation — for both shippers and carriers.</p>
+
+    <h2>How Matching Works</h2>
+
+    <p>There are two ways a delivery match can start:</p>
+
+    <div class="section">
+        <h3>Shipper-Initiated</h3>
+        <p>A shipper browses available carrier trips and finds one along a compatible route. The shipper sends a request with an <strong>offered price</strong> and an optional message. The carrier then reviews the request and decides to accept, decline, or counter-offer.</p>
+    </div>
+
+    <div class="section">
+        <h3>Carrier-Initiated</h3>
+        <p>A carrier browses package requests from shippers and finds one that fits their trip. The carrier sends a request with a <strong>proposed price</strong> and an optional message. The shipper then reviews the request and decides to accept, decline, or counter-offer.</p>
+    </div>
+
+    <h2>Responding to a Match Request</h2>
+
+    <p>When you receive a match request, you have three options:</p>
+
+    <div class="step">
+        <div class="step-title">Accept</div>
+        <p>Agree to the proposed price and terms. If both parties accept, the match is <strong>confirmed</strong> automatically. A chat conversation is created so you can coordinate details.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Counter-Offer</div>
+        <p>If the proposed price doesn't work for you, submit a <strong>counter-offer</strong> with a new price and an optional message explaining your reasoning. The other party can then accept, decline, or counter again. There is a limited number of counter-offer rounds per match.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Decline</div>
+        <p>Turn down the request. You can provide a reason for declining. The other party will be notified.</p>
+    </div>
+
+    <div class="tip">
+        <strong>Tip:</strong> Counter-offers are a great way to negotiate a fair price without losing the match entirely. Be reasonable and explain why you're suggesting a different amount.
+    </div>
+
+    <h2>After Confirmation</h2>
+
+    <p>Once both parties agree and the match is confirmed:</p>
+    <ul>
+        <li><strong>Chat opens:</strong> A private chat conversation is created for you to coordinate pickup details, timing, and any special instructions</li>
+        <li><strong>Payment initiated:</strong> The shipper's payment is authorized automatically. If the shipper has a default payment method on file, this happens seamlessly. Otherwise, the shipper will need to complete payment before proceeding</li>
+        <li><strong>Status updates:</strong> You can track the delivery progress in the Bookings tab</li>
+    </ul>
+
+    <div class="important">
+        <strong>Payment Required:</strong> The shipper must complete payment before the pickup code can be generated. If payment hasn't been processed, the shipper will be prompted to pay when attempting to generate the pickup code.
+    </div>
+
+    <hr>
+
+    <h2>Pickup Process</h2>
+
+    <p>The pickup uses a secure <strong>6-digit confirmation code</strong> to verify the handoff.</p>
+
+    <h3>For Shippers</h3>
+
+    <div class="step">
+        <div class="step-title">Step 1: Generate the Pickup Code</div>
+        <p>When you're ready for the carrier to pick up your package, generate a 6-digit pickup code from the delivery details screen. The code is automatically sent to the chat conversation so the carrier can see it.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 2: Share the Code with the Carrier</div>
+        <p>Meet the carrier at the agreed pickup location and share the code. You can also copy the code and send it manually if needed.</p>
+    </div>
+
+    <div class="important">
+        <strong>Code Expiry:</strong> Pickup codes have a limited validity period. A countdown timer shows the remaining time. If the code expires, you can generate a new one.
+    </div>
+
+    <h3>For Carriers</h3>
+
+    <div class="step">
+        <div class="step-title">Step 1: Get the Code</div>
+        <p>The shipper's pickup code will appear in the chat conversation automatically. Meet the shipper at the agreed pickup location.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 2: Enter the Code</div>
+        <p>Enter the 6-digit code in the confirmation screen to verify the pickup. Once verified, the delivery status changes to <strong>"Picked Up"</strong> and you're responsible for the package.</p>
+    </div>
+
+    <div class="security">
+        <strong>Security:</strong> The confirmation code system ensures that both parties verify the handoff in person. Never share codes with anyone other than the matched shipper or carrier.
+    </div>
+
+    <hr>
+
+    <h2>In Transit</h2>
+
+    <p>After pickup, the carrier marks the delivery as <strong>"In Transit"</strong> to indicate they're on their way to the destination.</p>
+
+    <h3>For Carriers</h3>
+    <ul>
+        <li><strong>Update status:</strong> Mark the delivery as "In Transit" from the booking details</li>
+        <li><strong>Location sharing:</strong> Your location is shared automatically during transit so the shipper can track delivery progress</li>
+        <li><strong>Stay connected:</strong> Use in-app chat to communicate any updates or delays to the shipper</li>
+    </ul>
+
+    <h3>For Shippers</h3>
+    <ul>
+        <li><strong>Track progress:</strong> View the carrier's current location on the map in real time</li>
+        <li><strong>Stay informed:</strong> You'll receive notifications when the status changes</li>
+        <li><strong>Prepare for delivery:</strong> Generate the delivery code when the carrier is approaching (available once the status is "In Transit")</li>
+    </ul>
+
+    <hr>
+
+    <h2>Delivery Process</h2>
+
+    <p>Delivery confirmation also uses a <strong>6-digit verification code</strong>, similar to the pickup process.</p>
+
+    <h3>For Shippers / Recipients</h3>
+
+    <div class="step">
+        <div class="step-title">Step 1: Generate the Delivery Code</div>
+        <p>When the carrier is approaching, generate a 6-digit delivery code from the delivery details screen. The code is automatically sent to the chat conversation.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 2: Share the Code at Delivery</div>
+        <p>When the carrier arrives, share the code to confirm you've received your package.</p>
+    </div>
+
+    <h3>For Carriers</h3>
+
+    <div class="step">
+        <div class="step-title">Step 1: Arrive at Destination</div>
+        <p>Head to the delivery address and meet the recipient.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 2: Enter the Delivery Code</div>
+        <p>Enter the 6-digit code provided by the recipient to confirm the delivery. Once verified, the delivery status changes to <strong>"Delivered"</strong>.</p>
+    </div>
+
+    <div class="section">
+        <h3>What Happens After Delivery</h3>
+        <ul>
+            <li><strong>Chat closes:</strong> The chat conversation is automatically closed with a system message prompting both parties to leave a review</li>
+            <li><strong>Payment finalized:</strong> The payment is captured and your earnings are processed</li>
+            <li><strong>Rating prompt:</strong> Both the shipper and carrier are prompted to rate their experience</li>
+        </ul>
+    </div>
+
+    <hr>
+
+    <h2>Delivery Statuses</h2>
+
+    <div class="section">
+        <h3>Status Progression</h3>
+        <ul>
+            <li><strong>Pending:</strong> Initial match request sent</li>
+            <li><strong>Requested:</strong> Awaiting the other party's response (carrier requested or shipper requested)</li>
+            <li><strong>Accepted:</strong> One party has accepted, awaiting final confirmation</li>
+            <li><strong>Confirmed:</strong> Both parties confirmed — ready for pickup, payment authorized</li>
+            <li><strong>Picked Up:</strong> Carrier has collected the package (verified by pickup code)</li>
+            <li><strong>In Transit:</strong> Package is on its way to the destination</li>
+            <li><strong>Delivered:</strong> Successfully delivered and confirmed (verified by delivery code)</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>Other Statuses</h3>
+        <ul>
+            <li><strong>Cancelled:</strong> Match was cancelled by either party before pickup</li>
+            <li><strong>Declined:</strong> Request was declined by the carrier or shipper</li>
+        </ul>
+    </div>
+
+    <h2>Cancellations</h2>
+
+    <div class="section">
+        <h3>When You Can Cancel</h3>
+        <p>Either party can cancel a match during the negotiation and confirmation phase — before the package has been picked up. Cancellation options are available from the booking details screen.</p>
+        <ul>
+            <li><strong>Before pickup:</strong> Cancel freely with automatic refund processing</li>
+            <li><strong>After pickup:</strong> Cancellation is not available once the package has been collected</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>Auto-Cancellation</h3>
+        <p>If a match request goes unanswered for too long, the system will automatically cancel it and process any applicable refunds. Both parties are notified when this happens.</p>
+    </div>
+
+    <h2>In-App Chat</h2>
+
+    <div class="section">
+        <p>Every confirmed delivery includes a private chat conversation between the shipper and carrier. Use it to:</p>
+        <ul>
+            <li>Coordinate pickup time and meeting point</li>
+            <li>Share confirmation codes (auto-sent by the system)</li>
+            <li>Communicate updates or delays during transit</li>
+            <li>Clarify delivery instructions</li>
+        </ul>
+        <p>The chat remains active throughout the delivery and is automatically closed after delivery confirmation. Conversation history is preserved for your records.</p>
+    </div>
+
+    <h2>Ratings and Reviews</h2>
+
+    <div class="section">
+        <p>After delivery is confirmed, both parties can rate their experience:</p>
+        <ul>
+            <li><strong>Star rating:</strong> Rate from 1 to 5 stars</li>
+            <li><strong>Written review:</strong> Optionally add a written review about your experience</li>
+        </ul>
+        <p>Ratings help build trust in the community. Your average rating and total number of reviews are displayed on your profile.</p>
+    </div>
+
+    <div class="tip">
+        <strong>Tip:</strong> Good communication and timely updates lead to better ratings. Keep the other party informed throughout the delivery process.
+    </div>
+
+    <h2>Quick Reference</h2>
+
+    <div class="section">
+        <h3>Complete Delivery Timeline</h3>
+        <ol>
+            <li><strong>Match:</strong> Shipper or carrier sends a request with a price</li>
+            <li><strong>Negotiate:</strong> Accept, decline, or counter-offer</li>
+            <li><strong>Confirm:</strong> Both parties agree — payment authorized, chat created</li>
+            <li><strong>Pickup:</strong> Shipper generates code → Carrier enters code → Package collected</li>
+            <li><strong>Transit:</strong> Carrier marks in transit → Location shared → Shipper tracks</li>
+            <li><strong>Deliver:</strong> Shipper generates code → Carrier enters code → Delivery confirmed</li>
+            <li><strong>Rate:</strong> Both parties leave ratings and reviews</li>
+        </ol>
+    </div>
+
+    <h2>Need Help?</h2>
+    <p>If you encounter any issues during a delivery:</p>
+    <ul>
+        <li>Use in-app chat to communicate with the other party</li>
+        <li>Check the delivery status in your Bookings tab</li>
+        <li>Submit a support ticket through the app if you need assistance</li>
+    </ul>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changer de rôle entre expéditeur et transporteur - Pasabayan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #000000;
+            background-color: #ffffff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #000000;
+        }
+
+        .last-updated {
+            color: #666666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .accordion {
+            background-color: #f5f5f7;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid #d2d2d7;
+        }
+
+        .accordion-header {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .accordion-header:hover {
+            background-color: #e8e8ed;
+        }
+
+        .accordion-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .accordion-icon {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+            color: #666666;
+        }
+
+        .accordion.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion-content-inner {
+            padding: 0 20px 20px 20px;
+            color: #333333;
+            font-size: 15px;
+        }
+
+        .accordion-content-inner p {
+            margin-bottom: 12px;
+        }
+
+        .accordion-content-inner ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .accordion-content-inner ol {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .accordion-content-inner li {
+            margin-bottom: 8px;
+        }
+
+        .step-number {
+            background-color: #007AFF;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 8px;
+            display: inline-block;
+        }
+
+        .tip-box {
+            background-color: #FFF8E1;
+            border-left: 4px solid #FFC107;
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 4px;
+        }
+
+        .tip-box strong {
+            color: #F57C00;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #d2d2d7;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Changer de rôle entre expéditeur et transporteur</h1>
+        <p class="last-updated">Dernière mise à jour : novembre 2025</p>
+
+        <div class="accordion active">
+            <div class="accordion-header">
+                <div class="accordion-title">Comprendre les deux rôles</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content" style="max-height: 1000px;">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan vous permet d'agir à la fois comme <strong>Expéditeur</strong> (envoyer des colis) et comme <strong>Transporteur</strong> (transporter des colis). Vous pouvez changer de rôle à tout moment pour accéder à différentes fonctionnalités.</p>
+                    <p><strong>Rôle d'expéditeur :</strong> Créez des demandes de colis, parcourez les trajets disponibles, demandez des transporteurs et suivez vos livraisons.</p>
+                    <p><strong>Rôle de transporteur :</strong> Créez des trajets, gérez votre capacité, acceptez des demandes de colis et gagnez de l'argent en livrant des colis.</p>
+                    <div class="tip-box">
+                        <strong>Conseil :</strong> La plupart des utilisateurs commencent comme expéditeurs et activent ensuite le mode transporteur pour gagner un revenu supplémentaire lors de leurs déplacements habituels.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Comment changer de rôle</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Suivez ces étapes simples pour changer de rôle entre expéditeur et transporteur :</p>
+                    <ol>
+                        <li>
+                            <span class="step-number">1</span>
+                            <strong>Localiser l'en-tête utilisateur</strong><br>
+                            En haut de votre écran d'accueil, vous verrez une carte avec vos informations de profil, incluant votre nom et votre avatar.
+                        </li>
+                        <li>
+                            <span class="step-number">2</span>
+                            <strong>Appuyer sur le menu à trois points</strong><br>
+                            Dans le coin inférieur droit de la carte d'en-tête utilisateur, appuyez sur l'icône du menu à trois points (⋮).
+                        </li>
+                        <li>
+                            <span class="step-number">3</span>
+                            <strong>Sélectionner le rôle souhaité</strong><br>
+                            Un menu apparaîtra avec les options :
+                            <ul>
+                                <li><strong>Passer en mode expéditeur</strong> — Accéder aux fonctionnalités d'expéditeur</li>
+                                <li><strong>Passer en mode transporteur</strong> — Accéder aux fonctionnalités de transporteur</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <span class="step-number">4</span>
+                            <strong>Attendre l'activation</strong><br>
+                            Si vous passez en mode transporteur pour la première fois, l'application activera les fonctionnalités de transporteur pour votre compte. Cela ne prend qu'un instant.
+                        </li>
+                        <li>
+                            <span class="step-number">5</span>
+                            <strong>Commencer à utiliser le nouveau rôle</strong><br>
+                            Une fois le changement effectué, vous verrez le tableau de bord et les fonctionnalités spécifiques au rôle sélectionné.
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Identifier votre rôle actuel</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Vous pouvez toujours voir quel rôle vous utilisez actuellement en vérifiant la carte d'en-tête utilisateur en haut de votre écran d'accueil :</p>
+                    <ul>
+                        <li><strong>Badge de rôle :</strong> Un petit badge affiche soit « Expéditeur » soit « Transporteur »</li>
+                        <li><strong>Fonctionnalités du tableau de bord :</strong> Les onglets et fonctionnalités disponibles reflètent votre rôle actuel</li>
+                        <li><strong>Badge de vérification :</strong> À côté du badge de rôle, vous verrez votre niveau de vérification (De base, Vérifié ou Premium)</li>
+                    </ul>
+                    <div class="tip-box">
+                        <strong>Conseil :</strong> Le badge de rôle et le niveau de vérification sont affichés côte à côte dans la carte d'en-tête utilisateur pour une référence facile.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Activer le mode transporteur pour la première fois</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Si vous passez en mode transporteur pour la première fois, voici ce qui se passe :</p>
+                    <ul>
+                        <li><strong>Activation automatique :</strong> L'application active automatiquement les fonctionnalités de transporteur pour votre compte</li>
+                        <li><strong>Configuration du profil :</strong> Vous pourrez configurer votre profil de transporteur, incluant les informations sur votre véhicule et vos itinéraires préférés</li>
+                        <li><strong>Gestion de la capacité :</strong> Vous pouvez définir l'espace et le poids que vous pouvez transporter</li>
+                        <li><strong>Contrôle des prix :</strong> Fixez vos propres tarifs au kilogramme ou par livraison</li>
+                    </ul>
+                    <p><strong>Exigences pour le mode transporteur :</strong></p>
+                    <ul>
+                        <li>Numéro de téléphone valide (doit être vérifié)</li>
+                        <li>Informations de profil complètes</li>
+                        <li>Acceptation des conditions de transporteur et des consignes de sécurité</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Fonctionnalités par rôle</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p><strong>Fonctionnalités d'expéditeur :</strong></p>
+                    <ul>
+                        <li>Créer et gérer des demandes de colis</li>
+                        <li>Parcourir les trajets de transporteurs disponibles</li>
+                        <li>Filtrer les transporteurs par itinéraire, prix et évaluations</li>
+                        <li>Demander des transporteurs spécifiques pour vos colis</li>
+                        <li>Suivre les colis en temps réel</li>
+                        <li>Évaluer les transporteurs après la livraison</li>
+                        <li>Consulter l'historique des livraisons</li>
+                    </ul>
+
+                    <p><strong>Fonctionnalités de transporteur :</strong></p>
+                    <ul>
+                        <li>Créer et gérer des trajets</li>
+                        <li>Définir la capacité disponible (poids et espace)</li>
+                        <li>Parcourir les demandes de colis disponibles</li>
+                        <li>Accepter ou inviter des expéditeurs à vos trajets</li>
+                        <li>Gérer plusieurs livraisons en un seul trajet</li>
+                        <li>Mettre à jour le statut et la position du trajet</li>
+                        <li>Consulter les gains et les analyses</li>
+                        <li>Évaluer les expéditeurs après la livraison</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Changer de rôle pendant des livraisons actives</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Vous pouvez changer de rôle même si vous avez des livraisons actives :</p>
+                    <ul>
+                        <li><strong>En cours :</strong> Les livraisons actives restent accessibles quel que soit votre rôle actuel</li>
+                        <li><strong>Notifications :</strong> Vous recevrez des notifications pour toutes les livraisons actives dans les deux rôles</li>
+                        <li><strong>Messages :</strong> L'onglet Messages affiche les conversations des activités d'expéditeur et de transporteur</li>
+                        <li><strong>Détails du jumelage :</strong> Vous pouvez consulter et gérer tous les jumelages actifs depuis l'un ou l'autre rôle</li>
+                    </ul>
+                    <div class="tip-box">
+                        <strong>Conseil :</strong> Si vous avez une tâche urgente de transporteur en mode expéditeur, changez simplement de rôle temporairement et revenez quand c'est terminé.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Préférences de rôle</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan mémorise votre préférence de rôle :</p>
+                    <ul>
+                        <li><strong>Dernier rôle utilisé :</strong> Lorsque vous ouvrez l'application, elle démarre avec le dernier rôle que vous utilisiez</li>
+                        <li><strong>Changement rapide :</strong> Le menu à trois points permet de changer de rôle en seulement deux appuis</li>
+                        <li><strong>Paramètres persistants :</strong> Votre préférence de rôle est sauvegardée localement sur votre appareil</li>
+                    </ul>
+                    <p>Pour définir une préférence de rôle par défaut :</p>
+                    <ol>
+                        <li>Allez dans <strong>Profil</strong> → <strong>Paramètres</strong></li>
+                        <li>Sous <strong>Préférence de rôle</strong>, sélectionnez votre rôle par défaut préféré</li>
+                        <li>L'application mémorisera ce paramètre entre les sessions</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Questions fréquentes</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p><strong>Q : Puis-je être expéditeur et transporteur en même temps?</strong></p>
+                    <p>R : Vous ne pouvez voir qu'un seul rôle à la fois dans l'application, mais vous pouvez avoir des livraisons actives dans les deux rôles simultanément. Changez simplement de rôle selon vos besoins.</p>
+
+                    <p><strong>Q : Y a-t-il une limite au nombre de fois que je peux changer de rôle?</strong></p>
+                    <p>R : Non, vous pouvez changer de rôle aussi souvent que nécessaire. Il n'y a aucune restriction ni période d'attente.</p>
+
+                    <p><strong>Q : Dois-je vérifier mon compte séparément pour chaque rôle?</strong></p>
+                    <p>R : Non, la vérification de votre compte (vérification du téléphone, vérification d'identité) s'applique aux deux rôles. Cependant, les transporteurs peuvent avoir des exigences supplémentaires comme les informations sur le véhicule.</p>
+
+                    <p><strong>Q : Mes évaluations seront-elles différentes pour les rôles d'expéditeur et de transporteur?</strong></p>
+                    <p>R : Oui, vous avez des évaluations distinctes pour chaque rôle. Votre note d'expéditeur est basée sur votre performance en tant qu'expéditeur, et votre note de transporteur reflète votre performance en tant que transporteur.</p>
+
+                    <p><strong>Q : Que se passe-t-il si je désactive le mode transporteur?</strong></p>
+                    <p>R : Si vous terminez toutes vos livraisons de transporteur et décidez d'arrêter d'être transporteur, vous pouvez désactiver le mode transporteur dans les paramètres de votre profil. Votre historique et vos évaluations de transporteur seront conservés.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Besoin d'aide?</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Si vous avez des difficultés à changer de rôle ou avez besoin d'assistance :</p>
+                    <ul>
+                        <li><strong>Vérifiez votre connexion :</strong> L'activation du mode transporteur nécessite une connexion Internet</li>
+                        <li><strong>Mettez à jour l'application :</strong> Assurez-vous d'utiliser la dernière version de Pasabayan</li>
+                        <li><strong>Contactez le support :</strong> Écrivez-nous à support@pasabayan.com</li>
+                        <li><strong>Visitez le Centre d'aide :</strong> Parcourez d'autres articles dans le Centre d'aide</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const accordion = this.parentElement;
+                const content = accordion.querySelector('.accordion-content');
+                const isActive = accordion.classList.contains('active');
+
+                // Close all accordions
+                document.querySelectorAll('.accordion').forEach(acc => {
+                    acc.classList.remove('active');
+                    acc.querySelector('.accordion-content').style.maxHeight = null;
+                });
+
+                // Open clicked accordion if it wasn't active
+                if (!isActive) {
+                    accordion.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

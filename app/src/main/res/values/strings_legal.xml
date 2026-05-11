@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="legal_title">Review &amp; Agree</string>
+    <string name="legal_loading_document">Loading document…</string>
+    <string name="legal_loading_status">Checking your legal status…</string>
+    <string name="legal_document_progress">Document %1$d of %2$d</string>
+    <string name="legal_remaining">%1$d remaining</string>
+    <string name="legal_agree_to_this">I Agree to This Document</string>
+    <string name="legal_agree_to_all">I Agree to All</string>
+    <string name="legal_continue">Continue</string>
+    <string name="legal_finish">Finish</string>
+    <string name="legal_all_agreed_title">You\'re all caught up</string>
+    <string name="legal_all_agreed_description">There are no pending legal documents to review.</string>
+    <string name="legal_error_load">Couldn\'t load your legal status. Please try again.</string>
+    <string name="legal_error_agree">Couldn\'t record your agreement. Please try again.</string>
+    <string name="legal_retry">Retry</string>
+    <string name="legal_withdraw_warning_title">Heads up</string>
+    <string name="legal_withdraw_warning_dismiss">Got it</string>
+</resources>

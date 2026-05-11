@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getting Started with Pasabayan</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #000;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+        h2 {
+            color: #000;
+            font-size: 22px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        h3 {
+            color: #666;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        p {
+            margin-bottom: 12px;
+        }
+        ol, ul {
+            margin-bottom: 12px;
+            padding-left: 24px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .step {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .step-title {
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 8px;
+        }
+        .section {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .tip {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .important {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .security {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Getting Started with Pasabayan</h1>
+
+    <p>Welcome to Pasabayan — the peer-to-peer delivery platform that connects <strong>shippers</strong> (people who need items delivered) with <strong>carriers</strong> (travelers who can carry items along their route). This guide walks you through everything you need to know to get up and running.</p>
+
+    <h2>Creating Your Account</h2>
+
+    <div class="step">
+        <div class="step-title">Step 1: Explore the Onboarding</div>
+        <p>When you first open Pasabayan, you'll see a guided onboarding flow that introduces the app. Start by choosing a role to explore:</p>
+        <ul>
+            <li><strong>"I'm a Carrier"</strong> — Earn money while you travel by delivering packages along your route</li>
+            <li><strong>"I'm a Sender"</strong> — Send packages worldwide with trusted travelers at affordable prices</li>
+        </ul>
+        <p>Don't worry — this is just to show you how each role works. You can use <strong>both roles</strong> at any time.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 2: Sign Up</div>
+        <p>After the onboarding, sign up using one of the following methods:</p>
+        <ul>
+            <li><strong>Apple Sign-In</strong> — Quick and private, using your Apple ID</li>
+            <li><strong>Google Sign-In</strong> — Sign up with your Google account</li>
+            <li><strong>Facebook Login</strong> — Sign up with your Facebook account</li>
+        </ul>
+        <p>Your name, email, and profile photo are imported automatically from your chosen provider. No separate registration form needed.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 3: Accept Legal Agreements</div>
+        <p>On your first login, you'll be asked to review and accept the following documents:</p>
+        <ul>
+            <li>Terms of Service</li>
+            <li>Privacy Policy</li>
+            <li>Service Agreement</li>
+            <li>Liability Waiver</li>
+        </ul>
+        <p>Read each document and tap <strong>"I Agree"</strong> to proceed. You must accept all agreements before using the app.</p>
+    </div>
+
+    <div class="security">
+        <strong>Your Data is Secure:</strong> Authentication credentials are stored securely in iOS Keychain. All payments are processed through Stripe, a PCI DSS Level 1 certified payment processor. We never store your full card number or bank details.
+    </div>
+
+    <hr>
+
+    <h2>Understanding Roles</h2>
+
+    <p>Pasabayan users can hold <strong>both roles simultaneously</strong>. You can send packages as a shipper and earn money as a carrier — switch between roles anytime from your Profile.</p>
+
+    <div class="section">
+        <h3>Shipper (Sender)</h3>
+        <p>You need something delivered. Create a package request with your item details, pickup and delivery locations, and budget. Browse carriers traveling compatible routes and request a match.</p>
+    </div>
+
+    <div class="section">
+        <h3>Carrier</h3>
+        <p>You're traveling and have extra space. Post a trip with your route, dates, and available capacity. Shippers with packages along your route can request a match, or you can browse packages and offer to carry them.</p>
+    </div>
+
+    <div class="tip">
+        <strong>Tip:</strong> To switch roles, go to your Profile tab and use the role switcher dropdown at the top. Your dashboard, tabs, and available features will adjust to match your current role.
+    </div>
+
+    <hr>
+
+    <h2>Your Dashboard</h2>
+
+    <p>After signing in, you'll land on your dashboard. The app is organized into 5 tabs at the bottom of the screen, which change based on your active role:</p>
+
+    <div class="section">
+        <h3>As a Shipper</h3>
+        <ul>
+            <li><strong>Explore:</strong> Browse available carriers and trips heading your direction</li>
+            <li><strong>Matches:</strong> Track your active deliveries and booking requests</li>
+            <li><strong>My Packages:</strong> Manage your package requests — create new ones or view history</li>
+            <li><strong>Messages:</strong> Chat with your matched carriers</li>
+            <li><strong>Profile:</strong> Account settings, payments, verification, and more</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>As a Carrier</h3>
+        <ul>
+            <li><strong>Explore:</strong> Browse available packages along your routes</li>
+            <li><strong>Matches:</strong> View active bookings and delivery requests to accept or decline</li>
+            <li><strong>My Trips:</strong> Manage your trips — create new ones or view history</li>
+            <li><strong>Messages:</strong> Chat with your matched shippers</li>
+            <li><strong>Profile:</strong> Account settings, payouts, vehicle info, and more</li>
+        </ul>
+    </div>
+
+    <hr>
+
+    <h2>Getting Started as a Shipper</h2>
+
+    <div class="step">
+        <div class="step-title">1. Create a Package Request</div>
+        <p>Go to the <strong>Packages</strong> tab and tap the <strong>"Create"</strong> button. Choose between:</p>
+        <ul>
+            <li><strong>Ship Package:</strong> Send a parcel from one location to another</li>
+            <li><strong>Errand Service:</strong> Request grocery shopping, food delivery, pharmacy pickups, or general errands</li>
+        </ul>
+        <p>Fill in your package details, pickup and delivery locations, dates, and budget.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">2. Find a Carrier</div>
+        <p>Browse the <strong>Explore</strong> tab to see carriers traveling compatible routes. You can also wait for carriers to find your package request and send you an offer.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">3. Match and Pay</div>
+        <p>When you find a carrier (or a carrier finds you), negotiate the price and confirm the match. Complete payment using your saved card or add a new payment method through Stripe's secure checkout.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">4. Track Your Delivery</div>
+        <p>Once your package is picked up, track the carrier's location in real time from the <strong>Matches</strong> tab. Use in-app chat to stay in touch with your carrier throughout the delivery.</p>
+    </div>
+
+    <div class="tip">
+        <strong>Tip:</strong> Add a payment method early by going to <strong>Profile → Payment Methods → Add Payment Method</strong>. This lets you complete transactions faster when you find a carrier.
+    </div>
+
+    <hr>
+
+    <h2>Getting Started as a Carrier</h2>
+
+    <div class="step">
+        <div class="step-title">1. Post a Trip</div>
+        <p>From your Dashboard, tap <strong>"Create Trip"</strong>. Enter your route (pickup and destination cities), travel dates, available weight capacity, transportation method, and pricing. Once published, shippers along your route can find you.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">2. Browse Packages</div>
+        <p>Check the <strong>Explore</strong> tab to see package requests from shippers along your route. You can send an offer with your proposed price.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">3. Accept Requests</div>
+        <p>When a shipper requests a match with your trip, review the package details, price, and shipper profile. Accept, decline, or submit a counter-offer.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">4. Deliver and Get Paid</div>
+        <p>Pick up the package using the secure confirmation code, deliver it to the destination, and confirm with the delivery code. Your earnings are automatically transferred to your bank account through Stripe.</p>
+    </div>
+
+    <div class="important">
+        <strong>Important:</strong> Set up your payout account before your first delivery. Go to <strong>Profile → Payout Setup</strong> to complete Stripe Connect onboarding. You'll need to provide identity verification and bank account details.
+    </div>
+
+    <hr>
+
+    <h2>Verification Levels</h2>
+
+    <p>Building trust is important on Pasabayan. Your account has a verification level that's visible to other users:</p>
+
+    <div class="section">
+        <ul>
+            <li><strong>Basic:</strong> Your starting level after signing up with OAuth</li>
+            <li><strong>Verified:</strong> Phone number verified — go to <strong>Profile → Phone Verification</strong> to verify with a 6-digit SMS code</li>
+            <li><strong>Premium:</strong> Full identity verification with government ID — go to <strong>Profile → Premium Verification</strong> to apply</li>
+        </ul>
+    </div>
+
+    <div class="tip">
+        <strong>Tip:</strong> Higher verification levels build more trust with other users and can help you get matched faster. We recommend verifying your phone number as a first step.
+    </div>
+
+    <h2>Language Support</h2>
+
+    <p>Pasabayan is available in <strong>English</strong> and <strong>French</strong>. You can switch languages from the onboarding welcome screen or from your device's language settings.</p>
+
+    <h2>Supported Countries</h2>
+
+    <div class="section">
+        <p>Pasabayan currently supports routes in:</p>
+        <ul>
+            <li><strong>Canada</strong> — 150+ cities</li>
+            <li><strong>United States</strong> — 300+ cities</li>
+            <li><strong>Philippines</strong> — 80+ cities</li>
+            <li><strong>India</strong> — 70+ cities</li>
+        </ul>
+        <p>You can create trips and package requests between different countries for international deliveries.</p>
+    </div>
+
+    <h2>Quick Tips for Success</h2>
+
+    <div class="section">
+        <ul>
+            <li><strong>Complete your profile:</strong> Add a profile photo and verify your phone number to build trust</li>
+            <li><strong>Be responsive:</strong> Reply to match requests and messages promptly</li>
+            <li><strong>Set fair prices:</strong> Competitive pricing helps you get matched faster</li>
+            <li><strong>Communicate clearly:</strong> Use in-app chat to coordinate pickup details and share updates</li>
+            <li><strong>Rate your experience:</strong> After each delivery, leave a rating and review — it helps the whole community</li>
+            <li><strong>Explore both roles:</strong> You might travel a route where someone needs a delivery, or need something delivered along a route someone else is traveling</li>
+        </ul>
+    </div>
+
+    <h2>Need Help?</h2>
+    <p>If you have questions or run into issues:</p>
+    <ul>
+        <li>Browse articles in the Help Center for guides on specific features</li>
+        <li>Submit a support ticket through the app</li>
+    </ul>
+
+    <p><strong>Welcome to the community!</strong> Whether you're sending your first package or earning money on your next trip, Pasabayan makes peer-to-peer delivery simple and secure.</p>
+</body>
+</html>

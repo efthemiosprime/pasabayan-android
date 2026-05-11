@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrat de service - Pasabayan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #000000;
+            background-color: #ffffff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #000000;
+        }
+        
+        .last-updated {
+            color: #666666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        
+        .accordion {
+            background-color: #f5f5f7;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid #d2d2d7;
+        }
+        
+        .accordion-header {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .accordion-header:hover {
+            background-color: #e8e8ed;
+        }
+        
+        .accordion-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #000000;
+        }
+        
+        .accordion-icon {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+            color: #666666;
+        }
+        
+        .accordion.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .accordion-content-inner {
+            padding: 0 20px 20px 20px;
+            color: #333333;
+            font-size: 15px;
+        }
+        
+        .accordion-content-inner p {
+            margin-bottom: 12px;
+        }
+        
+        .accordion-content-inner ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+        
+        .accordion-content-inner li {
+            margin-bottom: 8px;
+        }
+        
+        .info-box {
+            background-color: #e7f3ff;
+            border: 1px solid #0066cc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box p {
+            color: #004080;
+            font-weight: 500;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Contrat de service</h1>
+        <p class="last-updated">Dernière mise à jour : janvier 2026</p>
+        
+        <div class="info-box">
+            <p>ℹ️ Ce contrat décrit les conditions d'utilisation des services de livraison de Pasabayan, y compris les conditions de paiement, les politiques d'annulation et les responsabilités des utilisateurs.</p>
+        </div>
+        
+        <div class="accordion active">
+            <div class="accordion-header">
+                <div class="accordion-title">1. Aperçu du service</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content" style="max-height: 1000px;">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan fournit une plateforme de livraison pair-à-pair connectant :</p>
+                    <ul>
+                        <li><strong>Expéditeurs :</strong> Personnes ayant besoin d'envoyer des colis</li>
+                        <li><strong>Transporteurs :</strong> Personnes en déplacement pouvant transporter des colis</li>
+                    </ul>
+                    <p>En utilisant nos services, les expéditeurs et les transporteurs acceptent les conditions énoncées dans ce Contrat de service.</p>
+                    <p>Ce contrat, ainsi que les Conditions d'utilisation, la Politique de confidentialité et la Décharge de responsabilité, constitue l'accord complet entre vous et Pasabayan.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">2. Exigences relatives au compte</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p><strong>Tous les utilisateurs doivent :</strong></p>
+                    <ul>
+                        <li>Avoir au moins 18 ans</li>
+                        <li>Fournir des informations d'inscription exactes et complètes</li>
+                        <li>Vérifier leur numéro de téléphone</li>
+                        <li>Maintenir un mode de paiement valide</li>
+                        <li>Tenir les informations du compte à jour</li>
+                    </ul>
+                    <p><strong>Exigences supplémentaires pour les transporteurs :</strong></p>
+                    <ul>
+                        <li>Détenir un permis de conduire valide</li>
+                        <li>Maintenir une assurance automobile valide</li>
+                        <li>Compléter la vérification d'identité</li>
+                        <li>Configurer Stripe Connect pour les paiements</li>
+                        <li>Avoir accès à un véhicule en bon état de fonctionnement</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">3. Responsabilités de l'expéditeur</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>En tant qu'expéditeur, vous acceptez de :</p>
+                    <ul>
+                        <li><strong>Informations exactes :</strong> Fournir des descriptions véridiques des colis, dimensions, poids et contenu</li>
+                        <li><strong>Emballage approprié :</strong> S'assurer que les articles sont emballés de manière sécurisée pour éviter les dommages pendant le transport</li>
+                        <li><strong>Articles interdits :</strong> Ne pas demander le transport d'articles interdits, illégaux ou dangereux</li>
+                        <li><strong>Disponibilité :</strong> Être disponible à l'heure et au lieu de collecte convenus</li>
+                        <li><strong>Communication :</strong> Répondre rapidement aux messages du transporteur</li>
+                        <li><strong>Paiement :</strong> Payer les frais de livraison convenus avant la collecte</li>
+                        <li><strong>Confirmation :</strong> Confirmer la réception de la livraison dans l'application</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">4. Responsabilités du transporteur</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>En tant que transporteur, vous acceptez de :</p>
+                    <ul>
+                        <li><strong>Exactitude du trajet :</strong> Publier des détails de trajet précis incluant l'itinéraire, les dates et la capacité disponible</li>
+                        <li><strong>Soin des colis :</strong> Manipuler tous les colis avec un soin raisonnable pendant le transport</li>
+                        <li><strong>Livraison ponctuelle :</strong> Livrer les colis dans les délais convenus</li>
+                        <li><strong>Communication :</strong> Tenir les expéditeurs informés de tout retard ou problème</li>
+                        <li><strong>Vérification :</strong> Vérifier que le contenu des colis correspond à la description à la collecte</li>
+                        <li><strong>Conformité légale :</strong> Respecter toutes les lois de circulation et réglementations de transport</li>
+                        <li><strong>Assurance :</strong> Maintenir une assurance automobile valide en tout temps</li>
+                        <li><strong>Articles interdits :</strong> Refuser de transporter des articles interdits ou suspects</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">5. Conditions de paiement</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p><strong>Pour les expéditeurs :</strong></p>
+                    <ul>
+                        <li>Le paiement est requis pour confirmer une réservation de livraison</li>
+                        <li>Les expéditeurs paient le prix de livraison convenu plus des frais de service de 10 %</li>
+                        <li>Tous les prix sont en dollars canadiens (CAD)</li>
+                        <li>Le paiement est traité de manière sécurisée via Stripe</li>
+                        <li>Les fonds sont conservés en dépôt jusqu'à la confirmation de la livraison</li>
+                    </ul>
+                    <p><strong>Pour les transporteurs :</strong></p>
+                    <ul>
+                        <li>Le paiement est libéré après la confirmation de livraison par l'expéditeur</li>
+                        <li>Les transporteurs reçoivent le prix de livraison convenu moins des frais de service de 5 %</li>
+                        <li>Les paiements sont traités via Stripe Connect vers votre compte bancaire lié</li>
+                        <li>Le délai de paiement dépend de votre calendrier de paiement Stripe</li>
+                        <li>Vous êtes responsable de déclarer et de payer les taxes applicables</li>
+                    </ul>
+                    <p><strong>Frais de service :</strong></p>
+                    <ul>
+                        <li>Frais de service expéditeur : 10 % du prix de livraison convenu (ajoutés au total de l'expéditeur)</li>
+                        <li>Frais de service transporteur : 5 % du prix de livraison convenu (déduits du paiement au transporteur)</li>
+                        <li>Tous les frais sont clairement affichés avant que l'une ou l'autre des parties ne confirme une transaction</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">6. Politique d'annulation</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p><strong>Annulations par l'expéditeur :</strong></p>
+                    <ul>
+                        <li><strong>24 heures ou plus avant la collecte :</strong> Remboursement complet</li>
+                        <li><strong>12 à 24 heures avant la collecte :</strong> Remboursement de 75 %</li>
+                        <li><strong>Moins de 12 heures :</strong> Remboursement de 50 %</li>
+                        <li><strong>Absence à la collecte :</strong> Aucun remboursement</li>
+                    </ul>
+                    <p><strong>Annulations par le transporteur :</strong></p>
+                    <ul>
+                        <li><strong>24 heures ou plus avant la collecte :</strong> Aucune pénalité</li>
+                        <li><strong>Moins de 24 heures :</strong> Peut affecter l'évaluation et le statut du compte</li>
+                        <li><strong>Annulations répétées :</strong> Peut entraîner des restrictions de compte</li>
+                    </ul>
+                    <p><strong>Annulations mutuelles :</strong> Si les deux parties conviennent d'annuler, un remboursement complet sera émis à l'expéditeur.</p>
+                    <p><strong>Force majeure :</strong> En cas de conditions météorologiques extrêmes, d'accidents ou d'urgences, les annulations peuvent être traitées au cas par cas.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">7. Politique de remboursement</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Des remboursements peuvent être accordés dans les circonstances suivantes :</p>
+                    <ul>
+                        <li><strong>Non-livraison :</strong> Remboursement complet si le transporteur ne complète pas la livraison</li>
+                        <li><strong>Retard important :</strong> Un remboursement partiel peut être envisagé</li>
+                        <li><strong>Articles endommagés :</strong> Réclamation examinée au cas par cas</li>
+                        <li><strong>Service non conforme à la description :</strong> Remboursement partiel ou complet après enquête</li>
+                    </ul>
+                    <p><strong>Processus de remboursement :</strong></p>
+                    <ul>
+                        <li>Soumettre une demande de remboursement via l'application dans les 48 heures</li>
+                        <li>Fournir des preuves à l'appui (photos, messages)</li>
+                        <li>Pasabayan examinera et répondra dans les 5 jours ouvrables</li>
+                        <li>Les remboursements approuvés sont traités dans les 5 à 10 jours ouvrables</li>
+                    </ul>
+                    <p>Les remboursements sont effectués sur le mode de paiement original.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">8. Évaluations et avis</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Les expéditeurs et les transporteurs peuvent s'évaluer mutuellement après les livraisons complétées.</p>
+                    <p><strong>Directives d'évaluation :</strong></p>
+                    <ul>
+                        <li>Les évaluations doivent être honnêtes et équitables</li>
+                        <li>Les évaluations ne peuvent pas être échangées contre des avantages</li>
+                        <li>Les évaluations de représailles sont interdites</li>
+                        <li>Les évaluations ne peuvent être soumises que dans les 7 jours suivant la livraison</li>
+                    </ul>
+                    <p><strong>Impact des évaluations :</strong></p>
+                    <ul>
+                        <li>Note moyenne inférieure à 4,0 : Examen du compte</li>
+                        <li>Note moyenne inférieure à 3,5 : Restrictions de compte possibles</li>
+                        <li>Notes constamment basses : Peut entraîner la suspension du compte</li>
+                    </ul>
+                    <p>Pasabayan peut supprimer les évaluations qui violent nos directives.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">9. Normes de communication</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Tous les utilisateurs s'engagent à maintenir une communication professionnelle :</p>
+                    <ul>
+                        <li>Répondre aux messages dans un délai raisonnable</li>
+                        <li>Utiliser un langage respectueux et approprié</li>
+                        <li>Garder la communication au sein de la plateforme Pasabayan</li>
+                        <li>Ne pas partager d'informations de contact personnelles avant que ce soit nécessaire</li>
+                    </ul>
+                    <p><strong>Communication interdite :</strong></p>
+                    <ul>
+                        <li>Harcèlement ou langage menaçant</li>
+                        <li>Discrimination basée sur la race, le sexe, la religion ou d'autres caractéristiques protégées</li>
+                        <li>Spam ou contenu promotionnel</li>
+                        <li>Sollicitation de services en dehors de Pasabayan</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">10. Statut du compte</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Le statut de votre compte est affecté par :</p>
+                    <ul>
+                        <li>Taux de complétion des livraisons acceptées</li>
+                        <li>Note moyenne des autres utilisateurs</li>
+                        <li>Temps de réponse aux messages</li>
+                        <li>Historique des annulations</li>
+                        <li>Conformité aux règles de la plateforme</li>
+                    </ul>
+                    <p><strong>Actions sur le compte :</strong></p>
+                    <ul>
+                        <li><strong>Avertissement :</strong> Premières violations mineures</li>
+                        <li><strong>Suspension temporaire :</strong> Violations répétées ou problèmes graves</li>
+                        <li><strong>Interdiction permanente :</strong> Violations graves, fraude ou activité illégale</li>
+                    </ul>
+                    <p>Vous pouvez faire appel des actions sur le compte en contactant support@pasabayan.com.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">11. Statut de travailleur indépendant</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Les transporteurs utilisant Pasabayan sont des travailleurs indépendants, et non des employés de Pasabayan Technologies Inc.</p>
+                    <p><strong>En tant que travailleur indépendant, les transporteurs :</strong></p>
+                    <ul>
+                        <li>Définissent leurs propres horaires et choisissent les trajets à offrir</li>
+                        <li>Utilisent leurs propres véhicules et équipements</li>
+                        <li>Sont responsables de leurs propres taxes et assurances</li>
+                        <li>N'ont pas droit aux avantages sociaux des employés</li>
+                        <li>Peuvent travailler avec d'autres plateformes simultanément</li>
+                    </ul>
+                    <p>Rien dans ce contrat ne crée une relation d'emploi entre les transporteurs et Pasabayan.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">12. Modifications du service</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan se réserve le droit de :</p>
+                    <ul>
+                        <li>Modifier ou interrompre des fonctionnalités à tout moment</li>
+                        <li>Mettre à jour les tarifs et structures de frais avec préavis</li>
+                        <li>Changer la disponibilité du service dans certaines régions</li>
+                        <li>Mettre à jour ces conditions avec un préavis raisonnable</li>
+                    </ul>
+                    <p>Nous informerons les utilisateurs des changements importants via l'application ou par courriel. L'utilisation continue après les modifications constitue l'acceptation des nouvelles conditions.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">13. Coordonnées</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Pour toute question concernant ce Contrat de service ou nos services :</p>
+                    <p><strong>Courriel :</strong> support@pasabayan.com</p>
+                    <p><strong>Support dans l'application :</strong> Disponible dans les paramètres de l'application</p>
+                    <p>Nous répondons généralement dans les 24 heures les jours ouvrables.</p>
+                    <p>Ce Contrat de service est régi par les lois du Canada et de la province de l'Ontario.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const accordion = this.parentElement;
+                const content = accordion.querySelector('.accordion-content');
+                const isActive = accordion.classList.contains('active');
+                
+                // Close all accordions
+                document.querySelectorAll('.accordion').forEach(acc => {
+                    acc.classList.remove('active');
+                    acc.querySelector('.accordion-content').style.maxHeight = null;
+                });
+                
+                // Open clicked accordion if it wasn't active
+                if (!isActive) {
+                    accordion.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

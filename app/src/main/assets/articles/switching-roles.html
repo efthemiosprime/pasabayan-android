@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Switching Between Shipper and Carrier - Pasabayan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #000000;
+            background-color: #ffffff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #000000;
+        }
+        
+        .last-updated {
+            color: #666666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        
+        .accordion {
+            background-color: #f5f5f7;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid #d2d2d7;
+        }
+        
+        .accordion-header {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .accordion-header:hover {
+            background-color: #e8e8ed;
+        }
+        
+        .accordion-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #000000;
+        }
+        
+        .accordion-icon {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+            color: #666666;
+        }
+        
+        .accordion.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .accordion-content-inner {
+            padding: 0 20px 20px 20px;
+            color: #333333;
+            font-size: 15px;
+        }
+        
+        .accordion-content-inner p {
+            margin-bottom: 12px;
+        }
+        
+        .accordion-content-inner ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+        
+        .accordion-content-inner ol {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+        
+        .accordion-content-inner li {
+            margin-bottom: 8px;
+        }
+        
+        .step-number {
+            background-color: #007AFF;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 8px;
+            display: inline-block;
+        }
+        
+        .tip-box {
+            background-color: #FFF8E1;
+            border-left: 4px solid #FFC107;
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 4px;
+        }
+        
+        .tip-box strong {
+            color: #F57C00;
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: #d2d2d7;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Switching Between Sender and Carrier</h1>
+        <p class="last-updated">Last updated: November 2025</p>
+        
+        <div class="accordion active">
+            <div class="accordion-header">
+                <div class="accordion-title">Understanding Dual Roles</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content" style="max-height: 1000px;">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan allows you to act as both a <strong>Sender</strong> (sending packages) and a <strong>Carrier</strong> (transporting packages). You can switch between these roles at any time to access different features.</p>
+                    <p><strong>Sender Role:</strong> Create package requests, browse available trips, request carriers, and track your deliveries.</p>
+                    <p><strong>Carrier Role:</strong> Create trips, manage capacity, accept package requests, and earn money by delivering packages.</p>
+                    <div class="tip-box">
+                        <strong>💡 Tip:</strong> Most users start as senders and later enable carrier mode to earn extra income during their regular travels.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">How to Switch Roles</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Follow these simple steps to switch between sender and carrier roles:</p>
+                    <ol>
+                        <li>
+                            <span class="step-number">1</span>
+                            <strong>Locate the User Header</strong><br>
+                            At the top of your Home screen, you'll see a card with your profile information, including your name and avatar.
+                        </li>
+                        <li>
+                            <span class="step-number">2</span>
+                            <strong>Tap the Three-Dot Menu</strong><br>
+                            In the bottom right corner of the User Header card, tap the three-dot menu (⋮) icon.
+                        </li>
+                        <li>
+                            <span class="step-number">3</span>
+                            <strong>Select Your Desired Role</strong><br>
+                            A menu will appear with options:
+                            <ul>
+                                <li><strong>Switch to Sender</strong> - Access sender features</li>
+                                <li><strong>Switch to Carrier</strong> - Access carrier features</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <span class="step-number">4</span>
+                            <strong>Wait for Activation</strong><br>
+                            If switching to carrier for the first time, the app will enable carrier features for your account. This only takes a moment.
+                        </li>
+                        <li>
+                            <span class="step-number">5</span>
+                            <strong>Start Using the New Role</strong><br>
+                            Once switched, you'll see the dashboard and features specific to your selected role.
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Identifying Your Current Role</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>You can always see which role you're currently using by checking the User Header card at the top of your Home screen:</p>
+                    <ul>
+                        <li><strong>Role Badge:</strong> A small badge displays either "Sender" or "Carrier"</li>
+                        <li><strong>Dashboard Features:</strong> The available tabs and features reflect your current role</li>
+                        <li><strong>Verification Badge:</strong> Next to the role badge, you'll see your verification level (Basic, Verified, or Premium)</li>
+                    </ul>
+                    <div class="tip-box">
+                        <strong>💡 Tip:</strong> The role badge and verification level are displayed side by side in the User Header card for easy reference.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Enabling Carrier Mode for the First Time</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>If you're switching to carrier mode for the first time, here's what happens:</p>
+                    <ul>
+                        <li><strong>Automatic Activation:</strong> The app automatically enables carrier features for your account</li>
+                        <li><strong>Profile Setup:</strong> You'll be able to set up your carrier profile, including vehicle information and preferred routes</li>
+                        <li><strong>Capacity Management:</strong> You can define how much space and weight you can carry</li>
+                        <li><strong>Pricing Control:</strong> Set your own rates per kilogram or per delivery</li>
+                    </ul>
+                    <p><strong>Requirements for Carrier Mode:</strong></p>
+                    <ul>
+                        <li>Valid phone number (must be verified)</li>
+                        <li>Complete profile information</li>
+                        <li>Agreement to carrier terms and safety guidelines</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Features by Role</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p><strong>Sender Features:</strong></p>
+                    <ul>
+                        <li>Create and manage package requests</li>
+                        <li>Browse available carrier trips</li>
+                        <li>Filter carriers by route, price, and ratings</li>
+                        <li>Request specific carriers for your packages</li>
+                        <li>Track packages in real-time</li>
+                        <li>Rate carriers after delivery</li>
+                        <li>View delivery history</li>
+                    </ul>
+                    
+                    <p><strong>Carrier Features:</strong></p>
+                    <ul>
+                        <li>Create and manage trips</li>
+                        <li>Set available capacity (weight and space)</li>
+                        <li>Browse available package requests</li>
+                        <li>Accept or invite senders to your trips</li>
+                        <li>Manage multiple deliveries in one trip</li>
+                        <li>Update trip status and location</li>
+                        <li>View earnings and analytics</li>
+                        <li>Rate senders after delivery</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Switching During Active Deliveries</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>You can switch roles even if you have active deliveries:</p>
+                    <ul>
+                        <li><strong>In Progress:</strong> Active deliveries remain accessible regardless of your current role</li>
+                        <li><strong>Notifications:</strong> You'll receive notifications for all active deliveries in both roles</li>
+                        <li><strong>Messages:</strong> The Messages tab shows conversations from both sender and carrier activities</li>
+                        <li><strong>Match Details:</strong> You can view and manage all active matches from either role</li>
+                    </ul>
+                    <div class="tip-box">
+                        <strong>💡 Tip:</strong> If you have an urgent carrier task while in sender mode, just switch roles temporarily and switch back when done.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Role Preferences</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan remembers your role preference:</p>
+                    <ul>
+                        <li><strong>Last Used Role:</strong> When you open the app, it starts with the last role you were using</li>
+                        <li><strong>Quick Switch:</strong> The three-dot menu makes it easy to switch roles in just two taps</li>
+                        <li><strong>Persistent Settings:</strong> Your role preference is saved locally on your device</li>
+                    </ul>
+                    <p>To set a default role preference:</p>
+                    <ol>
+                        <li>Go to <strong>Profile</strong> → <strong>Settings</strong></li>
+                        <li>Under <strong>Role Preference</strong>, select your preferred default role</li>
+                        <li>The app will remember this setting across sessions</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Frequently Asked Questions</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p><strong>Q: Can I be a sender and carrier at the same time?</strong></p>
+                    <p>A: You can only view one role at a time in the app, but you can have active deliveries in both roles simultaneously. Simply switch between roles as needed.</p>
+                    
+                    <p><strong>Q: Is there a limit to how many times I can switch roles?</strong></p>
+                    <p>A: No, you can switch between roles as often as you need. There are no restrictions or cooldown periods.</p>
+                    
+                    <p><strong>Q: Do I need to verify my account separately for each role?</strong></p>
+                    <p>A: No, your account verification (phone verification, identity verification) applies to both roles. However, carriers may have additional requirements like vehicle information.</p>
+                    
+                    <p><strong>Q: Will my ratings be different for sender and carrier roles?</strong></p>
+                    <p>A: Yes, you have separate ratings for each role. Your sender rating is based on how you perform as a sender, and your carrier rating reflects your performance as a carrier.</p>
+                    
+                    <p><strong>Q: What happens if I disable carrier mode?</strong></p>
+                    <p>A: If you complete all your carrier deliveries and decide to stop being a carrier, you can disable carrier mode in your profile settings. Your carrier history and ratings will be preserved.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">Need Help?</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>If you're having trouble switching roles or need assistance:</p>
+                    <ul>
+                        <li><strong>Check your connection:</strong> Enabling carrier mode requires an internet connection</li>
+                        <li><strong>Update the app:</strong> Make sure you're using the latest version of Pasabayan</li>
+                        <li><strong>Contact support:</strong> Reach out to us at support@pasabayan.com</li>
+                        <li><strong>Visit Help Center:</strong> Browse more articles in the Help Center</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const accordion = this.parentElement;
+                const content = accordion.querySelector('.accordion-content');
+                const isActive = accordion.classList.contains('active');
+                
+                // Close all accordions
+                document.querySelectorAll('.accordion').forEach(acc => {
+                    acc.classList.remove('active');
+                    acc.querySelector('.accordion-content').style.maxHeight = null;
+                });
+                
+                // Open clicked accordion if it wasn't active
+                if (!isActive) {
+                    accordion.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

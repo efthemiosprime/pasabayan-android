@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Agreement - Pasabayan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #000000;
+            background-color: #ffffff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #000000;
+        }
+        
+        .last-updated {
+            color: #666666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        
+        .accordion {
+            background-color: #f5f5f7;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid #d2d2d7;
+        }
+        
+        .accordion-header {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .accordion-header:hover {
+            background-color: #e8e8ed;
+        }
+        
+        .accordion-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #000000;
+        }
+        
+        .accordion-icon {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+            color: #666666;
+        }
+        
+        .accordion.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .accordion-content-inner {
+            padding: 0 20px 20px 20px;
+            color: #333333;
+            font-size: 15px;
+        }
+        
+        .accordion-content-inner p {
+            margin-bottom: 12px;
+        }
+        
+        .accordion-content-inner ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+        
+        .accordion-content-inner li {
+            margin-bottom: 8px;
+        }
+        
+        .info-box {
+            background-color: #e7f3ff;
+            border: 1px solid #0066cc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box p {
+            color: #004080;
+            font-weight: 500;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Service Agreement</h1>
+        <p class="last-updated">Last updated: January 2026</p>
+        
+        <div class="info-box">
+            <p>ℹ️ This agreement outlines the terms for using Pasabayan's delivery services, including payment terms, cancellation policies, and user responsibilities.</p>
+        </div>
+        
+        <div class="accordion active">
+            <div class="accordion-header">
+                <div class="accordion-title">1. Service Overview</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content" style="max-height: 1000px;">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan provides a peer-to-peer delivery platform connecting:</p>
+                    <ul>
+                        <li><strong>Shippers:</strong> Individuals who need to send packages</li>
+                        <li><strong>Carriers:</strong> Individuals traveling who can transport packages</li>
+                    </ul>
+                    <p>By using our services, both shippers and carriers agree to the terms outlined in this Service Agreement.</p>
+                    <p>This agreement, together with the Terms of Service, Privacy Policy, and Liability Waiver, forms the complete agreement between you and Pasabayan.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">2. Account Requirements</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p><strong>All Users Must:</strong></p>
+                    <ul>
+                        <li>Be at least 18 years of age</li>
+                        <li>Provide accurate and complete registration information</li>
+                        <li>Verify their phone number</li>
+                        <li>Maintain a valid payment method</li>
+                        <li>Keep account information up to date</li>
+                    </ul>
+                    <p><strong>Additional Requirements for Carriers:</strong></p>
+                    <ul>
+                        <li>Hold a valid driver's license</li>
+                        <li>Maintain valid vehicle insurance</li>
+                        <li>Complete identity verification</li>
+                        <li>Set up Stripe Connect for payments</li>
+                        <li>Have access to a vehicle in good working condition</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">3. Shipper Responsibilities</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>As a shipper, you agree to:</p>
+                    <ul>
+                        <li><strong>Accurate Information:</strong> Provide truthful package descriptions, dimensions, weight, and contents</li>
+                        <li><strong>Proper Packaging:</strong> Ensure items are securely packaged to prevent damage during transport</li>
+                        <li><strong>Prohibited Items:</strong> Not request transport of prohibited, illegal, or dangerous items</li>
+                        <li><strong>Availability:</strong> Be available at the agreed pickup time and location</li>
+                        <li><strong>Communication:</strong> Respond promptly to carrier messages</li>
+                        <li><strong>Payment:</strong> Pay the agreed delivery fee before pickup</li>
+                        <li><strong>Confirmation:</strong> Confirm delivery receipt in the app</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">4. Carrier Responsibilities</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>As a carrier, you agree to:</p>
+                    <ul>
+                        <li><strong>Trip Accuracy:</strong> Post accurate trip details including route, dates, and available capacity</li>
+                        <li><strong>Package Care:</strong> Handle all packages with reasonable care during transport</li>
+                        <li><strong>Timely Delivery:</strong> Deliver packages within the agreed timeframe</li>
+                        <li><strong>Communication:</strong> Keep shippers informed of any delays or issues</li>
+                        <li><strong>Verification:</strong> Verify package contents match the description at pickup</li>
+                        <li><strong>Legal Compliance:</strong> Follow all traffic laws and transportation regulations</li>
+                        <li><strong>Insurance:</strong> Maintain valid auto insurance at all times</li>
+                        <li><strong>Prohibited Items:</strong> Refuse to transport prohibited or suspicious items</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">5. Payment Terms</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p><strong>For Shippers:</strong></p>
+                    <ul>
+                        <li>Payment is required to confirm a delivery booking</li>
+                        <li>Shippers pay the agreed delivery price plus a 10% service fee</li>
+                        <li>All prices are in Canadian Dollars (CAD)</li>
+                        <li>Payment is processed securely through Stripe</li>
+                        <li>Funds are held in escrow until delivery is confirmed</li>
+                    </ul>
+                    <p><strong>For Carriers:</strong></p>
+                    <ul>
+                        <li>Payment is released after shipper confirms delivery</li>
+                        <li>Carriers receive the agreed delivery price minus a 5% service fee</li>
+                        <li>Payouts are processed via Stripe Connect to your linked bank account</li>
+                        <li>Payout timing depends on your Stripe payout schedule</li>
+                        <li>You are responsible for reporting and paying applicable taxes</li>
+                    </ul>
+                    <p><strong>Service Fees:</strong></p>
+                    <ul>
+                        <li>Shipper service fee: 10% of the agreed delivery price (added to shipper's total)</li>
+                        <li>Carrier service fee: 5% of the agreed delivery price (deducted from carrier payout)</li>
+                        <li>All fees are clearly displayed before either party confirms a transaction</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">6. Cancellation Policy</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p><strong>Shipper Cancellations:</strong></p>
+                    <ul>
+                        <li><strong>24+ hours before pickup:</strong> Full refund</li>
+                        <li><strong>12-24 hours before pickup:</strong> 75% refund</li>
+                        <li><strong>Less than 12 hours:</strong> 50% refund</li>
+                        <li><strong>No-show at pickup:</strong> No refund</li>
+                    </ul>
+                    <p><strong>Carrier Cancellations:</strong></p>
+                    <ul>
+                        <li><strong>24+ hours before pickup:</strong> No penalty</li>
+                        <li><strong>Less than 24 hours:</strong> May affect rating and account standing</li>
+                        <li><strong>Repeated cancellations:</strong> May result in account restrictions</li>
+                    </ul>
+                    <p><strong>Mutual Cancellations:</strong> If both parties agree to cancel, a full refund will be issued to the shipper.</p>
+                    <p><strong>Force Majeure:</strong> In cases of severe weather, accidents, or emergencies, cancellations may be handled on a case-by-case basis.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">7. Refund Policy</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Refunds may be issued in the following circumstances:</p>
+                    <ul>
+                        <li><strong>Non-delivery:</strong> Full refund if carrier fails to complete delivery</li>
+                        <li><strong>Significant delay:</strong> Partial refund may be considered</li>
+                        <li><strong>Damaged items:</strong> Claim reviewed on case-by-case basis</li>
+                        <li><strong>Service not as described:</strong> Partial or full refund after investigation</li>
+                    </ul>
+                    <p><strong>Refund Process:</strong></p>
+                    <ul>
+                        <li>Submit a refund request through the app within 48 hours</li>
+                        <li>Provide supporting evidence (photos, messages)</li>
+                        <li>Pasabayan will review and respond within 5 business days</li>
+                        <li>Approved refunds are processed within 5-10 business days</li>
+                    </ul>
+                    <p>Refunds are issued to the original payment method.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">8. Ratings and Reviews</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Both shippers and carriers can rate each other after completed deliveries.</p>
+                    <p><strong>Rating Guidelines:</strong></p>
+                    <ul>
+                        <li>Ratings should be honest and fair</li>
+                        <li>Ratings cannot be exchanged for benefits</li>
+                        <li>Retaliatory ratings are prohibited</li>
+                        <li>Ratings can only be submitted within 7 days of delivery</li>
+                    </ul>
+                    <p><strong>Impact of Ratings:</strong></p>
+                    <ul>
+                        <li>Average rating below 4.0: Account review</li>
+                        <li>Average rating below 3.5: Possible account restrictions</li>
+                        <li>Consistent low ratings: May result in account suspension</li>
+                    </ul>
+                    <p>Pasabayan may remove ratings that violate our guidelines.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">9. Communication Standards</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>All users agree to maintain professional communication:</p>
+                    <ul>
+                        <li>Respond to messages within a reasonable timeframe</li>
+                        <li>Use respectful and appropriate language</li>
+                        <li>Keep communication within the Pasabayan platform</li>
+                        <li>Do not share personal contact information until necessary</li>
+                    </ul>
+                    <p><strong>Prohibited Communication:</strong></p>
+                    <ul>
+                        <li>Harassment or threatening language</li>
+                        <li>Discrimination based on race, gender, religion, or other protected characteristics</li>
+                        <li>Spam or promotional content</li>
+                        <li>Solicitation for services outside Pasabayan</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">10. Account Standing</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Your account standing is affected by:</p>
+                    <ul>
+                        <li>Completion rate of accepted deliveries</li>
+                        <li>Average rating from other users</li>
+                        <li>Response time to messages</li>
+                        <li>Cancellation history</li>
+                        <li>Compliance with platform rules</li>
+                    </ul>
+                    <p><strong>Account Actions:</strong></p>
+                    <ul>
+                        <li><strong>Warning:</strong> First-time minor violations</li>
+                        <li><strong>Temporary Suspension:</strong> Repeated violations or serious issues</li>
+                        <li><strong>Permanent Ban:</strong> Severe violations, fraud, or illegal activity</li>
+                    </ul>
+                    <p>You may appeal account actions by contacting support@pasabayan.com.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">11. Independent Contractor Status</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Carriers using Pasabayan are independent contractors, not employees of Pasabayan Technologies Inc.</p>
+                    <p><strong>As an independent contractor, carriers:</strong></p>
+                    <ul>
+                        <li>Set their own schedules and choose which trips to offer</li>
+                        <li>Use their own vehicles and equipment</li>
+                        <li>Are responsible for their own taxes and insurance</li>
+                        <li>Are not entitled to employee benefits</li>
+                        <li>May work with other platforms simultaneously</li>
+                    </ul>
+                    <p>Nothing in this agreement creates an employment relationship between carriers and Pasabayan.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">12. Modifications to Service</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan reserves the right to:</p>
+                    <ul>
+                        <li>Modify or discontinue features at any time</li>
+                        <li>Update pricing and fee structures with notice</li>
+                        <li>Change service availability in certain regions</li>
+                        <li>Update these terms with reasonable notice</li>
+                    </ul>
+                    <p>We will notify users of significant changes through the app or email. Continued use after changes constitutes acceptance of the new terms.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">13. Contact Information</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>For questions about this Service Agreement or our services:</p>
+                    <p><strong>Email:</strong> support@pasabayan.com</p>
+                    <p><strong>In-App Support:</strong> Available in the app settings</p>
+                    <p>We typically respond within 24 hours on business days.</p>
+                    <p>This Service Agreement is governed by the laws of Canada and the Province of Ontario.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const accordion = this.parentElement;
+                const content = accordion.querySelector('.accordion-content');
+                const isActive = accordion.classList.contains('active');
+                
+                // Close all accordions
+                document.querySelectorAll('.accordion').forEach(acc => {
+                    acc.classList.remove('active');
+                    acc.querySelector('.accordion-content').style.maxHeight = null;
+                });
+                
+                // Open clicked accordion if it wasn't active
+                if (!isActive) {
+                    accordion.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

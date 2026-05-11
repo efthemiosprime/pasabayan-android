@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Create a Trip</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #000;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+        h2 {
+            color: #000;
+            font-size: 22px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        h3 {
+            color: #666;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        p {
+            margin-bottom: 12px;
+        }
+        ol, ul {
+            margin-bottom: 12px;
+            padding-left: 24px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .step {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .step-title {
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 8px;
+        }
+        .section {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .tip {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .important {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>How to Create a Trip</h1>
+
+    <p>As a carrier on Pasabayan, creating a trip lets shippers know your travel route and availability. Once your trip is published, shippers with packages along your route can request a match. Follow the steps below to create your first trip.</p>
+
+    <h2>Getting Started</h2>
+
+    <div class="step">
+        <div class="step-title">Step 1: Open the Dashboard</div>
+        <p>Open the Pasabayan app and navigate to your <strong>Dashboard</strong>. In the Carrier section, tap the <strong>"Create Trip"</strong> button.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 2: Understand the Form</div>
+        <p>The trip creation form is organized into expandable sections. A <strong>progress banner</strong> at the top tracks 4 requirements that must be completed before you can submit:</p>
+        <ul>
+            <li><strong>Route</strong> — Pickup and dropoff locations</li>
+            <li><strong>Weight</strong> — Available carrying capacity</li>
+            <li><strong>Price</strong> — Your delivery pricing</li>
+            <li><strong>Dates</strong> — Departure and arrival schedule</li>
+        </ul>
+        <p>Tap any requirement chip to jump directly to that section. All 4 must be filled to enable the "Create Trip" button.</p>
+    </div>
+
+    <hr>
+
+    <h2>Section 1: Route Details</h2>
+
+    <div class="step">
+        <div class="step-title">Set Your Pickup Location</div>
+        <ul>
+            <li><strong>Country:</strong> Select from the dropdown — Canada, United States, Philippines, or India</li>
+            <li><strong>City:</strong> Start typing your departure city. Autocomplete suggestions will appear as you type — tap one to select it</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Set Your Dropoff Location</div>
+        <ul>
+            <li><strong>Country:</strong> Select the destination country (can be different from pickup)</li>
+            <li><strong>City:</strong> Type and select your destination city from the suggestions</li>
+        </ul>
+    </div>
+
+    <div class="tip">
+        <strong>Tip:</strong> The city database covers 150+ Canadian cities, 300+ US cities, 80+ Philippine cities, and 70+ Indian cities. City names include province or state codes for clarity (e.g., "Vancouver, BC" or "Toronto, ON").
+    </div>
+
+    <h2>Section 2: Trip Dates</h2>
+
+    <div class="step">
+        <div class="step-title">Set Your Schedule</div>
+        <ul>
+            <li><strong>Departure Date:</strong> Select the day you'll be leaving (must be today or later)</li>
+            <li><strong>Departure Time:</strong> Set your departure time (must be at least 5 minutes from now)</li>
+            <li><strong>Arrival Date:</strong> Select the day you'll arrive (must be on or after the departure date)</li>
+            <li><strong>Arrival Time:</strong> Set your expected arrival time (must be at least 20 minutes after departure)</li>
+        </ul>
+    </div>
+
+    <div class="important">
+        <strong>Date Rules:</strong> Your trip must be at least 20 minutes long. Departure defaults to tomorrow and arrival to the day after — adjust as needed for your travel plans.
+    </div>
+
+    <h2>Section 3: Available Space</h2>
+
+    <div class="step">
+        <div class="step-title">Set Your Weight Capacity</div>
+        <ul>
+            <li><strong>Weight Capacity (kg):</strong> Enter how much weight you can carry, from 0.01 to 1,000 kg</li>
+        </ul>
+        <p>This tells shippers the maximum package weight you can accommodate on your trip.</p>
+    </div>
+
+    <h2>Section 4: Transportation Method</h2>
+
+    <div class="step">
+        <div class="step-title">Choose How You're Traveling</div>
+        <p>Select your mode of transportation:</p>
+        <ul>
+            <li><strong>Car</strong></li>
+            <li><strong>Bus</strong></li>
+            <li><strong>Truck</strong></li>
+            <li><strong>Van</strong></li>
+            <li><strong>Motorcycle</strong></li>
+            <li><strong>Train</strong></li>
+            <li><strong>Ship</strong></li>
+            <li><strong>Flight</strong></li>
+        </ul>
+        <p>The default is Car. Your transportation method determines how pricing works in the next section.</p>
+    </div>
+
+    <h2>Section 5: Your Price</h2>
+
+    <p>Pricing works differently depending on your transportation method:</p>
+
+    <div class="section">
+        <h3>For Flights — Per-Kilogram Pricing</h3>
+        <ul>
+            <li>Set a <strong>price per kilogram</strong> (e.g., $5.00/kg)</li>
+            <li>Range: $0.01 to $1,000 per kg</li>
+            <li>The total cost for a shipper is calculated as: package weight × your price per kg</li>
+        </ul>
+        <p><strong>Example:</strong> If you set $5.00/kg and a shipper has a 3 kg package, their delivery cost would be $15.00.</p>
+    </div>
+
+    <div class="section">
+        <h3>For Land Transport — Flat Trip Pricing</h3>
+        <p>Car, Bus, Truck, Van, Motorcycle, Train, and Ship all use flat pricing:</p>
+        <ul>
+            <li>Set a <strong>flat trip price</strong> for your entire route (e.g., $150.00)</li>
+            <li>Minimum: $5.00 CAD</li>
+            <li>Maximum: $10,000</li>
+            <li>This is the total price regardless of package weight</li>
+        </ul>
+        <p><strong>Example:</strong> If you set $150.00 flat for a Vancouver → Calgary route, that's the delivery cost for any package within your weight capacity.</p>
+    </div>
+
+    <div class="tip">
+        <strong>Pricing Tip:</strong> Consider the distance, fuel costs, and effort when setting your price. Competitive pricing helps attract more shippers while ensuring you're fairly compensated. Remember, a 5% service fee will be deducted from your earnings.
+    </div>
+
+    <h2>Section 6: Notes (Optional)</h2>
+
+    <div class="step">
+        <div class="step-title">Add Special Notes</div>
+        <p>Optionally add any notes for potential shippers. This is a good place to mention:</p>
+        <ul>
+            <li>Types of packages you prefer or can't carry</li>
+            <li>Special handling capabilities (e.g., "Can transport fragile items carefully")</li>
+            <li>Flexibility on timing or route</li>
+            <li>Any restrictions (e.g., "No liquids or perishables")</li>
+        </ul>
+    </div>
+
+    <h2>Submitting Your Trip</h2>
+
+    <div class="step">
+        <div class="step-title">Review and Create</div>
+        <p>Once all 4 requirements in the progress banner are met (shown in green), tap <strong>"Create Trip"</strong> to publish your trip.</p>
+        <p>You'll see a success confirmation, and your trip will immediately become visible to shippers with compatible packages.</p>
+    </div>
+
+    <div class="important">
+        <strong>Validation:</strong> If any required fields are missing, the "Create Trip" button will be disabled. The progress banner shows exactly which requirements still need to be completed.
+    </div>
+
+    <h2>Trip Statuses</h2>
+
+    <div class="section">
+        <p>After creation, your trip progresses through these statuses:</p>
+        <ul>
+            <li><strong>Planning:</strong> Trip is published and visible to shippers — waiting for package bookings</li>
+            <li><strong>Active:</strong> One or more packages have been confirmed on your trip</li>
+            <li><strong>In Transit:</strong> You've started traveling and are delivering packages</li>
+            <li><strong>Completed:</strong> Trip finished and all packages delivered</li>
+            <li><strong>Cancelled:</strong> Trip was cancelled</li>
+        </ul>
+    </div>
+
+    <h2>After Creating Your Trip</h2>
+
+    <h3>Getting Matched with Packages</h3>
+    <p>Once your trip is published:</p>
+    <ul>
+        <li><strong>Shippers browse compatible trips:</strong> Shippers with packages along your route can see your trip and request a match</li>
+        <li><strong>Review requests:</strong> You'll receive notifications when a shipper is interested</li>
+        <li><strong>Accept or decline:</strong> Review the package details, shipper profile, and pricing before deciding</li>
+    </ul>
+
+    <h3>Managing Your Trip</h3>
+    <ul>
+        <li>View your trips from the Dashboard or Carrier section</li>
+        <li>Track matched packages and their statuses</li>
+        <li>Communicate with shippers through in-app chat</li>
+    </ul>
+
+    <div class="tip">
+        <strong>Tip:</strong> Create trips for your regular travel routes — even daily commutes! Shippers in your area may have packages that fit perfectly along your existing route.
+    </div>
+
+    <h2>Supported Countries</h2>
+
+    <div class="section">
+        <p>Pasabayan currently supports trips in:</p>
+        <ul>
+            <li><strong>Canada</strong> — 150+ cities across all provinces and territories</li>
+            <li><strong>United States</strong> — 300+ cities covering major metros and regional hubs</li>
+            <li><strong>Philippines</strong> — 80+ cities including Manila, Cebu, and Davao</li>
+            <li><strong>India</strong> — 70+ cities including Delhi, Mumbai, and Bangalore</li>
+        </ul>
+        <p>You can create trips between different countries for international deliveries.</p>
+    </div>
+
+    <h2>Need Help?</h2>
+    <p>If you encounter any issues creating a trip:</p>
+    <ul>
+        <li>Make sure you're registered as a carrier (switch roles from your Profile if needed)</li>
+        <li>Check that all 4 requirements are completed in the progress banner</li>
+        <li>Submit a support ticket through the app if you need assistance</li>
+    </ul>
+
+    <p><strong>Ready to start earning?</strong> Create your first trip and connect with shippers who need deliveries along your route!</p>
+</body>
+</html>

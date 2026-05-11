@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="legal_title">Lire et accepter</string>
+    <string name="legal_loading_document">Chargement du document…</string>
+    <string name="legal_loading_status">Vérification de votre statut juridique…</string>
+    <string name="legal_document_progress">Document %1$d sur %2$d</string>
+    <string name="legal_remaining">%1$d restant(s)</string>
+    <string name="legal_agree_to_this">J\'accepte ce document</string>
+    <string name="legal_agree_to_all">J\'accepte tout</string>
+    <string name="legal_continue">Continuer</string>
+    <string name="legal_finish">Terminer</string>
+    <string name="legal_all_agreed_title">Tout est à jour</string>
+    <string name="legal_all_agreed_description">Aucun document juridique en attente d\'examen.</string>
+    <string name="legal_error_load">Impossible de charger votre statut juridique. Veuillez réessayer.</string>
+    <string name="legal_error_agree">Impossible d\'enregistrer votre accord. Veuillez réessayer.</string>
+    <string name="legal_retry">Réessayer</string>
+    <string name="legal_withdraw_warning_title">À noter</string>
+    <string name="legal_withdraw_warning_dismiss">Compris</string>
+</resources>

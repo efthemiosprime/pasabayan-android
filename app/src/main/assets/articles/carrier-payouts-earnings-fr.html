@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiements et revenus des transporteurs</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #000;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+        h2 {
+            color: #000;
+            font-size: 22px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        h3 {
+            color: #666;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        p {
+            margin-bottom: 12px;
+        }
+        ol, ul {
+            margin-bottom: 12px;
+            padding-left: 24px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .step {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .step-title {
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 8px;
+        }
+        .section {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .tip {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .important {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .security {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Paiements et revenus des transporteurs</h1>
+
+    <p>En tant que transporteur sur Pasabayan, vous gagnez de l'argent en livrant des colis pour les expéditeurs le long de vos itinéraires de voyage. Ce guide explique comment configurer vos paiements, comprendre vos revenus et suivre vos gains.</p>
+
+    <h2>Configuration des paiements (Stripe Connect)</h2>
+
+    <p>Avant de pouvoir recevoir vos gains, vous devez compléter l'inscription à Stripe Connect. Il s'agit d'une configuration unique qui relie votre compte bancaire pour les paiements automatiques.</p>
+
+    <div class="step">
+        <div class="step-title">Étape 1 : Accéder à la configuration des paiements</div>
+        <p>Ouvrez l'application Pasabayan et allez dans l'onglet <strong>Profil</strong> → section <strong>Paiements</strong> → <strong>Configuration des paiements</strong>.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Étape 2 : Démarrer l'inscription</div>
+        <p>Appuyez sur le bouton <strong>« Configurer »</strong>. Vous serez dirigé vers la page d'inscription sécurisée de Stripe dans votre navigateur. Si vous avez déjà commencé sans terminer, vous verrez un bouton <strong>« Continuer la configuration »</strong> à la place.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Étape 3 : Compléter la vérification Stripe</div>
+        <p>Stripe vous demandera de fournir :</p>
+        <ul>
+            <li><strong>Vérification d'identité :</strong> Pièce d'identité émise par le gouvernement pour la conformité KYC (Know Your Customer)</li>
+            <li><strong>Coordonnées bancaires :</strong> Votre compte bancaire où les paiements seront déposés</li>
+            <li><strong>Vérification d'adresse :</strong> Confirmation de votre adresse actuelle</li>
+            <li><strong>Informations fiscales :</strong> Détails fiscaux requis pour votre région</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Étape 4 : Retourner à l'application</div>
+        <p>Une fois l'inscription terminée, retournez à l'application Pasabayan. Votre statut de paiement sera vérifié automatiquement. Vous verrez votre statut passer à <strong>« Actif »</strong> avec un bouton <strong>« Voir le tableau de bord »</strong>.</p>
+    </div>
+
+    <div class="security">
+        <strong>Traitement sécurisé :</strong> Toutes les informations financières sont traitées par Stripe, un processeur de paiement certifié PCI DSS Niveau 1. Pasabayan ne stocke jamais directement vos coordonnées bancaires.
+    </div>
+
+    <h2>Statuts de configuration des paiements</h2>
+
+    <div class="section">
+        <ul>
+            <li><strong>Non inscrit :</strong> Vous n'avez pas encore commencé la configuration — appuyez sur « Configurer » pour débuter</li>
+            <li><strong>Incomplet :</strong> Vous avez commencé l'inscription sans la terminer — appuyez sur « Continuer la configuration » pour reprendre</li>
+            <li><strong>Actif :</strong> Entièrement configuré et prêt à recevoir des paiements — appuyez sur « Voir le tableau de bord » pour gérer votre compte</li>
+        </ul>
+    </div>
+
+    <h2>Comment êtes-vous payé</h2>
+
+    <h3>Flux de paiement</h3>
+
+    <div class="section">
+        <ol>
+            <li><strong>Livraison jumelée :</strong> Le colis d'un expéditeur est jumelé avec votre trajet et les deux parties confirment</li>
+            <li><strong>L'expéditeur paie :</strong> L'expéditeur effectue le paiement, qui est autorisé (retenu) par Stripe</li>
+            <li><strong>Vous livrez :</strong> Récupérez le colis à l'aide du code de collecte à 6 chiffres et livrez-le à destination</li>
+            <li><strong>Livraison confirmée :</strong> L'expéditeur vous fournit le code de confirmation de livraison pour compléter la remise</li>
+            <li><strong>Paiement capturé :</strong> Une fois la livraison confirmée, le paiement est capturé et vos gains sont traités</li>
+            <li><strong>Paiement transféré :</strong> Stripe transfère automatiquement vos gains vers votre compte bancaire connecté</li>
+        </ol>
+    </div>
+
+    <div class="important">
+        <strong>Important :</strong> Vous devez compléter l'inscription à Stripe Connect avant de pouvoir recevoir des paiements. Configurez cela avant d'accepter votre première livraison.
+    </div>
+
+    <h2>Comprendre vos revenus</h2>
+
+    <h3>Structure des frais</h3>
+
+    <div class="section">
+        <p>Pour chaque livraison, voici comment l'argent circule :</p>
+        <ul>
+            <li><strong>Prix de livraison convenu :</strong> Le prix de base convenu entre vous et l'expéditeur</li>
+            <li><strong>Frais de service transporteur :</strong> 5 % du prix convenu est déduit à titre de frais de plateforme</li>
+            <li><strong>Vous recevez :</strong> Le prix convenu moins les frais de service de 5 %</li>
+            <li><strong>Pourboires :</strong> Les expéditeurs peuvent ajouter un pourboire après la livraison — les pourboires vous reviennent intégralement sans aucune déduction</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>Exemple détaillé</h3>
+        <p>Pour un prix de livraison convenu de <strong>100 $ CAD</strong> :</p>
+        <ul>
+            <li><strong>Prix convenu :</strong> 100,00 $</li>
+            <li><strong>Frais de service (5 %) :</strong> -5,00 $</li>
+            <li><strong>Vous recevez :</strong> 95,00 $</li>
+            <li><strong>Si l'expéditeur donne 10 $ de pourboire :</strong> 95,00 $ + 10,00 $ = <strong>105,00 $ au total</strong></li>
+        </ul>
+    </div>
+
+    <div class="tip">
+        <strong>Conseil :</strong> Tous les frais sont affichés de manière transparente avant de confirmer une livraison. Il n'y a aucuns frais cachés.
+    </div>
+
+    <h2>Consulter vos revenus</h2>
+
+    <h3>Historique des transactions</h3>
+
+    <p>Suivez tous vos gains grâce à votre historique de transactions :</p>
+    <ol>
+        <li>Allez dans <strong>Profil</strong> → section <strong>Paiements</strong> → <strong>Historique des transactions</strong></li>
+        <li>Filtrez par rôle : appuyez sur <strong>« Transporteur »</strong> pour voir uniquement vos gains</li>
+        <li>Appuyez sur une transaction pour voir les détails complets</li>
+    </ol>
+
+    <div class="section">
+        <h3>Détails de la transaction</h3>
+        <ul>
+            <li><strong>Résumé des gains :</strong> Revenus de livraison, déduction des frais de service et montant final reçu</li>
+            <li><strong>Statut du paiement :</strong> Si le paiement a été traité, est en attente ou complété</li>
+            <li><strong>Chronologie :</strong> Progression du statut de la création à la complétion</li>
+            <li><strong>Info livraison :</strong> Détails du colis, itinéraire et informations sur l'expéditeur</li>
+            <li><strong>Montant du pourboire :</strong> Toute gratification ajoutée par l'expéditeur</li>
+        </ul>
+    </div>
+
+    <h3>Tableau de bord Stripe Express</h3>
+
+    <p>Pour une vue complète de vos finances, accédez à votre tableau de bord Stripe Express :</p>
+    <ol>
+        <li>Allez dans <strong>Profil</strong> → section <strong>Paiements</strong> → <strong>Configuration des paiements</strong></li>
+        <li>Appuyez sur <strong>« Voir le tableau de bord »</strong></li>
+        <li>Consultez votre solde, l'historique de vos paiements et les détails de votre compte bancaire directement sur Stripe</li>
+    </ol>
+
+    <h2>Statuts des paiements</h2>
+
+    <div class="section">
+        <p>Chaque paiement passe par ces étapes :</p>
+        <ul>
+            <li><strong>En attente :</strong> Le paiement est programmé mais pas encore traité</li>
+            <li><strong>En traitement :</strong> Le paiement est en cours de transfert vers votre banque</li>
+            <li><strong>Complété :</strong> Les fonds ont été déposés dans votre compte bancaire</li>
+            <li><strong>En suspens :</strong> Le paiement est temporairement retenu — contactez le support si cette situation persiste</li>
+            <li><strong>Échoué :</strong> Le paiement n'a pas pu être traité — vérifiez vos coordonnées bancaires dans le tableau de bord Stripe</li>
+        </ul>
+    </div>
+
+    <div class="important">
+        <strong>Délai de paiement :</strong> Après la confirmation de la livraison, les paiements sont généralement traités dans un délai de 2 à 5 jours ouvrables, selon votre banque et votre région. Vous pouvez vérifier le délai exact dans votre tableau de bord Stripe Express.
+    </div>
+
+    <h2>Reçus</h2>
+
+    <p>Téléchargez des reçus pour vos dossiers et vos déclarations fiscales :</p>
+    <ol>
+        <li>Allez dans <strong>Profil</strong> → section <strong>Paiements</strong> → <strong>Reçus</strong></li>
+        <li>Parcourez votre historique de reçus</li>
+        <li>Appuyez sur un reçu pour voir le document PDF complet</li>
+    </ol>
+
+    <div class="section">
+        <h3>Détails du reçu</h3>
+        <ul>
+            <li>Numéro de reçu et date</li>
+            <li>Itinéraire de livraison (ville de collecte → ville de livraison)</li>
+            <li>Montant des gains du transporteur (pourboires inclus)</li>
+            <li>Ventilation des frais de service</li>
+            <li>Informations sur l'expéditeur</li>
+        </ul>
+    </div>
+
+    <div class="tip">
+        <strong>Conseil :</strong> Conservez vos reçus pour vos déclarations fiscales. Vos reçus de transporteur indiquent exactement ce que vous avez gagné pour chaque livraison.
+    </div>
+
+    <h2>Pourboires des expéditeurs</h2>
+
+    <div class="section">
+        <p>Les expéditeurs peuvent ajouter un pourboire après la livraison en guise de remerciement pour un excellent service. Les pourboires sont :</p>
+        <ul>
+            <li><strong>100 % à vous</strong> — aucuns frais de plateforme ne sont déduits des pourboires</li>
+            <li><strong>Traités séparément</strong> par Stripe</li>
+            <li><strong>Inclus</strong> dans les détails de vos transactions et les totaux de vos reçus</li>
+        </ul>
+    </div>
+
+    <h2>Questions fréquentes</h2>
+
+    <h3>Quand puis-je commencer à recevoir des paiements?</h3>
+    <p>Dès que votre inscription à Stripe Connect est terminée et que votre statut indique « Actif ». Assurez-vous de configurer cela avant d'accepter des livraisons.</p>
+
+    <h3>Pourquoi mon paiement est-il en suspens?</h3>
+    <p>Les paiements peuvent être retenus si Stripe nécessite une vérification supplémentaire ou s'il y a un problème avec la transaction. Consultez votre tableau de bord Stripe Express pour plus de détails, ou contactez le support.</p>
+
+    <h3>Puis-je changer mon compte bancaire?</h3>
+    <p>Oui. Accédez à votre tableau de bord Stripe Express depuis <strong>Profil → Configuration des paiements → Voir le tableau de bord</strong> pour mettre à jour vos coordonnées bancaires.</p>
+
+    <h3>Comment voir mes gains totaux?</h3>
+    <p>Utilisez l'historique des transactions filtré sur « Transporteur » pour les gains dans l'application, ou consultez votre tableau de bord Stripe Express pour un aperçu financier complet incluant l'historique des paiements.</p>
+
+    <h3>Quel est le prix minimum de livraison?</h3>
+    <p>Le prix minimum convenu de livraison est de 5,00 $ CAD. Cela garantit une rémunération équitable pour les transporteurs.</p>
+
+    <h2>Besoin d'aide?</h2>
+    <p>Si vous avez des questions sur vos paiements ou vos revenus :</p>
+    <ul>
+        <li>Consultez votre historique des transactions pour les détails spécifiques à chaque livraison</li>
+        <li>Accédez à votre tableau de bord Stripe Express pour les informations de paiement et bancaires</li>
+        <li>Soumettez un ticket de support via l'application pour les questions de facturation</li>
+    </ul>
+</body>
+</html>

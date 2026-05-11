@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.features.legal.model.LegalDocument
 import com.efthemiosprime.pasabayan.features.legal.model.LegalStatus
+import com.efthemiosprime.pasabayan.features.legal.services.LegalAssetCatalog
 import com.efthemiosprime.pasabayan.features.legal.services.LegalRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,10 +32,18 @@ data class LegalAgreementUiState(
 @HiltViewModel
 class LegalAgreementViewModel @Inject constructor(
     private val repository: LegalRepository,
+    private val assetCatalog: LegalAssetCatalog,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LegalAgreementUiState())
     val uiState: StateFlow<LegalAgreementUiState> = _uiState.asStateFlow()
+
+    /**
+     * Returns the bundled HTML filename to render for [document] given the user's locale.
+     * Falls back to English when a French translation isn't bundled.
+     */
+    fun localFilename(document: LegalDocument, languageCode: String): String =
+        document.localFilename(languageCode, assetCatalog.frenchArticleFiles)
 
     fun loadStatus() {
         viewModelScope.launch {

@@ -3,6 +3,7 @@ package com.efthemiosprime.pasabayan.features.legal.viewmodel
 import com.efthemiosprime.pasabayan.features.legal.model.LegalDocument
 import com.efthemiosprime.pasabayan.features.legal.model.LegalStatus
 import com.efthemiosprime.pasabayan.features.legal.services.AgreementOutcome
+import com.efthemiosprime.pasabayan.features.legal.services.LegalAssetCatalog
 import com.efthemiosprime.pasabayan.features.legal.services.LegalRepository
 import com.efthemiosprime.pasabayan.features.legal.services.WithdrawalOutcome
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +49,7 @@ class LegalAgreementViewModelTest {
     @Test
     fun `loadStatus populates state on success`() = runTest {
         repo.statusResult = Result.success(sampleStatus)
-        val vm = LegalAgreementViewModel(repo)
+        val vm = LegalAgreementViewModel(repo, NoOpAssetCatalog)
         vm.loadStatus()
         advanceUntilIdle()
         val state = vm.uiState.value
@@ -60,7 +61,7 @@ class LegalAgreementViewModelTest {
     @Test
     fun `loadStatus surfaces error`() = runTest {
         repo.statusResult = Result.failure(RuntimeException("boom"))
-        val vm = LegalAgreementViewModel(repo)
+        val vm = LegalAgreementViewModel(repo, NoOpAssetCatalog)
         vm.loadStatus()
         advanceUntilIdle()
         assertEquals("boom", vm.uiState.value.errorMessage)
@@ -70,7 +71,7 @@ class LegalAgreementViewModelTest {
     fun `agreeToAllPending sends ids and clears list on full agreement`() = runTest {
         repo.statusResult = Result.success(sampleStatus)
         repo.agreeResult = Result.success(AgreementOutcome(allRequiredAgreed = true, pendingRequiredCount = 0))
-        val vm = LegalAgreementViewModel(repo)
+        val vm = LegalAgreementViewModel(repo, NoOpAssetCatalog)
         vm.loadStatus()
         advanceUntilIdle()
 
@@ -89,7 +90,7 @@ class LegalAgreementViewModelTest {
     fun `agree on partial outcome removes only specified ids`() = runTest {
         repo.statusResult = Result.success(sampleStatus)
         repo.agreeResult = Result.success(AgreementOutcome(allRequiredAgreed = false, pendingRequiredCount = 1))
-        val vm = LegalAgreementViewModel(repo)
+        val vm = LegalAgreementViewModel(repo, NoOpAssetCatalog)
         vm.loadStatus()
         advanceUntilIdle()
 
@@ -105,7 +106,7 @@ class LegalAgreementViewModelTest {
 
     @Test
     fun `agree with empty list is a no-op`() = runTest {
-        val vm = LegalAgreementViewModel(repo)
+        val vm = LegalAgreementViewModel(repo, NoOpAssetCatalog)
         vm.agree(emptyList())
         advanceUntilIdle()
         assertTrue(repo.agreeIds.isEmpty())
@@ -115,7 +116,7 @@ class LegalAgreementViewModelTest {
     fun `withdraw reloads status and surfaces warning`() = runTest {
         repo.withdrawResult = Result.success(WithdrawalOutcome("marketing_communications", "Some services may be limited"))
         repo.statusResult = Result.success(sampleStatus.copy(pendingCount = 0, pendingDocuments = emptyList(), allAgreed = true))
-        val vm = LegalAgreementViewModel(repo)
+        val vm = LegalAgreementViewModel(repo, NoOpAssetCatalog)
         vm.withdraw("marketing_communications")
         advanceUntilIdle()
 
@@ -126,11 +127,15 @@ class LegalAgreementViewModelTest {
 
     @Test
     fun `withdraw blank type is a no-op`() = runTest {
-        val vm = LegalAgreementViewModel(repo)
+        val vm = LegalAgreementViewModel(repo, NoOpAssetCatalog)
         vm.withdraw("")
         advanceUntilIdle()
         assertEquals(0, repo.withdrawCalls.size)
     }
+}
+
+private object NoOpAssetCatalog : LegalAssetCatalog {
+    override val frenchArticleFiles: Set<String> = emptySet()
 }
 
 private class FakeLegalRepository : LegalRepository {

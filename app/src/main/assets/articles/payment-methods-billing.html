@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Methods and Billing</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #000;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+        h2 {
+            color: #000;
+            font-size: 22px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        h3 {
+            color: #666;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        p {
+            margin-bottom: 12px;
+        }
+        ul {
+            margin-bottom: 12px;
+            padding-left: 24px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .section {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .tip {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .important {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .security {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Payment Methods and Billing</h1>
+
+    <p>Pasabayan uses Stripe for secure payment processing to ensure your transactions are safe and protected. Learn about payment methods, billing processes, and how to manage your account finances.</p>
+
+    <h2>Accepted Payment Methods</h2>
+
+    <div class="section">
+        <h3>Credit and Debit Cards</h3>
+        <p>We accept all major credit and debit cards including:</p>
+        <ul>
+            <li>Visa</li>
+            <li>Mastercard</li>
+            <li>American Express</li>
+            <li>Discover</li>
+        </ul>
+        <p>Apple Pay is also supported on compatible devices.</p>
+    </div>
+
+    <div class="security">
+        <strong>Secure Processing:</strong> All card information is processed and stored securely through Stripe, a PCI DSS Level 1 certified payment processor. We never store your full card number on our servers.
+    </div>
+
+    <h2>Adding a Payment Method</h2>
+
+    <ol>
+        <li><strong>Go to Profile:</strong> Tap on the "Profile" tab at the bottom of your screen</li>
+        <li><strong>Navigate to Payments:</strong> Tap the "Payment Methods" option in the Payments section</li>
+        <li><strong>Add Card:</strong> Tap the "+ Add Payment Method" button</li>
+        <li><strong>Complete the Secure Form:</strong> A secure Stripe payment form will appear where you can enter your card details or use Apple Pay</li>
+        <li><strong>Done:</strong> Once completed, your card is securely saved to your account for future payments</li>
+    </ol>
+
+    <div class="tip">
+        <strong>Tip:</strong> You can add multiple cards and set one as your default payment method for faster checkout. Swipe on a card to remove it or tap to set it as default.
+    </div>
+
+    <h2>How Billing Works</h2>
+
+    <h3>For Shippers (Package Senders)</h3>
+
+    <div class="section">
+        <h3>When You're Charged</h3>
+        <ul>
+            <li><strong>Match Confirmed:</strong> When both you and a carrier agree on the delivery, you'll be prompted to complete payment</li>
+            <li><strong>Payment Authorization:</strong> When you complete the payment form, the agreed amount is authorized (held) on your card but not yet captured</li>
+            <li><strong>Payment Captured:</strong> The charge is captured and finalized once the payment is confirmed</li>
+        </ul>
+    </div>
+
+    <div class="important">
+        <strong>Important:</strong> You must initiate payment after your match is confirmed. Payment is not automatic — you'll see a "Pay Now" option to complete the transaction using your saved card or a new payment method.
+    </div>
+
+    <h3>For Carriers (Drivers)</h3>
+
+    <div class="section">
+        <h3>Earnings and Payouts</h3>
+        <ul>
+            <li><strong>Commission Structure:</strong> You receive the agreed delivery fee minus a 5% carrier service fee</li>
+            <li><strong>Stripe Connect:</strong> Payouts are processed through your Stripe Connect account, which must be set up before you can receive payments</li>
+            <li><strong>Payout Processing:</strong> Once a transaction is completed, funds are transferred to your linked bank account through Stripe</li>
+        </ul>
+    </div>
+
+    <h2>Setting Up Payouts (Carriers)</h2>
+
+    <p>To receive earnings as a carrier, you need to complete Stripe Connect onboarding:</p>
+
+    <ol>
+        <li><strong>Go to Profile:</strong> Tap on the "Profile" tab</li>
+        <li><strong>Payout Setup:</strong> Tap the "Payout Setup" option in the Payments section</li>
+        <li><strong>Complete Onboarding:</strong> You'll be directed to Stripe's secure onboarding page where you'll provide:
+            <ul>
+                <li>Identity verification (KYC)</li>
+                <li>Bank account details for receiving payouts</li>
+                <li>Tax information</li>
+            </ul>
+        </li>
+        <li><strong>Return to App:</strong> Once onboarding is complete, your payout status will be verified automatically</li>
+    </ol>
+
+    <div class="tip">
+        <strong>Tip:</strong> After onboarding, you can access your Stripe Express Dashboard from the Payout Setup screen to view your balance, payout history, and bank account details.
+    </div>
+
+    <h2>Service Fees</h2>
+
+    <div class="section">
+        <h3>Fee Structure</h3>
+        <ul>
+            <li><strong>Shipper Service Fee:</strong> 10% of the agreed delivery price is added to your total as a platform fee</li>
+            <li><strong>Carrier Service Fee:</strong> 5% of the agreed delivery price is deducted from your earnings</li>
+            <li><strong>All fees are clearly displayed</strong> before you confirm any transaction</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>Example Breakdown</h3>
+        <p>For an agreed delivery price of $100 CAD:</p>
+        <ul>
+            <li><strong>Shipper pays:</strong> $100 + $10 service fee = <strong>$110 total</strong></li>
+            <li><strong>Carrier receives:</strong> $100 - $5 service fee = <strong>$95 earnings</strong></li>
+        </ul>
+    </div>
+
+    <div class="important">
+        <strong>Minimum Delivery Price:</strong> The minimum agreed delivery price is $5.00 CAD.
+    </div>
+
+    <h2>Transaction History</h2>
+
+    <p>View all your payment activity through the Transaction History:</p>
+
+    <ol>
+        <li>Go to Profile → Payments section → Transaction History</li>
+        <li>Filter transactions by role: All, Shipper, or Carrier</li>
+        <li>Tap on any transaction to view full details including fee breakdowns and payout status</li>
+    </ol>
+
+    <div class="section">
+        <h3>What You'll See</h3>
+        <ul>
+            <li>Transaction date and time</li>
+            <li>Delivery reference and other party details</li>
+            <li>Amount charged or earned</li>
+            <li>Service fee breakdown</li>
+            <li>Payment and payout status</li>
+        </ul>
+    </div>
+
+    <h2>Receipts</h2>
+
+    <p>Download PDF receipts for your records:</p>
+
+    <ol>
+        <li>Go to Profile → Payments section → Receipts</li>
+        <li>Browse your receipt history</li>
+        <li>Tap on a receipt to view the full PDF document</li>
+    </ol>
+
+    <div class="tip">
+        <strong>Tip:</strong> Receipts show different amounts depending on your role — shippers see what they paid, and carriers see what they earned. Keep receipts for tax purposes or expense tracking.
+    </div>
+
+    <h2>Cancellations and Refunds</h2>
+
+    <h3>Cancellation</h3>
+    <p>You can cancel a payment from the transaction detail screen. Cancelled payments will be reversed if the charge was authorized or captured.</p>
+
+    <h3>Requesting a Refund</h3>
+    <ol>
+        <li>Go to the transaction detail for the delivery in question</li>
+        <li>Tap "Request Refund"</li>
+        <li>Select a reason for the refund:
+            <ul>
+                <li>Package was damaged during delivery</li>
+                <li>Package was never delivered</li>
+                <li>Wrong item was delivered</li>
+                <li>Delivery was significantly late</li>
+                <li>Only partial items were delivered</li>
+                <li>Other (provide details)</li>
+            </ul>
+        </li>
+        <li>Optionally request a partial refund by entering a specific amount</li>
+        <li>Add any additional details to support your request</li>
+        <li>Submit the refund request for review</li>
+    </ol>
+
+    <h3>Refund Review Process</h3>
+    <ul>
+        <li>Your refund request is reviewed by our support team</li>
+        <li>You can check the status of your request from the transaction detail</li>
+        <li>Once approved, the refund is processed through Stripe back to your original payment method</li>
+    </ul>
+
+    <div class="important">
+        <strong>Important:</strong> Refund eligibility depends on specific circumstances and is evaluated on a case-by-case basis. Please provide as much detail as possible when submitting your request.
+    </div>
+
+    <h2>Payment Security</h2>
+
+    <div class="security">
+        <h3>We Protect Your Financial Information</h3>
+        <ul>
+            <li><strong>PCI DSS Compliant:</strong> Meets highest industry security standards through Stripe</li>
+            <li><strong>Tokenization:</strong> Card numbers are encrypted and tokenized — we never see your full card number</li>
+            <li><strong>3D Secure:</strong> Additional verification is automatically triggered when required by your bank</li>
+            <li><strong>Secure Storage:</strong> Authentication credentials stored in iOS Keychain</li>
+            <li><strong>Stripe Connect:</strong> Carrier payouts processed through Stripe's verified platform</li>
+        </ul>
+    </div>
+
+    <h2>Common Billing Questions</h2>
+
+    <h3>Why was I charged twice?</h3>
+    <p>If you see two transactions, one may be an authorization (hold) and one the actual charge. Authorizations are temporary and will be released by your bank.</p>
+
+    <h3>Can I change my payment method for an active delivery?</h3>
+    <p>You can choose your payment method when completing the payment form. Once a payment has been authorized, the selected payment method is used.</p>
+
+    <h3>How do I set up payouts as a carrier?</h3>
+    <p>Go to Profile → Payments section → Payout Setup. You'll complete Stripe Connect onboarding, which includes identity verification and linking your bank account.</p>
+
+    <h3>How much are the service fees?</h3>
+    <p>Shippers pay a 10% service fee on top of the agreed delivery price. Carriers have a 5% service fee deducted from their earnings. All fees are shown before you confirm any transaction.</p>
+
+    <h3>Are there any hidden fees?</h3>
+    <p>No hidden fees! All charges including service fees are clearly displayed before you confirm any transaction.</p>
+
+    <h2>Getting Help</h2>
+    <p>If you have billing questions or issues:</p>
+    <ul>
+        <li>Check your Transaction History for transaction details</li>
+        <li>View your Receipts for fee breakdowns</li>
+        <li>Submit a support ticket through the app for billing inquiries</li>
+    </ul>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment créer un trajet</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #000;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+        h2 {
+            color: #000;
+            font-size: 22px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        h3 {
+            color: #666;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        p {
+            margin-bottom: 12px;
+        }
+        ol, ul {
+            margin-bottom: 12px;
+            padding-left: 24px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .step {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .step-title {
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 8px;
+        }
+        .section {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .tip {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .important {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Comment créer un trajet</h1>
+
+    <p>En tant que transporteur sur Pasabayan, créer un trajet permet aux expéditeurs de connaître votre itinéraire de voyage et votre disponibilité. Une fois votre trajet publié, les expéditeurs ayant des colis le long de votre itinéraire peuvent demander un jumelage. Suivez les étapes ci-dessous pour créer votre premier trajet.</p>
+
+    <h2>Pour commencer</h2>
+
+    <div class="step">
+        <div class="step-title">Étape 1 : Ouvrir le tableau de bord</div>
+        <p>Ouvrez l'application Pasabayan et accédez à votre <strong>Tableau de bord</strong>. Dans la section Transporteur, appuyez sur le bouton <strong>« Créer un trajet »</strong>.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Étape 2 : Comprendre le formulaire</div>
+        <p>Le formulaire de création de trajet est organisé en sections dépliables. Une <strong>bannière de progression</strong> en haut suit 4 exigences qui doivent être remplies avant de pouvoir soumettre :</p>
+        <ul>
+            <li><strong>Itinéraire</strong> — Lieux de collecte et de dépôt</li>
+            <li><strong>Poids</strong> — Capacité de transport disponible</li>
+            <li><strong>Prix</strong> — Votre tarification de livraison</li>
+            <li><strong>Dates</strong> — Horaire de départ et d'arrivée</li>
+        </ul>
+        <p>Appuyez sur n'importe quelle pastille d'exigence pour accéder directement à cette section. Les 4 doivent être remplies pour activer le bouton « Créer un trajet ».</p>
+    </div>
+
+    <hr>
+
+    <h2>Section 1 : Détails de l'itinéraire</h2>
+
+    <div class="step">
+        <div class="step-title">Définir votre lieu de collecte</div>
+        <ul>
+            <li><strong>Pays :</strong> Sélectionnez dans le menu déroulant — Canada, États-Unis, Philippines ou Inde</li>
+            <li><strong>Ville :</strong> Commencez à taper votre ville de départ. Des suggestions de saisie automatique apparaîtront au fur et à mesure — appuyez sur l'une d'elles pour la sélectionner</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Définir votre lieu de dépôt</div>
+        <ul>
+            <li><strong>Pays :</strong> Sélectionnez le pays de destination (peut être différent de celui de collecte)</li>
+            <li><strong>Ville :</strong> Tapez et sélectionnez votre ville de destination parmi les suggestions</li>
+        </ul>
+    </div>
+
+    <div class="tip">
+        <strong>Conseil :</strong> La base de données de villes couvre plus de 150 villes canadiennes, plus de 300 villes américaines, plus de 80 villes philippines et plus de 70 villes indiennes. Les noms de villes incluent les codes de province ou d'État pour plus de clarté (ex. : « Vancouver, CB » ou « Toronto, ON »).
+    </div>
+
+    <h2>Section 2 : Dates du trajet</h2>
+
+    <div class="step">
+        <div class="step-title">Définir votre horaire</div>
+        <ul>
+            <li><strong>Date de départ :</strong> Sélectionnez le jour de votre départ (doit être aujourd'hui ou plus tard)</li>
+            <li><strong>Heure de départ :</strong> Définissez votre heure de départ (doit être au moins 5 minutes à partir de maintenant)</li>
+            <li><strong>Date d'arrivée :</strong> Sélectionnez le jour de votre arrivée (doit être le jour du départ ou après)</li>
+            <li><strong>Heure d'arrivée :</strong> Définissez votre heure d'arrivée prévue (doit être au moins 20 minutes après le départ)</li>
+        </ul>
+    </div>
+
+    <div class="important">
+        <strong>Règles de dates :</strong> Votre trajet doit durer au moins 20 minutes. Le départ est fixé par défaut à demain et l'arrivée au surlendemain — ajustez selon vos plans de voyage.
+    </div>
+
+    <h2>Section 3 : Espace disponible</h2>
+
+    <div class="step">
+        <div class="step-title">Définir votre capacité de poids</div>
+        <ul>
+            <li><strong>Capacité de poids (kg) :</strong> Entrez le poids que vous pouvez transporter, de 0,01 à 1 000 kg</li>
+        </ul>
+        <p>Cela indique aux expéditeurs le poids maximal de colis que vous pouvez accueillir lors de votre trajet.</p>
+    </div>
+
+    <h2>Section 4 : Mode de transport</h2>
+
+    <div class="step">
+        <div class="step-title">Choisir votre moyen de transport</div>
+        <p>Sélectionnez votre mode de transport :</p>
+        <ul>
+            <li><strong>Voiture</strong></li>
+            <li><strong>Autobus</strong></li>
+            <li><strong>Camion</strong></li>
+            <li><strong>Fourgonnette</strong></li>
+            <li><strong>Motocyclette</strong></li>
+            <li><strong>Train</strong></li>
+            <li><strong>Navire</strong></li>
+            <li><strong>Avion</strong></li>
+        </ul>
+        <p>Le mode par défaut est Voiture. Votre mode de transport détermine le fonctionnement de la tarification dans la section suivante.</p>
+    </div>
+
+    <h2>Section 5 : Votre prix</h2>
+
+    <p>La tarification fonctionne différemment selon votre mode de transport :</p>
+
+    <div class="section">
+        <h3>Pour les vols — Tarification au kilogramme</h3>
+        <ul>
+            <li>Définissez un <strong>prix par kilogramme</strong> (ex. : 5,00 $/kg)</li>
+            <li>Plage : de 0,01 $ à 1 000 $ par kg</li>
+            <li>Le coût total pour un expéditeur est calculé ainsi : poids du colis × votre prix au kg</li>
+        </ul>
+        <p><strong>Exemple :</strong> Si vous fixez 5,00 $/kg et qu'un expéditeur a un colis de 3 kg, le coût de livraison serait de 15,00 $.</p>
+    </div>
+
+    <div class="section">
+        <h3>Pour le transport terrestre — Tarification forfaitaire</h3>
+        <p>Voiture, Autobus, Camion, Fourgonnette, Motocyclette, Train et Navire utilisent tous une tarification forfaitaire :</p>
+        <ul>
+            <li>Définissez un <strong>prix forfaitaire</strong> pour l'ensemble de votre itinéraire (ex. : 150,00 $)</li>
+            <li>Minimum : 5,00 $ CAD</li>
+            <li>Maximum : 10 000 $</li>
+            <li>C'est le prix total indépendamment du poids du colis</li>
+        </ul>
+        <p><strong>Exemple :</strong> Si vous fixez un forfait de 150,00 $ pour un itinéraire Vancouver → Calgary, c'est le coût de livraison pour tout colis dans les limites de votre capacité de poids.</p>
+    </div>
+
+    <div class="tip">
+        <strong>Conseil tarification :</strong> Tenez compte de la distance, des coûts de carburant et de l'effort lorsque vous fixez votre prix. Une tarification compétitive aide à attirer plus d'expéditeurs tout en vous assurant une rémunération équitable. N'oubliez pas que des frais de service de 5 % seront déduits de vos gains.
+    </div>
+
+    <h2>Section 6 : Notes (optionnel)</h2>
+
+    <div class="step">
+        <div class="step-title">Ajouter des notes spéciales</div>
+        <p>Ajoutez optionnellement des notes pour les expéditeurs potentiels. C'est un bon endroit pour mentionner :</p>
+        <ul>
+            <li>Les types de colis que vous préférez ou ne pouvez pas transporter</li>
+            <li>Vos capacités de manipulation spéciale (ex. : « Peut transporter des articles fragiles avec soin »)</li>
+            <li>Votre flexibilité sur l'horaire ou l'itinéraire</li>
+            <li>Toute restriction (ex. : « Pas de liquides ni de denrées périssables »)</li>
+        </ul>
+    </div>
+
+    <h2>Soumettre votre trajet</h2>
+
+    <div class="step">
+        <div class="step-title">Vérifier et créer</div>
+        <p>Une fois les 4 exigences de la bannière de progression remplies (affichées en vert), appuyez sur <strong>« Créer un trajet »</strong> pour publier votre trajet.</p>
+        <p>Vous verrez une confirmation de succès et votre trajet deviendra immédiatement visible pour les expéditeurs ayant des colis compatibles.</p>
+    </div>
+
+    <div class="important">
+        <strong>Validation :</strong> Si des champs obligatoires sont manquants, le bouton « Créer un trajet » sera désactivé. La bannière de progression indique exactement quelles exigences doivent encore être remplies.
+    </div>
+
+    <h2>Statuts du trajet</h2>
+
+    <div class="section">
+        <p>Après la création, votre trajet progresse à travers ces statuts :</p>
+        <ul>
+            <li><strong>Planification :</strong> Le trajet est publié et visible par les expéditeurs — en attente de réservations de colis</li>
+            <li><strong>Actif :</strong> Un ou plusieurs colis ont été confirmés pour votre trajet</li>
+            <li><strong>En transit :</strong> Vous avez commencé à voyager et livrez des colis</li>
+            <li><strong>Terminé :</strong> Trajet terminé et tous les colis livrés</li>
+            <li><strong>Annulé :</strong> Le trajet a été annulé</li>
+        </ul>
+    </div>
+
+    <h2>Après la création de votre trajet</h2>
+
+    <h3>Jumelage avec des colis</h3>
+    <p>Une fois votre trajet publié :</p>
+    <ul>
+        <li><strong>Les expéditeurs parcourent les trajets compatibles :</strong> Les expéditeurs ayant des colis le long de votre itinéraire peuvent voir votre trajet et demander un jumelage</li>
+        <li><strong>Examiner les demandes :</strong> Vous recevrez des notifications lorsqu'un expéditeur est intéressé</li>
+        <li><strong>Accepter ou refuser :</strong> Examinez les détails du colis, le profil de l'expéditeur et le prix avant de décider</li>
+    </ul>
+
+    <h3>Gérer votre trajet</h3>
+    <ul>
+        <li>Consultez vos trajets depuis le Tableau de bord ou la section Transporteur</li>
+        <li>Suivez les colis jumelés et leurs statuts</li>
+        <li>Communiquez avec les expéditeurs via le clavardage intégré</li>
+    </ul>
+
+    <div class="tip">
+        <strong>Conseil :</strong> Créez des trajets pour vos itinéraires de voyage réguliers — même vos trajets quotidiens! Des expéditeurs dans votre région peuvent avoir des colis qui correspondent parfaitement à votre itinéraire existant.
+    </div>
+
+    <h2>Pays pris en charge</h2>
+
+    <div class="section">
+        <p>Pasabayan prend actuellement en charge les trajets dans :</p>
+        <ul>
+            <li><strong>Canada</strong> — plus de 150 villes dans toutes les provinces et territoires</li>
+            <li><strong>États-Unis</strong> — plus de 300 villes couvrant les grandes métropoles et les centres régionaux</li>
+            <li><strong>Philippines</strong> — plus de 80 villes incluant Manille, Cebu et Davao</li>
+            <li><strong>Inde</strong> — plus de 70 villes incluant Delhi, Mumbai et Bangalore</li>
+        </ul>
+        <p>Vous pouvez créer des trajets entre différents pays pour des livraisons internationales.</p>
+    </div>
+
+    <h2>Besoin d'aide?</h2>
+    <p>Si vous rencontrez des problèmes lors de la création d'un trajet :</p>
+    <ul>
+        <li>Assurez-vous d'être inscrit en tant que transporteur (changez de rôle depuis votre Profil si nécessaire)</li>
+        <li>Vérifiez que les 4 exigences sont remplies dans la bannière de progression</li>
+        <li>Soumettez un ticket de support via l'application si vous avez besoin d'assistance</li>
+    </ul>
+
+    <p><strong>Prêt à commencer à gagner?</strong> Créez votre premier trajet et connectez-vous avec des expéditeurs qui ont besoin de livraisons le long de votre itinéraire!</p>
+</body>
+</html>

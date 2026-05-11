@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrier Payouts and Earnings</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #000;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+        h2 {
+            color: #000;
+            font-size: 22px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        h3 {
+            color: #666;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        p {
+            margin-bottom: 12px;
+        }
+        ol, ul {
+            margin-bottom: 12px;
+            padding-left: 24px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .step {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .step-title {
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 8px;
+        }
+        .section {
+            background-color: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .tip {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .important {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .security {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Carrier Payouts and Earnings</h1>
+
+    <p>As a carrier on Pasabayan, you earn money by delivering packages for shippers along your travel routes. This guide explains how to set up payouts, understand your earnings, and track your income.</p>
+
+    <h2>Setting Up Payouts (Stripe Connect)</h2>
+
+    <p>Before you can receive earnings, you need to complete Stripe Connect onboarding. This is a one-time setup that links your bank account for automatic payouts.</p>
+
+    <div class="step">
+        <div class="step-title">Step 1: Navigate to Payout Setup</div>
+        <p>Open the Pasabayan app and go to <strong>Profile</strong> tab → <strong>Payments</strong> section → <strong>Payout Setup</strong>.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 2: Start Onboarding</div>
+        <p>Tap the <strong>"Setup"</strong> button. You'll be directed to Stripe's secure onboarding page in your browser. If you've started before but didn't finish, you'll see a <strong>"Continue Setup"</strong> button instead.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 3: Complete Stripe Verification</div>
+        <p>Stripe will ask you to provide:</p>
+        <ul>
+            <li><strong>Identity Verification:</strong> Government-issued ID for KYC (Know Your Customer) compliance</li>
+            <li><strong>Bank Account Details:</strong> Your bank account where payouts will be deposited</li>
+            <li><strong>Address Verification:</strong> Confirm your current address</li>
+            <li><strong>Tax Information:</strong> Required tax details for your region</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 4: Return to the App</div>
+        <p>Once onboarding is complete, return to the Pasabayan app. Your payout status will be verified automatically. You'll see your status change to <strong>"Active"</strong> with a <strong>"View Dashboard"</strong> button.</p>
+    </div>
+
+    <div class="security">
+        <strong>Secure Processing:</strong> All financial information is processed through Stripe, a PCI DSS Level 1 certified payment processor. Pasabayan never stores your bank account details directly.
+    </div>
+
+    <h2>Payout Setup Statuses</h2>
+
+    <div class="section">
+        <ul>
+            <li><strong>Not Onboarded:</strong> You haven't started setup yet — tap "Setup" to begin</li>
+            <li><strong>Incomplete:</strong> You started onboarding but didn't finish — tap "Continue Setup" to resume</li>
+            <li><strong>Active:</strong> Fully set up and ready to receive payouts — tap "View Dashboard" to manage your account</li>
+        </ul>
+    </div>
+
+    <h2>How You Get Paid</h2>
+
+    <h3>Payment Flow</h3>
+
+    <div class="section">
+        <ol>
+            <li><strong>Delivery Matched:</strong> A shipper's package is matched with your trip and both parties confirm</li>
+            <li><strong>Shipper Pays:</strong> The shipper completes payment, which is authorized (held) by Stripe</li>
+            <li><strong>You Deliver:</strong> Pick up the package using the 6-digit pickup code and deliver it to the destination</li>
+            <li><strong>Delivery Confirmed:</strong> The shipper provides you with the delivery confirmation code to complete the handoff</li>
+            <li><strong>Payment Captured:</strong> Once delivery is confirmed, the payment is captured and your earnings are processed</li>
+            <li><strong>Payout Transferred:</strong> Stripe automatically transfers your earnings to your connected bank account</li>
+        </ol>
+    </div>
+
+    <div class="important">
+        <strong>Important:</strong> You must complete Stripe Connect onboarding before you can receive any payouts. Set this up before accepting your first delivery.
+    </div>
+
+    <h2>Understanding Your Earnings</h2>
+
+    <h3>Fee Structure</h3>
+
+    <div class="section">
+        <p>For each delivery, here's how the money flows:</p>
+        <ul>
+            <li><strong>Agreed Delivery Price:</strong> The base price agreed upon between you and the shipper</li>
+            <li><strong>Carrier Service Fee:</strong> 5% of the agreed price is deducted as a platform fee</li>
+            <li><strong>You Receive:</strong> The agreed price minus the 5% service fee</li>
+            <li><strong>Tips:</strong> Shippers can add a tip after delivery — tips go directly to you with no deduction</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>Example Breakdown</h3>
+        <p>For an agreed delivery price of <strong>$100 CAD</strong>:</p>
+        <ul>
+            <li><strong>Agreed Price:</strong> $100.00</li>
+            <li><strong>Service Fee (5%):</strong> -$5.00</li>
+            <li><strong>You Receive:</strong> $95.00</li>
+            <li><strong>If Shipper Tips $10:</strong> $95.00 + $10.00 = <strong>$105.00 total</strong></li>
+        </ul>
+    </div>
+
+    <div class="tip">
+        <strong>Tip:</strong> All fees are transparently displayed before you confirm any delivery. There are no hidden charges.
+    </div>
+
+    <h2>Viewing Your Earnings</h2>
+
+    <h3>Transaction History</h3>
+
+    <p>Track all your earnings through your transaction history:</p>
+    <ol>
+        <li>Go to <strong>Profile</strong> → <strong>Payments</strong> section → <strong>Transaction History</strong></li>
+        <li>Filter by role: tap <strong>"Carrier"</strong> to see only your earnings</li>
+        <li>Tap any transaction to view full details</li>
+    </ol>
+
+    <div class="section">
+        <h3>Transaction Details Include</h3>
+        <ul>
+            <li><strong>Earnings Summary:</strong> Delivery earnings, service fee deduction, and final amount received</li>
+            <li><strong>Payout Status:</strong> Whether the payout has been processed, is pending, or completed</li>
+            <li><strong>Timeline:</strong> Status progression from created to completed</li>
+            <li><strong>Delivery Info:</strong> Package details, route, and shipper information</li>
+            <li><strong>Tip Amount:</strong> Any gratuity added by the shipper</li>
+        </ul>
+    </div>
+
+    <h3>Stripe Express Dashboard</h3>
+
+    <p>For a complete view of your finances, access your Stripe Express Dashboard:</p>
+    <ol>
+        <li>Go to <strong>Profile</strong> → <strong>Payments</strong> section → <strong>Payout Setup</strong></li>
+        <li>Tap <strong>"View Dashboard"</strong></li>
+        <li>View your balance, payout history, and bank account details directly on Stripe</li>
+    </ol>
+
+    <h2>Payout Statuses</h2>
+
+    <div class="section">
+        <p>Each payout goes through these stages:</p>
+        <ul>
+            <li><strong>Pending:</strong> Payout is scheduled but not yet processed</li>
+            <li><strong>Processing:</strong> Payout is being transferred to your bank</li>
+            <li><strong>Completed:</strong> Funds have been deposited to your bank account</li>
+            <li><strong>On Hold:</strong> Payout is temporarily held — contact support if this persists</li>
+            <li><strong>Failed:</strong> Payout could not be processed — check your bank details in the Stripe Dashboard</li>
+        </ul>
+    </div>
+
+    <div class="important">
+        <strong>Payout Timing:</strong> After delivery confirmation, payouts are typically processed within 2–5 business days, depending on your bank and region. You can check the exact timing in your Stripe Express Dashboard.
+    </div>
+
+    <h2>Receipts</h2>
+
+    <p>Download receipts for your records and tax purposes:</p>
+    <ol>
+        <li>Go to <strong>Profile</strong> → <strong>Payments</strong> section → <strong>Receipts</strong></li>
+        <li>Browse your receipt history</li>
+        <li>Tap a receipt to view the full PDF document</li>
+    </ol>
+
+    <div class="section">
+        <h3>Receipt Details</h3>
+        <ul>
+            <li>Receipt number and date</li>
+            <li>Delivery route (pickup → delivery city)</li>
+            <li>Carrier earnings amount (including tips)</li>
+            <li>Service fee breakdown</li>
+            <li>Shipper information</li>
+        </ul>
+    </div>
+
+    <div class="tip">
+        <strong>Tip:</strong> Keep your receipts for tax reporting. Your carrier receipts show exactly what you earned for each delivery.
+    </div>
+
+    <h2>Tips from Shippers</h2>
+
+    <div class="section">
+        <p>Shippers can add a tip after a delivery is completed as a thank-you for great service. Tips are:</p>
+        <ul>
+            <li><strong>100% yours</strong> — no platform fee is deducted from tips</li>
+            <li><strong>Processed separately</strong> through Stripe</li>
+            <li><strong>Included</strong> in your transaction details and receipt totals</li>
+        </ul>
+    </div>
+
+    <h2>Common Questions</h2>
+
+    <h3>When can I start receiving payouts?</h3>
+    <p>As soon as your Stripe Connect onboarding is complete and your status shows "Active." Make sure to set this up before accepting deliveries.</p>
+
+    <h3>Why is my payout on hold?</h3>
+    <p>Payouts may be held if Stripe requires additional verification or if there's an issue with the transaction. Check your Stripe Express Dashboard for details, or contact support.</p>
+
+    <h3>Can I change my bank account?</h3>
+    <p>Yes. Access your Stripe Express Dashboard from <strong>Profile → Payout Setup → View Dashboard</strong> to update your bank account details.</p>
+
+    <h3>How do I see my total earnings?</h3>
+    <p>Use Transaction History filtered to "Carrier" for in-app earnings, or check your Stripe Express Dashboard for a complete financial overview including payout history.</p>
+
+    <h3>What's the minimum delivery price?</h3>
+    <p>The minimum agreed delivery price is $5.00 CAD. This ensures fair compensation for carriers.</p>
+
+    <h2>Need Help?</h2>
+    <p>If you have questions about your payouts or earnings:</p>
+    <ul>
+        <li>Check your Transaction History for delivery-specific details</li>
+        <li>Access your Stripe Express Dashboard for payout and bank information</li>
+        <li>Submit a support ticket through the app for billing inquiries</li>
+    </ul>
+</body>
+</html>

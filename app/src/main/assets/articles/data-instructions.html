@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Your Data - Pasabayan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #000000;
+            background-color: #ffffff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #000000;
+        }
+
+        .last-updated {
+            color: #666666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .accordion {
+            background-color: #f5f5f7;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid #d2d2d7;
+        }
+
+        .accordion-header {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .accordion-header:hover {
+            background-color: #e8e8ed;
+        }
+
+        .accordion-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .accordion-icon {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+            color: #666666;
+        }
+
+        .accordion.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion-content-inner {
+            padding: 0 20px 20px 20px;
+            color: #333333;
+            font-size: 15px;
+        }
+
+        .accordion-content-inner p {
+            margin-bottom: 12px;
+        }
+
+        .accordion-content-inner ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .accordion-content-inner li {
+            margin-bottom: 8px;
+        }
+
+        .accordion-content-inner ol {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .accordion-content-inner ol li {
+            margin-bottom: 8px;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #d2d2d7;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manage Your Data</h1>
+        <p class="last-updated">Last updated: February 2026</p>
+
+        <div class="accordion active">
+            <div class="accordion-header">
+                <div class="accordion-title">1. Your Data at Pasabayan</div>
+                <div class="accordion-icon">&#9660;</div>
+            </div>
+            <div class="accordion-content" style="max-height: 1000px;">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan collects and stores data to provide you with a safe and seamless delivery experience. You have full control over your personal data and can manage it at any time through the app or by contacting our support team.</p>
+                    <p>This page explains what data we store, how to access it, and how to request changes or deletion.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">2. What Data We Store</div>
+                <div class="accordion-icon">&#9660;</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p><strong>Account Information:</strong></p>
+                    <ul>
+                        <li>Name, email address, and phone number</li>
+                        <li>Profile photo and bio</li>
+                        <li>Account verification status</li>
+                        <li>Linked social login accounts (Google, Facebook, Apple)</li>
+                    </ul>
+                    <p><strong>Activity Data:</strong></p>
+                    <ul>
+                        <li>Delivery requests and trip history</li>
+                        <li>Booking records and transaction history</li>
+                        <li>Ratings and reviews given or received</li>
+                        <li>Messages exchanged with other users</li>
+                    </ul>
+                    <p><strong>Payment Data:</strong></p>
+                    <ul>
+                        <li>Payment method details (processed securely by Stripe)</li>
+                        <li>Payout information for carriers</li>
+                        <li>Transaction receipts</li>
+                    </ul>
+                    <p><strong>Device & Location Data:</strong></p>
+                    <ul>
+                        <li>Device identifiers and push notification tokens</li>
+                        <li>Location data (only when the app is in use)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">3. How to Access Your Data</div>
+                <div class="accordion-icon">&#9660;</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>You can view most of your data directly in the app:</p>
+                    <ul>
+                        <li><strong>Profile:</strong> Go to Settings &gt; Profile to see your personal information</li>
+                        <li><strong>Bookings:</strong> View your delivery and trip history in the Bookings tab</li>
+                        <li><strong>Payments:</strong> Check transaction history in Settings &gt; Payments</li>
+                        <li><strong>Ratings:</strong> See your ratings and reviews on your profile</li>
+                    </ul>
+                    <p>To request a full copy of all data we hold about you, contact us at <strong>support@pasabayan.com</strong> with the subject line "Data Access Request." We will provide your data in a portable format within 30 days.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">4. How to Update Your Information</div>
+                <div class="accordion-icon">&#9660;</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>You can update your personal information at any time:</p>
+                    <ol>
+                        <li>Open the Pasabayan app</li>
+                        <li>Go to <strong>Settings &gt; Profile</strong></li>
+                        <li>Tap on the field you want to edit (name, email, phone, photo)</li>
+                        <li>Make your changes and save</li>
+                    </ol>
+                    <p><strong>Note:</strong> Changing your email or phone number may require re-verification for security purposes.</p>
+                    <p>If you need to update information that cannot be changed through the app (such as correcting transaction records), please contact <strong>support@pasabayan.com</strong>.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">5. How to Download Your Data</div>
+                <div class="accordion-icon">&#9660;</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>You have the right to receive a copy of your personal data in a structured, commonly used format. To request a data export:</p>
+                    <ol>
+                        <li>Send an email to <strong>support@pasabayan.com</strong></li>
+                        <li>Use the subject line: "Data Export Request"</li>
+                        <li>Include your registered email address and full name</li>
+                        <li>We may ask you to verify your identity for security</li>
+                    </ol>
+                    <p>Your data export will be delivered within 30 days and will include your profile information, activity history, and transaction records.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">6. How to Delete Your Data</div>
+                <div class="accordion-icon">&#9660;</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>You can request deletion of your account and personal data:</p>
+                    <ol>
+                        <li>Open the Pasabayan app</li>
+                        <li>Go to <strong>Settings &gt; Account &gt; Delete Account</strong></li>
+                        <li>Confirm your identity</li>
+                        <li>Review what will be deleted and confirm</li>
+                    </ol>
+                    <p>Alternatively, email <strong>support@pasabayan.com</strong> with the subject "Account Deletion Request."</p>
+                    <p><strong>What happens when you delete your account:</strong></p>
+                    <ul>
+                        <li>Your profile and personal information will be permanently removed</li>
+                        <li>Your delivery and trip history will be anonymized</li>
+                        <li>Your ratings and reviews will be disassociated from your identity</li>
+                        <li>Active bookings must be completed or cancelled before deletion</li>
+                        <li>Pending payouts will be processed before account closure</li>
+                    </ul>
+                    <p><strong>Note:</strong> Some data may be retained for up to 90 days for legal and security purposes, after which it will be permanently deleted.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">7. Managing Permissions</div>
+                <div class="accordion-icon">&#9660;</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>You can control what data Pasabayan can access through your device settings:</p>
+                    <p><strong>Location:</strong></p>
+                    <ul>
+                        <li>Go to your device's <strong>Settings &gt; Privacy &gt; Location Services &gt; Pasabayan</strong></li>
+                        <li>Choose "While Using the App," "Ask Next Time," or "Never"</li>
+                        <li>Disabling location may limit trip matching and tracking features</li>
+                    </ul>
+                    <p><strong>Notifications:</strong></p>
+                    <ul>
+                        <li>Go to your device's <strong>Settings &gt; Notifications &gt; Pasabayan</strong></li>
+                        <li>Toggle notifications on or off</li>
+                        <li>Disabling notifications means you may miss booking updates and messages</li>
+                    </ul>
+                    <p><strong>Camera & Photos:</strong></p>
+                    <ul>
+                        <li>Go to your device's <strong>Settings &gt; Privacy &gt; Camera / Photos &gt; Pasabayan</strong></li>
+                        <li>Used for profile photos and package documentation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">8. Managing Connected Accounts</div>
+                <div class="accordion-icon">&#9660;</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>If you signed up using a social login (Google, Facebook, or Apple), you can manage these connections:</p>
+                    <ul>
+                        <li>Go to <strong>Settings &gt; Account &gt; Connected Accounts</strong></li>
+                        <li>View which social accounts are linked to your Pasabayan profile</li>
+                        <li>Disconnect a social account (you must have an email/password set up first)</li>
+                    </ul>
+                    <p>Disconnecting a social account does not delete your Pasabayan account. It only removes the link between the two services.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">9. Payment Data & Stripe</div>
+                <div class="accordion-icon">&#9660;</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan uses Stripe to securely process payments. Here's what you should know:</p>
+                    <ul>
+                        <li>Your full card details are never stored on Pasabayan's servers</li>
+                        <li>Payment information is managed directly by Stripe</li>
+                        <li>You can manage saved payment methods in <strong>Settings &gt; Payments</strong></li>
+                        <li>Carrier payout details are handled through Stripe Connect</li>
+                    </ul>
+                    <p>To remove your payment data from Stripe, you can delete your saved payment methods in the app or request full removal by contacting <strong>support@pasabayan.com</strong>.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">10. Data Breach Notification</div>
+                <div class="accordion-icon">&#9660;</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>In the unlikely event of a data breach that affects your personal information, we will:</p>
+                    <ul>
+                        <li>Notify affected users within 72 hours of discovery</li>
+                        <li>Describe the nature of the breach and data affected</li>
+                        <li>Explain what measures we are taking to address it</li>
+                        <li>Provide recommendations for protecting yourself</li>
+                        <li>Report to relevant data protection authorities as required by law</li>
+                    </ul>
+                    <p>Notifications will be sent via email and in-app alerts.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">11. Contact & Support</div>
+                <div class="accordion-icon">&#9660;</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>For any questions about your data or to make a request, contact us:</p>
+                    <p><strong>Email:</strong> support@pasabayan.com</p>
+                    <p><strong>In-App:</strong> Settings &gt; Support &gt; Contact Us</p>
+                    <p>We aim to respond to all data-related requests within 30 days. For urgent matters, please indicate "Urgent" in your subject line.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const accordion = this.parentElement;
+                const content = accordion.querySelector('.accordion-content');
+                const isActive = accordion.classList.contains('active');
+
+                // Close all accordions
+                document.querySelectorAll('.accordion').forEach(acc => {
+                    acc.classList.remove('active');
+                    acc.querySelector('.accordion-content').style.maxHeight = null;
+                });
+
+                // Open clicked accordion if it wasn't active
+                if (!isActive) {
+                    accordion.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

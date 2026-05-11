@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Pasabayan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #000000;
+            background-color: #ffffff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #000000;
+        }
+
+        .last-updated {
+            color: #666666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .accordion {
+            background-color: #f5f5f7;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid #d2d2d7;
+        }
+
+        .accordion-header {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .accordion-header:hover {
+            background-color: #e8e8ed;
+        }
+
+        .accordion-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .accordion-icon {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+            color: #666666;
+        }
+
+        .accordion.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion-content-inner {
+            padding: 0 20px 20px 20px;
+            color: #333333;
+            font-size: 15px;
+        }
+
+        .accordion-content-inner p {
+            margin-bottom: 12px;
+        }
+
+        .accordion-content-inner ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .accordion-content-inner li {
+            margin-bottom: 8px;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #d2d2d7;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Privacy Policy</h1>
+        <p class="last-updated">Last updated: February 2026</p>
+
+        <div class="accordion active">
+            <div class="accordion-header">
+                <div class="accordion-title">1. Introduction</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content" style="max-height: 1000px;">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and services.</p>
+                    <p>By using Pasabayan, you consent to the data practices described in this policy. Please read this policy carefully to understand our practices regarding your personal data.</p>
+                    <p>This policy is intended to comply with Canada's Personal Information Protection and Electronic Documents Act (PIPEDA) and other applicable privacy legislation in the jurisdictions where we operate.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">2. Information We Collect</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p><strong>Account Information:</strong></p>
+                    <ul>
+                        <li>Name, email address, and profile photo (imported from your authentication provider)</li>
+                        <li>Phone number (when you verify your phone)</li>
+                        <li>User role preferences (shipper, carrier, or both)</li>
+                    </ul>
+                    <p><strong>Identity Verification Data:</strong></p>
+                    <ul>
+                        <li>Phone number and SMS verification codes for phone verification</li>
+                        <li>Government-issued ID document photos (front and back), selfie photo, and optionally your ID number and date of birth for premium identity verification</li>
+                    </ul>
+                    <p><strong>Payment Information:</strong></p>
+                    <ul>
+                        <li>Payment and billing information is collected and processed by Stripe, our third-party payment processor. Pasabayan does not collect, store, or have access to your full credit card number or bank account details</li>
+                        <li>We store Stripe customer and account identifiers to link your account with payment services</li>
+                    </ul>
+                    <p><strong>Location Data:</strong></p>
+                    <ul>
+                        <li>Foreground location when you use location-based features such as address search and delivery fee estimation</li>
+                        <li>Background location for carriers during active deliveries ("In Transit" status), transmitted approximately every 30 seconds to provide real-time tracking to the matched shipper. A visible indicator is displayed on your device when background location is active</li>
+                    </ul>
+                    <p><strong>Usage and Device Information:</strong></p>
+                    <ul>
+                        <li>Device model, operating system version, and app version</li>
+                        <li>Transaction history and delivery records</li>
+                        <li>App usage patterns, search history, and preferences</li>
+                        <li>IP address and user agent when performing certain actions (activity logging)</li>
+                    </ul>
+                    <p><strong>Communication Data:</strong></p>
+                    <ul>
+                        <li>Messages exchanged through our in-app real-time chat system (transmitted via secure WebSocket connections)</li>
+                        <li>Support tickets and correspondence</li>
+                        <li>Ratings and written reviews</li>
+                    </ul>
+                    <p><strong>Crash and Diagnostic Data:</strong></p>
+                    <ul>
+                        <li>In the event of an app crash, we collect diagnostic information including: error type and message, stack trace, device model, OS version, app version, memory usage, battery level, and your user ID (if logged in). This data is used solely to identify and fix technical issues</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">3. How We Use Your Information</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>We use the information we collect to:</p>
+                    <ul>
+                        <li>Provide and improve our delivery matching services</li>
+                        <li>Connect carriers with shippers based on compatible routes</li>
+                        <li>Process transactions and facilitate payments through Stripe</li>
+                        <li>Verify user identities through phone verification and premium document verification</li>
+                        <li>Enable real-time delivery tracking and location sharing between matched parties</li>
+                        <li>Facilitate in-app communication between shippers and carriers</li>
+                        <li>Send you important service updates and push notifications about your deliveries</li>
+                        <li>Respond to your inquiries and provide customer support</li>
+                        <li>Calculate delivery fees based on distance</li>
+                        <li>Monitor for fraudulent or illegal activity</li>
+                        <li>Diagnose and fix technical issues using crash and diagnostic data</li>
+                        <li>Log user activity for security and service improvement purposes</li>
+                        <li>Comply with legal obligations</li>
+                    </ul>
+                    <p>We do not sell your personal information to third parties.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">4. Information Sharing</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>We may share your information in the following circumstances:</p>
+                    <ul>
+                        <li><strong>With Other Users:</strong> Your name, profile photo, rating, verification level, and review history are visible to other users to facilitate trust and connections. During active deliveries, your real-time location is shared with the matched party</li>
+                        <li><strong>Stripe:</strong> Payment and payout processing, including transaction amounts, customer identifiers, and connected account information. Stripe's privacy policy governs their handling of your payment data</li>
+                        <li><strong>Firebase (Google):</strong> Device tokens for delivering push notifications. Firebase's privacy policy governs their handling of this data</li>
+                        <li><strong>Authentication Providers:</strong> Google, Facebook, and Apple receive authentication requests during sign-in. Each provider's privacy policy governs their handling of your data</li>
+                        <li><strong>Legal Requirements:</strong> When required by law or to protect rights and safety</li>
+                        <li><strong>Business Transfers:</strong> In connection with mergers or acquisitions (with notice to users)</li>
+                        <li><strong>With Consent:</strong> When you explicitly authorize sharing</li>
+                    </ul>
+                    <p>All third-party service providers are contractually obligated to protect your information and process it only for the purposes we specify.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">5. Data Security</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>We implement industry-standard security measures to protect your information:</p>
+                    <ul>
+                        <li><strong>Authentication tokens</strong> are stored in the iOS Keychain, the system's secure encrypted storage</li>
+                        <li><strong>All network communication</strong> is transmitted over TLS-encrypted connections (HTTPS and secure WebSocket)</li>
+                        <li><strong>Payment data</strong> is processed entirely by Stripe (PCI DSS Level 1 certified) — your card details never pass through our servers</li>
+                        <li><strong>Token-based authentication</strong> is used for all API requests</li>
+                        <li>Regular security reviews and updates</li>
+                        <li>Access controls for backend systems</li>
+                    </ul>
+                    <p>Some non-sensitive data (such as your profile name, role preference, and cached content) is stored locally on your device in standard application storage. While protected by iOS sandboxing, this data is not individually encrypted at rest.</p>
+                    <p>No method of transmission over the internet is 100% secure. While we strive to use commercially acceptable means to protect your data, we cannot guarantee absolute security.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">6. Location Data</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan uses location data for the following purposes:</p>
+                    <ul>
+                        <li><strong>Address lookup and geocoding:</strong> Converting addresses to coordinates for delivery routing (foreground only)</li>
+                        <li><strong>Delivery fee estimation:</strong> Calculating distances between pickup and delivery locations</li>
+                        <li><strong>Real-time delivery tracking:</strong> Carriers share their GPS location with the matched shipper during active deliveries</li>
+                    </ul>
+                    <p><strong>Background Location (Carriers Only):</strong></p>
+                    <ul>
+                        <li>When a carrier marks a delivery as "In Transit," the app collects location updates approximately every 30 seconds, even when the app is in the background</li>
+                        <li>A visible blue indicator bar is displayed on your device whenever background location sharing is active</li>
+                        <li>Background location sharing stops automatically when the delivery is marked as complete</li>
+                        <li>Location data during delivery includes: latitude, longitude, and GPS accuracy</li>
+                    </ul>
+                    <p><strong>Your Control:</strong></p>
+                    <ul>
+                        <li>Location data is only collected with your permission. You can revoke location permissions at any time through your device's Settings app</li>
+                        <li>Revoking location permissions may limit certain features, such as delivery tracking and address search</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">7. Third-Party Authentication</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan uses third-party authentication providers for account creation and sign-in:</p>
+                    <ul>
+                        <li><strong>Apple Sign-In:</strong> We request your full name and email address</li>
+                        <li><strong>Google Sign-In:</strong> We receive your name, email address, and profile photo</li>
+                        <li><strong>Facebook Login:</strong> We request access to your public profile and email address. Automatic event logging by the Facebook SDK is disabled</li>
+                    </ul>
+                    <p>We use this information solely to create and authenticate your Pasabayan account. Each authentication provider has its own privacy policy that governs their handling of your data:</p>
+                    <ul>
+                        <li>Apple: <em>apple.com/legal/privacy</em></li>
+                        <li>Google: <em>policies.google.com/privacy</em></li>
+                        <li>Facebook: <em>facebook.com/privacy/policy</em></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">8. Push Notifications</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>We use Firebase Cloud Messaging (a Google service) to deliver push notifications to your device. This involves:</p>
+                    <ul>
+                        <li>Collecting and storing a device token that identifies your device for notification delivery</li>
+                        <li>Sending you notifications about: match requests and responses, delivery status changes, chat messages, payment updates, rating prompts, and verification status changes</li>
+                    </ul>
+                    <p>Your device token is registered with our servers when you enable notifications and is removed when you log out.</p>
+                    <p>You can disable push notifications at any time through your device's Settings app. Disabling notifications will not affect the core functionality of the app, but you may miss important delivery updates.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">9. Local Data Storage and Caching</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>To improve performance, the app caches certain data locally on your device:</p>
+                    <ul>
+                        <li><strong>Secure storage (iOS Keychain):</strong> Authentication token</li>
+                        <li><strong>Application storage:</strong> Your profile information, role preference, notification preferences, search history, and cached content (trips, packages, routes)</li>
+                        <li><strong>Disk cache:</strong> Temporary cached API responses with expiration times ranging from 1 minute to 24 hours, stored in your app's local cache directory</li>
+                    </ul>
+                    <p>Chat messages are held in memory only during your app session and are not persisted to local storage.</p>
+                    <p>When you log out, your authentication token is deleted from the Keychain, your profile data is removed from application storage, your device token is unregistered from push notifications, and transient cache data is cleared.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">10. Data Retention</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>We retain your personal data:</p>
+                    <ul>
+                        <li><strong>Account data:</strong> While your account is active and for a reasonable period thereafter</li>
+                        <li><strong>Transaction records:</strong> As required by law for financial and tax compliance</li>
+                        <li><strong>Chat messages:</strong> For the duration of the associated delivery and a reasonable period for dispute resolution</li>
+                        <li><strong>Identity verification documents:</strong> For the period required to maintain your verification status and comply with legal obligations</li>
+                        <li><strong>Crash reports and activity logs:</strong> For a limited period to diagnose issues and improve service quality</li>
+                        <li><strong>Ratings and reviews:</strong> For as long as they remain relevant to the community</li>
+                    </ul>
+                    <p>Upon account deletion request, we will delete or anonymize your personal data within 90 days, except where retention is required by law or for legitimate business purposes such as fraud prevention or financial record-keeping.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">11. Your Privacy Rights</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Under PIPEDA and other applicable privacy laws, you may have the following rights:</p>
+                    <ul>
+                        <li><strong>Access:</strong> Request a copy of the personal data we hold about you</li>
+                        <li><strong>Correction:</strong> Update or correct inaccurate information through your profile or by contacting support</li>
+                        <li><strong>Deletion:</strong> Request deletion of your personal data, subject to legal retention requirements</li>
+                        <li><strong>Portability:</strong> Obtain your data in a portable format</li>
+                        <li><strong>Objection:</strong> Object to certain processing activities</li>
+                        <li><strong>Withdraw Consent:</strong> Revoke previously given consent for data processing</li>
+                    </ul>
+                    <p>To exercise these rights, submit a support ticket through the app or contact us at support@pasabayan.com. We will respond within 30 days as required by applicable privacy laws.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">12. Children's Privacy</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>Pasabayan is not intended for users under 18 years of age. We do not knowingly collect personal information from children.</p>
+                    <p>If you are a parent or guardian and believe your child has provided us with personal information, please contact us immediately via in-app support or at support@pasabayan.com and we will take steps to delete that information.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">13. Third-Party Service Providers</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>We use the following third-party services to operate Pasabayan:</p>
+                    <ul>
+                        <li><strong>Stripe</strong> — Payment processing for shippers and carrier payouts via Stripe Connect. Stripe is PCI DSS Level 1 certified. Your card and bank account details are handled exclusively by Stripe</li>
+                        <li><strong>Firebase (Google)</strong> — Push notification delivery via Firebase Cloud Messaging</li>
+                        <li><strong>Apple, Google, Facebook</strong> — Authentication providers for account creation and sign-in</li>
+                    </ul>
+                    <p>Each provider processes data according to their own privacy policies. We only share the minimum data necessary for each service to function.</p>
+                    <p>We do not use any third-party analytics, advertising, or tracking services.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">14. Changes to This Policy</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>We may update this Privacy Policy from time to time to reflect changes in our practices or for legal and operational reasons.</p>
+                    <p>We will notify you of significant changes through:</p>
+                    <ul>
+                        <li>In-app notifications and agreement prompts</li>
+                        <li>Push notifications for material changes</li>
+                    </ul>
+                    <p>Continued use of Pasabayan after policy changes constitutes acceptance of the updated policy. We encourage you to review this policy periodically.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                <div class="accordion-title">15. Contact Us</div>
+                <div class="accordion-icon">▼</div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-content-inner">
+                    <p>If you have questions about this Privacy Policy or our data practices, please contact us:</p>
+                    <ul>
+                        <li><strong>In-App:</strong> Submit a support ticket through the Help Center</li>
+                        <li><strong>Email:</strong> support@pasabayan.com</li>
+                    </ul>
+                    <p>We will respond to your inquiry within 30 days as required by applicable privacy laws.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const accordion = this.parentElement;
+                const content = accordion.querySelector('.accordion-content');
+                const isActive = accordion.classList.contains('active');
+
+                // Close all accordions
+                document.querySelectorAll('.accordion').forEach(acc => {
+                    acc.classList.remove('active');
+                    acc.querySelector('.accordion-content').style.maxHeight = null;
+                });
+
+                // Open clicked accordion if it wasn't active
+                if (!isActive) {
+                    accordion.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

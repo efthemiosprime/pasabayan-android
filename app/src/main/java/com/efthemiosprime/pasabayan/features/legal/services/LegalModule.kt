@@ -12,4 +12,8 @@ abstract class LegalModule {
     @Binds
     @Singleton
     abstract fun bindLegalRepository(impl: LegalRepositoryImpl): LegalRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLegalAssetCatalog(impl: AndroidLegalAssetCatalog): LegalAssetCatalog
 }
