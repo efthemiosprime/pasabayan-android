@@ -51,12 +51,27 @@ fun MatchListScreen(
     onAction: (BookingAction, matchId: Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MatchingViewModel = hiltViewModel(),
+    /**
+     * When set (e.g. from a push-tap or in-app notification card routing through the dashboard),
+     * the matching match is selected as soon as the list has loaded and the details sheet opens
+     * directly. iOS parity: `NotificationCenter.navigateFromNotification` → `OpenMatch(matchId)`.
+     */
+    initialMatchId: Int? = null,
+    onInitialMatchConsumed: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val role = if (isCarrier) "carrier" else "shipper"
     var selectedMatch by remember { mutableStateOf<DeliveryMatch?>(null) }
 
     LaunchedEffect(role) { viewModel.loadMatches(role) }
+
+    // Key on the match list as well so a route fired before matches finish loading still resolves.
+    LaunchedEffect(initialMatchId, state.matches) {
+        val target = initialMatchId ?: return@LaunchedEffect
+        val match = state.matches.firstOrNull { it.id == target } ?: return@LaunchedEffect
+        selectedMatch = match
+        onInitialMatchConsumed()
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
         // Status filter chips

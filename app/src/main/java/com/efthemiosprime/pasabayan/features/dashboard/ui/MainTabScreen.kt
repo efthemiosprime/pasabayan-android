@@ -134,6 +134,9 @@ fun MainTabScreen(
     // iOS parity: when the user taps a chat pill inside trip details, jump to the Messages
     // tab and open that conversation directly.
     var pendingConversationId by remember { mutableStateOf<Int?>(null) }
+    // iOS parity: same deep-link pattern for matches — a push tap or in-app notification card
+    // for an `OpenMatch` / `OpenCounterOffer` event sets this; MatchListScreen consumes it.
+    var pendingMatchId by remember { mutableStateOf<Int?>(null) }
     var profilePaymentsOpen by remember { mutableStateOf(false) }
     var profilePayoutSetupOpen by remember { mutableStateOf(false) }
     var showEditUserProfileSheet by remember { mutableStateOf(false) }
@@ -190,9 +193,15 @@ fun MainTabScreen(
             val messagesIndex = tabs.indexOfFirst { it.route == "messages" }
             val profileIndex = tabs.indexOfFirst { it.route == "profile" }
             when (event) {
-                NavigationEvent.OpenMatchesTab,
-                is NavigationEvent.OpenMatch,
+                NavigationEvent.OpenMatchesTab -> {
+                    if (matchesIndex >= 0) viewModel.selectTab(matchesIndex)
+                }
+                is NavigationEvent.OpenMatch -> {
+                    pendingMatchId = event.matchId
+                    if (matchesIndex >= 0) viewModel.selectTab(matchesIndex)
+                }
                 is NavigationEvent.OpenCounterOffer -> {
+                    pendingMatchId = event.matchId
                     if (matchesIndex >= 0) viewModel.selectTab(matchesIndex)
                 }
                 NavigationEvent.OpenConversations -> {
@@ -290,6 +299,8 @@ fun MainTabScreen(
                 "matches" -> com.efthemiosprime.pasabayan.features.bookings.ui.MatchListScreen(
                     isCarrier = state.currentRole == UserRole.CARRIER,
                     onAction = { action, matchId -> /* TODO: handle booking actions */ },
+                    initialMatchId = pendingMatchId,
+                    onInitialMatchConsumed = { pendingMatchId = null },
                 )
                 "my_trips" -> com.efthemiosprime.pasabayan.features.trips.ui.CarrierMyTripsScreen(
                     onViewTripDetails = { trip -> selectedCarrierTripId = trip.id },
