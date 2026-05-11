@@ -102,6 +102,9 @@ fun MainTabScreen(
     var showTripCreationSheet by remember { mutableStateOf(false) }
     var showCarrierPreferencesGate by remember { mutableStateOf(false) }
     var selectedCarrierTripId by remember { mutableStateOf<Int?>(null) }
+    // iOS parity: when the user taps a chat pill inside trip details, jump to the Messages
+    // tab and open that conversation directly.
+    var pendingConversationId by remember { mutableStateOf<Int?>(null) }
     var profilePaymentsOpen by remember { mutableStateOf(false) }
     var profilePayoutSetupOpen by remember { mutableStateOf(false) }
     var showEditUserProfileSheet by remember { mutableStateOf(false) }
@@ -237,6 +240,8 @@ fun MainTabScreen(
                 "messages" -> MessagesTabScreen(
                     currentRole = state.currentRole,
                     currentUserId = user.id,
+                    initialConversationId = pendingConversationId,
+                    onInitialConversationConsumed = { pendingConversationId = null },
                 )
                 "profile" -> {
                     when {
@@ -678,6 +683,15 @@ fun MainTabScreen(
                     selectedCarrierTripId = null
                 },
                 onBack = { selectedCarrierTripId = null },
+                onOpenChat = { conversationId ->
+                    selectedCarrierTripId = null
+                    pendingConversationId = conversationId
+                    val messagesIndex = tabs.indexOfFirst { it.route == "messages" }
+                    if (messagesIndex >= 0) viewModel.selectTab(messagesIndex)
+                },
+                onUpdateStatus = { targetStatus ->
+                    carrierTripsViewModel.updateTripStatus(trip.id, targetStatus)
+                },
             )
         }
     }

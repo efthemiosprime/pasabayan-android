@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material3.AlertDialog
@@ -164,33 +165,19 @@ fun TripDetailsScreen(
             }
         }
 
-        // Schedule card
+        // Schedule card — iOS parity (`TripDetailsView.scheduleInformationCard`): show the
+        // shared pickup window (falling back to `departureDate`) and the shared delivery window
+        // (falling back to `arrivalDate`), with a "Not set" placeholder when neither is set.
         PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
                 PDetailSectionTitle(text = stringResource(R.string.trips_detail_schedule))
-                LabeledIconRow(
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Outlined.CalendarMonth,
-                            contentDescription = null,
-                            tint = PasabayanColors.Info,
-                            modifier = Modifier.size(24.dp),
-                        )
-                    },
-                    label = stringResource(R.string.trips_detail_departure),
-                    value = trip.formattedDepartureDate,
+                ScheduleOptionalRow(
+                    label = stringResource(R.string.trips_detail_pickup),
+                    formatted = trip.formattedPickupOrDepartureDate,
                 )
-                LabeledIconRow(
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Outlined.CalendarMonth,
-                            contentDescription = null,
-                            tint = PasabayanColors.Info,
-                            modifier = Modifier.size(24.dp),
-                        )
-                    },
-                    label = stringResource(R.string.trips_detail_arrival),
-                    value = trip.formattedArrivalDate,
+                ScheduleOptionalRow(
+                    label = stringResource(R.string.trips_detail_delivery),
+                    formatted = trip.formattedDeliveryOrArrivalDate,
                 )
             }
         }
@@ -211,6 +198,22 @@ fun TripDetailsScreen(
                     label = stringResource(R.string.trips_detail_weight),
                     value = trip.formattedCapacity,
                 )
+                // iOS parity (`TripDetailsView.capacityInformationCard`): also surface the
+                // available space in liters when the carrier provided it.
+                trip.availableSpaceLiters?.takeIf { it > 0.0 }?.let { liters ->
+                    LabeledIconRow(
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Inventory2,
+                                contentDescription = null,
+                                tint = PasabayanColors.Info,
+                                modifier = Modifier.size(24.dp),
+                            )
+                        },
+                        label = stringResource(R.string.trips_detail_available_space),
+                        value = stringResource(R.string.trips_detail_available_space_value, liters),
+                    )
+                }
             }
         }
 
@@ -728,6 +731,44 @@ private fun LabeledIconRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ScheduleOptionalRow(
+    label: String,
+    formatted: String?,
+) {
+    val isPlaceholder = formatted.isNullOrBlank()
+    val displayValue = formatted?.takeUnless { it.isBlank() }
+        ?: stringResource(R.string.trips_detail_schedule_not_set)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.CalendarMonth,
+            contentDescription = null,
+            tint = PasabayanColors.Info,
+            modifier = Modifier.size(24.dp),
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = label,
+                style = PasabayanTextStyles.Body.small,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = displayValue,
+                style = PasabayanTextStyles.Body.medium,
+                color = if (isPlaceholder) {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
+                fontWeight = if (isPlaceholder) FontWeight.Normal else FontWeight.SemiBold,
+            )
         }
     }
 }

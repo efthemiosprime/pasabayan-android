@@ -120,6 +120,26 @@ data class Trip(
         get() = DateTimeParsing.parseApiDateTime(arrivalDate)
             ?.let { DateTimeParsing.formatDateTime(it) } ?: ""
 
+    /**
+     * iOS parity (`TripDetailsView.scheduleInformationCard`): the shared collection window
+     * `pickupDate` falls back to `departureDate` for display. Null when neither is set.
+     */
+    val formattedPickupOrDepartureDate: String?
+        get() = (pickupDate ?: departureDate)?.let { raw ->
+            DateTimeParsing.parseApiDateTime(raw)
+                ?.let { DateTimeParsing.formatDateTime(it) }
+        }
+
+    /**
+     * iOS parity: the shared handoff window `deliveryDate` falls back to `arrivalDate` for
+     * display. Null when neither is set.
+     */
+    val formattedDeliveryOrArrivalDate: String?
+        get() = (deliveryDate ?: arrivalDate)?.let { raw ->
+            DateTimeParsing.parseApiDateTime(raw)
+                ?.let { DateTimeParsing.formatDateTime(it) }
+        }
+
     val formattedDuration: String
         get() {
             val departure = DateTimeParsing.parseApiDateTime(departureDate) ?: return ""

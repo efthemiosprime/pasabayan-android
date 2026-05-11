@@ -48,8 +48,13 @@
     <string name="trips_detail_schedule">Horaire</string>
     <string name="trips_detail_departure">D\u00e9part</string>
     <string name="trips_detail_arrival">Arriv\u00e9e</string>
+    <string name="trips_detail_pickup">Ramassage</string>
+    <string name="trips_detail_delivery">Livraison</string>
+    <string name="trips_detail_schedule_not_set">Non d\u00e9fini</string>
     <string name="trips_detail_capacity">Capacit\u00e9</string>
     <string name="trips_detail_available_capacity">Capacit\u00e9 disponible</string>
+    <string name="trips_detail_available_space">Espace disponible</string>
+    <string name="trips_detail_available_space_value">%1$.1f L</string>
     <string name="trips_detail_price">Prix</string>
     <string name="trips_detail_pricing_title">Tarification</string>
     <string name="trips_detail_price_per_kg_label">Prix par kg</string>

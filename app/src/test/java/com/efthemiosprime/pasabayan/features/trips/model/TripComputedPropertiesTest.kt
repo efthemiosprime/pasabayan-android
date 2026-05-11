@@ -187,6 +187,57 @@ class TripComputedPropertiesTest {
         assertEquals("", trip.formattedDepartureDate)
     }
 
+    // iOS parity: `TripDetailsView.scheduleInformationCard` uses
+    // `pickupDate ?? departureDate` and `deliveryDate ?? arrivalDate` for display.
+    @Test
+    fun `formattedPickupOrDepartureDate prefers pickupDate when present`() {
+        val trip = baseTrip().copy(
+            pickupDate = "2026-04-01T07:30:00Z",
+            departureDate = "2026-04-01T08:00:00Z",
+        )
+        val pickup = trip.formattedPickupOrDepartureDate
+        val departure = trip.formattedDepartureDate
+        assertTrue(pickup != null && pickup.isNotBlank())
+        // The two formatted strings differ because pickupDate is 30 minutes earlier.
+        assertTrue(pickup != departure)
+    }
+
+    @Test
+    fun `formattedPickupOrDepartureDate falls back to departureDate when pickupDate null`() {
+        val trip = baseTrip().copy(pickupDate = null)
+        assertEquals(trip.formattedDepartureDate, trip.formattedPickupOrDepartureDate)
+    }
+
+    @Test
+    fun `formattedPickupOrDepartureDate null when both pickupDate and departureDate are null`() {
+        val trip = baseTrip().copy(pickupDate = null, departureDate = null)
+        assertEquals(null, trip.formattedPickupOrDepartureDate)
+    }
+
+    @Test
+    fun `formattedDeliveryOrArrivalDate prefers deliveryDate when present`() {
+        val trip = baseTrip().copy(
+            deliveryDate = "2026-04-01T15:00:00Z",
+            arrivalDate = "2026-04-01T14:00:00Z",
+        )
+        val delivery = trip.formattedDeliveryOrArrivalDate
+        val arrival = trip.formattedArrivalDate
+        assertTrue(delivery != null && delivery.isNotBlank())
+        assertTrue(delivery != arrival)
+    }
+
+    @Test
+    fun `formattedDeliveryOrArrivalDate falls back to arrivalDate when deliveryDate null`() {
+        val trip = baseTrip().copy(deliveryDate = null)
+        assertEquals(trip.formattedArrivalDate, trip.formattedDeliveryOrArrivalDate)
+    }
+
+    @Test
+    fun `formattedDeliveryOrArrivalDate null when both deliveryDate and arrivalDate are null`() {
+        val trip = baseTrip().copy(deliveryDate = null, arrivalDate = null)
+        assertEquals(null, trip.formattedDeliveryOrArrivalDate)
+    }
+
     @Test
     fun `priceDisplayString mirrors formatted price`() {
         val trip = baseTrip(pricePerKg = 22.0)
