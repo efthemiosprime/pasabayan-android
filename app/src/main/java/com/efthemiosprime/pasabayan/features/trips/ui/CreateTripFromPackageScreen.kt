@@ -48,6 +48,8 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetScaf
 import com.efthemiosprime.pasabayan.core.designsystem.component.PFilterChip
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
+import com.efthemiosprime.pasabayan.core.domain.util.DateTimeParsing
+import com.efthemiosprime.pasabayan.features.trips.components.TripDateTimePicker
 import com.efthemiosprime.pasabayan.features.trips.model.CreateTripFromPackageRequest
 import com.efthemiosprime.pasabayan.features.trips.model.TripTemplateData
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.CreateTripFromPackageViewModel
@@ -63,8 +65,10 @@ fun CreateTripFromPackageScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    var departureDate by remember { mutableStateOf("") }
-    var arrivalDate by remember { mutableStateOf("") }
+    // iOS parity (`scheduleInformationCard`): epoch-millis state lets us use the existing
+    // `TripDateTimePicker` (paired Date + Time pills) and serialize via `formatApiDateTime`.
+    var departureMillis by remember { mutableStateOf<Long?>(null) }
+    var arrivalMillis by remember { mutableStateOf<Long?>(null) }
     var availableWeightKg by remember { mutableStateOf("") }
     var availableSpaceLiters by remember { mutableStateOf("") }
     // iOS parity: real transport selector instead of a free-text "car" string.
@@ -85,8 +89,8 @@ fun CreateTripFromPackageScreen(
 
     LaunchedEffect(state.template) {
         val template = state.template ?: return@LaunchedEffect
-        departureDate = template.suggestedDepartureDate.orEmpty()
-        arrivalDate = template.suggestedArrivalDate.orEmpty()
+        departureMillis = DateTimeParsing.parseApiDateTime(template.suggestedDepartureDate)
+        arrivalMillis = DateTimeParsing.parseApiDateTime(template.suggestedArrivalDate)
         availableWeightKg = template.suggestedWeightKg?.toString().orEmpty()
         availableSpaceLiters = template.suggestedSpaceLiters?.toString().orEmpty()
     }
@@ -111,17 +115,15 @@ fun CreateTripFromPackageScreen(
             verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
         ) {
             PackageInfoCard(template = template)
-            POutlinedTextField(
-                value = departureDate,
-                onValueChange = { departureDate = it },
-                label = { Text(stringResource(R.string.trips_create_departure_date)) },
-                modifier = Modifier.fillMaxWidth(),
+            TripDateTimePicker(
+                label = stringResource(R.string.trips_create_departure_date),
+                epochMillis = departureMillis,
+                onChange = { departureMillis = it },
             )
-            POutlinedTextField(
-                value = arrivalDate,
-                onValueChange = { arrivalDate = it },
-                label = { Text(stringResource(R.string.trips_create_arrival_date)) },
-                modifier = Modifier.fillMaxWidth(),
+            TripDateTimePicker(
+                label = stringResource(R.string.trips_create_arrival_date),
+                epochMillis = arrivalMillis,
+                onChange = { arrivalMillis = it },
             )
             POutlinedTextField(
                 value = availableWeightKg,
@@ -196,8 +198,8 @@ fun CreateTripFromPackageScreen(
                     val request = buildRequestFromState(
                         packageId = packageId,
                         template = template,
-                        departureDate = departureDate,
-                        arrivalDate = arrivalDate,
+                        departureDate = departureMillis?.let(DateTimeParsing::formatApiDateTime).orEmpty(),
+                        arrivalDate = arrivalMillis?.let(DateTimeParsing::formatApiDateTime).orEmpty(),
                         availableWeightKg = availableWeightKg,
                         availableSpaceLiters = availableSpaceLiters,
                         transportationMethod = transportationMethod,
@@ -420,8 +422,12 @@ private val TRANSPORT_OPTIONS = listOf(
 @Preview(showBackground = true, name = "CreateTripFromPackage — dark", heightDp = 1100, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun CreateTripFromPackagePreview() {
-    var departureDate by remember { mutableStateOf("2026-07-01T08:00:00Z") }
-    var arrivalDate by remember { mutableStateOf("2026-07-01T16:00:00Z") }
+    var departureMillis by remember {
+        mutableStateOf<Long?>(DateTimeParsing.parseApiDateTime("2026-07-01T08:00:00Z"))
+    }
+    var arrivalMillis by remember {
+        mutableStateOf<Long?>(DateTimeParsing.parseApiDateTime("2026-07-01T16:00:00Z"))
+    }
     var weight by remember { mutableStateOf("5") }
     var space by remember { mutableStateOf("25") }
     var method by remember { mutableStateOf(TransportationMethod.CAR) }
@@ -450,8 +456,8 @@ private fun CreateTripFromPackagePreview() {
                         originCountry = "Canada",
                         destinationCity = "Montreal",
                         destinationCountry = "Canada",
-                        suggestedDepartureDate = departureDate,
-                        suggestedArrivalDate = arrivalDate,
+                        suggestedDepartureDate = "2026-07-01T08:00:00Z",
+                        suggestedArrivalDate = "2026-07-01T16:00:00Z",
                         suggestedWeightKg = 5.0,
                         suggestedSpaceLiters = 25.0,
                         packageDescription = "Electronics bundle (handle with care).",
@@ -461,17 +467,15 @@ private fun CreateTripFromPackagePreview() {
                         packageType = "fragile",
                     ),
                 )
-                POutlinedTextField(
-                    value = departureDate,
-                    onValueChange = { departureDate = it },
-                    label = { Text(stringResource(R.string.trips_create_departure_date)) },
-                    modifier = Modifier.fillMaxWidth(),
+                TripDateTimePicker(
+                    label = stringResource(R.string.trips_create_departure_date),
+                    epochMillis = departureMillis,
+                    onChange = { departureMillis = it },
                 )
-                POutlinedTextField(
-                    value = arrivalDate,
-                    onValueChange = { arrivalDate = it },
-                    label = { Text(stringResource(R.string.trips_create_arrival_date)) },
-                    modifier = Modifier.fillMaxWidth(),
+                TripDateTimePicker(
+                    label = stringResource(R.string.trips_create_arrival_date),
+                    epochMillis = arrivalMillis,
+                    onChange = { arrivalMillis = it },
                 )
                 POutlinedTextField(
                     value = weight,

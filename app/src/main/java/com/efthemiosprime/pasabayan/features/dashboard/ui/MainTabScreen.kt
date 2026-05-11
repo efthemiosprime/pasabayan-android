@@ -45,6 +45,11 @@ import com.efthemiosprime.pasabayan.features.verification.ui.PhoneVerificationSh
 import com.efthemiosprime.pasabayan.features.verification.ui.PremiumVerificationSheet
 import com.efthemiosprime.pasabayan.features.chat.ui.MessagesTabScreen
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ConversationsViewModel
+import com.efthemiosprime.pasabayan.features.notifications.services.NavigationEvent
+import com.efthemiosprime.pasabayan.features.notifications.services.NotificationRouter
+import com.efthemiosprime.pasabayan.features.notifications.services.NotificationRouterEntryPoint
+import com.efthemiosprime.pasabayan.features.notifications.ui.ComprehensiveNotificationsScreen
+import com.efthemiosprime.pasabayan.features.notifications.viewmodel.NotificationViewModel
 import com.efthemiosprime.pasabayan.features.packages.components.CreatePackageOptionsSheet
 import com.efthemiosprime.pasabayan.features.packages.ui.EditPackageSheet
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageErrandRequestScreen
@@ -76,6 +81,15 @@ fun MainTabScreen(
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
+    // Pull the singleton router via Hilt EntryPoint so we don't have to prop-drill it through
+    // AuthScreen / AppEntryContent. Behavior parity with iOS `NotificationCenter` observer.
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val notificationRouter: NotificationRouter = remember(context) {
+        dagger.hilt.android.EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            NotificationRouterEntryPoint::class.java,
+        ).notificationRouter()
+    }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val packageViewModel: PackageViewModel = hiltViewModel()
     val conversationsViewModel: ConversationsViewModel = hiltViewModel()
@@ -92,6 +106,9 @@ fun MainTabScreen(
     val tripsLocalStateViewModel: TripsLocalStateViewModel = hiltViewModel()
     val disclaimerSyncViewModel: DisclaimerSyncViewModel = hiltViewModel()
     val notificationsBootstrapViewModel: com.efthemiosprime.pasabayan.features.notifications.viewmodel.NotificationsBootstrapViewModel = hiltViewModel()
+    val notificationViewModel: NotificationViewModel = hiltViewModel()
+    val notificationState by notificationViewModel.uiState.collectAsStateWithLifecycle()
+    var notificationsSheetOpen by remember { mutableStateOf(false) }
     val packageUiState by packageViewModel.uiState.collectAsStateWithLifecycle()
     val tabs = MainTabs.forRole(state.currentRole)
     var showCreateOptionsSheet by remember { mutableStateOf(false) }
@@ -139,6 +156,52 @@ fun MainTabScreen(
         tripsLocalStateViewModel.retryCarrierDisclaimerPendingSync(user.id)
         disclaimerSyncViewModel.bootstrapAndRetry(user.id)
         notificationsBootstrapViewModel.registerIfNeeded()
+        // iOS parity: seed the bell badge with the current unread count on launch.
+        notificationViewModel.loadUnreadCounts()
+    }
+
+    // iOS parity: observe push-tap + in-app routing events and react by switching tabs and/or
+    // opening the matching profile sub-screen. Per-id deep links (specific match / counter-offer
+    // / transaction) currently land on the parent tab — refining those is a follow-up. Keyed on
+    // the role so the closure re-resolves tab indices when the user switches role.
+    LaunchedEffect(state.currentRole) {
+        notificationRouter.events.collect { event ->
+            // Close the notifications sheet if it was the source of the event so the
+            // user lands on the destination instead of staring at the list.
+            notificationsSheetOpen = false
+            val matchesIndex = tabs.indexOfFirst { it.route == "matches" }
+            val messagesIndex = tabs.indexOfFirst { it.route == "messages" }
+            val profileIndex = tabs.indexOfFirst { it.route == "profile" }
+            when (event) {
+                NavigationEvent.OpenMatchesTab,
+                is NavigationEvent.OpenMatch,
+                is NavigationEvent.OpenCounterOffer -> {
+                    if (matchesIndex >= 0) viewModel.selectTab(matchesIndex)
+                }
+                NavigationEvent.OpenConversations -> {
+                    if (messagesIndex >= 0) viewModel.selectTab(messagesIndex)
+                }
+                is NavigationEvent.OpenConversation -> {
+                    pendingConversationId = event.conversationId
+                    if (messagesIndex >= 0) viewModel.selectTab(messagesIndex)
+                }
+                NavigationEvent.OpenTransactions,
+                is NavigationEvent.OpenTransactionDetail,
+                NavigationEvent.OpenPaymentMethods -> {
+                    if (profileIndex >= 0) viewModel.selectTab(profileIndex)
+                    profilePaymentsOpen = true
+                }
+                NavigationEvent.OpenRatings -> {
+                    if (profileIndex >= 0) viewModel.selectTab(profileIndex)
+                    ratingsOpen = true
+                }
+                NavigationEvent.OpenProfileVerification -> {
+                    if (profileIndex >= 0) viewModel.selectTab(profileIndex)
+                }
+            }
+            // After routing, refresh the bell count so the badge clears down.
+            notificationViewModel.loadUnreadCounts()
+        }
     }
 
     LaunchedEffect(state.currentRole) {
@@ -167,6 +230,8 @@ fun MainTabScreen(
                 userName = user.name,
                 currentRole = state.currentRole,
                 onSwitchRole = { viewModel.switchRole() },
+                notificationsUnreadCount = notificationState.unreadCount,
+                onOpenNotifications = { notificationsSheetOpen = true },
             )
         },
         bottomBar = {
@@ -712,6 +777,20 @@ fun MainTabScreen(
                 )
                 dismissActiveSheetRoute()
             },
+        )
+    }
+
+    // iOS parity: full-screen notifications sheet launched from the top-bar bell. The screen
+    // observes its own view-model; tapping a card emits a routing event picked up above.
+    if (notificationsSheetOpen) {
+        val role = when (state.currentRole) {
+            UserRole.SHIPPER -> "shipper"
+            UserRole.CARRIER -> "carrier"
+        }
+        ComprehensiveNotificationsScreen(
+            onClose = { notificationsSheetOpen = false },
+            role = role,
+            viewModel = notificationViewModel,
         )
     }
 }

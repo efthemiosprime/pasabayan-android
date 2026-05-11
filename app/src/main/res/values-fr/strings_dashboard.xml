@@ -5,6 +5,9 @@
     <string name="dashboard_switch_role">Changer de r\u00f4le</string>
     <string name="dashboard_role_carrier">Transporteur</string>
     <string name="dashboard_role_shipper">Exp\u00e9diteur</string>
+    <!-- Parit\u00e9 iOS : la cloche de la barre sup\u00e9rieure ouvre l\u2019\u00e9cran de notifications. -->
+    <string name="dashboard_open_notifications">Ouvrir les notifications</string>
+    <string name="dashboard_notifications_badge_overflow">99+</string>
 
     <!-- Tab labels -->
     <string name="dashboard_tab_explore">Explorer</string>

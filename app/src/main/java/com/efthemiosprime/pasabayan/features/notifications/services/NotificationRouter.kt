@@ -2,6 +2,9 @@ package com.efthemiosprime.pasabayan.features.notifications.services
 
 import com.efthemiosprime.pasabayan.features.notifications.model.PushNotification
 import com.efthemiosprime.pasabayan.features.notifications.model.PushNotificationRoute
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -37,4 +40,15 @@ class NotificationRouter @Inject constructor() {
         val event = NotificationRouting.resolve(notification.type, notification.data) ?: return false
         return _events.tryEmit(event)
     }
+}
+
+/**
+ * Hilt entry point for retrieving the singleton [NotificationRouter] from non-Hilt-managed
+ * contexts (`@Composable` functions, `MainActivity.onNewIntent`). Avoids prop-drilling the
+ * router through the AuthScreen → AppEntryContent → MainTabScreen chain.
+ */
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface NotificationRouterEntryPoint {
+    fun notificationRouter(): NotificationRouter
 }

@@ -12,6 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.efthemiosprime.pasabayan.features.auth.viewmodel.AuthViewModel
 import com.efthemiosprime.pasabayan.features.auth.services.FacebookLoginStarter
+import com.efthemiosprime.pasabayan.features.notifications.model.PushNotificationRoute
+import com.efthemiosprime.pasabayan.features.notifications.services.NotificationDisplay
+import com.efthemiosprime.pasabayan.features.notifications.services.NotificationRouter
 import com.efthemiosprime.pasabayan.shared.root.AppEntryContent
 import com.efthemiosprime.pasabayan.shared.root.RootViewModel
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
@@ -26,9 +29,15 @@ class MainActivity : androidx.activity.ComponentActivity() {
     @Inject
     lateinit var facebookLoginStarter: FacebookLoginStarter
 
+    @Inject
+    lateinit var notificationRouter: NotificationRouter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // iOS parity: when the activity is launched from a push tap, the FCM data map travels
+        // through `NotificationDisplay.EXTRA_NOTIFICATION_DATA`. Parse it once on cold start.
+        handleNotificationDataExtra(intent)
         setContent {
             PasabayanTheme {
                 val rootViewModel: RootViewModel = hiltViewModel()
@@ -52,6 +61,26 @@ class MainActivity : androidx.activity.ComponentActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * Activity is `singleTop` (per [NotificationDisplay.post] launch flags) so subsequent push
+     * taps deliver here instead of re-creating the activity. Re-emit the route on each tap.
+     */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleNotificationDataExtra(intent)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun handleNotificationDataExtra(intent: Intent?) {
+        val raw = intent?.getSerializableExtra(NotificationDisplay.EXTRA_NOTIFICATION_DATA)
+            as? HashMap<String, String> ?: return
+        // Clear the extra so a configuration change / process death restore doesn't re-fire.
+        intent.removeExtra(NotificationDisplay.EXTRA_NOTIFICATION_DATA)
+        val route = PushNotificationRoute.fromPushData(raw)
+        notificationRouter.emitFromPush(route)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

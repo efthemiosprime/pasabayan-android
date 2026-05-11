@@ -5,6 +5,9 @@
     <string name="dashboard_switch_role">Switch role</string>
     <string name="dashboard_role_carrier">Carrier</string>
     <string name="dashboard_role_shipper">Shipper</string>
+    <!-- iOS parity: top-bar bell opens the comprehensive notifications screen. -->
+    <string name="dashboard_open_notifications">Open notifications</string>
+    <string name="dashboard_notifications_badge_overflow">99+</string>
 
     <!-- Tab labels -->
     <string name="dashboard_tab_explore">Explore</string>
