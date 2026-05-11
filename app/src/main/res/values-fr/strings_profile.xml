@@ -76,4 +76,52 @@
     <string name="profile_avatar_error_decode">Impossible de lire l’image sélectionnée</string>
     <string name="profile_avatar_success_uploaded">Photo de profil mise à jour</string>
     <string name="profile_avatar_success_deleted">Photo de profil supprimée</string>
+    <!-- Edit carrier profile sheet (09-profile-carrier-consent slice C) -->
+    <string name="profile_carrier_edit_title">Modifier le profil transporteur</string>
+    <string name="profile_carrier_section_capacity">Capacité du véhicule</string>
+    <string name="profile_carrier_section_pricing">Tarification</string>
+    <string name="profile_carrier_section_bio">À propos de vous</string>
+    <string name="profile_carrier_section_package_types">Types de colis préférés</string>
+    <string name="profile_carrier_section_restricted">Articles que vous refusez</string>
+    <string name="profile_carrier_max_weight_label">Capacité maximale (kg)</string>
+    <string name="profile_carrier_max_weight_helper">Poids maximal par voyage</string>
+    <string name="profile_carrier_max_weight_placeholder">p.ex. 50</string>
+    <string name="profile_carrier_max_space_label">Volume maximal (litres)</string>
+    <string name="profile_carrier_max_space_helper">Volume maximal par voyage</string>
+    <string name="profile_carrier_max_space_placeholder">p.ex. 100</string>
+    <string name="profile_carrier_price_label">Tarif par défaut au kg (CAD)</string>
+    <string name="profile_carrier_price_helper">Votre tarif standard par kilogramme</string>
+    <string name="profile_carrier_price_placeholder">p.ex. 5,50</string>
+    <string name="profile_carrier_insurance_label">Couverture d’assurance (CAD) — optionnel</string>
+    <string name="profile_carrier_insurance_helper">Couverture d’assurance maximale offerte</string>
+    <string name="profile_carrier_insurance_placeholder">p.ex. 5000</string>
+    <string name="profile_carrier_bio_helper">Parlez aux expéditeurs de votre expérience (max. 500 caractères)</string>
+    <string name="profile_carrier_bio_counter">%1$d / %2$d</string>
+    <string name="profile_carrier_package_types_helper">Choisissez les types de colis que vous préférez transporter</string>
+    <string name="profile_carrier_restricted_helper">Choisissez les articles que vous refusez de transporter</string>
+    <string name="profile_carrier_save">Enregistrer les modifications</string>
+    <string name="profile_carrier_cancel">Annuler</string>
+    <string name="profile_carrier_error_required_fields">Poids, volume et tarif sont requis et doivent être non négatifs</string>
+    <string name="profile_carrier_success">Profil transporteur mis à jour</string>
+    <!-- Package type labels -->
+    <string name="profile_carrier_package_electronics">Électronique</string>
+    <string name="profile_carrier_package_documents">Documents</string>
+    <string name="profile_carrier_package_clothing">Vêtements</string>
+    <string name="profile_carrier_package_food">Aliments</string>
+    <string name="profile_carrier_package_fragile">Articles fragiles</string>
+    <string name="profile_carrier_package_books">Livres</string>
+    <string name="profile_carrier_package_toys">Jouets</string>
+    <string name="profile_carrier_package_sports">Équipement sportif</string>
+    <string name="profile_carrier_package_tools">Outils</string>
+    <string name="profile_carrier_package_medical">Fournitures médicales</string>
+    <!-- Restricted item labels -->
+    <string name="profile_carrier_restricted_hazardous">Matières dangereuses</string>
+    <string name="profile_carrier_restricted_liquids">Liquides</string>
+    <string name="profile_carrier_restricted_perishables">Périssables</string>
+    <string name="profile_carrier_restricted_live_animals">Animaux vivants</string>
+    <string name="profile_carrier_restricted_weapons">Armes</string>
+    <string name="profile_carrier_restricted_alcohol">Alcool</string>
+    <string name="profile_carrier_restricted_tobacco">Tabac</string>
+    <string name="profile_carrier_restricted_flammable">Articles inflammables</string>
+    <string name="profile_carrier_restricted_explosives">Matières explosives</string>
 </resources>

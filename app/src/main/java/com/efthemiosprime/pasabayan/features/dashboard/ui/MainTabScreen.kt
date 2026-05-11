@@ -30,6 +30,7 @@ import com.efthemiosprime.pasabayan.features.dashboard.model.MainTabs
 import com.efthemiosprime.pasabayan.features.dashboard.model.DashboardSheetRoute
 import com.efthemiosprime.pasabayan.features.dashboard.viewmodel.DashboardViewModel
 import com.efthemiosprime.pasabayan.features.payments.ui.PaymentsProfileScreen
+import com.efthemiosprime.pasabayan.features.profile.ui.EditCarrierProfileSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.EditUserProfileSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.ProfileTabScreen
 import com.efthemiosprime.pasabayan.features.chat.ui.MessagesTabScreen
@@ -91,6 +92,7 @@ fun MainTabScreen(
     var selectedCarrierTripId by remember { mutableStateOf<Int?>(null) }
     var profilePaymentsOpen by remember { mutableStateOf(false) }
     var showEditUserProfileSheet by remember { mutableStateOf(false) }
+    var showEditCarrierProfileSheet by remember { mutableStateOf(false) }
     val dismissActiveSheetRoute = { viewModel.dismissActiveSheetRoute() }
     val openTripFilterSheet = { viewModel.openTripFilterSheet() }
     val openCreateTripFromPackageSheet: (Int) -> Unit = { packageId ->
@@ -238,6 +240,7 @@ fun MainTabScreen(
                             onLogout = onLogout,
                             onOpenPaymentsHub = { profilePaymentsOpen = true },
                             onOpenPersonalInfo = { showEditUserProfileSheet = true },
+                            onOpenVehicleInfo = { showEditCarrierProfileSheet = true },
                         )
                     }
                 }
@@ -253,6 +256,16 @@ fun MainTabScreen(
             EditUserProfileSheet(
                 authUser = user,
                 onClose = { showEditUserProfileSheet = false },
+            )
+        }
+    }
+
+    if (showEditCarrierProfileSheet) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showEditCarrierProfileSheet = false },
+        ) {
+            EditCarrierProfileSheet(
+                onClose = { showEditCarrierProfileSheet = false },
             )
         }
     }
