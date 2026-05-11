@@ -94,4 +94,8 @@ data class PackageTemplateDetailsJson(
     @SerialName("height_cm") @Serializable(with = FlexibleDoubleSerializer::class) val heightCm: Double? = null,
     @SerialName("is_fragile") val isFragile: Boolean = false,
     @SerialName("urgency_level") val urgencyLevel: String? = null,
+    // iOS parity (`PackageTemplateDetails.packageType`): the trip-template endpoint also returns
+    // the package's classification so the create-from-package screen can render a "shippingbox"
+    // chip alongside weight + urgency.
+    @SerialName("package_type") val packageType: String? = null,
 )

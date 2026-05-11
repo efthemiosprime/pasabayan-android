@@ -13,8 +13,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Scale
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -261,11 +263,25 @@ private fun PackageInfoCard(template: TripTemplateData?) {
                     text = stringResource(R.string.trips_from_package_weight_label, weight),
                 )
             }
-            template.packageUrgencyLevel?.takeIf { it.isNotBlank() }?.let { level ->
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
-                ) {
-                    if (level.equals("urgent", ignoreCase = true)) {
+            // iOS parity (`packageInfoCard`): the package type row sits between weight and the
+            // fragile/urgent tags. Server returns lowercase ("documents", "fragile", "food").
+            template.packageType?.takeIf { it.isNotBlank() }?.let { type ->
+                PackageInfoRow(
+                    icon = Icons.Outlined.Inventory2,
+                    text = type.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+                )
+            }
+            val isUrgent = template.packageUrgencyLevel?.equals("urgent", ignoreCase = true) == true
+            if (template.packageFragile || isUrgent) {
+                Row(horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
+                    if (template.packageFragile) {
+                        PackageTag(
+                            icon = Icons.Outlined.Warning,
+                            label = stringResource(R.string.trips_from_package_fragile),
+                            color = PasabayanColors.Warning,
+                        )
+                    }
+                    if (isUrgent) {
                         PackageTag(
                             icon = Icons.Outlined.Schedule,
                             label = stringResource(R.string.trips_from_package_urgent),
@@ -411,6 +427,8 @@ private fun CreateTripFromPackagePreview() {
                         packageDescription = "Electronics bundle (handle with care).",
                         packageWeightKg = 3.2,
                         packageUrgencyLevel = "urgent",
+                        packageFragile = true,
+                        packageType = "fragile",
                     ),
                 )
                 POutlinedTextField(

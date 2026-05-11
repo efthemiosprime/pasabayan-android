@@ -403,6 +403,32 @@ class TripJsonModelsDecodeTest {
         assertTrue(packageDetails.isFragile)
     }
 
+    // iOS parity: trip template package_details also carries `package_type` for the
+    // create-from-package card.
+    @Test
+    fun `PackageTemplateDetailsJson decodes package_type when server returns it`() {
+        val raw = """
+            {
+              "id": 88,
+              "description": "Fragile electronics",
+              "weight_kg": 5.2,
+              "is_fragile": true,
+              "urgency_level": "high",
+              "package_type": "fragile"
+            }
+        """.trimIndent()
+        val details = json.decodeFromString<PackageTemplateDetailsJson>(raw)
+        assertEquals("fragile", details.packageType)
+        assertTrue(details.isFragile)
+    }
+
+    @Test
+    fun `PackageTemplateDetailsJson defaults package_type to null when omitted`() {
+        val raw = """{"id":88,"description":"Books","weight_kg":3.0}"""
+        val details = json.decodeFromString<PackageTemplateDetailsJson>(raw)
+        assertNull(details.packageType)
+    }
+
     @Test
     fun `TripMatchesResponseJson decodes trip and matches`() {
         val raw = fixture("trip_matches_response.json")

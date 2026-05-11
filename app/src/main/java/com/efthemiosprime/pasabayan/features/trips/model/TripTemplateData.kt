@@ -13,6 +13,9 @@ data class TripTemplateData(
     val packageDescription: String?,
     val packageWeightKg: Double?,
     val packageUrgencyLevel: String?,
+    // iOS parity (`PackageTemplateDetails`): used by the create-from-package package info card.
+    val packageFragile: Boolean = false,
+    val packageType: String? = null,
 )
 
 data class CreateTripFromPackageRequest(

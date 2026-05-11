@@ -134,4 +134,6 @@ fun TripTemplateJson.toDomain(packageId: Int): TripTemplateData = TripTemplateDa
     packageDescription = packageDetails?.description,
     packageWeightKg = packageDetails?.weightKg,
     packageUrgencyLevel = packageDetails?.urgencyLevel,
+    packageFragile = packageDetails?.isFragile == true,
+    packageType = packageDetails?.packageType?.takeIf { it.isNotBlank() },
 )

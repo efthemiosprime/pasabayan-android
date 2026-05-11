@@ -227,4 +227,55 @@ class TripMapperTest {
         assertEquals("Toronto", template.originCity)
         assertEquals("Books", template.packageDescription)
     }
+
+    // iOS parity (`PackageTemplateDetails` — fragile + packageType): create-from-package package
+    // info card needs both. Defaults to false / null when the server omits them.
+    @Test
+    fun `TripTemplateJson forwards fragile and package_type to domain`() {
+        val template = TripTemplateJson(
+            originCity = "Toronto",
+            originCountry = "Canada",
+            destinationCity = "Ottawa",
+            destinationCountry = "Canada",
+            packageDetails = PackageTemplateDetailsJson(
+                id = 77,
+                description = "Wine bottles",
+                weightKg = 4.0,
+                isFragile = true,
+                urgencyLevel = "urgent",
+                packageType = "fragile",
+            ),
+        ).toDomain(packageId = 77)
+
+        assertEquals(true, template.packageFragile)
+        assertEquals("fragile", template.packageType)
+        assertEquals("urgent", template.packageUrgencyLevel)
+    }
+
+    @Test
+    fun `TripTemplateJson defaults fragile to false and packageType to null when missing`() {
+        val template = TripTemplateJson(
+            originCity = "Toronto",
+            originCountry = "Canada",
+            destinationCity = "Ottawa",
+            destinationCountry = "Canada",
+            packageDetails = PackageTemplateDetailsJson(id = 77),
+        ).toDomain(packageId = 77)
+
+        assertEquals(false, template.packageFragile)
+        assertEquals(null, template.packageType)
+    }
+
+    @Test
+    fun `TripTemplateJson treats blank packageType as null`() {
+        val template = TripTemplateJson(
+            originCity = "Toronto",
+            originCountry = "Canada",
+            destinationCity = "Ottawa",
+            destinationCountry = "Canada",
+            packageDetails = PackageTemplateDetailsJson(id = 77, packageType = "  "),
+        ).toDomain(packageId = 77)
+
+        assertEquals(null, template.packageType)
+    }
 }
