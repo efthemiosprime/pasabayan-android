@@ -65,6 +65,7 @@ fun ProfileTabScreen(
     onOpenPersonalInfo: () -> Unit = {},
     onOpenVehicleInfo: () -> Unit = {},
     onOpenVerification: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
     onOpenPlaceholder: (String) -> Unit = { },
     viewModel: ProfileTabViewModel = hiltViewModel(),
     modifier: Modifier = Modifier,
@@ -110,6 +111,7 @@ fun ProfileTabScreen(
         onOpenPersonalInfo = onOpenPersonalInfo,
         onOpenVehicleInfo = onOpenVehicleInfo,
         onOpenVerification = onOpenVerification,
+        onOpenSettings = onOpenSettings,
         onOpenPlaceholder = onOpenPlaceholder,
         modifier = modifier,
     )
@@ -127,6 +129,7 @@ fun ProfileTabContent(
     onOpenPersonalInfo: () -> Unit = {},
     onOpenVehicleInfo: () -> Unit = {},
     onOpenVerification: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
     onOpenPlaceholder: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -278,7 +281,7 @@ fun ProfileTabContent(
             ) { onOpenPlaceholder("help") }
             MenuRow(
                 stringResource(R.string.profile_menu_settings),
-            ) { onOpenPlaceholder("settings") }
+            ) { onOpenSettings() }
             MenuRow(
                 stringResource(R.string.profile_menu_terms),
             ) { onOpenPlaceholder("terms") }

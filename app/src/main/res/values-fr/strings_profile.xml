@@ -124,4 +124,21 @@
     <string name="profile_carrier_restricted_tobacco">Tabac</string>
     <string name="profile_carrier_restricted_flammable">Articles inflammables</string>
     <string name="profile_carrier_restricted_explosives">Matières explosives</string>
+    <!-- Privacy preferences (09-profile-carrier-consent slice D1) -->
+    <string name="profile_privacy_title">Préférences de confidentialité</string>
+    <string name="profile_privacy_subtitle">Contrôlez comment Pasabayan utilise vos données</string>
+    <string name="profile_privacy_close">Fermer</string>
+    <string name="profile_privacy_push_label">Notifications push</string>
+    <string name="profile_privacy_push_description">Mises à jour de réservations, livraisons et discussions</string>
+    <string name="profile_privacy_push_disable_message">Vous ne recevrez plus de notifications push concernant les livraisons, les discussions ou les mises à jour de compte.</string>
+    <string name="profile_privacy_location_label">Suivi de la position</string>
+    <string name="profile_privacy_location_description">Permet aux transporteurs de partager la progression en temps réel</string>
+    <string name="profile_privacy_location_disable_message">Nous ne suivrons pas votre position; le suivi en temps réel et les heures d’arrivée seront désactivés.</string>
+    <string name="profile_privacy_analytics_label">Analytique</string>
+    <string name="profile_privacy_analytics_description">Nous aide à améliorer les fonctionnalités en comprenant l’utilisation</string>
+    <string name="profile_privacy_marketing_label">Communications marketing</string>
+    <string name="profile_privacy_marketing_description">Promotions, offres partenaires et mises à jour produit par courriel</string>
+    <string name="profile_privacy_confirm_disable_title">Désactiver?</string>
+    <string name="profile_privacy_confirm_keep">Conserver activé</string>
+    <string name="profile_privacy_confirm_turn_off">Désactiver</string>
 </resources>

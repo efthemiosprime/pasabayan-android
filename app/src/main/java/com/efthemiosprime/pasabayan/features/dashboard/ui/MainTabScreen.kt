@@ -32,6 +32,7 @@ import com.efthemiosprime.pasabayan.features.dashboard.viewmodel.DashboardViewMo
 import com.efthemiosprime.pasabayan.features.payments.ui.PaymentsProfileScreen
 import com.efthemiosprime.pasabayan.features.profile.ui.EditCarrierProfileSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.EditUserProfileSheet
+import com.efthemiosprime.pasabayan.features.profile.ui.PrivacyPreferencesSheet
 import com.efthemiosprime.pasabayan.features.profile.ui.ProfileTabScreen
 import com.efthemiosprime.pasabayan.features.chat.ui.MessagesTabScreen
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ConversationsViewModel
@@ -93,6 +94,7 @@ fun MainTabScreen(
     var profilePaymentsOpen by remember { mutableStateOf(false) }
     var showEditUserProfileSheet by remember { mutableStateOf(false) }
     var showEditCarrierProfileSheet by remember { mutableStateOf(false) }
+    var showPrivacyPreferencesSheet by remember { mutableStateOf(false) }
     val dismissActiveSheetRoute = { viewModel.dismissActiveSheetRoute() }
     val openTripFilterSheet = { viewModel.openTripFilterSheet() }
     val openCreateTripFromPackageSheet: (Int) -> Unit = { packageId ->
@@ -241,6 +243,7 @@ fun MainTabScreen(
                             onOpenPaymentsHub = { profilePaymentsOpen = true },
                             onOpenPersonalInfo = { showEditUserProfileSheet = true },
                             onOpenVehicleInfo = { showEditCarrierProfileSheet = true },
+                            onOpenSettings = { showPrivacyPreferencesSheet = true },
                         )
                     }
                 }
@@ -266,6 +269,16 @@ fun MainTabScreen(
         ) {
             EditCarrierProfileSheet(
                 onClose = { showEditCarrierProfileSheet = false },
+            )
+        }
+    }
+
+    if (showPrivacyPreferencesSheet) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showPrivacyPreferencesSheet = false },
+        ) {
+            PrivacyPreferencesSheet(
+                onClose = { showPrivacyPreferencesSheet = false },
             )
         }
     }

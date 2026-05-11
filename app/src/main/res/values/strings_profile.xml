@@ -123,4 +123,21 @@
     <string name="profile_carrier_restricted_tobacco">Tobacco</string>
     <string name="profile_carrier_restricted_flammable">Flammable items</string>
     <string name="profile_carrier_restricted_explosives">Explosive materials</string>
+    <!-- Privacy preferences (09-profile-carrier-consent slice D1) -->
+    <string name="profile_privacy_title">Privacy preferences</string>
+    <string name="profile_privacy_subtitle">Control how Pasabayan uses your data</string>
+    <string name="profile_privacy_close">Close</string>
+    <string name="profile_privacy_push_label">Push notifications</string>
+    <string name="profile_privacy_push_description">Booking updates, delivery status, and chat alerts</string>
+    <string name="profile_privacy_push_disable_message">You won\'t receive push notifications about deliveries, chats, or important account updates.</string>
+    <string name="profile_privacy_location_label">Location tracking</string>
+    <string name="profile_privacy_location_description">Lets carriers share real-time delivery progress with shippers</string>
+    <string name="profile_privacy_location_disable_message">We won\'t track your location, which means live tracking and ETAs will be disabled.</string>
+    <string name="profile_privacy_analytics_label">Analytics</string>
+    <string name="profile_privacy_analytics_description">Helps us improve features by understanding how the app is used</string>
+    <string name="profile_privacy_marketing_label">Marketing communications</string>
+    <string name="profile_privacy_marketing_description">Promotions, partner offers, and product updates via email</string>
+    <string name="profile_privacy_confirm_disable_title">Turn off?</string>
+    <string name="profile_privacy_confirm_keep">Keep on</string>
+    <string name="profile_privacy_confirm_turn_off">Turn off</string>
 </resources>
