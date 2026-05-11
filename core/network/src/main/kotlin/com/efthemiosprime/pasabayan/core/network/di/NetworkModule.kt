@@ -16,6 +16,7 @@ import com.efthemiosprime.pasabayan.core.network.payments.StripeConfigApi
 import com.efthemiosprime.pasabayan.core.network.payments.StripeConnectApi
 import com.efthemiosprime.pasabayan.core.network.trips.TripsApi
 import com.efthemiosprime.pasabayan.core.network.favorites.FavoritesApi
+import com.efthemiosprime.pasabayan.core.network.legal.LegalApi
 import com.efthemiosprime.pasabayan.core.network.notifications.NotificationApi
 import com.efthemiosprime.pasabayan.core.network.ratings.RatingsApi
 import com.efthemiosprime.pasabayan.core.network.verification.VerificationApi
@@ -165,4 +166,8 @@ object NetworkModule {
     @Singleton
     fun provideNotificationApi(retrofit: Retrofit): NotificationApi =
         retrofit.create(NotificationApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideLegalApi(retrofit: Retrofit): LegalApi = retrofit.create(LegalApi::class.java)
 }
