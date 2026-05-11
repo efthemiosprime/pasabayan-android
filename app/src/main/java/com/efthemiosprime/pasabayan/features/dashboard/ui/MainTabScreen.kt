@@ -45,11 +45,17 @@ import com.efthemiosprime.pasabayan.features.verification.ui.PhoneVerificationSh
 import com.efthemiosprime.pasabayan.features.verification.ui.PremiumVerificationSheet
 import com.efthemiosprime.pasabayan.features.chat.ui.MessagesTabScreen
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ConversationsViewModel
+import com.efthemiosprime.pasabayan.features.bookings.viewmodel.MatchingViewModel
+import com.efthemiosprime.pasabayan.features.notifications.services.ActionableItemIds
 import com.efthemiosprime.pasabayan.features.notifications.services.NavigationEvent
 import com.efthemiosprime.pasabayan.features.notifications.services.NotificationRouter
 import com.efthemiosprime.pasabayan.features.notifications.services.NotificationRouterEntryPoint
+import com.efthemiosprime.pasabayan.features.notifications.services.buildActionableItemSpecs
+import com.efthemiosprime.pasabayan.features.notifications.ui.ActionableItem
 import com.efthemiosprime.pasabayan.features.notifications.ui.ComprehensiveNotificationsScreen
 import com.efthemiosprime.pasabayan.features.notifications.viewmodel.NotificationViewModel
+import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
+import com.efthemiosprime.pasabayan.core.domain.`enum`.VerificationLevel
 import com.efthemiosprime.pasabayan.features.packages.components.CreatePackageOptionsSheet
 import com.efthemiosprime.pasabayan.features.packages.ui.EditPackageSheet
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageErrandRequestScreen
@@ -109,6 +115,12 @@ fun MainTabScreen(
     val notificationViewModel: NotificationViewModel = hiltViewModel()
     val notificationState by notificationViewModel.uiState.collectAsStateWithLifecycle()
     var notificationsSheetOpen by remember { mutableStateOf(false) }
+    // iOS parity (ActionableItem aggregation): pull matches + profile so we can compute
+    // booking-request / status-update / pickup-ready / verify-prompt cards on the sheet.
+    val matchingViewModel: MatchingViewModel = hiltViewModel()
+    val matchingState by matchingViewModel.uiState.collectAsStateWithLifecycle()
+    val profileTabViewModel: com.efthemiosprime.pasabayan.features.profile.viewmodel.ProfileTabViewModel = hiltViewModel()
+    val profileState by profileTabViewModel.uiState.collectAsStateWithLifecycle()
     val packageUiState by packageViewModel.uiState.collectAsStateWithLifecycle()
     val tabs = MainTabs.forRole(state.currentRole)
     var showCreateOptionsSheet by remember { mutableStateOf(false) }
@@ -210,6 +222,8 @@ fun MainTabScreen(
             UserRole.CARRIER -> "carrier"
         }
         conversationsViewModel.loadConversations(role = roleFilter)
+        // Match list feeds actionable items (booking requests / status updates / responses).
+        matchingViewModel.loadMatches(role = roleFilter)
     }
 
     LaunchedEffect(state.selectedTabIndex) {
@@ -787,11 +801,145 @@ fun MainTabScreen(
             UserRole.SHIPPER -> "shipper"
             UserRole.CARRIER -> "carrier"
         }
+        val verificationLevel = VerificationLevel.normalized(
+            profileState.userProfile?.verificationLevel,
+        )
+        val specs = remember(
+            state.currentRole,
+            carrierTripsState.trips,
+            matchingState.matches,
+            packageUiState.packageRequests,
+            conversationsState.allUnreadCount,
+            verificationLevel,
+        ) {
+            buildActionableItemSpecs(
+                role = state.currentRole,
+                carrierTrips = carrierTripsState.trips,
+                matches = matchingState.matches,
+                shipperPackages = packageUiState.packageRequests,
+                unreadMessageCount = conversationsState.allUnreadCount,
+                verificationLevel = verificationLevel,
+            )
+        }
+        val actionableItems = specs.map { spec ->
+            ActionableItem(
+                id = spec.id,
+                type = spec.type,
+                title = actionableTitle(spec),
+                description = actionableDescription(spec),
+                onClick = {
+                    handleActionableItemTap(
+                        id = spec.id,
+                        tabs = tabs,
+                        selectTab = { viewModel.selectTab(it) },
+                        closeSheet = { notificationsSheetOpen = false },
+                        onSetCarrierTripFilter = { carrierTripsViewModel.setStatusFilter(it) },
+                        onOpenPhoneVerification = { showPhoneVerificationSheet = true },
+                        onOpenPremiumVerification = { showPremiumVerificationSheet = true },
+                    )
+                },
+            )
+        }
         ComprehensiveNotificationsScreen(
             onClose = { notificationsSheetOpen = false },
             role = role,
+            actionableItems = actionableItems,
             viewModel = notificationViewModel,
         )
+    }
+}
+
+@Composable
+private fun actionableTitle(spec: com.efthemiosprime.pasabayan.features.notifications.services.ActionableItemSpec): String {
+    return when (spec.id) {
+        ActionableItemIds.BOOKING_REQUESTS -> androidx.compose.ui.res.pluralStringResource(
+            R.plurals.notifications_actionable_booking_requests_title, spec.count, spec.count,
+        )
+        ActionableItemIds.STATUS_UPDATES -> androidx.compose.ui.res.pluralStringResource(
+            R.plurals.notifications_actionable_status_updates_title, spec.count, spec.count,
+        )
+        ActionableItemIds.INACTIVE_TRIPS -> androidx.compose.ui.res.pluralStringResource(
+            R.plurals.notifications_actionable_inactive_trips_title, spec.count, spec.count,
+        )
+        ActionableItemIds.CARRIER_RESPONSES -> androidx.compose.ui.res.pluralStringResource(
+            R.plurals.notifications_actionable_carrier_responses_title, spec.count, spec.count,
+        )
+        ActionableItemIds.PICKUP_READY -> androidx.compose.ui.res.pluralStringResource(
+            R.plurals.notifications_actionable_pickup_ready_title, spec.count, spec.count,
+        )
+        ActionableItemIds.UNREAD_MESSAGES -> androidx.compose.ui.res.pluralStringResource(
+            R.plurals.notifications_actionable_unread_messages_title, spec.count, spec.count,
+        )
+        ActionableItemIds.VERIFY_NUMBER -> stringResource(R.string.notifications_actionable_verify_number_title)
+        ActionableItemIds.UPGRADE_PREMIUM -> stringResource(R.string.notifications_actionable_upgrade_premium_title)
+        else -> ""
+    }
+}
+
+@Composable
+private fun actionableDescription(spec: com.efthemiosprime.pasabayan.features.notifications.services.ActionableItemSpec): String {
+    return when (spec.id) {
+        ActionableItemIds.BOOKING_REQUESTS -> androidx.compose.ui.res.pluralStringResource(
+            R.plurals.notifications_actionable_booking_requests_description, spec.count, spec.count,
+        )
+        ActionableItemIds.STATUS_UPDATES -> androidx.compose.ui.res.pluralStringResource(
+            R.plurals.notifications_actionable_status_updates_description, spec.count, spec.count,
+        )
+        ActionableItemIds.INACTIVE_TRIPS -> androidx.compose.ui.res.pluralStringResource(
+            R.plurals.notifications_actionable_inactive_trips_description, spec.count, spec.count,
+        )
+        ActionableItemIds.CARRIER_RESPONSES -> androidx.compose.ui.res.pluralStringResource(
+            R.plurals.notifications_actionable_carrier_responses_description, spec.count, spec.count,
+        )
+        ActionableItemIds.PICKUP_READY -> androidx.compose.ui.res.pluralStringResource(
+            R.plurals.notifications_actionable_pickup_ready_description, spec.count, spec.count,
+        )
+        ActionableItemIds.UNREAD_MESSAGES -> androidx.compose.ui.res.pluralStringResource(
+            R.plurals.notifications_actionable_unread_messages_description, spec.count, spec.count,
+        )
+        ActionableItemIds.VERIFY_NUMBER -> stringResource(R.string.notifications_actionable_verify_number_description)
+        ActionableItemIds.UPGRADE_PREMIUM -> stringResource(R.string.notifications_actionable_upgrade_premium_description)
+        else -> ""
+    }
+}
+
+/**
+ * iOS parity: each `ActionableItem.action` dismisses the sheet and either switches tabs (with
+ * an optional filter) or opens a verification flow. Per-spec ids let us keep the dispatch logic
+ * outside the aggregator (which stays pure).
+ */
+private fun handleActionableItemTap(
+    id: String,
+    tabs: List<com.efthemiosprime.pasabayan.features.dashboard.model.MainTab>,
+    selectTab: (Int) -> Unit,
+    closeSheet: () -> Unit,
+    onSetCarrierTripFilter: (TripStatus?) -> Unit,
+    onOpenPhoneVerification: () -> Unit,
+    onOpenPremiumVerification: () -> Unit,
+) {
+    closeSheet()
+    val matchesIndex = tabs.indexOfFirst { it.route == "matches" }
+    val myTripsIndex = tabs.indexOfFirst { it.route == "my_trips" }
+    val packagesIndex = tabs.indexOfFirst { it.route == "packages" }
+    val messagesIndex = tabs.indexOfFirst { it.route == "messages" }
+    when (id) {
+        ActionableItemIds.BOOKING_REQUESTS,
+        ActionableItemIds.STATUS_UPDATES,
+        ActionableItemIds.CARRIER_RESPONSES -> {
+            if (matchesIndex >= 0) selectTab(matchesIndex)
+        }
+        ActionableItemIds.INACTIVE_TRIPS -> {
+            onSetCarrierTripFilter(TripStatus.PLANNING)
+            if (myTripsIndex >= 0) selectTab(myTripsIndex)
+        }
+        ActionableItemIds.PICKUP_READY -> {
+            if (packagesIndex >= 0) selectTab(packagesIndex)
+        }
+        ActionableItemIds.UNREAD_MESSAGES -> {
+            if (messagesIndex >= 0) selectTab(messagesIndex)
+        }
+        ActionableItemIds.VERIFY_NUMBER -> onOpenPhoneVerification()
+        ActionableItemIds.UPGRADE_PREMIUM -> onOpenPremiumVerification()
     }
 }
 

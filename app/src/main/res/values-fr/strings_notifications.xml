@@ -53,4 +53,58 @@
     <string name="notifications_type_payment_auto_charge_failed">Échec du paiement</string>
     <string name="notifications_type_counter_offer">Contre-offre</string>
     <string name="notifications_type_unknown">Notification</string>
+
+    <!-- Parité iOS (ComprehensiveNotificationsView.actionableItems). -->
+    <plurals name="notifications_actionable_booking_requests_title">
+        <item quantity="one">1 nouvelle demande de réservation</item>
+        <item quantity="other">%1$d nouvelles demandes de réservation</item>
+    </plurals>
+    <plurals name="notifications_actionable_booking_requests_description">
+        <item quantity="one">Vous avez 1 nouvelle demande de réservation d’un expéditeur</item>
+        <item quantity="other">Vous avez %1$d nouvelles demandes de réservation d’expéditeurs</item>
+    </plurals>
+    <plurals name="notifications_actionable_status_updates_title">
+        <item quantity="one">1 livraison active</item>
+        <item quantity="other">%1$d livraisons actives</item>
+    </plurals>
+    <plurals name="notifications_actionable_status_updates_description">
+        <item quantity="one">Vous avez 1 livraison active qui doit être mise à jour</item>
+        <item quantity="other">Vous avez %1$d livraisons actives qui doivent être mises à jour</item>
+    </plurals>
+    <plurals name="notifications_actionable_inactive_trips_title">
+        <item quantity="one">1 trajet non visible</item>
+        <item quantity="other">%1$d trajets non visibles</item>
+    </plurals>
+    <plurals name="notifications_actionable_inactive_trips_description">
+        <item quantity="one">Vous avez 1 trajet que les expéditeurs ne voient pas encore. Passez-le en Actif pour commencer à recevoir des réservations.</item>
+        <item quantity="other">Vous avez %1$d trajets que les expéditeurs ne voient pas encore. Passez-les en Actif pour commencer à recevoir des réservations.</item>
+    </plurals>
+    <plurals name="notifications_actionable_carrier_responses_title">
+        <item quantity="one">1 réponse de transporteur en attente</item>
+        <item quantity="other">%1$d réponses de transporteur en attente</item>
+    </plurals>
+    <plurals name="notifications_actionable_carrier_responses_description">
+        <item quantity="one">Vous avez 1 demande en attente de réponse d’un transporteur</item>
+        <item quantity="other">Vous avez %1$d demandes en attente de réponses de transporteurs</item>
+    </plurals>
+    <plurals name="notifications_actionable_pickup_ready_title">
+        <item quantity="one">1 colis prêt pour le ramassage</item>
+        <item quantity="other">%1$d colis prêts pour le ramassage</item>
+    </plurals>
+    <plurals name="notifications_actionable_pickup_ready_description">
+        <item quantity="one">Vous avez 1 colis prêt pour la prise en charge par un transporteur</item>
+        <item quantity="other">Vous avez %1$d colis prêts pour la prise en charge par les transporteurs</item>
+    </plurals>
+    <plurals name="notifications_actionable_unread_messages_title">
+        <item quantity="one">1 message non lu</item>
+        <item quantity="other">%1$d messages non lus</item>
+    </plurals>
+    <plurals name="notifications_actionable_unread_messages_description">
+        <item quantity="one">Vous avez 1 message non lu dans vos conversations</item>
+        <item quantity="other">Vous avez %1$d messages non lus dans vos conversations</item>
+    </plurals>
+    <string name="notifications_actionable_verify_number_title">Vérifier votre numéro de téléphone</string>
+    <string name="notifications_actionable_verify_number_description">Débloquez le badge « Vérifié » en validant votre numéro de contact.</string>
+    <string name="notifications_actionable_upgrade_premium_title">Passer à Premium</string>
+    <string name="notifications_actionable_upgrade_premium_description">Obtenez l’étoile dorée et les fonctionnalités prioritaires.</string>
 </resources>

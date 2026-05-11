@@ -53,4 +53,58 @@
     <string name="notifications_type_payment_auto_charge_failed">Payment Failed</string>
     <string name="notifications_type_counter_offer">Counter Offer</string>
     <string name="notifications_type_unknown">Notification</string>
+
+    <!-- iOS parity (ComprehensiveNotificationsView.actionableItems): cross-feature aggregations. -->
+    <plurals name="notifications_actionable_booking_requests_title">
+        <item quantity="one">1 New Booking Request</item>
+        <item quantity="other">%1$d New Booking Requests</item>
+    </plurals>
+    <plurals name="notifications_actionable_booking_requests_description">
+        <item quantity="one">You have 1 new booking request from a shipper</item>
+        <item quantity="other">You have %1$d new booking requests from shippers</item>
+    </plurals>
+    <plurals name="notifications_actionable_status_updates_title">
+        <item quantity="one">1 Active Delivery</item>
+        <item quantity="other">%1$d Active Deliveries</item>
+    </plurals>
+    <plurals name="notifications_actionable_status_updates_description">
+        <item quantity="one">You have 1 active delivery that needs a status update</item>
+        <item quantity="other">You have %1$d active deliveries that need status updates</item>
+    </plurals>
+    <plurals name="notifications_actionable_inactive_trips_title">
+        <item quantity="one">1 Trip Not Visible</item>
+        <item quantity="other">%1$d Trips Not Visible</item>
+    </plurals>
+    <plurals name="notifications_actionable_inactive_trips_description">
+        <item quantity="one">You have 1 trip that shippers can\'t see yet. Move it to Active to start receiving bookings.</item>
+        <item quantity="other">You have %1$d trips that shippers can\'t see yet. Move them to Active to start receiving bookings.</item>
+    </plurals>
+    <plurals name="notifications_actionable_carrier_responses_title">
+        <item quantity="one">1 Pending Carrier Response</item>
+        <item quantity="other">%1$d Pending Carrier Responses</item>
+    </plurals>
+    <plurals name="notifications_actionable_carrier_responses_description">
+        <item quantity="one">You have 1 request waiting for a carrier response</item>
+        <item quantity="other">You have %1$d requests waiting for carrier responses</item>
+    </plurals>
+    <plurals name="notifications_actionable_pickup_ready_title">
+        <item quantity="one">1 Package Ready for Pickup</item>
+        <item quantity="other">%1$d Packages Ready for Pickup</item>
+    </plurals>
+    <plurals name="notifications_actionable_pickup_ready_description">
+        <item quantity="one">You have 1 package ready for carrier pickup</item>
+        <item quantity="other">You have %1$d packages ready for carrier pickup</item>
+    </plurals>
+    <plurals name="notifications_actionable_unread_messages_title">
+        <item quantity="one">1 Unread Message</item>
+        <item quantity="other">%1$d Unread Messages</item>
+    </plurals>
+    <plurals name="notifications_actionable_unread_messages_description">
+        <item quantity="one">You have 1 unread message in your conversations</item>
+        <item quantity="other">You have %1$d unread messages in your conversations</item>
+    </plurals>
+    <string name="notifications_actionable_verify_number_title">Verify your phone number</string>
+    <string name="notifications_actionable_verify_number_description">Unlock the trusted badge by verifying your contact number.</string>
+    <string name="notifications_actionable_upgrade_premium_title">Upgrade to Premium</string>
+    <string name="notifications_actionable_upgrade_premium_description">Get the gold star badge and priority features.</string>
 </resources>
