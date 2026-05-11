@@ -11,6 +11,10 @@
     <!-- Push notifications (FCM) — runtime permission on API 33+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Home-city detection (spec 12). Both fine and coarse so we can fall back. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
         android:name=".PasabayanApplication"
         android:allowBackup="true"

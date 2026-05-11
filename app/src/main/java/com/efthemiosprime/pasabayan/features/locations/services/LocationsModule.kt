@@ -21,4 +21,20 @@ abstract class LocationsModule {
     abstract fun bindLocationCatalogStore(
         impl: SharedPreferencesLocationCatalogStore,
     ): LocationCatalogStore
+
+    @Binds
+    @Singleton
+    abstract fun bindLocationProvider(impl: FusedLocationProvider): LocationProvider
+
+    @Binds
+    @Singleton
+    abstract fun bindConfirmedHomeCityStore(
+        impl: SharedPreferencesConfirmedHomeCityStore,
+    ): ConfirmedHomeCityStore
+
+    @Binds
+    @Singleton
+    abstract fun bindHomeCityDetectionService(
+        impl: DefaultHomeCityDetectionService,
+    ): HomeCityDetectionService
 }

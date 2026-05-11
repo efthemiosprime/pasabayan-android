@@ -84,6 +84,7 @@ dependencies {
     // Google Sign-In + Credential Manager–related Play Services (parity with pasabayan-android-develop)
     implementation(libs.play.services.auth)
     implementation(libs.play.services.identity)
+    implementation(libs.play.services.location)
 
     // Facebook Login — meta-data + activities in AndroidManifest
     implementation(libs.facebook.login)

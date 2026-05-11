@@ -21,6 +21,7 @@ appcompat = "1.7.0"
 googleServices = "4.4.2"
 playServicesAuth = "21.2.0"
 playServicesIdentity = "18.1.0"
+playServicesLocation = "21.3.0"
 facebookLogin = "17.0.2"
 firebaseBom = "33.7.0"
 securityCrypto = "1.1.0-alpha06"
@@ -65,6 +66,7 @@ google-material = { group = "com.google.android.material", name = "material", ve
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 play-services-identity = { group = "com.google.android.gms", name = "play-services-identity", version.ref = "playServicesIdentity" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 facebook-login = { group = "com.facebook.android", name = "facebook-login", version.ref = "facebookLogin" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
