@@ -22,11 +22,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -504,47 +507,7 @@ private fun CarrierAcceptedPackagesSection(
                 )
             } else {
                 filteredMatches.forEachIndexed { index, match ->
-                    Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
-                        LabeledIconRow(
-                            icon = {
-                                Icon(
-                                    imageVector = Icons.Outlined.Scale,
-                                    contentDescription = null,
-                                    tint = PasabayanColors.Info,
-                                    modifier = Modifier.size(18.dp),
-                                )
-                            },
-                            label = stringResource(
-                                R.string.trips_detail_match_status_label,
-                                matchStatusLabel(match.matchStatus),
-                            ),
-                            value = match.packageDescription ?: stringResource(R.string.trips_detail_package_fallback),
-                            caption = match.packageWeightKg?.let {
-                                stringResource(R.string.trips_detail_package_weight_caption, it)
-                            },
-                        )
-                        // iOS parity: pickup / delivery code state rows under each match.
-                        MatchCodeStateRow(
-                            title = stringResource(R.string.trips_detail_pickup_code),
-                            state = pickupCodeState(match),
-                        )
-                        MatchCodeStateRow(
-                            title = stringResource(R.string.trips_detail_delivery_code),
-                            state = deliveryCodeState(match),
-                        )
-                        // iOS parity: per-match Chat pill when the server has hung a
-                        // conversation off the match. Pill is right-aligned and only renders
-                        // when the host wired up [onOpenChat].
-                        val conversationId = match.chatConversationId
-                        if (conversationId != null && onOpenChat != null) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End,
-                            ) {
-                                MatchChatPill(onClick = { onOpenChat(conversationId) })
-                            }
-                        }
-                    }
+                    TripMatchPackageCard(match = match, onChatTap = onOpenChat)
                     if (index != filteredMatches.lastIndex) {
                         PDivider()
                     }
@@ -552,6 +515,193 @@ private fun CarrierAcceptedPackagesSection(
             }
         }
     }
+}
+
+/**
+ * iOS parity (`TripMatchPackageCard` in `TripDetailsView.swift` lines 1196–1395): header row with
+ * description + colored status badge, pickup→delivery city row, shipper name + rating, code state
+ * rows, optional chat pill. The whole card is tap-to-chat when a conversation id is present, and
+ * dimmed to ~85% otherwise.
+ */
+@Composable
+private fun TripMatchPackageCard(
+    match: TripMatchPackage,
+    onChatTap: ((Int) -> Unit)?,
+) {
+    val conversationId = match.chatConversationId
+    val isChatAvailable = conversationId != null && onChatTap != null
+    val cardModifier = Modifier
+        .fillMaxWidth()
+        .let { base ->
+            if (isChatAvailable) {
+                base.clickable { onChatTap?.invoke(conversationId!!) }
+            } else {
+                base
+            }
+        }
+        .padding(vertical = PasabayanSpacing.xs)
+    Column(
+        modifier = cardModifier,
+        verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+    ) {
+        MatchHeaderRow(
+            description = match.packageDescription
+                ?: stringResource(R.string.trips_detail_package_fallback),
+            status = match.matchStatus,
+            isDimmed = !isChatAvailable,
+        )
+        MatchRouteRow(
+            pickupCity = match.packagePickupCity,
+            deliveryCity = match.packageDeliveryCity,
+        )
+        MatchShipperRow(
+            name = match.shipper?.name,
+            rating = match.shipper?.ratingValue,
+        )
+        MatchCodeStateRow(
+            title = stringResource(R.string.trips_detail_pickup_code),
+            state = pickupCodeState(match),
+        )
+        MatchCodeStateRow(
+            title = stringResource(R.string.trips_detail_delivery_code),
+            state = deliveryCodeState(match),
+        )
+        if (isChatAvailable) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                MatchChatPill(onClick = { onChatTap?.invoke(conversationId!!) })
+            }
+        }
+    }
+}
+
+@Composable
+private fun MatchHeaderRow(
+    description: String,
+    status: MatchStatus,
+    isDimmed: Boolean,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+    ) {
+        Text(
+            text = description,
+            style = PasabayanTextStyles.Body.medium,
+            color = if (isDimmed) {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            modifier = Modifier.weight(1f),
+        )
+        MatchStatusBadge(status = status)
+    }
+}
+
+@Composable
+private fun MatchStatusBadge(status: MatchStatus) {
+    val color = matchStatusBadgeColor(status)
+    Box(
+        modifier = Modifier
+            .background(color = color, shape = RoundedCornerShape(8.dp))
+            .padding(horizontal = PasabayanSpacing.sm, vertical = 2.dp),
+    ) {
+        Text(
+            text = matchStatusLabel(status),
+            style = PasabayanTextStyles.Caption.regular.copy(fontWeight = FontWeight.Medium),
+            color = Color.White,
+        )
+    }
+}
+
+@Composable
+private fun MatchRouteRow(pickupCity: String?, deliveryCity: String?) {
+    val unknown = stringResource(R.string.trips_detail_match_route_unknown)
+    val routeText = stringResource(
+        R.string.trips_detail_match_route_format,
+        pickupCity?.takeIf { it.isNotBlank() } ?: unknown,
+        deliveryCity?.takeIf { it.isNotBlank() } ?: unknown,
+    )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Place,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(12.dp),
+        )
+        Text(
+            text = routeText,
+            style = PasabayanTextStyles.Caption.regular,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun MatchShipperRow(name: String?, rating: Double?) {
+    if (name.isNullOrBlank() && rating == null) return
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+    ) {
+        if (!name.isNullOrBlank()) {
+            Row(
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Person,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(12.dp),
+                )
+                Text(
+                    text = name,
+                    style = PasabayanTextStyles.Caption.regular,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        if (rating != null) {
+            Row(
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Star,
+                    contentDescription = null,
+                    tint = PasabayanColors.Warning,
+                    modifier = Modifier.size(12.dp),
+                )
+                Text(
+                    text = stringResource(R.string.trips_detail_match_rating_format, rating),
+                    style = PasabayanTextStyles.Caption.regular,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+private fun matchStatusBadgeColor(status: MatchStatus): Color = when (status) {
+    MatchStatus.CONFIRMED,
+    MatchStatus.SHIPPER_ACCEPTED,
+    MatchStatus.CARRIER_ACCEPTED -> PasabayanColors.BadgeBlue
+    MatchStatus.PICKED_UP -> PasabayanColors.BadgeOrange
+    MatchStatus.IN_TRANSIT -> PasabayanColors.BadgePurple
+    MatchStatus.DELIVERED -> PasabayanColors.BadgeGreen
+    else -> PasabayanColors.BadgeGray
 }
 
 @Composable
@@ -899,6 +1049,52 @@ private fun TripDetailsPreview() {
             onEdit = {},
             onCancel = {},
             onBack = {},
+            onOpenChat = {},
+            tripMatches = listOf(
+                TripMatchPackage(
+                    id = 100,
+                    matchStatus = MatchStatus.CONFIRMED,
+                    agreedPrice = 25.0,
+                    packageDescription = "Laptop and accessories",
+                    packageWeightKg = 2.5,
+                    packageId = 101,
+                    packagePickupCity = "Manila",
+                    packageDeliveryCity = "Cebu",
+                    packageFragile = true,
+                    packageType = "fragile",
+                    shipper = com.efthemiosprime.pasabayan.core.domain.model.UserSummary(
+                        id = 201,
+                        name = "Maria Santos",
+                        rating = "4.7",
+                    ),
+                    chatConversationId = 555,
+                    confirmedAt = "2026-03-29T10:00:00Z",
+                    pickedUpAt = null,
+                    deliveredAt = null,
+                    createdAt = "2026-03-28T08:00:00Z",
+                ),
+                TripMatchPackage(
+                    id = 101,
+                    matchStatus = MatchStatus.IN_TRANSIT,
+                    agreedPrice = 40.0,
+                    packageDescription = "Books bundle",
+                    packageWeightKg = 4.0,
+                    packageId = 102,
+                    packagePickupCity = "Manila",
+                    packageDeliveryCity = "Davao",
+                    packageFragile = false,
+                    packageType = "general",
+                    shipper = com.efthemiosprime.pasabayan.core.domain.model.UserSummary(
+                        id = 202,
+                        name = "Pedro Cruz",
+                    ),
+                    chatConversationId = null,
+                    confirmedAt = "2026-03-28T08:00:00Z",
+                    pickedUpAt = "2026-03-30T11:00:00Z",
+                    deliveredAt = null,
+                    createdAt = "2026-03-27T08:00:00Z",
+                ),
+            ),
         )
     }
 }

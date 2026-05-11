@@ -122,6 +122,45 @@ class TripMapperTest {
         assertEquals(77, match.chatConversationId)
     }
 
+    // iOS parity (`TripPackageInfo`): the embedded `package` object on `/trips/{id}/matches`
+    // carries pickup_city, delivery_city, fragile, package_type alongside id/description/weight.
+    @Test
+    fun `TripMatchPackageJson toDomain maps package pickup delivery and type`() {
+        val json = TripMatchPackageJson(
+            id = 200,
+            matchStatus = MatchStatus.CONFIRMED,
+            packageInfo = PackageSummaryJson(
+                id = 60,
+                description = "Laptop and accessories",
+                weightKg = 2.5,
+                pickupCity = "Manila",
+                deliveryCity = "Cebu",
+                fragile = true,
+                packageType = "fragile",
+            ),
+            shipper = UserSummary(id = 8, name = "Maria"),
+        )
+        val match = json.toDomain()
+        assertEquals("Manila", match.packagePickupCity)
+        assertEquals("Cebu", match.packageDeliveryCity)
+        assertEquals(true, match.packageFragile)
+        assertEquals("fragile", match.packageType)
+    }
+
+    @Test
+    fun `TripMatchPackageJson toDomain leaves new package fields null when packageInfo missing`() {
+        val json = TripMatchPackageJson(
+            id = 201,
+            matchStatus = MatchStatus.PENDING,
+            packageInfo = null,
+        )
+        val match = json.toDomain()
+        assertEquals(null, match.packagePickupCity)
+        assertEquals(null, match.packageDeliveryCity)
+        assertEquals(null, match.packageFragile)
+        assertEquals(null, match.packageType)
+    }
+
     @Test
     fun `TripJson toDomain maps passenger and instruction parity fields`() {
         val json = TripJson(

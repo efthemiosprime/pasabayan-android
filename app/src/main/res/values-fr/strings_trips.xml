@@ -104,6 +104,10 @@
     <string name="trips_code_state_verified">Vérifié</string>
     <string name="trips_detail_package_fallback">Colis</string>
     <string name="trips_detail_package_weight_caption">%1$.1f kg</string>
+    <!-- Parité iOS : TripMatchPackageCard ligne d’itinéraire « Manille → Cebu ». -->
+    <string name="trips_detail_match_route_unknown">Inconnu</string>
+    <string name="trips_detail_match_route_format">%1$s → %2$s</string>
+    <string name="trips_detail_match_rating_format">%1$.1f</string>
     <string name="trips_detail_pending_requests">%1$d demande(s) en attente</string>
     <string name="trips_detail_title">D\u00e9tails du trajet</string>
     <string name="trips_detail_close">Fermer les d\u00e9tails</string>

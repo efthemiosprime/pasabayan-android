@@ -10,6 +10,12 @@ data class TripMatchPackage(
     val packageDescription: String?,
     val packageWeightKg: Double?,
     val packageId: Int?,
+    // iOS parity (`TripPackageInfo`): used by the per-match card row to render pickup→delivery
+    // city, fragility chip, and package type.
+    val packagePickupCity: String? = null,
+    val packageDeliveryCity: String? = null,
+    val packageFragile: Boolean? = null,
+    val packageType: String? = null,
     val shipper: UserSummary?,
     val chatConversationId: Int?,
     val confirmedAt: String?,

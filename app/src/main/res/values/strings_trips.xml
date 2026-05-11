@@ -104,6 +104,10 @@
     <string name="trips_code_state_verified">Verified</string>
     <string name="trips_detail_package_fallback">Package</string>
     <string name="trips_detail_package_weight_caption">%1$.1f kg</string>
+    <!-- iOS parity: TripMatchPackageCard route line "Manila → Cebu" (fallback "Unknown"). -->
+    <string name="trips_detail_match_route_unknown">Unknown</string>
+    <string name="trips_detail_match_route_format">%1$s → %2$s</string>
+    <string name="trips_detail_match_rating_format">%1$.1f</string>
     <string name="trips_detail_pending_requests">%1$d pending request(s)</string>
     <string name="trips_detail_title">Trip Details</string>
     <string name="trips_detail_close">Close details</string>

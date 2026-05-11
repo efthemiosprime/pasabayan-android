@@ -103,6 +103,39 @@ class TripJsonModelsDecodeTest {
         assertEquals("Jane Shipper", shipper.name)
     }
 
+    // iOS parity (`TripPackageInfo` in `TripModels.swift`): the embedded `package` object on
+    // `/trips/{id}/matches` exposes `pickup_city`, `delivery_city`, `fragile`, `package_type`
+    // alongside the basics.
+    @Test
+    fun `PackageSummaryJson decodes pickup_city delivery_city fragile and package_type`() {
+        val raw = """
+            {
+              "id": 60,
+              "description": "Laptop and accessories",
+              "package_weight_kg": 2.5,
+              "pickup_city": "Manila",
+              "delivery_city": "Cebu",
+              "fragile": true,
+              "package_type": "fragile"
+            }
+        """.trimIndent()
+        val pkg = json.decodeFromString<PackageSummaryJson>(raw)
+        assertEquals("Manila", pkg.pickupCity)
+        assertEquals("Cebu", pkg.deliveryCity)
+        assertEquals(true, pkg.fragile)
+        assertEquals("fragile", pkg.packageType)
+    }
+
+    @Test
+    fun `PackageSummaryJson leaves new fields null when server omits them`() {
+        val raw = """{"id": 60, "description": "Books", "package_weight_kg": 3.0}"""
+        val pkg = json.decodeFromString<PackageSummaryJson>(raw)
+        assertNull(pkg.pickupCity)
+        assertNull(pkg.deliveryCity)
+        assertNull(pkg.fragile)
+        assertNull(pkg.packageType)
+    }
+
     @Test
     fun `TripJson decodes with missing optional fields`() {
         val raw = """{"id": 99, "trip_status": "cancelled", "transportation_method": "other"}"""

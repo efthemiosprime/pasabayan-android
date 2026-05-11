@@ -33,6 +33,13 @@ data class PackageSummaryJson(
     val description: String? = null,
     @SerialName("package_weight_kg") @Serializable(with = FlexibleDoubleSerializer::class) val weightKg: Double? = null,
     @SerialName("package_dimensions") val dimensions: String? = null,
+    // iOS parity (`TripPackageInfo`): the trip-matches endpoint hangs pickup/delivery cities,
+    // fragility, and package type under the embedded `package` object. iOS keys are `pickup_city`,
+    // `delivery_city`, `fragile`, `package_type` (`TripModels.swift`).
+    @SerialName("pickup_city") val pickupCity: String? = null,
+    @SerialName("delivery_city") val deliveryCity: String? = null,
+    val fragile: Boolean? = null,
+    @SerialName("package_type") val packageType: String? = null,
 )
 
 @Serializable
