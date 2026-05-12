@@ -197,7 +197,7 @@ fun MatchListScreen(
                             item(key = "counter-offer-snackbar-${snackbarMatch.id}") {
                                 CounterOfferSnackbar(
                                     context = ctx,
-                                    currentUserId = null,
+                                    currentUserId = state.currentUserId?.toInt(),
                                     onViewOffer = {
                                         selectedMatch = snackbarMatch
                                         counterOfferSnackbarMatch = null
@@ -304,6 +304,7 @@ fun MatchListScreen(
                         }
                     }
                 },
+                currentUserId = state.currentUserId?.toInt(),
             )
         }
     }

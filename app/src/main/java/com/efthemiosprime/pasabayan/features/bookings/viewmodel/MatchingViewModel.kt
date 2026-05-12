@@ -3,6 +3,7 @@ package com.efthemiosprime.pasabayan.features.bookings.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
+import com.efthemiosprime.pasabayan.core.session.AuthRepository
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.NegotiationMetadata
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.RefundResult
@@ -13,6 +14,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,6 +38,14 @@ data class MatchingUiState(
      * `IncomingRequestContext.unseenIncomingRequestBadgeCount(...)`.
      */
     val reviewedIncomingRequestIds: Set<Int> = emptySet(),
+    /**
+     * Authenticated user id from [AuthRepository.currentUser]. `null` before
+     * sign-in lands or after sign-out. Drives role-aware copy in
+     * `CounterOfferBanner` / `CounterOfferSnackbar` ("You saved $X" /
+     * "You'll earn $X more") and lets the match-details sheet render "You"
+     * when the viewer is the counter-offerer.
+     */
+    val currentUserId: Long? = null,
 ) {
     val filteredMatches: List<DeliveryMatch>
         get() = when (statusFilter) {
@@ -47,10 +58,22 @@ data class MatchingUiState(
 class MatchingViewModel @Inject constructor(
     private val bookingsRepository: BookingsRepository,
     private val requirePhoneVerification: RequirePhoneVerificationUseCase,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MatchingUiState())
     val uiState: StateFlow<MatchingUiState> = _uiState.asStateFlow()
+
+    init {
+        // Mirror the authenticated user id into our state so downstream
+        // composables (banner / snackbar) don't have to plumb AuthRepository
+        // themselves. Updates automatically on login + logout.
+        authRepository.currentUser()
+            .onEach { user ->
+                _uiState.update { it.copy(currentUserId = user?.id) }
+            }
+            .launchIn(viewModelScope)
+    }
 
     fun loadMatches(role: String? = null) {
         viewModelScope.launch {

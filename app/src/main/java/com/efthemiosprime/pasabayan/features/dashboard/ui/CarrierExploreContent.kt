@@ -72,6 +72,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
  * infinite scroll, filter sheet, and `nearby` envelope flag capture.
  * Mirrors iOS `CarrierBrowsePackagesView`.
  */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun CarrierExploreContent(
     user: AuthUser,
@@ -116,8 +117,13 @@ fun CarrierExploreContent(
             }
     }
 
-    LazyColumn(
+    androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+        isRefreshing = state.isLoadingAvailablePackages,
+        onRefresh = { packageViewModel.applyBrowseFilter() },
         modifier = modifier.fillMaxSize(),
+    ) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
         state = listState,
         contentPadding = PaddingValues(PasabayanSpacing.screenPadding),
         verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
@@ -206,6 +212,7 @@ fun CarrierExploreContent(
             }
         }
     }
+    } // end PullToRefreshBox
 
     if (showFilterSheet) {
         PackageFilterSheet(
@@ -243,7 +250,7 @@ fun CarrierExploreContent(
             initialRating = shipper.ratingValue,
             initialTotalRatings = shipper.totalRatings,
             userRole = UserRole.SHIPPER,
-            memberSince = null, // not exposed by UserSummary today
+            memberSince = shipper.memberSinceLabel,
             currentUserId = user.id.toInt(),
             currentUserRole = UserRole.CARRIER,
             onDismiss = { profileSheetShipper = null },

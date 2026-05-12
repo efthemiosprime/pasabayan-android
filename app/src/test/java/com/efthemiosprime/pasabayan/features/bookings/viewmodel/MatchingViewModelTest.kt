@@ -2,6 +2,8 @@ package com.efthemiosprime.pasabayan.features.bookings.viewmodel
 
 import com.efthemiosprime.pasabayan.core.domain.`enum`.InitiatedBy
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
+import com.efthemiosprime.pasabayan.core.session.AuthRepository
+import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.NegotiationMetadata
@@ -14,6 +16,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -34,6 +37,8 @@ class MatchingViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var fakeRepo: FakeBookingsRepository
     private lateinit var requirePhoneVerification: RequirePhoneVerificationUseCase
+    private lateinit var authRepository: AuthRepository
+    private lateinit var currentUserFlow: MutableStateFlow<AuthUser?>
     private lateinit var viewModel: MatchingViewModel
 
     @Before
@@ -42,12 +47,44 @@ class MatchingViewModelTest {
         fakeRepo = FakeBookingsRepository()
         requirePhoneVerification = mockk()
         every { requirePhoneVerification.invoke() } returns Result.success(Unit)
-        viewModel = MatchingViewModel(fakeRepo, requirePhoneVerification)
+        currentUserFlow = MutableStateFlow(null)
+        authRepository = mockk()
+        every { authRepository.currentUser() } returns currentUserFlow
+        viewModel = MatchingViewModel(fakeRepo, requirePhoneVerification, authRepository)
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `currentUserId mirrors AuthRepository currentUser updates`() = runTest {
+        // Initial null
+        advanceUntilIdle()
+        assertNull(viewModel.uiState.value.currentUserId)
+
+        // Emit a signed-in user
+        currentUserFlow.value = AuthUser(
+            id = 7L,
+            name = "Tester",
+            email = "t@x",
+            avatar = null,
+            phone = null,
+            phoneVerified = true,
+            profileCompleted = true,
+            provider = "test",
+            userTypes = listOf("shipper"),
+            isActiveCarrier = false,
+            isActiveShipper = true,
+        )
+        advanceUntilIdle()
+        assertEquals(7L, viewModel.uiState.value.currentUserId)
+
+        // Sign out
+        currentUserFlow.value = null
+        advanceUntilIdle()
+        assertNull(viewModel.uiState.value.currentUserId)
     }
 
     @Test

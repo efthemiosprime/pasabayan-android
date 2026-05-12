@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
@@ -97,10 +98,17 @@ fun ConversationRow(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+                // System-message previews (match-created, pickup-code drops, service-list-item)
+                // render as status chrome — italic + muted — to match how they look inside the
+                // thread (PMessageBubble.System). Regular messages keep the default body style.
+                val lastMessage = conversation.lastMessage
+                val isSystem = lastMessage?.isSystemMessage == true
                 Text(
-                    text = conversation.lastMessage?.message
+                    text = lastMessage?.message
                         ?: stringResource(R.string.chat_conversations_no_messages_yet),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontStyle = if (isSystem) FontStyle.Italic else FontStyle.Normal,
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }

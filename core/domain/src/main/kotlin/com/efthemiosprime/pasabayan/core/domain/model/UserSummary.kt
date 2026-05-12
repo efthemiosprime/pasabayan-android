@@ -54,6 +54,13 @@ data class UserSummary(
     @SerialName("is_active_shipper")
     @Serializable(with = FlexibleBoolSerializer::class)
     val isActiveShipper: Boolean? = null,
+    /**
+     * Account-creation timestamp from the server (ISO-8601). Drives the
+     * "Member since" / "Carrier since" row on
+     * [com.efthemiosprime.pasabayan.features.profile.ui.UserProfilePopover].
+     * Optional — many wire surfaces omit it.
+     */
+    @SerialName("created_at") val createdAt: String? = null,
 ) {
     val effectiveVerificationLevel: VerificationLevel
         get() = VerificationLevel.normalized(verificationLevel)
@@ -72,6 +79,22 @@ data class UserSummary(
 
     val isPremium: Boolean
         get() = effectiveVerificationLevel.isPremium
+
+    /**
+     * Account-creation date formatted for the popover ("May 2023"). Returns
+     * `null` when [createdAt] is missing or unparseable so the UI hides the
+     * row entirely rather than rendering a malformed label.
+     */
+    val memberSinceLabel: String?
+        get() {
+            val raw = createdAt?.takeIf { it.isNotBlank() } ?: return null
+            return runCatching {
+                val instant = java.time.OffsetDateTime.parse(raw).toInstant()
+                java.time.format.DateTimeFormatter.ofPattern("MMM yyyy")
+                    .withZone(java.time.ZoneId.systemDefault())
+                    .format(instant)
+            }.getOrNull()
+        }
 }
 
 /**

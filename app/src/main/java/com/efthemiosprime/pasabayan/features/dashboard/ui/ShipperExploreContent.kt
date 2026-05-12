@@ -128,8 +128,13 @@ fun ShipperExploreContent(
             }
     }
 
-    LazyColumn(
+    androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+        isRefreshing = state.isLoading,
+        onRefresh = { browseTripsViewModel.loadAvailableTrips(reset = true) },
         modifier = modifier.fillMaxSize(),
+    ) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
         state = listState,
         contentPadding = PaddingValues(PasabayanSpacing.screenPadding),
         verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
@@ -269,6 +274,7 @@ fun ShipperExploreContent(
             }
         }
     }
+    } // end PullToRefreshBox
 
     detailTrip?.let { selectedTrip ->
         com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
@@ -337,7 +343,7 @@ fun ShipperExploreContent(
             initialRating = carrier.ratingValue,
             initialTotalRatings = carrier.totalRatings,
             userRole = UserRole.CARRIER,
-            memberSince = null, // not exposed by UserSummary today
+            memberSince = carrier.memberSinceLabel,
             currentUserId = user.id.toInt(),
             currentUserRole = UserRole.SHIPPER,
             onDismiss = { profileSheetCarrier = null },
