@@ -9,6 +9,8 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageRequestStatus
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepository
 import com.efthemiosprime.pasabayan.features.packages.model.AvailablePackage
+import com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage
+import com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter
 import com.efthemiosprime.pasabayan.features.packages.model.PackageRequest
 import com.efthemiosprime.pasabayan.features.packages.model.PackageSubmitPayload
 import com.efthemiosprime.pasabayan.features.packages.model.PackageSubmitRequestMapper
@@ -30,6 +32,19 @@ data class PackageUiState(
     val availablePackages: List<AvailablePackage> = emptyList(),
     val isLoadingAvailablePackages: Boolean = false,
     val hasLoadedAvailablePackages: Boolean = false,
+    // -- Carrier-explore browse state (iOS-parity infinite-scroll) --
+    /** User-controlled filter sent on every fetch. */
+    val availablePackagesFilter: PackageBrowseFilter = PackageBrowseFilter(),
+    /** Page number of the last successful fetch; 0 before any page lands. */
+    val availablePackagesCurrentPage: Int = 0,
+    /** Drives the auto-loader and the "Load more" affordance. */
+    val availablePackagesHasMore: Boolean = true,
+    /** In-flight append (page > 1). Independent of [isLoadingAvailablePackages]. */
+    val availablePackagesIsLoadingMore: Boolean = false,
+    /** Top-level `nearby` flag from the response envelope (parity §4). */
+    val availablePackagesNearby: Boolean? = null,
+    /** Surfaced only for failed `loadMore` calls; reload errors use [errorMessage]. */
+    val availablePackagesLoadMoreError: String? = null,
     val selectedPackageDetail: PackageRequest? = null,
     val isLoadingPackageDetail: Boolean = false,
     val isUpdatingPackage: Boolean = false,
@@ -52,7 +67,18 @@ data class PackageUiState(
      * [PackageViewModel.consumeRequiresPhoneVerification] to clear it.
      */
     val requiresPhoneVerification: VerifyPhoneReason? = null,
-)
+) {
+    /**
+     * iOS parity: `packageType` filter is applied client-side after the
+     * server returns the page (the backend has no equivalent param yet).
+     * UI should bind to this rather than [availablePackages] when the
+     * filter sheet is in scope.
+     */
+    val visibleAvailablePackages: List<AvailablePackage>
+        get() = availablePackagesFilter.packageType?.let { type ->
+            availablePackages.filter { it.packageType == type }
+        } ?: availablePackages
+}
 
 @HiltViewModel
 class PackageViewModel @Inject constructor(
@@ -64,6 +90,15 @@ class PackageViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(PackageUiState())
     val uiState: StateFlow<PackageUiState> = _uiState.asStateFlow()
+
+    /**
+     * Bumped on every browse reload. Each in-flight fetch captures the
+     * snapshot; results from stale generations are dropped so a fast
+     * filter-toggle followed by a slow first response can't replay onto
+     * the freshly reset list. iOS parity: `loadGeneration` in
+     * `CarrierBrowsePackagesViewModel`.
+     */
+    private var availablePackagesLoadGeneration: Int = 0
 
     fun loadPackages(force: Boolean = false) {
         if (!force && _uiState.value.hasLoadedPackages) return
@@ -128,6 +163,137 @@ class PackageViewModel @Inject constructor(
 
     fun refreshAvailablePackages(params: Map<String, String> = emptyMap()) =
         loadAvailablePackages(params = params, force = true)
+
+    // -- iOS-parity browse pagination state machine --
+
+    /**
+     * Update the filter without fetching. Use when the user is typing /
+     * tapping chips inside a filter sheet; call [applyBrowseFilter] when
+     * they hit Apply.
+     */
+    fun setBrowseFilter(filter: PackageBrowseFilter) {
+        _uiState.update { it.copy(availablePackagesFilter = filter) }
+    }
+
+    /**
+     * Reset pagination and fetch page 1 with the current filter. Safe to
+     * call from `LaunchedEffect(Unit)`, pull-to-refresh, search submit,
+     * and filter-apply.
+     */
+    fun applyBrowseFilter() {
+        val generation = ++availablePackagesLoadGeneration
+        _uiState.update {
+            it.copy(
+                isLoadingAvailablePackages = true,
+                availablePackagesIsLoadingMore = false,
+                availablePackagesLoadMoreError = null,
+                errorMessage = null,
+            )
+        }
+        viewModelScope.launch {
+            val filter = _uiState.value.availablePackagesFilter
+            val result = packagesRepository.loadAvailablePackagesPage(filter = filter, page = 1)
+            if (generation != availablePackagesLoadGeneration) return@launch
+            result.fold(
+                onSuccess = { page -> applyFirstPage(page) },
+                onFailure = { e ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingAvailablePackages = false,
+                            hasLoadedAvailablePackages = true,
+                            availablePackages = emptyList(),
+                            availablePackagesCurrentPage = 0,
+                            availablePackagesHasMore = false,
+                            errorMessage = e.message
+                                ?: context.getString(R.string.packages_error_load_available_packages),
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    /** Clears the filter back to empty then re-fetches page 1. */
+    fun clearBrowseFilter() {
+        setBrowseFilter(PackageBrowseFilter())
+        applyBrowseFilter()
+    }
+
+    /**
+     * Fetch the next page and append. No-op when already loading more,
+     * when no more pages exist, or when the first page hasn't landed yet.
+     * The race guard on [availablePackagesLoadGeneration] ensures a stale
+     * append can't follow a reload.
+     */
+    fun loadMoreAvailablePackages() {
+        val snapshot = _uiState.value
+        if (snapshot.availablePackagesIsLoadingMore) return
+        if (!snapshot.availablePackagesHasMore) return
+        if (snapshot.availablePackagesCurrentPage < 1) return
+        if (snapshot.isLoadingAvailablePackages) return
+
+        val generation = availablePackagesLoadGeneration
+        val nextPage = snapshot.availablePackagesCurrentPage + 1
+        _uiState.update {
+            it.copy(
+                availablePackagesIsLoadingMore = true,
+                availablePackagesLoadMoreError = null,
+            )
+        }
+        viewModelScope.launch {
+            val result = packagesRepository.loadAvailablePackagesPage(
+                filter = snapshot.availablePackagesFilter,
+                page = nextPage,
+            )
+            if (generation != availablePackagesLoadGeneration) return@launch
+            result.fold(
+                onSuccess = { page -> appendPage(page) },
+                onFailure = { e ->
+                    _uiState.update {
+                        it.copy(
+                            availablePackagesIsLoadingMore = false,
+                            availablePackagesLoadMoreError = e.message
+                                ?: context.getString(R.string.packages_error_load_available_packages),
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    private fun applyFirstPage(page: AvailablePackagesPage) {
+        _uiState.update {
+            it.copy(
+                availablePackages = page.packages,
+                availablePackagesCurrentPage = page.currentPage,
+                availablePackagesHasMore = page.hasMore,
+                availablePackagesNearby = page.nearby,
+                isLoadingAvailablePackages = false,
+                availablePackagesIsLoadingMore = false,
+                availablePackagesLoadMoreError = null,
+                hasLoadedAvailablePackages = true,
+                errorMessage = null,
+            )
+        }
+    }
+
+    private fun appendPage(page: AvailablePackagesPage) {
+        _uiState.update { state ->
+            // Dedupe by effectiveId — the server may overlap pages when items shift between
+            // pages between requests (insertions are rare but possible).
+            val existing = state.availablePackages.map { it.effectiveId }.toHashSet()
+            val merged = state.availablePackages + page.packages.filter { it.effectiveId !in existing }
+            state.copy(
+                availablePackages = merged,
+                availablePackagesCurrentPage = page.currentPage,
+                availablePackagesHasMore = page.hasMore,
+                // nearby reflects the *server's* current decision; keep the latest.
+                availablePackagesNearby = page.nearby ?: state.availablePackagesNearby,
+                availablePackagesIsLoadingMore = false,
+                availablePackagesLoadMoreError = null,
+            )
+        }
+    }
 
     fun loadPackageDetail(packageId: Int) {
         viewModelScope.launch {

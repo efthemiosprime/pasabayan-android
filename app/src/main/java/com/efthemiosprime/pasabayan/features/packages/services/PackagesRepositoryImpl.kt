@@ -9,6 +9,8 @@ import com.efthemiosprime.pasabayan.core.network.packages.CreateServiceRequestBo
 import com.efthemiosprime.pasabayan.core.network.packages.PackageUpdateRequestJson
 import com.efthemiosprime.pasabayan.core.network.packages.PackagesApi
 import com.efthemiosprime.pasabayan.features.packages.model.AvailablePackage
+import com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage
+import com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter
 import com.efthemiosprime.pasabayan.features.packages.model.PackageRequest
 import com.efthemiosprime.pasabayan.features.packages.model.toDomain
 import kotlinx.serialization.json.Json
@@ -47,6 +49,51 @@ class PackagesRepositoryImpl @Inject constructor(
             }
             val packages = res.body()?.data?.data?.map { it.toDomain() } ?: emptyList()
             Result.success(packages)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun loadAvailablePackagesPage(
+        filter: PackageBrowseFilter,
+        page: Int,
+        perPage: Int,
+    ): Result<AvailablePackagesPage> {
+        val params = buildMap {
+            putAll(filter.toQueryMap())
+            put("page", page.toString())
+            put("per_page", perPage.toString())
+        }
+        return try {
+            val res = packagesApi.getAvailablePackages(params)
+            if (!res.isSuccessful) {
+                return Result.failure(
+                    DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
+                )
+            }
+            val body = res.body()
+                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            val envelope = body.data
+                ?: return Result.success(
+                    AvailablePackagesPage(
+                        packages = emptyList(),
+                        currentPage = page,
+                        lastPage = page,
+                        total = 0,
+                        perPage = perPage,
+                        nearby = body.nearby,
+                    ),
+                )
+            Result.success(
+                AvailablePackagesPage(
+                    packages = envelope.data.map { it.toDomain() },
+                    currentPage = envelope.currentPage,
+                    lastPage = envelope.lastPage,
+                    total = envelope.total,
+                    perPage = envelope.perPage,
+                    nearby = body.nearby,
+                ),
+            )
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }

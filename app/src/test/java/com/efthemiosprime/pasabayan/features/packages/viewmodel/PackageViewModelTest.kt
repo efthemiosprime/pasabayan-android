@@ -225,6 +225,277 @@ class PackageViewModelTest {
         assertTrue(state.hasLoadedAvailablePackages)
     }
 
+    // ---- Browse pagination state machine (iOS parity) ----
+
+    @Test
+    fun `applyBrowseFilter fetches page 1 with current filter and captures envelope`() = runTest {
+        fakeRepo.pageResultQueue.addLast(
+            Result.success(
+                com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage(
+                    packages = listOf(availablePkg(1), availablePkg(2)),
+                    currentPage = 1,
+                    lastPage = 3,
+                    total = 30,
+                    perPage = 15,
+                    nearby = true,
+                ),
+            ),
+        )
+        viewModel.setBrowseFilter(
+            com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter(
+                searchText = "doc",
+                urgency = UrgencyLevel.URGENT,
+            ),
+        )
+
+        viewModel.applyBrowseFilter()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(2, state.availablePackages.size)
+        assertEquals(1, state.availablePackagesCurrentPage)
+        assertTrue(state.availablePackagesHasMore)
+        assertEquals(true, state.availablePackagesNearby)
+        assertFalse(state.isLoadingAvailablePackages)
+        assertFalse(state.availablePackagesIsLoadingMore)
+
+        // Repo received the filter + page = 1.
+        assertEquals(1, fakeRepo.pageCalls.size)
+        val (filter, page, _) = fakeRepo.pageCalls.first()
+        assertEquals("doc", filter.searchText)
+        assertEquals(UrgencyLevel.URGENT, filter.urgency)
+        assertEquals(1, page)
+    }
+
+    @Test
+    fun `loadMoreAvailablePackages appends and bumps currentPage`() = runTest {
+        // Page 1
+        fakeRepo.pageResultQueue.addLast(
+            Result.success(
+                com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage(
+                    packages = listOf(availablePkg(1), availablePkg(2)),
+                    currentPage = 1,
+                    lastPage = 2,
+                    total = 4,
+                    perPage = 2,
+                    nearby = null,
+                ),
+            ),
+        )
+        viewModel.applyBrowseFilter()
+        advanceUntilIdle()
+
+        // Page 2
+        fakeRepo.pageResultQueue.addLast(
+            Result.success(
+                com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage(
+                    packages = listOf(availablePkg(3), availablePkg(4)),
+                    currentPage = 2,
+                    lastPage = 2,
+                    total = 4,
+                    perPage = 2,
+                    nearby = null,
+                ),
+            ),
+        )
+        viewModel.loadMoreAvailablePackages()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(4, state.availablePackages.size)
+        assertEquals(2, state.availablePackagesCurrentPage)
+        assertFalse(state.availablePackagesHasMore) // currentPage == lastPage
+        // Second call should have been for page 2 with the same filter.
+        assertEquals(2, fakeRepo.pageCalls.last().second)
+    }
+
+    @Test
+    fun `loadMoreAvailablePackages dedupes overlapping items by effectiveId`() = runTest {
+        // Page 1 contains item 2; page 2 also contains 2 plus 3.
+        fakeRepo.pageResultQueue.addLast(
+            Result.success(
+                com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage(
+                    packages = listOf(availablePkg(1), availablePkg(2)),
+                    currentPage = 1,
+                    lastPage = 2,
+                    total = 4,
+                    perPage = 2,
+                    nearby = null,
+                ),
+            ),
+        )
+        viewModel.applyBrowseFilter()
+        advanceUntilIdle()
+
+        fakeRepo.pageResultQueue.addLast(
+            Result.success(
+                com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage(
+                    packages = listOf(availablePkg(2), availablePkg(3)),
+                    currentPage = 2,
+                    lastPage = 2,
+                    total = 3,
+                    perPage = 2,
+                    nearby = null,
+                ),
+            ),
+        )
+        viewModel.loadMoreAvailablePackages()
+        advanceUntilIdle()
+
+        val ids = viewModel.uiState.value.availablePackages.map { it.effectiveId }
+        assertEquals(listOf(1, 2, 3), ids)
+    }
+
+    @Test
+    fun `loadMoreAvailablePackages is no-op when no more pages`() = runTest {
+        fakeRepo.pageResultQueue.addLast(
+            Result.success(
+                com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage(
+                    packages = listOf(availablePkg(1)),
+                    currentPage = 1,
+                    lastPage = 1,
+                    total = 1,
+                    perPage = 15,
+                    nearby = null,
+                ),
+            ),
+        )
+        viewModel.applyBrowseFilter()
+        advanceUntilIdle()
+        fakeRepo.pageCalls.clear()
+
+        viewModel.loadMoreAvailablePackages()
+        advanceUntilIdle()
+
+        assertTrue("loadMore must not call repo when hasMore is false", fakeRepo.pageCalls.isEmpty())
+    }
+
+    @Test
+    fun `loadMoreAvailablePackages is no-op before any page lands`() = runTest {
+        viewModel.loadMoreAvailablePackages()
+        advanceUntilIdle()
+
+        assertTrue(fakeRepo.pageCalls.isEmpty())
+    }
+
+    @Test
+    fun `applyBrowseFilter discards stale in-flight response`() = runTest {
+        // Two reload calls queued back-to-back. Both response payloads are queued in call order:
+        // the first call (stale generation) pops the "99" page; the second call (current generation)
+        // pops the "1, 2" page. The race guard must discard the stale response.
+        fakeRepo.pageResultQueue.addLast(
+            Result.success(
+                com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage(
+                    packages = listOf(availablePkg(99)),
+                    currentPage = 1,
+                    lastPage = 1,
+                    total = 1,
+                    perPage = 15,
+                    nearby = null,
+                ),
+            ),
+        )
+        fakeRepo.pageResultQueue.addLast(
+            Result.success(
+                com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage(
+                    packages = listOf(availablePkg(1), availablePkg(2)),
+                    currentPage = 1,
+                    lastPage = 1,
+                    total = 2,
+                    perPage = 15,
+                    nearby = null,
+                ),
+            ),
+        )
+
+        // First apply — generation 1.
+        viewModel.setBrowseFilter(
+            com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter(searchText = "stale"),
+        )
+        viewModel.applyBrowseFilter()
+        // Second apply (before the first coroutine runs) — generation 2 supersedes.
+        viewModel.setBrowseFilter(
+            com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter(searchText = "fresh"),
+        )
+        viewModel.applyBrowseFilter()
+
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(1, 2), state.availablePackages.map { it.effectiveId })
+    }
+
+    @Test
+    fun `visibleAvailablePackages applies packageType client-side filter`() = runTest {
+        fakeRepo.pageResultQueue.addLast(
+            Result.success(
+                com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage(
+                    packages = listOf(
+                        availablePkg(1, packageType = PackageType.GENERAL),
+                        availablePkg(2, packageType = PackageType.ELECTRONICS),
+                        availablePkg(3, packageType = PackageType.ELECTRONICS),
+                    ),
+                    currentPage = 1,
+                    lastPage = 1,
+                    total = 3,
+                    perPage = 15,
+                    nearby = null,
+                ),
+            ),
+        )
+        viewModel.setBrowseFilter(
+            com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter(packageType = PackageType.ELECTRONICS),
+        )
+        viewModel.applyBrowseFilter()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        // Server returned all 3 (packageType is client-side); visible should be 2.
+        assertEquals(3, state.availablePackages.size)
+        assertEquals(listOf(2, 3), state.visibleAvailablePackages.map { it.effectiveId })
+    }
+
+    @Test
+    fun `applyBrowseFilter surfaces failure on errorMessage`() = runTest {
+        fakeRepo.pageResultQueue.addLast(Result.failure(RuntimeException("boom")))
+
+        viewModel.applyBrowseFilter()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isLoadingAvailablePackages)
+        assertEquals("boom", state.errorMessage)
+        assertTrue(state.availablePackages.isEmpty())
+    }
+
+    @Test
+    fun `loadMoreAvailablePackages surfaces failure on loadMoreError without clearing list`() = runTest {
+        fakeRepo.pageResultQueue.addLast(
+            Result.success(
+                com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage(
+                    packages = listOf(availablePkg(1)),
+                    currentPage = 1,
+                    lastPage = 5,
+                    total = 100,
+                    perPage = 15,
+                    nearby = null,
+                ),
+            ),
+        )
+        viewModel.applyBrowseFilter()
+        advanceUntilIdle()
+
+        fakeRepo.pageResultQueue.addLast(Result.failure(RuntimeException("network down")))
+        viewModel.loadMoreAvailablePackages()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals("network down", state.availablePackagesLoadMoreError)
+        assertFalse(state.availablePackagesIsLoadingMore)
+        assertEquals(1, state.availablePackages.size) // existing items preserved
+        assertEquals(1, state.availablePackagesCurrentPage) // didn't advance
+    }
+
     @Test
     fun `loadPackageDetail updates selected detail on success`() = runTest {
         fakeRepo.getResult = Result.success(testPkg(70))
@@ -352,6 +623,33 @@ class PackageViewModelTest {
         specialHandlingRequirements = null,
     )
 
+    private fun availablePkg(
+        id: Int,
+        packageType: PackageType = PackageType.GENERAL,
+    ) = AvailablePackage(
+        id = id,
+        packageRequestId = id,
+        pickupCity = "Toronto",
+        pickupCountry = "Canada",
+        deliveryCity = "Montreal",
+        deliveryCountry = "Canada",
+        packageWeightKg = 5.0,
+        packageDimensions = null,
+        urgencyLevel = UrgencyLevel.NORMAL,
+        maxPriceBudget = 60.0,
+        pickupDatePreferred = "2026-04-05",
+        pickupDateFlexible = false,
+        deliveryDateNeeded = "2026-04-07",
+        fragile = false,
+        packageType = packageType,
+        packageDescription = "Test",
+        createdAt = "2026-04-01T00:00:00Z",
+        daysSincePosted = 1.0,
+        distanceKm = null,
+        shipper = null,
+        serviceType = null,
+    )
+
     private fun testPkg(
         id: Int,
         status: PackageRequestStatus = PackageRequestStatus.OPEN,
@@ -383,8 +681,38 @@ class FakePackagesRepository : PackagesRepository {
     var updateResult: Result<PackageRequest>? = null
     var cancelResult: Result<Unit> = Result.success(Unit)
 
+    // -- Browse pagination test surface --
+    /** Queued page responses popped in order; default empty page when exhausted. */
+    val pageResultQueue: ArrayDeque<Result<com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage>> = ArrayDeque()
+    /** Records all calls so tests can assert filter / page propagation. */
+    val pageCalls: MutableList<Triple<com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter, Int, Int>> = mutableListOf()
+    /** When non-null, the fake suspends on this signal so tests can interleave reload + late response. */
+    var pageGate: kotlinx.coroutines.CompletableDeferred<Unit>? = null
+
     override suspend fun loadPackages() = loadResult
     override suspend fun loadAvailablePackages(params: Map<String, String>) = availableResult
+    override suspend fun loadAvailablePackagesPage(
+        filter: com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter,
+        page: Int,
+        perPage: Int,
+    ): Result<com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage> {
+        pageCalls += Triple(filter, page, perPage)
+        pageGate?.await()
+        return if (pageResultQueue.isNotEmpty()) {
+            pageResultQueue.removeFirst()
+        } else {
+            Result.success(
+                com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage(
+                    packages = emptyList(),
+                    currentPage = page,
+                    lastPage = page,
+                    total = 0,
+                    perPage = perPage,
+                    nearby = null,
+                ),
+            )
+        }
+    }
     override suspend fun getPackage(id: Int) = getResult ?: Result.failure(Exception("Not set"))
     override suspend fun createPackage(
         request: CreatePackageRequestJson,
