@@ -48,6 +48,8 @@ Use [TDD-PARITY-BACKLOG.md](TDD-PARITY-BACKLOG.md) for phase-aligned checklists.
 | New composable/repository while one exists in `:core` or another feature | [00-architecture.md](00-architecture.md) — search first, reuse; one repository per aggregate |
 | Duplicated API or mapping logic in ViewModels | Route through `Repository` + shared mappers / [01-error-taxonomy.md](01-error-taxonomy.md) |
 | New Gradle dependency for a one-off helper | Prefer stdlib/AndroidX; see [00-architecture.md](00-architecture.md) (Minimal third-party dependencies) |
+| Rolling your own avatar-name-rating row on a new card | Reuse `features/dashboard/components/UserCardHeader.kt` — handles avatar initials, verification dot, rating row, chevron, and clickable wrap. Drop a card-level `Modifier.padding` instead of `.clickable` is a common mistake (silently drops taps). |
+| Building a "view another user's profile" surface | Mount `features/profile/ui/UserProfilePopover.kt`. Reusable across cards and lists; takes `userId`, `currentUserId`, role params for self-stats gating + favorite-button visibility. |
 
 ## 5. Related repo docs (outside `android-spec/`)
 

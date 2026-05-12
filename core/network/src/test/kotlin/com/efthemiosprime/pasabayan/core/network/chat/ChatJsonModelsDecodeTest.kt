@@ -16,7 +16,47 @@ class ChatJsonModelsDecodeTest {
     }
 
     @Test
-    fun `ConversationsResponseJson decodes iOS-style conversations wrapper`() {
+    fun `ConversationsResponseJson decodes the live API paginator shape`() {
+        // Live API (ChatController@index) wraps the paginator under `data`:
+        //   { "message": "...", "data": { "current_page": 1, "data": [...], "last_page": 1, ... } }
+        // iOS reads $0.data.data; Android must do the same via PaginatedConversationsJson.
+        val raw = """
+            {
+              "message": "Conversations retrieved successfully",
+              "data": {
+                "current_page": 1,
+                "last_page": 1,
+                "per_page": 15,
+                "total": 1,
+                "data": [
+                  {
+                    "id": 77,
+                    "status": "active",
+                    "status_display": "Active",
+                    "unread_count": 1,
+                    "other_participant": {
+                      "id": 10,
+                      "name": "Carrier One"
+                    }
+                  }
+                ]
+              }
+            }
+        """.trimIndent()
+
+        val decoded = json.decodeFromString<ConversationsResponseJson>(raw)
+
+        assertEquals(1, decoded.conversationsOrEmpty().size)
+        assertEquals(77, decoded.conversationsOrEmpty().first().id)
+        assertEquals(1, decoded.data!!.currentPage)
+        assertEquals(1, decoded.data.lastPage)
+        assertEquals(1, decoded.data.total)
+    }
+
+    @Test
+    fun `ConversationsResponseJson falls back to legacy flat conversations array`() {
+        // Older fixtures and any realtime helper that wraps a list under `conversations`
+        // continue to decode via the legacy fallback path.
         val raw = """
             {
               "message": "Conversations retrieved",
@@ -39,6 +79,28 @@ class ChatJsonModelsDecodeTest {
 
         assertEquals(1, decoded.conversationsOrEmpty().size)
         assertEquals(77, decoded.conversationsOrEmpty().first().id)
+    }
+
+    @Test
+    fun `ConversationsResponseJson decodes empty paginator without crashing`() {
+        // First-time user with no conversations — the API still emits the
+        // paginator envelope with an empty `data` array. We must not throw.
+        val raw = """
+            {
+              "message": "Conversations retrieved successfully",
+              "data": {
+                "current_page": 1,
+                "last_page": 1,
+                "per_page": 15,
+                "total": 0,
+                "data": []
+              }
+            }
+        """.trimIndent()
+
+        val decoded = json.decodeFromString<ConversationsResponseJson>(raw)
+
+        assertEquals(0, decoded.conversationsOrEmpty().size)
     }
 
     @Test

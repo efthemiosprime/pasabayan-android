@@ -8,16 +8,40 @@ import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class ConversationsResponseJson(
-    val data: List<ConversationSummaryJson>? = null,
+    /**
+     * Live API shape — Laravel paginator under `data`. iOS reads `$0.data.data`
+     * to drill into the nested array; Android matches via
+     * [PaginatedConversationsJson.data].
+     */
+    val data: PaginatedConversationsJson? = null,
+    /**
+     * Legacy / test-fixture flat-array shape. Some older fixtures (and any
+     * realtime helper that wraps a list under `conversations`) emit this;
+     * we keep the fallback wired so it doesn't silently drop them.
+     */
     val conversations: List<ConversationSummaryJson>? = null,
 ) {
     fun conversationsOrEmpty(): List<ConversationSummaryJson> =
         when {
             !conversations.isNullOrEmpty() -> conversations
-            !data.isNullOrEmpty() -> data
+            data != null -> data.data
             else -> emptyList()
         }
 }
+
+/**
+ * Laravel paginator block returned under `data` from `GET /chat/conversations`.
+ * Mirrors `PaginatedMessagesJson` (under `messages`) and the analogous
+ * envelopes used by trips / packages browse.
+ */
+@Serializable
+data class PaginatedConversationsJson(
+    val data: List<ConversationSummaryJson> = emptyList(),
+    @SerialName("current_page") val currentPage: Int = 1,
+    @SerialName("last_page") val lastPage: Int = 1,
+    @SerialName("per_page") val perPage: Int = 15,
+    val total: Int = 0,
+)
 
 @Serializable
 data class ConversationDetailResponseJson(
