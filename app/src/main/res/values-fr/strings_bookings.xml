@@ -41,6 +41,8 @@
     <string name="bookings_section_trip_summary">R\u00e9sum\u00e9 du trajet</string>
     <string name="bookings_section_package_summary">R\u00e9sum\u00e9 du colis</string>
     <string name="bookings_section_carrier_details">D\u00e9tails du transporteur</string>
+    <string name="bookings_section_shipper_details">Informations sur l\'exp\u00e9diteur</string>
+    <string name="bookings_no_ratings_yet">Aucun avis pour le moment</string>
     <string name="bookings_section_payment_summary">R\u00e9sum\u00e9 du paiement</string>
     <string name="bookings_section_timeline_progress">Progression</string>
     <string name="bookings_label_from_city">De</string>
@@ -104,6 +106,7 @@
     <string name="bookings_counter_offer_summary_earned_more">Vous gagnerez %1$s de plus</string>
     <string name="bookings_counter_offer_summary_below_rate">%1$s sous votre tarif</string>
     <string name="bookings_counter_offer_summary_reduced_by">R\u00e9duit de %1$s</string>
+    <string name="bookings_counter_offer_view_offer">Voir l\'offre</string>
 
     <!-- Request to carry -->
     <string name="bookings_request_to_carry_title">Demande de transport</string>

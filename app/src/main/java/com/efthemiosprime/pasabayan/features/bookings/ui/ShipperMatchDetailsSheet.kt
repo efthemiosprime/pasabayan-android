@@ -33,6 +33,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSectionTi
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetScaffold
 import com.efthemiosprime.pasabayan.core.designsystem.component.PStatusBadge
+import com.efthemiosprime.pasabayan.core.designsystem.component.PUserInfoCard
 import com.efthemiosprime.pasabayan.core.domain.`enum`.InitiatedBy
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
@@ -170,22 +171,24 @@ fun ShipperMatchDetailsSheetContent(
             }
         }
 
-        match.carrier?.let { carrier ->
-            PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
-                Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                    PDetailSectionTitle(text = stringResource(R.string.bookings_section_carrier_details))
-                    PDetailRow(
-                        label = stringResource(R.string.bookings_detail_carrier),
-                        value = carrier.name,
-                    )
-                    carrier.formattedRating.takeIf { it != "No rating" }?.let { rating ->
-                        PDetailRow(
-                            label = stringResource(R.string.bookings_label_rating),
-                            value = rating,
-                        )
-                    }
-                }
-            }
+        // Counterparty info — iOS parity with CarrierDetailsCard (shipper view) and
+        // shipperInfoSection (carrier view). The sheet is shared across roles, so we
+        // surface whichever counterparty the viewer is dealing with.
+        val counterparty = if (isCarrier) match.shipper else match.carrier
+        val counterpartyTitle = stringResource(
+            if (isCarrier) R.string.bookings_section_shipper_details
+            else R.string.bookings_section_carrier_details
+        )
+        counterparty?.let { user ->
+            PUserInfoCard(
+                name = user.name,
+                title = counterpartyTitle,
+                rating = user.rating?.takeIf { it.isNotBlank() },
+                totalRatings = user.totalRatings,
+                verificationLevel = user.verificationLevel,
+                noRatingsLabel = stringResource(R.string.bookings_no_ratings_yet),
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
 
         PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
@@ -405,6 +408,73 @@ private fun ShipperMatchDetailsSheetPreview() {
                 ),
             ),
             isCarrier = false,
+            onClose = {},
+            onAction = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "CarrierMatchDetailsSheet - light", heightDp = 900)
+@Preview(
+    showBackground = true,
+    name = "CarrierMatchDetailsSheet - dark",
+    heightDp = 900,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun CarrierMatchDetailsSheetPreview() {
+    PasabayanTheme {
+        ShipperMatchDetailsSheetContent(
+            match = DeliveryMatch(
+                id = 502,
+                tripId = 302,
+                packageRequestId = 402,
+                matchStatus = MatchStatus.CONFIRMED,
+                agreedPrice = 95.0,
+                initiatedBy = InitiatedBy.SHIPPER,
+                isCounterOffer = false,
+                originalPrice = null,
+                canCounterOffer = false,
+                remainingCounterOffers = null,
+                counterOfferRound = null,
+                counterOffererId = null,
+                counterOffererName = null,
+                carrierMessage = null,
+                shipperMessage = null,
+                carrier = null,
+                shipper = UserSummary(
+                    id = 18,
+                    name = "Maria Santos",
+                    rating = "4.7",
+                    totalRatings = 24,
+                    verificationLevel = "verified",
+                ),
+                chatConversationId = null,
+                confirmedAt = "2026-03-31T13:00:00Z",
+                pickedUpAt = null,
+                deliveredAt = null,
+                createdAt = "2026-03-31T12:30:00Z",
+                updatedAt = null,
+                platformFeePercent = 10,
+                transactionStatus = null,
+                receiptPhoto = null,
+                autoCancelAfterDays = 10,
+                pickupConfirmationCode = null,
+                codeExpiresAt = null,
+                deliveryVerificationCode = null,
+                deliveryCodeExpiresAt = null,
+                carrierTrip = null,
+                packageRequest = PackageRequestInfo(
+                    id = 402,
+                    title = "Documents",
+                    description = "Important paperwork",
+                    weightKg = 0.5,
+                    pickupAddress = "1 Queen St",
+                    deliveryAddress = "200 Rene-Levesque",
+                    packageType = "documents",
+                ),
+            ),
+            isCarrier = true,
             onClose = {},
             onAction = {},
         )

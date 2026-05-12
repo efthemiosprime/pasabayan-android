@@ -35,8 +35,10 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgres
 import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
 import com.efthemiosprime.pasabayan.core.designsystem.component.PFilterChip
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
+import com.efthemiosprime.pasabayan.features.bookings.components.CounterOfferSnackbar
 import com.efthemiosprime.pasabayan.features.bookings.components.IncomingRequestSnackbar
 import com.efthemiosprime.pasabayan.features.bookings.components.MatchCard
+import com.efthemiosprime.pasabayan.features.bookings.model.CounterOfferContext
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.BookingAction
 import com.efthemiosprime.pasabayan.features.bookings.model.IncomingRequestContext
@@ -87,12 +89,34 @@ fun MatchListScreen(
     // so we can dismiss the sheet on the trailing edge of the spinner rather than
     // immediately on tap (lets the user see the loading state).
     var counterOfferSubmissionStarted by remember { mutableStateOf(false) }
+    var lastSubmittedCounterOfferId by remember { mutableStateOf<Int?>(null) }
+    var counterOfferSnackbarMatch by remember { mutableStateOf<DeliveryMatch?>(null) }
     LaunchedEffect(state.isSubmittingCounterOffer) {
         if (state.isSubmittingCounterOffer) {
             counterOfferSubmissionStarted = true
+            // Snapshot the target id so we can find the updated match in state.matches
+            // once submission completes (sheet has already cleared `counterOfferTarget`).
+            lastSubmittedCounterOfferId = counterOfferTarget?.id
         } else if (counterOfferSubmissionStarted) {
             counterOfferSubmissionStarted = false
             counterOfferTarget = null
+        }
+    }
+    // Success → show snackbar. `lastNegotiation.isCounterOffer` distinguishes a real
+    // counter-offer submission from a first-pass `requestPackageAsCarrier`.
+    LaunchedEffect(state.lastNegotiation, state.matches) {
+        val targetId = lastSubmittedCounterOfferId ?: return@LaunchedEffect
+        val negotiation = state.lastNegotiation ?: return@LaunchedEffect
+        if (!negotiation.isCounterOffer) return@LaunchedEffect
+        val match = state.matches.firstOrNull { it.id == targetId } ?: return@LaunchedEffect
+        counterOfferSnackbarMatch = match
+        lastSubmittedCounterOfferId = null
+        viewModel.clearNegotiationArtifacts()
+    }
+    LaunchedEffect(counterOfferSnackbarMatch) {
+        if (counterOfferSnackbarMatch != null) {
+            kotlinx.coroutines.delay(SNACKBAR_AUTO_DISMISS_MS)
+            counterOfferSnackbarMatch = null
         }
     }
 
@@ -167,6 +191,23 @@ fun MatchListScreen(
                         vertical = PasabayanSpacing.sm,
                     ),
                 ) {
+                    // Counter-offer success snackbar (transient — auto-dismisses).
+                    counterOfferSnackbarMatch?.let { snackbarMatch ->
+                        CounterOfferContext.fromMatch(snackbarMatch)?.let { ctx ->
+                            item(key = "counter-offer-snackbar-${snackbarMatch.id}") {
+                                CounterOfferSnackbar(
+                                    context = ctx,
+                                    currentUserId = null,
+                                    onViewOffer = {
+                                        selectedMatch = snackbarMatch
+                                        counterOfferSnackbarMatch = null
+                                    },
+                                    onDismiss = { counterOfferSnackbarMatch = null },
+                                )
+                            }
+                        }
+                    }
+
                     // Review section — snackbar items + "+N more" pill.
                     items(snackbarItems, key = { "incoming-${it.matchId}" }) { incoming ->
                         IncomingRequestSnackbar(
@@ -286,6 +327,9 @@ fun MatchListScreen(
         )
     }
 }
+
+/** Visible-for-test: how long the counter-offer success snackbar stays up. */
+private const val SNACKBAR_AUTO_DISMISS_MS = 6_000L
 
 private fun handleMatchAction(
     action: BookingAction,

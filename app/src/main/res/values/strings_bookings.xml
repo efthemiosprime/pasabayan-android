@@ -41,6 +41,8 @@
     <string name="bookings_section_trip_summary">Trip Summary</string>
     <string name="bookings_section_package_summary">Package Summary</string>
     <string name="bookings_section_carrier_details">Carrier Details</string>
+    <string name="bookings_section_shipper_details">Sender Information</string>
+    <string name="bookings_no_ratings_yet">No ratings yet</string>
     <string name="bookings_section_payment_summary">Payment Summary</string>
     <string name="bookings_section_timeline_progress">Timeline Progress</string>
     <string name="bookings_label_from_city">From</string>
@@ -104,6 +106,7 @@
     <string name="bookings_counter_offer_summary_earned_more">You\'ll earn %1$s more</string>
     <string name="bookings_counter_offer_summary_below_rate">%1$s below your rate</string>
     <string name="bookings_counter_offer_summary_reduced_by">Reduced by %1$s</string>
+    <string name="bookings_counter_offer_view_offer">View Offer</string>
 
     <!-- Request to carry -->
     <string name="bookings_request_to_carry_title">Request to Carry</string>
