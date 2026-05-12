@@ -50,8 +50,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextFie
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.dashboard.components.UserHeaderCard
-import com.efthemiosprime.pasabayan.features.packages.components.PackageRequestCard
-import com.efthemiosprime.pasabayan.features.packages.model.toPackageRequest
+import com.efthemiosprime.pasabayan.features.packages.components.CarrierExplorePackageCard
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.RouteActivitySummaryViewModel
 
@@ -65,6 +64,7 @@ fun CarrierExploreContent(
     onSwitchRole: () -> Unit,
     modifier: Modifier = Modifier,
     onViewPackageDetails: (packageId: Int) -> Unit = {},
+    onRequestToCarry: (packageId: Int) -> Unit = {},
     packageViewModel: PackageViewModel = hiltViewModel(),
     routeActivityViewModel: RouteActivitySummaryViewModel = hiltViewModel(),
 ) {
@@ -201,13 +201,10 @@ fun CarrierExploreContent(
             }
             else -> {
                 state.availablePackages.forEach { available ->
-                    val pkg = available.toPackageRequest()
-                    PackageRequestCard(
-                        pkg = pkg,
-                        onViewDetails = { onViewPackageDetails(pkg.id) },
-                        // Carrier-side: don't expand in place — open the dedicated detail
-                        // sheet (mirrors shipper-explore trip-details sheet pattern).
-                        expandable = false,
+                    CarrierExplorePackageCard(
+                        pkg = available,
+                        onViewDetails = { onViewPackageDetails(available.effectiveId) },
+                        onRequestToCarry = { onRequestToCarry(available.effectiveId) },
                     )
                 }
             }

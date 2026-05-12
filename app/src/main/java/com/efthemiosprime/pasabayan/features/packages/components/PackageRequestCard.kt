@@ -3,7 +3,6 @@ package com.efthemiosprime.pasabayan.features.packages.components
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -40,14 +39,6 @@ fun PackageRequestCard(
     onViewDetails: () -> Unit,
     modifier: Modifier = Modifier,
     menuActions: List<CardMenuAction> = emptyList(),
-    /**
-     * When `true` (default, shipper-packages-tab behavior), tapping "View Details" expands
-     * the card fullscreen via [PExpandableCardHost]. When `false`, expansion is skipped and
-     * only [onViewDetails] fires — used by the carrier-explore view, which opens its own
-     * [PModalBottomSheet] with package details (mirrors the shipper-explore trip-details
-     * sheet pattern).
-     */
-    expandable: Boolean = true,
 ) {
     val statusLabel = packageStatusLabel(pkg.status)
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -93,9 +84,7 @@ fun PackageRequestCard(
 
                 PCardActionFooter(
                     onViewDetails = {
-                        if (expandable) {
-                            expanded = true
-                        }
+                        expanded = true
                         onViewDetails()
                     },
                     menuActions = menuActions,

@@ -198,6 +198,10 @@
     <string name="packages_tutorial_body">Cr\u00e9ez une demande de colis en d\u00e9crivant votre article, les lieux de r\u00e9cup\u00e9ration et de livraison, et vos dates pr\u00e9f\u00e9r\u00e9es. Les transporteurs trouveront votre colis et proposeront de le livrer.</string>
     <string name="packages_tutorial_dismiss">Compris</string>
 
+    <!-- Carrier explore package card (iOS CarrierPackageCard) -->
+    <string name="carrier_package_card_fragile">Fragile</string>
+    <string name="carrier_package_card_no_ratings_yet">Aucun avis pour le moment</string>
+
     <!-- Carrier package detail sheet (iOS CarrierPackageDetailSheet) -->
     <string name="carrier_package_detail_title">Détails du colis</string>
     <string name="carrier_package_detail_close">Fermer les détails du colis</string>

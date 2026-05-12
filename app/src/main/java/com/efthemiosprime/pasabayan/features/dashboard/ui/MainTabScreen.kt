@@ -311,6 +311,11 @@ fun MainTabScreen(
                             onViewPackageDetails = { packageId ->
                                 viewModel.openCarrierPackageDetailSheet(packageId)
                             },
+                            onRequestToCarry = { packageId ->
+                                packageUiState.availablePackages
+                                    .firstOrNull { it.effectiveId == packageId }
+                                    ?.let { carrierRequestPackage = it }
+                            },
                             packageViewModel = packageViewModel,
                         )
                     UserRole.SHIPPER ->

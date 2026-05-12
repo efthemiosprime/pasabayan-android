@@ -198,6 +198,10 @@
     <string name="packages_tutorial_body">Create a package request by describing your item, pickup and delivery locations, and preferred dates. Carriers will find your package and offer to deliver it.</string>
     <string name="packages_tutorial_dismiss">Got it</string>
 
+    <!-- Carrier explore package card (iOS CarrierPackageCard) -->
+    <string name="carrier_package_card_fragile">Fragile</string>
+    <string name="carrier_package_card_no_ratings_yet">No ratings yet</string>
+
     <!-- Carrier package detail sheet (iOS CarrierPackageDetailSheet) -->
     <string name="carrier_package_detail_title">Package Details</string>
     <string name="carrier_package_detail_close">Close package details</string>
