@@ -28,9 +28,12 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PCardActionFoote
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailRow
 import com.efthemiosprime.pasabayan.core.designsystem.component.PExpandableCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PRouteSection
+import com.efthemiosprime.pasabayan.core.designsystem.component.PDivider
 import com.efthemiosprime.pasabayan.core.designsystem.component.PStatusBadge
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
+import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
+import com.efthemiosprime.pasabayan.features.dashboard.components.UserCardHeader
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 
 @Composable
@@ -41,6 +44,8 @@ fun TripCard(
     showDistanceFromUser: Boolean = false,
     showCompactPriceInCollapsed: Boolean = false,
     renderSingleMenuActionDirectly: Boolean = false,
+    /** When non-null, the carrier-header row is tappable and invokes this. iOS opens UserProfilePopover. */
+    onOpenCarrierProfile: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     menuActions: List<CardMenuAction> = emptyList(),
 ) {
@@ -69,6 +74,12 @@ fun TripCard(
         collapsedContent = {
             // Summary view
             Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
+                // Carrier header — iOS TripCardView parity. Tappable when callback supplied.
+                trip.carrier?.let { carrier ->
+                    UserCardHeader(user = carrier, onClick = onOpenCarrierProfile)
+                    PDivider()
+                }
+
                 // Header: route + transport + status badge
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -133,6 +144,12 @@ fun TripCard(
         expandedContent = {
             // Full detail view inside the expanded card
             Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
+                // Carrier header — iOS TripCardView parity. Same tap target as the collapsed view.
+                trip.carrier?.let { carrier ->
+                    UserCardHeader(user = carrier, onClick = onOpenCarrierProfile)
+                    PDivider()
+                }
+
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),

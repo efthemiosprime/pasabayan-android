@@ -20,6 +20,8 @@ fun ShipperExploreTripCard(
     onViewDetails: () -> Unit,
     onRequestBook: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Forwarded to [TripCard]'s carrier-header row. iOS opens UserProfilePopover. */
+    onOpenCarrierProfile: (() -> Unit)? = null,
 ) {
     TripCard(
         trip = trip,
@@ -28,6 +30,7 @@ fun ShipperExploreTripCard(
         showDistanceFromUser = true,
         showCompactPriceInCollapsed = true,
         renderSingleMenuActionDirectly = true,
+        onOpenCarrierProfile = onOpenCarrierProfile,
         modifier = modifier,
     )
 }
