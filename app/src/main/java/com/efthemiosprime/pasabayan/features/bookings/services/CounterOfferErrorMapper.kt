@@ -29,6 +29,14 @@ object CounterOfferErrorMapper {
         is DomainError.CarrierOnboardingRequired -> error.message ?: error.userMessage()
         is DomainError.TripNotFound -> error.message ?: error.userMessage()
 
+        // 400/422 with field-level errors. The DomainError formatter combines the top-level
+        // message with a humanized "Field: error1, error2" block per iOS `ValidationErrorResponse.formattedMessage`.
+        is DomainError.ValidationError -> error.userMessage()
+
+        // 409 from the consent middleware (rare on counter-offer but possible if a
+        // role-switch consent expires mid-session).
+        is DomainError.ConsentRequired -> error.message?.takeIf { it.isNotBlank() } ?: error.userMessage()
+
         is DomainError.Unauthorized,
         is DomainError.AuthenticationError,
         is DomainError.Unauthenticated -> messages.signInAgain
@@ -37,6 +45,10 @@ object CounterOfferErrorMapper {
         is DomainError.NotFound -> messages.notFound
         is DomainError.RateLimited -> messages.rateLimited
 
+        // iOS also has a dedicated `phoneVerificationRequired` case. Android enforces
+        // phone verification client-side via `RequirePhoneVerificationUseCase`, so a
+        // server-returned phone-verification error currently arrives here as a generic
+        // `ServerError` or `PaymentRequired` and is surfaced via its message.
         else -> error.userMessage()
     }
 

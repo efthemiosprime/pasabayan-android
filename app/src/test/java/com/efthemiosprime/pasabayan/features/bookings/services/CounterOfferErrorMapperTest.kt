@@ -100,18 +100,45 @@ class CounterOfferErrorMapperTest {
         assertEquals("RATE_LIMITED", CounterOfferErrorMapper.userMessage(error, messages))
     }
 
-    // -- Validation falls through to formatted DomainError message --
+    // -- Validation (now an explicit branch) --
 
     @Test
-    fun `validationError formats field errors via DomainError fallback`() {
+    fun `validationError formats field errors via DomainError`() {
         val error = DomainError.ValidationError(
             message = "Validation failed",
             fieldErrors = mapOf("proposed_price" to listOf("Must be a number")),
         )
         val result = CounterOfferErrorMapper.userMessage(error, messages)
-        // Falls back to DomainError.userMessage() which formats fields
         assertTrue(result.contains("Validation failed"))
         assertTrue(result.contains("Proposed Price"))
+    }
+
+    @Test
+    fun `validationError with empty fieldErrors returns top-level message`() {
+        val error = DomainError.ValidationError(
+            message = "The given data was invalid.",
+            fieldErrors = emptyMap(),
+        )
+        assertEquals("The given data was invalid.", CounterOfferErrorMapper.userMessage(error, messages))
+    }
+
+    // -- ConsentRequired --
+
+    @Test
+    fun `consentRequired with backend message returns it verbatim`() {
+        val error = DomainError.ConsentRequired(
+            purpose = "carrier_profile",
+            message = "Carrier consent needed to proceed",
+        )
+        assertEquals("Carrier consent needed to proceed", CounterOfferErrorMapper.userMessage(error, messages))
+    }
+
+    @Test
+    fun `consentRequired with blank message falls back to DomainError userMessage`() {
+        val error = DomainError.ConsentRequired(purpose = "carrier_profile", message = "   ")
+        // DomainError fallback returns "Additional consent is required to continue".
+        val result = CounterOfferErrorMapper.userMessage(error, messages)
+        assertEquals("Additional consent is required to continue", result)
     }
 
     // -- Unknown branch --
