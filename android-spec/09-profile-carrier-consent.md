@@ -579,15 +579,15 @@ Profile header components: `UserProfileHeader` (avatar + name + role chip + veri
 
 ## TDD checklist
 
-- [ ] `ProfileApiServiceTest` — all 16 endpoint calls, request serialization, response deserialization
-- [ ] `ProfileViewModelTest` — load profile, update profile, smart pre-filling logic
-- [ ] `ProfileViewModelAvatarRefreshTest` — upload, delete, cache buster rotation
-- [ ] `AccountDeletionTest` — request body encoding (with/without reason), response decoding, date formats (with/without fractional seconds), duplicate request handling
-- [ ] `CarrierProfileTest` — CRUD, 409 conflict fallback, enable idempotency, toggle status
-- [ ] `CarrierStatsDecodingTest` — resilient decoding (string↔double, nested sub-models)
-- [ ] `ConsentPreferencesTest` — scoped update, revert on failure, confirmation flow
-- [ ] `DisclaimerAcknowledgmentTest` — post acknowledgment, list acknowledgments, local store persistence
-- [ ] `DataExportTest` — raw data fetch, auth header, error handling
-- [ ] `RoleViewModelTest` — role switching, persistence to DataStore, reload on launch
-- [ ] `VerificationLevelTest` — normalization, badge text/color, upgrade paths
-- [ ] `ResilientDecodingTest` — all string↔double/array↔string edge cases from table above
+- [x] `ProfileApiServiceTest` — all 16 endpoint calls, request serialization, response deserialization → `ProfileRepositoryImplTest.kt`
+- [x] `ProfileViewModelTest` — load profile, update profile, smart pre-filling logic → `EditUserProfileViewModelTest.kt` + `ProfileTabViewModelTest.kt`
+- [x] `ProfileViewModelAvatarRefreshTest` — upload, delete, cache buster rotation → folded into `EditUserProfileViewModelTest.kt`
+- [x] `AccountDeletionTest` — request body encoding (with/without reason), response decoding, date formats (with/without fractional seconds), duplicate request handling → `AccountManagementViewModelTest.kt`
+- [x] `CarrierProfileTest` — CRUD, 409 conflict fallback, enable idempotency, toggle status → `EditCarrierProfileViewModelTest.kt` + `ProfileRepositoryImplTest.kt`
+- [x] `CarrierStatsDecodingTest` — resilient decoding (string↔double, nested sub-models) → `core/network/.../profile/CarrierStatsDecodingTest.kt`
+- [x] `ConsentPreferencesTest` — scoped update, revert on failure, confirmation flow → `PrivacyPreferencesViewModelTest.kt` + `ConsentOnboardingViewModelTest.kt`
+- [x] `DisclaimerAcknowledgmentTest` — post acknowledgment, list acknowledgments, local store persistence → `DisclaimerSyncServiceTest.kt`
+- [x] `DataExportTest` — raw data fetch, auth header, error handling → folded into `AccountManagementViewModelTest.kt`
+- [x] `RoleViewModelTest` — role switching, persistence to DataStore, reload on launch → covered by `DashboardViewModelTest.kt` (role switching lives in the dashboard VM)
+- [x] `VerificationLevelTest` — normalization, JSON round-trip, isVerified/isPremium matrix → `core/domain/.../enum/VerificationLevelTest.kt`. Badge text/color stays an `androidTest` follow-up (UI layer).
+- [x] `ResilientDecodingTest` — all string↔double/array↔string edge cases from table above → `FlexibleDecodersTest.kt` (22 cases)
