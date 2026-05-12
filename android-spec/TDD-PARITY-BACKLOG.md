@@ -25,6 +25,7 @@ Test order: **contract** (DTO decode) → **repository** (fake API) → **MVI re
 
 - [ ] `MatchingViewModelTests`, `MatchingAPITests`, `BookingDecoderTests`, `BookingModelTests`, delivery/match card tests as applicable.
 - [ ] **Counter-offer:** `CounterOfferTests`, `CompatibleTripsCounterOfferTests`, encode/decode `ShipperCounterOfferRequest` / `CarrierCounterOfferRequest` / `CounterOfferResponse` (see [05-bookings-matches.md](05-bookings-matches.md)).
+- [x] **Counter-offer UI polish:** `CounterOfferContextTest` (helpers + `fromMatch` / `fromNotificationData` factories + regex fallback), `CounterOfferPromptValidatorTest` (positive / minimum / ±$0.005 same-price tolerance / ordering), expanded `CounterOfferErrorMapperTest` (ValidationError + ConsentRequired branches), `BookingMapperTest` propagation of `counter_offerer_id` / `counter_offerer_name` — 2026-05-12.
 
 ## Phase 4 — Payments
 

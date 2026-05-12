@@ -573,14 +573,21 @@ Full field table — similar to `DeliveryMatch` but uses `BookingStatus` and add
 | `isCounterOffer` | `Boolean` |
 
 **Computed properties:**
-- `isLowerOffer: Boolean` — `direction == "down"`
-- `isHigherOffer: Boolean` — `direction == "up"`
-- `formattedDifference: String` — "$5.00 more/less"
-- `formattedNewPrice: String` — "$150.00"
-- `formattedOriginalPrice: String` — "$145.00"
-- `summaryText: String` — "Counter-offer: $150.00 (was $145.00)"
+- `isLowerOffer: Boolean` — `priceDifference < 0`
+- `isHigherOffer: Boolean` — `priceDifference > 0`
+- `isPriceIncrease: Boolean` — `priceDifference > 0` (legacy alias of `isHigherOffer`)
+- `priceDifference: Double` — `newPrice - originalPrice` (computed locally, never decoded)
+- `direction: String` — `"up"` when increase else `"down"` (computed locally)
+- `formattedNewPrice: String` — `"$70.00"`
+- `formattedOriginalPrice: String` — `"$100.00"`
+- `formattedDifference: String` — always absolute, e.g. `"$30.00"` for both lower and higher cases
+- `summaryKind: CounterOfferSummaryKind` — `LOWER` / `HIGHER` / `UNCHANGED`. UI layer maps this to localized copy (`bookings_counter_offer_summary_*`).
 
-**Factory methods:** `from(notificationData)`, `from(match: DeliveryMatch)`, `from(booking: Booking)`
+**Factory methods:**
+- `fromMatch(match: DeliveryMatch): CounterOfferContext?` — uses `match.originalPriceValue` first, falls back to a regex match of `(was $X)` / `was $X` in `carrierMessage` / `shipperMessage`. Returns `null` when neither signal is available.
+- `fromNotificationData(data: NotificationData, fallbackName: String = ""): CounterOfferContext?` — requires `newPrice` and `originalPrice` in the push payload. Trims blank `counterOffererName` and substitutes `fallbackName`.
+
+> **Android delta vs iOS:** iOS exposes a third factory `from(booking: Booking)`. Android has no separate `Booking` domain model — the `BookingJsonModels` DTO is wire-level only — so the carrier/shipper booking details endpoint flows through `DeliveryMatch.fromMatch(...)` instead.
 
 ### `IncomingRequestContext`
 
