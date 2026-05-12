@@ -77,9 +77,10 @@ fun PackageRequestCard(
                 )
             }
 
-            if (menuActions.isNotEmpty()) {
-                PCardActionFooter(menuActions = menuActions)
-            }
+            PCardActionFooter(
+                onViewDetails = onViewDetails,
+                menuActions = menuActions,
+            )
         }
     }
 }
