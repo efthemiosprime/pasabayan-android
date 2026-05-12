@@ -326,6 +326,8 @@ fun MainTabScreen(
                                     .firstOrNull { it.effectiveId == packageId }
                                     ?.let { carrierRequestPackage = it }
                             },
+                            // Empty-state "Post Trip Schedule" → role-specific tab (index 2 = my_trips).
+                            onNavigateToMyTrips = { viewModel.selectTab(2) },
                             packageViewModel = packageViewModel,
                         )
                     UserRole.SHIPPER ->
@@ -334,6 +336,8 @@ fun MainTabScreen(
                             onSwitchRole = { viewModel.switchRole() },
                             onOpenTripFilter = openTripFilterSheet,
                             onPhoneVerificationRequired = { reason -> verifyPhoneReason = reason },
+                            // Empty-state "Create Package" → role-specific tab (index 2 = packages).
+                            onNavigateToPackages = { viewModel.selectTab(2) },
                             browseTripsViewModel = browseTripsViewModel,
                         )
                 }

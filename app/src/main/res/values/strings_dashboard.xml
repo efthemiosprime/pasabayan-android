@@ -84,6 +84,11 @@
     <string name="dashboard_shipper_search_placeholder">Search origin or destination\u2026</string>
     <string name="dashboard_shipper_no_carriers_title">No carriers available right now</string>
     <string name="dashboard_shipper_no_carriers_description">There are currently no active carriers available. Post your shipment request to get notified when carriers become available.</string>
+
+    <!-- Top carriers (iOS NearbyCarriers parity) -->
+    <string name="dashboard_shipper_top_carriers_title">Top Carriers</string>
+    <string name="dashboard_shipper_top_carriers_deliveries">%1$d completed</string>
+    <string name="dashboard_shipper_top_carriers_distance">%1$.1f km away</string>
     <string name="dashboard_shipper_create_package_cta">Create Package Request</string>
     <string name="dashboard_shipper_tip_demand_title">GET AHEAD OF DEMAND</string>
     <string name="dashboard_shipper_tip_demand_body">Posting early means carriers can find you first. Most requests get 3\u20135 offers within 2 hours.</string>

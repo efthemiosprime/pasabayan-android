@@ -63,6 +63,8 @@ import com.efthemiosprime.pasabayan.features.bookings.ui.ShipperMatchCreationShe
 import com.efthemiosprime.pasabayan.features.dashboard.components.ShipperExploreTripCard
 import com.efthemiosprime.pasabayan.features.dashboard.components.UserHeaderCard
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
+import com.efthemiosprime.pasabayan.features.shipper.components.NearbyCarriersSection
+import com.efthemiosprime.pasabayan.features.shipper.viewmodel.NearbyCarriersViewModel
 import com.efthemiosprime.pasabayan.features.trips.ui.TripDetailsScreen
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.BrowseTripsViewModel
 import com.efthemiosprime.pasabayan.features.trips.model.PopularRoute
@@ -83,17 +85,22 @@ fun ShipperExploreContent(
     onViewTripDetails: (tripId: Int) -> Unit = {},
     onOpenTripFilter: () -> Unit = {},
     onPhoneVerificationRequired: (VerifyPhoneReason) -> Unit = {},
+    /** Empty-state CTA: route to the Packages tab so the shipper can create a package request. */
+    onNavigateToPackages: () -> Unit = {},
     browseTripsViewModel: BrowseTripsViewModel = hiltViewModel(),
     packageViewModel: PackageViewModel = hiltViewModel(),
+    nearbyCarriersViewModel: NearbyCarriersViewModel = hiltViewModel(),
 ) {
     val state by browseTripsViewModel.uiState.collectAsStateWithLifecycle()
     val packageState by packageViewModel.uiState.collectAsStateWithLifecycle()
+    val nearbyCarriersState by nearbyCarriersViewModel.uiState.collectAsStateWithLifecycle()
     var detailTrip by remember { mutableStateOf<Trip?>(null) }
     var requestBookTrip by remember { mutableStateOf<Trip?>(null) }
 
     LaunchedEffect(Unit) {
         browseTripsViewModel.loadAvailableTrips()
         browseTripsViewModel.loadPopularRoutes()
+        nearbyCarriersViewModel.loadNearbyCarriersIfNeeded()
     }
 
     val listState = rememberLazyListState()
@@ -164,6 +171,12 @@ fun ShipperExploreContent(
                             )
                         }
                     },
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        imeAction = androidx.compose.ui.text.input.ImeAction.Search,
+                    ),
+                    keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                        onSearch = { browseTripsViewModel.applyFilterAndFetch() },
+                    ),
                 )
                 IconButton(onClick = onOpenTripFilter) {
                     Icon(
@@ -175,6 +188,19 @@ fun ShipperExploreContent(
             }
         }
         item("search-divider") { PDivider() }
+
+        // Top Carriers section — only renders when at least one nearby carrier
+        // has a completed delivery (iOS `carriersWithCompletedTrips` filter).
+        val topCarriers = nearbyCarriersState.carriersWithCompletedDeliveries
+        if (topCarriers.isNotEmpty()) {
+            item("nearby-carriers-section") {
+                NearbyCarriersSection(
+                    carriers = topCarriers,
+                    onCarrierTap = { /* TODO: open carrier profile sheet (separate feature surface) */ },
+                )
+            }
+            item("nearby-carriers-divider") { PDivider() }
+        }
 
         if (state.popularRoutes.isNotEmpty()) {
             item("popular-routes-title") {
@@ -200,7 +226,7 @@ fun ShipperExploreContent(
             }
             state.hasLoadedTrips && state.availableTrips.isEmpty() -> {
                 item("empty") {
-                    ShipperBrowseEmptyState(onCreatePackage = { /* TODO: switch to Packages tab */ })
+                    ShipperBrowseEmptyState(onCreatePackage = onNavigateToPackages)
                 }
             }
             else -> {

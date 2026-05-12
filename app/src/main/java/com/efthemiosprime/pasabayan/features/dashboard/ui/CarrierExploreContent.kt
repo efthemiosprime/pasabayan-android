@@ -77,6 +77,8 @@ fun CarrierExploreContent(
     modifier: Modifier = Modifier,
     onViewPackageDetails: (packageId: Int) -> Unit = {},
     onRequestToCarry: (packageId: Int) -> Unit = {},
+    /** Empty-state CTA: route to the My Trips tab so the carrier can post a trip. */
+    onNavigateToMyTrips: () -> Unit = {},
     packageViewModel: PackageViewModel = hiltViewModel(),
     routeActivityViewModel: RouteActivitySummaryViewModel = hiltViewModel(),
 ) {
@@ -174,7 +176,7 @@ fun CarrierExploreContent(
             }
             state.hasLoadedAvailablePackages && state.visibleAvailablePackages.isEmpty() -> {
                 item("empty") {
-                    CarrierBrowseEmptyState(onPostTrip = { /* TODO: switch to My Trips tab */ })
+                    CarrierBrowseEmptyState(onPostTrip = onNavigateToMyTrips)
                 }
             }
             else -> {
@@ -251,6 +253,12 @@ private fun SearchAndFilterRow(
                     )
                 }
             },
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                imeAction = androidx.compose.ui.text.input.ImeAction.Search,
+            ),
+            keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                onSearch = { onSubmitSearch() },
+            ),
         )
         IconButton(onClick = onOpenFilters) {
             Icon(
