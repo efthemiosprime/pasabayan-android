@@ -384,10 +384,36 @@ class FakeTripsRepository : TripsRepository {
     var lastUpdateNotes: String? = null
     var lastAvailableTripsFilter: TripFilter? = null
 
+    // -- Browse pagination test surface --
+    /** Queued page responses popped in order; default empty page when exhausted. */
+    val tripsPageResultQueue: ArrayDeque<Result<com.efthemiosprime.pasabayan.features.trips.model.AvailableTripsPage>> = ArrayDeque()
+    /** Records all `loadAvailableTripsPage` calls so tests can assert filter / page propagation. */
+    val tripsPageCalls: MutableList<Triple<TripFilter, Int, Int>> = mutableListOf()
+
     override suspend fun loadCarrierTrips() = carrierTripsResult
     override suspend fun loadAvailableTrips(filter: TripFilter): Result<List<Trip>> {
         lastAvailableTripsFilter = filter
         return availableTripsResult
+    }
+    override suspend fun loadAvailableTripsPage(
+        filter: TripFilter,
+        page: Int,
+        perPage: Int,
+    ): Result<com.efthemiosprime.pasabayan.features.trips.model.AvailableTripsPage> {
+        tripsPageCalls += Triple(filter, page, perPage)
+        return if (tripsPageResultQueue.isNotEmpty()) {
+            tripsPageResultQueue.removeFirst()
+        } else {
+            Result.success(
+                com.efthemiosprime.pasabayan.features.trips.model.AvailableTripsPage(
+                    trips = emptyList(),
+                    currentPage = page,
+                    lastPage = page,
+                    total = 0,
+                    perPage = perPage,
+                ),
+            )
+        }
     }
     override suspend fun loadPopularPackageRoutes() = popularRoutesResult
     override suspend fun loadRouteActivitySummary() = routeActivitySummaryResult

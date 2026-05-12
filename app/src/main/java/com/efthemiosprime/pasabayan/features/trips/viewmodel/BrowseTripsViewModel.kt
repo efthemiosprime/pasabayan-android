@@ -3,6 +3,7 @@ package com.efthemiosprime.pasabayan.features.trips.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
+import com.efthemiosprime.pasabayan.features.trips.model.AvailableTripsPage
 import com.efthemiosprime.pasabayan.features.trips.model.PopularRoute
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.model.TripCompatibilityResult
@@ -55,37 +56,38 @@ class BrowseTripsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(BrowseTripsUiState())
     val uiState: StateFlow<BrowseTripsUiState> = _uiState.asStateFlow()
 
+    /**
+     * Bumped on every browse reload. Each in-flight fetch captures the
+     * snapshot; results from stale generations are dropped so a fast
+     * filter-toggle followed by a slow first response can't replay onto
+     * the freshly reset list. iOS parity: `loadGeneration` in
+     * `BrowseTripsViewModel.swift`.
+     */
+    private var loadGeneration: Int = 0
+
     fun loadAvailableTrips(reset: Boolean = true) {
+        // Reset bumps the generation; loadMore does not (it's a continuation
+        // of the current generation).
+        val generation = if (reset) ++loadGeneration else loadGeneration
+        val requestPage = if (reset) 1 else _uiState.value.currentPage + 1
+        val requestFilter = _uiState.value.filter.copy(page = requestPage)
+        _uiState.update {
+            it.copy(
+                filter = requestFilter,
+                isLoading = reset,
+                isLoadingMore = !reset,
+                errorMessage = null,
+            )
+        }
         viewModelScope.launch {
-            val current = _uiState.value
-            val requestFilter = if (reset) current.filter.copy(page = 1) else current.filter
-            _uiState.update {
-                it.copy(
-                    filter = requestFilter,
-                    isLoading = reset,
-                    isLoadingMore = !reset,
-                    errorMessage = null,
-                )
-            }
-            tripsRepository.loadAvailableTrips(requestFilter).fold(
-                onSuccess = { trips ->
-                    // Client-side filter: remove non-bookable statuses
-                    val filtered = trips.filter { it.tripStatus in BOOKABLE_STATUSES }
-                    _uiState.update {
-                        val merged = if (reset) {
-                            filtered
-                        } else {
-                            (it.availableTrips + filtered).distinctBy { trip -> trip.id }
-                        }
-                        it.copy(
-                            availableTrips = merged,
-                            isLoading = false,
-                            isLoadingMore = false,
-                            hasLoadedTrips = true,
-                            currentPage = requestFilter.page,
-                            hasMore = filtered.isNotEmpty(),
-                        )
-                    }
+            val result = tripsRepository.loadAvailableTripsPage(
+                filter = requestFilter,
+                page = requestPage,
+            )
+            if (generation != loadGeneration) return@launch
+            result.fold(
+                onSuccess = { page ->
+                    applyPage(page = page, isReset = reset)
                 },
                 onFailure = { e ->
                     _uiState.update {
@@ -97,6 +99,28 @@ class BrowseTripsViewModel @Inject constructor(
                         )
                     }
                 },
+            )
+        }
+    }
+
+    private fun applyPage(page: AvailableTripsPage, isReset: Boolean) {
+        // Client-side filter: only show bookable trip statuses.
+        val filtered = page.trips.filter { it.tripStatus in BOOKABLE_STATUSES }
+        _uiState.update { state ->
+            val merged = if (isReset) {
+                filtered
+            } else {
+                (state.availableTrips + filtered).distinctBy { trip -> trip.id }
+            }
+            state.copy(
+                availableTrips = merged,
+                isLoading = false,
+                isLoadingMore = false,
+                hasLoadedTrips = true,
+                currentPage = page.currentPage,
+                // Envelope-driven: end of stream is when the server says so,
+                // not when client-side filtering happens to empty a page.
+                hasMore = page.hasMore,
             )
         }
     }
@@ -119,11 +143,7 @@ class BrowseTripsViewModel @Inject constructor(
     fun loadMoreTrips() {
         val current = _uiState.value
         if (current.isLoading || current.isLoadingMore || !current.hasMore) return
-        _uiState.update {
-            it.copy(
-                filter = it.filter.copy(page = it.currentPage + 1),
-            )
-        }
+        if (!current.hasLoadedTrips) return // first page must land before continuations
         loadAvailableTrips(reset = false)
     }
 

@@ -116,6 +116,20 @@ class CreateTripFromPackageUseCaseTest {
 
         override suspend fun loadAvailableTrips(filter: TripFilter): Result<List<Trip>> = Result.success(emptyList())
 
+        override suspend fun loadAvailableTripsPage(
+            filter: TripFilter,
+            page: Int,
+            perPage: Int,
+        ): Result<com.efthemiosprime.pasabayan.features.trips.model.AvailableTripsPage> = Result.success(
+            com.efthemiosprime.pasabayan.features.trips.model.AvailableTripsPage(
+                trips = emptyList(),
+                currentPage = page,
+                lastPage = page,
+                total = 0,
+                perPage = perPage,
+            ),
+        )
+
         override suspend fun loadPopularPackageRoutes(): Result<List<PopularRoute>> = Result.success(emptyList())
 
         override suspend fun loadRouteActivitySummary(): Result<RouteActivitySummary> =

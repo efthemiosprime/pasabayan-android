@@ -6,6 +6,7 @@ import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.network.trips.CreateTripRequestJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson
 import com.efthemiosprime.pasabayan.core.network.trips.TripsApi
+import com.efthemiosprime.pasabayan.features.trips.model.AvailableTripsPage
 import com.efthemiosprime.pasabayan.features.trips.model.CreateTripFromPackageRequest
 import com.efthemiosprime.pasabayan.features.trips.model.PopularRoute
 import com.efthemiosprime.pasabayan.features.trips.model.RouteActivitySummary
@@ -78,6 +79,53 @@ class TripsRepositoryImpl @Inject constructor(
             }
             val trips = res.body()?.data?.data?.map { it.toDomain() } ?: emptyList()
             Result.success(trips)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun loadAvailableTripsPage(
+        filter: TripFilter,
+        page: Int,
+        perPage: Int,
+    ): Result<AvailableTripsPage> {
+        // Build a query map that honours the filter's own serialization but forces
+        // the page / per_page we want. The filter struct also carries `page`; the
+        // call-site argument wins.
+        val params = buildMap {
+            putAll(filter.copy(page = page).toQueryMap())
+            put("per_page", perPage.toString())
+            // copy() emits "page" only when > 1; ensure page=1 is also explicit.
+            put("page", page.toString())
+        }
+        return try {
+            val res = tripsApi.getAvailableTrips(params)
+            if (!res.isSuccessful) {
+                return Result.failure(
+                    DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
+                )
+            }
+            val body = res.body()
+                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            val envelope = body.data
+                ?: return Result.success(
+                    AvailableTripsPage(
+                        trips = emptyList(),
+                        currentPage = page,
+                        lastPage = page,
+                        total = 0,
+                        perPage = perPage,
+                    ),
+                )
+            Result.success(
+                AvailableTripsPage(
+                    trips = envelope.data.map { it.toDomain() },
+                    currentPage = envelope.currentPage,
+                    lastPage = envelope.lastPage,
+                    total = envelope.total,
+                    perPage = envelope.perPage,
+                ),
+            )
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }

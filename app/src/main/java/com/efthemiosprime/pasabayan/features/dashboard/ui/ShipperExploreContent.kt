@@ -6,11 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,17 +30,18 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -48,8 +52,6 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanRadius
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
-import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
-import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDivider
@@ -63,8 +65,10 @@ import com.efthemiosprime.pasabayan.features.dashboard.components.UserHeaderCard
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.trips.ui.TripDetailsScreen
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.BrowseTripsViewModel
+import com.efthemiosprime.pasabayan.features.trips.model.PopularRoute
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 /**
  * Shipper Explore tab — browse available trips / carriers.
@@ -92,141 +96,115 @@ fun ShipperExploreContent(
         browseTripsViewModel.loadPopularRoutes()
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(PasabayanSpacing.screenPadding),
+    val listState = rememberLazyListState()
+    // Auto-paginate when the user scrolls within 3 items of the end.
+    // Mirrors iOS `BrowseTripsView` infinite-scroll trigger.
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val layoutInfo = listState.layoutInfo
+            val total = layoutInfo.totalItemsCount
+            if (total == 0) return@derivedStateOf false
+            val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: return@derivedStateOf false
+            lastVisible >= total - 3
+        }
+    }
+    LaunchedEffect(listState) {
+        snapshotFlow { shouldLoadMore }
+            .distinctUntilChanged()
+            .collect { atEnd ->
+                if (atEnd) browseTripsViewModel.loadMoreTrips()
+            }
+    }
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        state = listState,
+        contentPadding = PaddingValues(PasabayanSpacing.screenPadding),
         verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
     ) {
-        // User header
-        UserHeaderCard(
-            userName = user.name,
-            currentRole = UserRole.SHIPPER,
-            verificationLevel = null,
-            avatarUrl = user.avatar,
-        )
-
-        // Find Carriers header
-        Text(
-            text = stringResource(R.string.dashboard_shipper_find_carriers),
-            style = PasabayanTextStyles.Heading.h4,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Text(
-            text = stringResource(R.string.dashboard_shipper_find_carriers_subtitle),
-            style = PasabayanTextStyles.Body.small,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        // Search + filter actions
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            POutlinedTextField(
-                value = state.filter.searchText,
-                onValueChange = { browseTripsViewModel.updateSearchText(it) },
-                label = { Text(stringResource(R.string.dashboard_shipper_search_placeholder)) },
-                modifier = Modifier.weight(1f),
-                trailingIcon = {
-                    IconButton(onClick = { browseTripsViewModel.applyFilterAndFetch() }) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = null,
-                            tint = PasabayanColors.PrimaryBlack,
-                        )
-                    }
-                },
+        item("user-header") {
+            UserHeaderCard(
+                userName = user.name,
+                currentRole = UserRole.SHIPPER,
+                verificationLevel = null,
+                avatarUrl = user.avatar,
             )
-            IconButton(
-                onClick = onOpenTripFilter,
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Tune,
-                    contentDescription = stringResource(R.string.trips_filter_open),
-                    tint = MaterialTheme.colorScheme.onSurface,
+        }
+        item("find-carriers-header") {
+            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
+                Text(
+                    text = stringResource(R.string.dashboard_shipper_find_carriers),
+                    style = PasabayanTextStyles.Heading.h4,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = stringResource(R.string.dashboard_shipper_find_carriers_subtitle),
+                    style = PasabayanTextStyles.Body.small,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
-
-        PDivider()
-
-        if (state.popularRoutes.isNotEmpty()) {
-            Text(
-                text = stringResource(R.string.trips_popular_routes_title),
-                style = PasabayanTextStyles.Body.medium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            state.popularRoutes.take(5).forEach { route ->
-                PCard {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(PasabayanSpacing.sm),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Column {
-                            Text(
-                                text = stringResource(
-                                    R.string.trips_popular_routes_path,
-                                    route.originCity,
-                                    route.destinationCity,
-                                ),
-                                style = PasabayanTextStyles.Body.medium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Text(
-                                text = stringResource(
-                                    R.string.trips_popular_routes_count,
-                                    route.packageCount,
-                                ),
-                                style = PasabayanTextStyles.Caption.regular,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+        item("search-row") {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                POutlinedTextField(
+                    value = state.filter.searchText,
+                    onValueChange = { browseTripsViewModel.updateSearchText(it) },
+                    label = { Text(stringResource(R.string.dashboard_shipper_search_placeholder)) },
+                    modifier = Modifier.weight(1f),
+                    trailingIcon = {
+                        IconButton(onClick = { browseTripsViewModel.applyFilterAndFetch() }) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null,
+                                tint = PasabayanColors.PrimaryBlack,
                             )
                         }
-                        route.averagePrice?.let { averagePrice ->
-                            Text(
-                                text = stringResource(
-                                    R.string.trips_popular_routes_average_price,
-                                    averagePrice,
-                                ),
-                                style = PasabayanTextStyles.Caption.large,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        }
-                        if (route.averagePrice == null) {
-                            Text(
-                                text = stringResource(R.string.trips_popular_routes_average_price_unavailable),
-                                style = PasabayanTextStyles.Caption.large,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        }
-                    }
+                    },
+                )
+                IconButton(onClick = onOpenTripFilter) {
+                    Icon(
+                        imageVector = Icons.Default.Tune,
+                        contentDescription = stringResource(R.string.trips_filter_open),
+                        tint = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
             }
-            PDivider()
+        }
+        item("search-divider") { PDivider() }
+
+        if (state.popularRoutes.isNotEmpty()) {
+            item("popular-routes-title") {
+                Text(
+                    text = stringResource(R.string.trips_popular_routes_title),
+                    style = PasabayanTextStyles.Body.medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            items(state.popularRoutes.take(5), key = { "route-${it.originCity}-${it.destinationCity}" }) { route ->
+                PopularRouteCard(route = route)
+            }
+            item("popular-routes-divider") { PDivider() }
         }
 
-        // Browse content
         when {
-            state.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    PCircularProgress()
+            state.isLoading && state.availableTrips.isEmpty() -> {
+                item("loading") {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        PCircularProgress()
+                    }
                 }
             }
             state.hasLoadedTrips && state.availableTrips.isEmpty() -> {
-                ShipperBrowseEmptyState(
-                    onCreatePackage = { /* TODO: switch to Packages tab */ },
-                )
+                item("empty") {
+                    ShipperBrowseEmptyState(onCreatePackage = { /* TODO: switch to Packages tab */ })
+                }
             }
             else -> {
-                state.availableTrips.forEach { trip ->
+                items(state.availableTrips, key = { it.id }) { trip ->
                     ShipperExploreTripCard(
                         trip = trip,
                         onViewDetails = {
@@ -242,21 +220,16 @@ fun ShipperExploreContent(
                         },
                     )
                 }
-                if (state.hasMore) {
-                    Spacer(modifier = Modifier.size(PasabayanSpacing.xs))
-                    PButton(
-                        text = stringResource(R.string.trips_browse_load_more),
-                        onClick = { browseTripsViewModel.loadMoreTrips() },
-                        style = PButtonStyle.Secondary,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-                if (state.isLoadingMore) {
+                // Trailing footer drives the auto-paginate signal (visible to
+                // the layoutInfo) and surfaces in-flight / end-of-list state.
+                item("pagination-footer") {
                     Box(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = PasabayanSpacing.md),
                         contentAlignment = Alignment.Center,
                     ) {
-                        PCircularProgress()
+                        if (state.isLoadingMore) PCircularProgress()
                     }
                 }
             }
@@ -319,6 +292,44 @@ fun ShipperExploreContent(
                 packageViewModel.clearTripRequestState()
             },
         )
+    }
+}
+
+@Composable
+private fun PopularRouteCard(route: PopularRoute) {
+    PCard {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(PasabayanSpacing.sm),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                Text(
+                    text = stringResource(
+                        R.string.trips_popular_routes_path,
+                        route.originCity,
+                        route.destinationCity,
+                    ),
+                    style = PasabayanTextStyles.Body.medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = stringResource(R.string.trips_popular_routes_count, route.packageCount),
+                    style = PasabayanTextStyles.Caption.regular,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            val priceText = route.averagePrice?.let { avg ->
+                stringResource(R.string.trips_popular_routes_average_price, avg)
+            } ?: stringResource(R.string.trips_popular_routes_average_price_unavailable)
+            Text(
+                text = priceText,
+                style = PasabayanTextStyles.Caption.large,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
     }
 }
 

@@ -49,8 +49,8 @@ class BrowseTripsViewModelTest {
 
     @Test
     fun `loadAvailableTrips sets trips on success`() = runTest {
-        fakeRepo.availableTripsResult = Result.success(
-            listOf(testTrip(1), testTrip(2)),
+        fakeRepo.tripsPageResultQueue.addLast(
+            Result.success(tripsPage(trips = listOf(testTrip(1), testTrip(2)), currentPage = 1, lastPage = 1)),
         )
         viewModel.loadAvailableTrips()
         advanceUntilIdle()
@@ -60,11 +60,12 @@ class BrowseTripsViewModelTest {
         assertEquals(2, state.availableTrips.size)
         assertTrue(state.hasLoadedTrips)
         assertNull(state.errorMessage)
+        assertFalse(state.hasMore) // currentPage == lastPage
     }
 
     @Test
     fun `loadAvailableTrips sets error on failure`() = runTest {
-        fakeRepo.availableTripsResult = Result.failure(Exception("No internet"))
+        fakeRepo.tripsPageResultQueue.addLast(Result.failure(Exception("No internet")))
         viewModel.loadAvailableTrips()
         advanceUntilIdle()
 
@@ -75,12 +76,18 @@ class BrowseTripsViewModelTest {
 
     @Test
     fun `loadAvailableTrips filters out non-bookable statuses`() = runTest {
-        fakeRepo.availableTripsResult = Result.success(
-            listOf(
-                testTrip(1, TripStatus.ACTIVE),
-                testTrip(2, TripStatus.COMPLETED),
-                testTrip(3, TripStatus.PLANNING),
-                testTrip(4, TripStatus.CANCELLED),
+        fakeRepo.tripsPageResultQueue.addLast(
+            Result.success(
+                tripsPage(
+                    trips = listOf(
+                        testTrip(1, TripStatus.ACTIVE),
+                        testTrip(2, TripStatus.COMPLETED),
+                        testTrip(3, TripStatus.PLANNING),
+                        testTrip(4, TripStatus.CANCELLED),
+                    ),
+                    currentPage = 1,
+                    lastPage = 1,
+                ),
             ),
         )
         viewModel.loadAvailableTrips()
@@ -111,7 +118,9 @@ class BrowseTripsViewModelTest {
 
     @Test
     fun `applyFilterAndFetch uses latest search route filter values`() = runTest {
-        fakeRepo.availableTripsResult = Result.success(emptyList())
+        fakeRepo.tripsPageResultQueue.addLast(
+            Result.success(tripsPage(trips = emptyList(), currentPage = 1, lastPage = 1)),
+        )
         viewModel.updateSearchText("electronics")
         viewModel.updateOrigin("Toronto")
         viewModel.updateDestination("Montreal")
@@ -119,11 +128,11 @@ class BrowseTripsViewModelTest {
         viewModel.applyFilterAndFetch()
         advanceUntilIdle()
 
-        val recordedFilter = fakeRepo.lastAvailableTripsFilter
-        assertEquals("electronics", recordedFilter?.searchText)
-        assertEquals("Toronto", recordedFilter?.origin)
-        assertEquals("Montreal", recordedFilter?.destination)
-        assertEquals(1, recordedFilter?.page)
+        val (filter, page, _) = fakeRepo.tripsPageCalls.first()
+        assertEquals("electronics", filter.searchText)
+        assertEquals("Toronto", filter.origin)
+        assertEquals("Montreal", filter.destination)
+        assertEquals(1, page)
     }
 
     @Test
@@ -157,16 +166,90 @@ class BrowseTripsViewModelTest {
 
     @Test
     fun `loadMoreTrips appends next page results`() = runTest {
-        fakeRepo.availableTripsResult = Result.success(listOf(testTrip(1)))
+        fakeRepo.tripsPageResultQueue.addLast(
+            Result.success(tripsPage(trips = listOf(testTrip(1)), currentPage = 1, lastPage = 2)),
+        )
         viewModel.loadAvailableTrips()
         advanceUntilIdle()
 
-        fakeRepo.availableTripsResult = Result.success(listOf(testTrip(2)))
+        fakeRepo.tripsPageResultQueue.addLast(
+            Result.success(tripsPage(trips = listOf(testTrip(2)), currentPage = 2, lastPage = 2)),
+        )
         viewModel.loadMoreTrips()
         advanceUntilIdle()
 
         assertEquals(2, viewModel.uiState.value.availableTrips.size)
         assertEquals(2, viewModel.uiState.value.currentPage)
+        assertFalse(viewModel.uiState.value.hasMore)
+        assertEquals(2, fakeRepo.tripsPageCalls.last().second)
+    }
+
+    // ---- iOS-parity pagination (Slice 3) ----
+
+    @Test
+    fun `loadMoreTrips is no-op when no more pages`() = runTest {
+        fakeRepo.tripsPageResultQueue.addLast(
+            Result.success(tripsPage(trips = listOf(testTrip(1)), currentPage = 1, lastPage = 1)),
+        )
+        viewModel.loadAvailableTrips()
+        advanceUntilIdle()
+        fakeRepo.tripsPageCalls.clear()
+
+        viewModel.loadMoreTrips()
+        advanceUntilIdle()
+
+        assertTrue("loadMore must not call repo when hasMore is false", fakeRepo.tripsPageCalls.isEmpty())
+    }
+
+    @Test
+    fun `loadMoreTrips is no-op before first page lands`() = runTest {
+        viewModel.loadMoreTrips()
+        advanceUntilIdle()
+
+        assertTrue(fakeRepo.tripsPageCalls.isEmpty())
+    }
+
+    @Test
+    fun `loadAvailableTrips reset discards stale in-flight response`() = runTest {
+        // Two reload calls queued back-to-back. Page 1 returns "stale" id 99,
+        // page 2 (same generation 2) returns "fresh" ids 1, 2.
+        fakeRepo.tripsPageResultQueue.addLast(
+            Result.success(tripsPage(trips = listOf(testTrip(99)), currentPage = 1, lastPage = 1)),
+        )
+        fakeRepo.tripsPageResultQueue.addLast(
+            Result.success(tripsPage(trips = listOf(testTrip(1), testTrip(2)), currentPage = 1, lastPage = 1)),
+        )
+
+        viewModel.updateSearchText("stale")
+        viewModel.loadAvailableTrips(reset = true)
+        viewModel.updateSearchText("fresh")
+        viewModel.loadAvailableTrips(reset = true)
+        advanceUntilIdle()
+
+        val ids = viewModel.uiState.value.availableTrips.map { it.id }
+        assertEquals(listOf(1, 2), ids)
+    }
+
+    @Test
+    fun `hasMore is envelope-driven not empty-list driven`() = runTest {
+        // Page comes back with zero bookable trips (client-side filtered) but
+        // server says lastPage = 3 — the old heuristic would have set hasMore = false.
+        fakeRepo.tripsPageResultQueue.addLast(
+            Result.success(
+                tripsPage(
+                    // All COMPLETED — filtered out client-side, leaving zero bookable.
+                    trips = listOf(testTrip(1, TripStatus.COMPLETED), testTrip(2, TripStatus.COMPLETED)),
+                    currentPage = 1,
+                    lastPage = 3,
+                ),
+            ),
+        )
+        viewModel.loadAvailableTrips()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(0, state.availableTrips.size)
+        assertTrue("Envelope says lastPage > currentPage, hasMore must be true", state.hasMore)
     }
 
     @Test
@@ -347,6 +430,20 @@ class BrowseTripsViewModelTest {
         storeAddress = null,
         receiptRequired = null,
     )
+
+    private fun tripsPage(
+        trips: List<Trip>,
+        currentPage: Int,
+        lastPage: Int,
+        perPage: Int = 15,
+    ): com.efthemiosprime.pasabayan.features.trips.model.AvailableTripsPage =
+        com.efthemiosprime.pasabayan.features.trips.model.AvailableTripsPage(
+            trips = trips,
+            currentPage = currentPage,
+            lastPage = lastPage,
+            total = trips.size,
+            perPage = perPage,
+        )
 
     private fun testTrip(
         id: Int,

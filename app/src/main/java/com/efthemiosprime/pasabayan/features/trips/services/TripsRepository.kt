@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.features.trips.services
 
+import com.efthemiosprime.pasabayan.features.trips.model.AvailableTripsPage
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.model.TripFilter
 import com.efthemiosprime.pasabayan.features.trips.model.TripMatchPackage
@@ -13,8 +14,19 @@ interface TripsRepository {
     /** Carrier's own trips — falls back to `/carrier/trips` if `/trips` returns role error. */
     suspend fun loadCarrierTrips(): Result<List<Trip>>
 
-    /** Shipper browse — available trips with optional filters. */
+    /** Shipper browse — available trips with optional filters. Legacy flat-list loader. */
     suspend fun loadAvailableTrips(filter: TripFilter = TripFilter()): Result<List<Trip>>
+
+    /**
+     * Paginated browse loader — returns the full Laravel envelope so the VM
+     * can derive `hasMore` from `currentPage` vs `lastPage` instead of the
+     * brittle "page came back empty" heuristic. iOS parity.
+     */
+    suspend fun loadAvailableTripsPage(
+        filter: TripFilter,
+        page: Int,
+        perPage: Int = DEFAULT_PER_PAGE,
+    ): Result<AvailableTripsPage>
 
     suspend fun loadPopularPackageRoutes(): Result<List<PopularRoute>>
 
@@ -33,4 +45,9 @@ interface TripsRepository {
     suspend fun updateTrip(id: Int, request: com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson): Result<Trip>
 
     suspend fun deleteTrip(id: Int): Result<Unit>
+
+    companion object {
+        /** iOS-parity default page size — mirrors `Pagination.defaultPerPage`. */
+        const val DEFAULT_PER_PAGE: Int = 15
+    }
 }
