@@ -58,4 +58,12 @@
     <string name="verification_premium_status_under_review">En cours d’examen</string>
     <string name="verification_premium_status_approved">Approuvée</string>
     <string name="verification_premium_status_rejected">Rejetée</string>
+    <!-- Phone verification gate (action-blocking prompt) -->
+    <string name="verification_gate_title">Vérifiez votre téléphone pour continuer</string>
+    <string name="verification_gate_body_create_package">La vérification du téléphone est requise pour créer un colis. Vérifiez votre numéro pour préserver la sécurité des livraisons.</string>
+    <string name="verification_gate_body_create_trip">La vérification du téléphone est requise pour créer un trajet. Vérifiez votre numéro pour que les expéditeurs puissent vous faire confiance.</string>
+    <string name="verification_gate_body_book_trip">La vérification du téléphone est requise pour demander une réservation. Vérifiez votre numéro pour envoyer votre demande.</string>
+    <string name="verification_gate_body_request_to_carry">La vérification du téléphone est requise pour proposer de transporter un colis. Vérifiez votre numéro pour envoyer votre offre.</string>
+    <string name="verification_gate_cta_verify">Vérifier le téléphone</string>
+    <string name="verification_gate_cta_dismiss">Pas maintenant</string>
 </resources>

@@ -7,6 +7,8 @@ import com.efthemiosprime.pasabayan.features.trips.services.SavedRouteTemplate
 import com.efthemiosprime.pasabayan.features.trips.services.SavedRouteTemplatesStore
 import com.efthemiosprime.pasabayan.features.trips.services.TripTutorialStore
 import com.efthemiosprime.pasabayan.features.trips.services.UsualTransportStore
+import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
+import com.efthemiosprime.pasabayan.features.verification.services.RequirePhoneVerificationUseCase
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -32,6 +34,7 @@ class TripCreationViewModelTest {
     private lateinit var usualTransportStore: UsualTransportStore
     private lateinit var savedRouteTemplatesStore: SavedRouteTemplatesStore
     private lateinit var tutorialStore: TripTutorialStore
+    private lateinit var requirePhoneVerification: RequirePhoneVerificationUseCase
     private lateinit var viewModel: TripCreationViewModel
 
     @Before
@@ -41,11 +44,14 @@ class TripCreationViewModelTest {
         usualTransportStore = mockk(relaxed = true)
         savedRouteTemplatesStore = mockk(relaxed = true)
         tutorialStore = mockk(relaxed = true)
+        requirePhoneVerification = mockk()
+        every { requirePhoneVerification.invoke() } returns Result.success(Unit)
         viewModel = TripCreationViewModel(
             tripsRepository = repo,
             usualTransportStore = usualTransportStore,
             savedRouteTemplatesStore = savedRouteTemplatesStore,
             tripTutorialStore = tutorialStore,
+            requirePhoneVerification = requirePhoneVerification,
         )
     }
 
@@ -142,6 +148,34 @@ class TripCreationViewModelTest {
         verify(exactly = 0) { savedRouteTemplatesStore.save(any()) }
         assertFalse(viewModel.uiState.value.shouldShowSaveRoutePrompt)
         confirmVerified(usualTransportStore, savedRouteTemplatesStore)
+    }
+
+    @Test
+    fun `createTrip blocked when phone not verified does not call repo`() = runTest {
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+        repo.createResult = Result.success(testTrip(99))
+
+        viewModel.createTrip(testCreateTripRequest())
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(VerifyPhoneReason.CreateTrip, state.requiresPhoneVerification)
+        assertFalse(state.isSubmitting)
+        assertEquals(null, state.createdTrip)
+    }
+
+    @Test
+    fun `consumeRequiresPhoneVerification clears the gate flag`() = runTest {
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+        viewModel.createTrip(testCreateTripRequest())
+        advanceUntilIdle()
+        assertEquals(VerifyPhoneReason.CreateTrip, viewModel.uiState.value.requiresPhoneVerification)
+
+        viewModel.consumeRequiresPhoneVerification()
+
+        assertEquals(null, viewModel.uiState.value.requiresPhoneVerification)
     }
 
     private fun testCreateTripRequest() =

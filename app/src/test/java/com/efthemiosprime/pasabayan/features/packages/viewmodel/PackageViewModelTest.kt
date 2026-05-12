@@ -17,6 +17,8 @@ import com.efthemiosprime.pasabayan.features.packages.model.PackageSubmitPayload
 import com.efthemiosprime.pasabayan.features.packages.model.ServiceRequestShoppingItem
 import com.efthemiosprime.pasabayan.features.packages.model.ServiceRequestSubmitPayload
 import com.efthemiosprime.pasabayan.features.packages.services.PackagesRepository
+import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
+import com.efthemiosprime.pasabayan.features.verification.services.RequirePhoneVerificationUseCase
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +45,7 @@ class PackageViewModelTest {
     private lateinit var mockContext: Context
     private lateinit var fakeRepo: FakePackagesRepository
     private lateinit var fakeBookingsRepository: FakeBookingsRepository
+    private lateinit var requirePhoneVerification: RequirePhoneVerificationUseCase
     private lateinit var viewModel: PackageViewModel
 
     @Before
@@ -64,7 +67,14 @@ class PackageViewModelTest {
         every { mockContext.getString(R.string.packages_success_update_package) } returns "Package updated"
         fakeRepo = FakePackagesRepository()
         fakeBookingsRepository = FakeBookingsRepository()
-        viewModel = PackageViewModel(mockContext, fakeRepo, fakeBookingsRepository)
+        requirePhoneVerification = mockk()
+        every { requirePhoneVerification.invoke() } returns Result.success(Unit)
+        viewModel = PackageViewModel(
+            mockContext,
+            fakeRepo,
+            fakeBookingsRepository,
+            requirePhoneVerification,
+        )
     }
 
     @After
@@ -234,6 +244,90 @@ class PackageViewModelTest {
 
         assertEquals(11, viewModel.uiState.value.selectedPackageDetail?.id)
         assertEquals("Package updated", viewModel.uiState.value.successMessage)
+    }
+
+    @Test
+    fun `createPackageRequest blocked when phone not verified does not call repo`() = runTest {
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+        fakeRepo.createResult = Result.success(testPkg(91))
+
+        viewModel.createPackageRequest(
+            payload = testPackagePayload(),
+            imageUris = emptyList(),
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(VerifyPhoneReason.CreatePackage, state.requiresPhoneVerification)
+        assertFalse(state.isSubmittingPackageRequest)
+        assertNull(state.packageRequestSuccessMessage)
+        assertTrue(state.packageRequests.isEmpty())
+    }
+
+    @Test
+    fun `createServiceRequest blocked when phone not verified does not call repo`() = runTest {
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+        fakeRepo.createServiceResult = Result.success(testPkg(92))
+
+        viewModel.createServiceRequest(
+            ServiceRequestSubmitPayload(
+                serviceTypeCode = "grocery_shopping",
+                shoppingItems = listOf(
+                    ServiceRequestShoppingItem(item = "Eggs", quantity = "12", notes = null),
+                ),
+                deliveryCity = "Toronto",
+                deliveryAddress = "123 Main",
+                storeName = null,
+                storeAddress = null,
+                estimatedCost = null,
+                maxPriceBudget = null,
+                deliveryDateNeeded = LocalDate.of(2026, 4, 10),
+                urgencyLevelCode = "normal",
+                directionCode = null,
+                recipientName = null,
+                recipientPhone = null,
+            ),
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(VerifyPhoneReason.CreatePackage, state.requiresPhoneVerification)
+        assertFalse(state.isSubmittingServiceRequest)
+        assertNull(state.serviceRequestSuccessMessage)
+    }
+
+    @Test
+    fun `consumeRequiresPhoneVerification clears the gate flag`() = runTest {
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+        viewModel.createPackageRequest(payload = testPackagePayload(), imageUris = emptyList())
+        advanceUntilIdle()
+        assertEquals(VerifyPhoneReason.CreatePackage, viewModel.uiState.value.requiresPhoneVerification)
+
+        viewModel.consumeRequiresPhoneVerification()
+
+        assertNull(viewModel.uiState.value.requiresPhoneVerification)
+    }
+
+    @Test
+    fun `requestTripForPackage blocked when phone not verified does not call repo`() = runTest {
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+
+        viewModel.requestTripForPackage(
+            packageId = 5,
+            tripId = 7,
+            offeredPrice = 25.0,
+            message = "Please carry",
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(VerifyPhoneReason.BookTrip, state.requiresPhoneVerification)
+        assertFalse(state.isSubmittingTripRequest)
+        assertNull(state.tripRequestSuccessMessage)
     }
 
     private fun testPackagePayload() = PackageSubmitPayload(

@@ -41,8 +41,10 @@ import com.efthemiosprime.pasabayan.core.network.favorites.FavoriteCarrierInfoJs
 import com.efthemiosprime.pasabayan.features.favorites.ui.FavoritesListScreen
 import com.efthemiosprime.pasabayan.features.favorites.ui.SendRequestSheet
 import com.efthemiosprime.pasabayan.features.ratings.ui.RatingsScreen
+import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
 import com.efthemiosprime.pasabayan.features.verification.ui.PhoneVerificationSheet
 import com.efthemiosprime.pasabayan.features.verification.ui.PremiumVerificationSheet
+import com.efthemiosprime.pasabayan.features.verification.ui.VerifyPhonePromptSheet
 import com.efthemiosprime.pasabayan.features.chat.ui.MessagesTabScreen
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ConversationsViewModel
 import com.efthemiosprime.pasabayan.features.bookings.viewmodel.MatchingViewModel
@@ -151,13 +153,21 @@ fun MainTabScreen(
     var settingsOpen by remember { mutableStateOf(false) }
     var showPhoneVerificationSheet by remember { mutableStateOf(false) }
     var showPremiumVerificationSheet by remember { mutableStateOf(false) }
+    // Local-source-of-truth for the phone-verification gate prompt. Set by UI short-circuits
+    // (e.g. tapping "Create package" while unverified). VM-side guards in feature view-models
+    // also surface a `requiresPhoneVerification` flag — we OR them in `gateReason` below.
+    var verifyPhoneReason by remember { mutableStateOf<VerifyPhoneReason?>(null) }
     var favoritesOpen by remember { mutableStateOf(false) }
     var sendRequestCarrier by remember { mutableStateOf<FavoriteCarrierInfoJson?>(null) }
     var ratingsOpen by remember { mutableStateOf(false) }
     val dismissActiveSheetRoute = { viewModel.dismissActiveSheetRoute() }
     val openTripFilterSheet = { viewModel.openTripFilterSheet() }
     val openCreateTripFromPackageSheet: (Int) -> Unit = { packageId ->
-        viewModel.openCreateTripFromPackageSheet(packageId)
+        if (!user.phoneVerified) {
+            verifyPhoneReason = VerifyPhoneReason.CreateTrip
+        } else {
+            viewModel.openCreateTripFromPackageSheet(packageId)
+        }
     }
     val openCarrierTripEditor: (Int) -> Unit = { tripId ->
         selectedCarrierTripId = null
@@ -302,6 +312,7 @@ fun MainTabScreen(
                             user = user,
                             onSwitchRole = { viewModel.switchRole() },
                             onOpenTripFilter = openTripFilterSheet,
+                            onPhoneVerificationRequired = { reason -> verifyPhoneReason = reason },
                             browseTripsViewModel = browseTripsViewModel,
                         )
                 }
@@ -312,16 +323,21 @@ fun MainTabScreen(
                     onInitialMatchConsumed = { pendingMatchId = null },
                     initialCounterOfferMatchId = pendingCounterOfferMatchId,
                     onInitialCounterOfferConsumed = { pendingCounterOfferMatchId = null },
+                    onPhoneVerificationRequired = { reason -> verifyPhoneReason = reason },
                 )
                 "my_trips" -> com.efthemiosprime.pasabayan.features.trips.ui.CarrierMyTripsScreen(
                     onViewTripDetails = { trip -> selectedCarrierTripId = trip.id },
                     onEditTrip = { trip -> openCarrierTripEditor(trip.id) },
                     onCreateTrip = {
-                        tripCreationSavedRoutesViewModel.refreshSavedRoutes()
-                        if (carrierPreferencesFormViewModel.isAcknowledged(user.id)) {
-                            showTripCreationSheet = true
+                        if (!user.phoneVerified) {
+                            verifyPhoneReason = VerifyPhoneReason.CreateTrip
                         } else {
-                            showCarrierPreferencesGate = true
+                            tripCreationSavedRoutesViewModel.refreshSavedRoutes()
+                            if (carrierPreferencesFormViewModel.isAcknowledged(user.id)) {
+                                showTripCreationSheet = true
+                            } else {
+                                showCarrierPreferencesGate = true
+                            }
                         }
                     },
                     viewModel = carrierTripsViewModel,
@@ -331,8 +347,12 @@ fun MainTabScreen(
                         viewModel.openPackageDetailSheet(packageId)
                     },
                     onCreatePackage = {
-                        packageCreationAssistViewModel.initialize(user.id)
-                        showCreateOptionsSheet = true
+                        if (!user.phoneVerified) {
+                            verifyPhoneReason = VerifyPhoneReason.CreatePackage
+                        } else {
+                            packageCreationAssistViewModel.initialize(user.id)
+                            showCreateOptionsSheet = true
+                        }
                     },
                     onCreateTripFromPackage = openCreateTripFromPackageSheet,
                     onEditPackage = { packageId ->
@@ -525,6 +545,25 @@ fun MainTabScreen(
                 },
             )
         }
+    }
+
+    // Single owner of the phone-verification gate prompt. Reason can come from the local UI
+    // short-circuit or a feature-VM `requiresPhoneVerification` flag — whichever fires first.
+    val gateReason: VerifyPhoneReason? =
+        packageUiState.requiresPhoneVerification ?: verifyPhoneReason
+    if (gateReason != null) {
+        VerifyPhonePromptSheet(
+            reason = gateReason,
+            onVerifyNow = {
+                verifyPhoneReason = null
+                packageViewModel.consumeRequiresPhoneVerification()
+                showPhoneVerificationSheet = true
+            },
+            onDismiss = {
+                verifyPhoneReason = null
+                packageViewModel.consumeRequiresPhoneVerification()
+            },
+        )
     }
 
     if (showPremiumVerificationSheet) {

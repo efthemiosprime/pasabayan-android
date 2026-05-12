@@ -14,6 +14,8 @@ import com.efthemiosprime.pasabayan.features.packages.model.PackageSubmitPayload
 import com.efthemiosprime.pasabayan.features.packages.model.PackageSubmitRequestMapper
 import com.efthemiosprime.pasabayan.features.packages.model.ServiceRequestSubmitPayload
 import com.efthemiosprime.pasabayan.features.packages.services.PackagesRepository
+import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
+import com.efthemiosprime.pasabayan.features.verification.services.RequirePhoneVerificationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,6 +46,12 @@ data class PackageUiState(
     val isSubmittingTripRequest: Boolean = false,
     val tripRequestErrorMessage: String? = null,
     val tripRequestSuccessMessage: String? = null,
+    /**
+     * One-shot signal: a creation/request action was blocked because the user's phone
+     * is not verified. UI shows [VerifyPhonePromptSheet] for this reason and calls
+     * [PackageViewModel.consumeRequiresPhoneVerification] to clear it.
+     */
+    val requiresPhoneVerification: VerifyPhoneReason? = null,
 )
 
 @HiltViewModel
@@ -51,6 +59,7 @@ class PackageViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val packagesRepository: PackagesRepository,
     private val bookingsRepository: BookingsRepository,
+    private val requirePhoneVerification: RequirePhoneVerificationUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PackageUiState())
@@ -221,6 +230,10 @@ class PackageViewModel @Inject constructor(
         imageUris: List<Uri>,
         onResult: (Result<PackageRequest>) -> Unit = {},
     ) {
+        if (requirePhoneVerification().isFailure) {
+            _uiState.update { it.copy(requiresPhoneVerification = VerifyPhoneReason.CreatePackage) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
@@ -262,6 +275,10 @@ class PackageViewModel @Inject constructor(
         payload: ServiceRequestSubmitPayload,
         onResult: (Result<PackageRequest>) -> Unit = {},
     ) {
+        if (requirePhoneVerification().isFailure) {
+            _uiState.update { it.copy(requiresPhoneVerification = VerifyPhoneReason.CreatePackage) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
@@ -307,6 +324,10 @@ class PackageViewModel @Inject constructor(
         }
     }
 
+    fun consumeRequiresPhoneVerification() {
+        _uiState.update { it.copy(requiresPhoneVerification = null) }
+    }
+
     fun getPendingRequests(): List<PackageRequest> = _uiState.value.packageRequests.filter {
         it.status == PackageRequestStatus.OPEN ||
             it.status == PackageRequestStatus.PENDING ||
@@ -320,6 +341,10 @@ class PackageViewModel @Inject constructor(
         message: String?,
         onResult: (Result<DeliveryMatch>) -> Unit = {},
     ) {
+        if (requirePhoneVerification().isFailure) {
+            _uiState.update { it.copy(requiresPhoneVerification = VerifyPhoneReason.BookTrip) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update {
                 it.copy(

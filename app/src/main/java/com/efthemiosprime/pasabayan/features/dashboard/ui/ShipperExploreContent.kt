@@ -64,6 +64,7 @@ import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.trips.ui.TripDetailsScreen
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.BrowseTripsViewModel
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
+import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
 
 /**
  * Shipper Explore tab — browse available trips / carriers.
@@ -77,6 +78,7 @@ fun ShipperExploreContent(
     modifier: Modifier = Modifier,
     onViewTripDetails: (tripId: Int) -> Unit = {},
     onOpenTripFilter: () -> Unit = {},
+    onPhoneVerificationRequired: (VerifyPhoneReason) -> Unit = {},
     browseTripsViewModel: BrowseTripsViewModel = hiltViewModel(),
     packageViewModel: PackageViewModel = hiltViewModel(),
 ) {
@@ -232,7 +234,13 @@ fun ShipperExploreContent(
                             onViewTripDetails(trip.id)
                             detailTrip = trip
                         },
-                        onRequestBook = { requestBookTrip = trip },
+                        onRequestBook = {
+                            if (!user.phoneVerified) {
+                                onPhoneVerificationRequired(VerifyPhoneReason.BookTrip)
+                            } else {
+                                requestBookTrip = trip
+                            }
+                        },
                     )
                 }
                 if (state.hasMore) {
@@ -267,8 +275,13 @@ fun ShipperExploreContent(
                 onCancel = {},
                 onBack = { detailTrip = null },
                 onRequestBook = {
-                    detailTrip = null
-                    requestBookTrip = selectedTrip
+                    if (!user.phoneVerified) {
+                        detailTrip = null
+                        onPhoneVerificationRequired(VerifyPhoneReason.BookTrip)
+                    } else {
+                        detailTrip = null
+                        requestBookTrip = selectedTrip
+                    }
                 },
             )
         }

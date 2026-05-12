@@ -39,6 +39,7 @@ import com.efthemiosprime.pasabayan.features.bookings.components.MatchCard
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.BookingAction
 import com.efthemiosprime.pasabayan.features.bookings.viewmodel.MatchingViewModel
+import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
 
 /**
  * Unified match list screen — single screen for both carrier and shipper.
@@ -64,9 +65,18 @@ fun MatchListScreen(
      */
     initialCounterOfferMatchId: Int? = null,
     onInitialCounterOfferConsumed: () -> Unit = {},
+    /** Forwarded when a gated action (counter-offer / carrier request) was blocked. */
+    onPhoneVerificationRequired: (VerifyPhoneReason) -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val role = if (isCarrier) "carrier" else "shipper"
+
+    LaunchedEffect(state.requiresPhoneVerification) {
+        state.requiresPhoneVerification?.let { reason ->
+            onPhoneVerificationRequired(reason)
+            viewModel.consumeRequiresPhoneVerification()
+        }
+    }
     var selectedMatch by remember { mutableStateOf<DeliveryMatch?>(null) }
     // Distinct surface from [selectedMatch]: the composer is shown on its own so it doesn't
     // require stacking the details sheet underneath.

@@ -9,6 +9,8 @@ import com.efthemiosprime.pasabayan.features.trips.model.TripCompatibilityResult
 import com.efthemiosprime.pasabayan.features.trips.model.TripFilter
 import com.efthemiosprime.pasabayan.features.packages.model.PackageRequest
 import com.efthemiosprime.pasabayan.features.trips.services.TripsRepository
+import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
+import com.efthemiosprime.pasabayan.features.verification.services.RequirePhoneVerificationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,11 +42,14 @@ data class BrowseTripsUiState(
     val isBookingTrip: Boolean = false,
     val bookingSuccessMessage: String? = null,
     val bookingErrorMessage: String? = null,
+    /** One-shot: action blocked because the user's phone is not verified. */
+    val requiresPhoneVerification: VerifyPhoneReason? = null,
 )
 
 @HiltViewModel
 class BrowseTripsViewModel @Inject constructor(
     private val tripsRepository: TripsRepository,
+    private val requirePhoneVerification: RequirePhoneVerificationUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BrowseTripsUiState())
@@ -230,11 +235,23 @@ class BrowseTripsViewModel @Inject constructor(
     }
 
     fun bookTrip() {
+        if (requirePhoneVerification().isFailure) {
+            _uiState.update { it.copy(requiresPhoneVerification = VerifyPhoneReason.BookTrip) }
+            return
+        }
         startBooking()
     }
 
     fun bookTripDirectly() {
+        if (requirePhoneVerification().isFailure) {
+            _uiState.update { it.copy(requiresPhoneVerification = VerifyPhoneReason.BookTrip) }
+            return
+        }
         startBooking()
+    }
+
+    fun consumeRequiresPhoneVerification() {
+        _uiState.update { it.copy(requiresPhoneVerification = null) }
     }
 
     fun markBookingSuccess(message: String?) {

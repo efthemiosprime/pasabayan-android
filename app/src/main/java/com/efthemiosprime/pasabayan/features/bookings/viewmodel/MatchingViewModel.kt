@@ -7,6 +7,8 @@ import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.NegotiationMetadata
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.RefundResult
 import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepository
+import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
+import com.efthemiosprime.pasabayan.features.verification.services.RequirePhoneVerificationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +26,8 @@ data class MatchingUiState(
     val lastCancelConversationId: Int? = null,
     val lastNegotiation: NegotiationMetadata? = null,
     val isSubmittingCounterOffer: Boolean = false,
+    /** One-shot: action blocked because the user's phone is not verified. */
+    val requiresPhoneVerification: VerifyPhoneReason? = null,
 ) {
     val filteredMatches: List<DeliveryMatch>
         get() = when (statusFilter) {
@@ -35,6 +39,7 @@ data class MatchingUiState(
 @HiltViewModel
 class MatchingViewModel @Inject constructor(
     private val bookingsRepository: BookingsRepository,
+    private val requirePhoneVerification: RequirePhoneVerificationUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MatchingUiState())
@@ -148,6 +153,11 @@ class MatchingViewModel @Inject constructor(
      * (commit 8c9646d).
      */
     fun submitCounterOffer(matchId: Int, proposedPrice: Double, message: String?, isShipper: Boolean) {
+        if (requirePhoneVerification().isFailure) {
+            val reason = if (isShipper) VerifyPhoneReason.BookTrip else VerifyPhoneReason.RequestToCarry
+            _uiState.update { it.copy(requiresPhoneVerification = reason) }
+            return
+        }
         viewModelScope.launch {
             val original = _uiState.value.matches.firstOrNull { it.id == matchId }
             if (original == null) {
@@ -208,6 +218,56 @@ class MatchingViewModel @Inject constructor(
 
     fun clearNegotiationArtifacts() {
         _uiState.update { it.copy(lastNegotiation = null) }
+    }
+
+    /**
+     * First-pass carrier offer on a package (not a counter-offer). Gated on phone
+     * verification — matches iOS `RequestToCarrySheet` submission flow.
+     */
+    fun requestPackageAsCarrier(
+        tripId: Int,
+        packageId: Int,
+        proposedPrice: Double,
+        message: String?,
+    ) {
+        if (requirePhoneVerification().isFailure) {
+            _uiState.update { it.copy(requiresPhoneVerification = VerifyPhoneReason.RequestToCarry) }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSubmittingCounterOffer = true, errorMessage = null) }
+            bookingsRepository.carrierRequestPackage(
+                tripId = tripId,
+                packageId = packageId,
+                proposedPrice = proposedPrice,
+                message = message,
+                isCounterOffer = false,
+                originalMatchId = null,
+                originalPrice = null,
+            ).fold(
+                onSuccess = { requestResult ->
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingCounterOffer = false,
+                            lastNegotiation = requestResult.negotiation,
+                            matches = it.matches + requestResult.match,
+                        )
+                    }
+                },
+                onFailure = { e ->
+                    _uiState.update {
+                        it.copy(
+                            isSubmittingCounterOffer = false,
+                            errorMessage = e.message ?: "Failed to send carrier offer",
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    fun consumeRequiresPhoneVerification() {
+        _uiState.update { it.copy(requiresPhoneVerification = null) }
     }
 
     fun updateMatchStatus(matchId: Int, newStatus: MatchStatus) {

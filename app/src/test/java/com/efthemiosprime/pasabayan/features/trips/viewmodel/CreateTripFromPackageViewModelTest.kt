@@ -5,7 +5,11 @@ import com.efthemiosprime.pasabayan.features.trips.model.TripTemplateData
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.services.CreateTripFromPackageUseCase
 import com.efthemiosprime.pasabayan.features.trips.services.TripsLocalStateUpdater
+import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
+import com.efthemiosprime.pasabayan.features.verification.services.RequirePhoneVerificationUseCase
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
+import io.mockk.every
+import io.mockk.mockk
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,6 +31,7 @@ class CreateTripFromPackageViewModelTest {
     private lateinit var fakeRepo: FakeTripsRepository
     private lateinit var fakeLocalStateUpdater: TripsLocalStateUpdater
     private lateinit var useCase: CreateTripFromPackageUseCase
+    private lateinit var requirePhoneVerification: RequirePhoneVerificationUseCase
     private lateinit var viewModel: CreateTripFromPackageViewModel
 
     @Before
@@ -47,7 +52,9 @@ class CreateTripFromPackageViewModelTest {
             ): Boolean = false
         }
         useCase = CreateTripFromPackageUseCase(fakeRepo, fakeLocalStateUpdater)
-        viewModel = CreateTripFromPackageViewModel(useCase)
+        requirePhoneVerification = mockk()
+        every { requirePhoneVerification.invoke() } returns Result.success(Unit)
+        viewModel = CreateTripFromPackageViewModel(useCase, requirePhoneVerification)
     }
 
     @After
@@ -140,6 +147,73 @@ class CreateTripFromPackageViewModelTest {
         viewModel.clearCreatedTrip()
 
         assertNull(viewModel.uiState.value.createdTrip)
+    }
+
+    @Test
+    fun `createTrip blocked when phone not verified does not call use case`() = runTest {
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+        fakeRepo.createResult = Result.success(testTrip(id = 88))
+
+        viewModel.createTrip(
+            CreateTripFromPackageRequest(
+                packageId = 4,
+                originCity = "Toronto",
+                originCountry = "Canada",
+                destinationCity = "Montreal",
+                destinationCountry = "Canada",
+                departureDate = "2026-06-01T08:00:00Z",
+                arrivalDate = "2026-06-01T12:00:00Z",
+                availableWeightKg = 10.0,
+                availableSpaceLiters = 30.0,
+                transportationMethod = "car",
+                pricePerKg = null,
+                flatTripPrice = 25.0,
+                specialNotes = null,
+                pickupAddress = null,
+                dropoffAddress = null,
+                proposedPrice = 80.0,
+                requestMessage = "Can carry",
+            ),
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(VerifyPhoneReason.CreateTrip, state.requiresPhoneVerification)
+        assertNull(state.createdTrip)
+    }
+
+    @Test
+    fun `consumeRequiresPhoneVerification clears the gate flag`() = runTest {
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+        viewModel.createTrip(
+            CreateTripFromPackageRequest(
+                packageId = 4,
+                originCity = "Toronto",
+                originCountry = "Canada",
+                destinationCity = "Montreal",
+                destinationCountry = "Canada",
+                departureDate = "2026-06-01T08:00:00Z",
+                arrivalDate = "2026-06-01T12:00:00Z",
+                availableWeightKg = 10.0,
+                availableSpaceLiters = 30.0,
+                transportationMethod = "car",
+                pricePerKg = null,
+                flatTripPrice = 25.0,
+                specialNotes = null,
+                pickupAddress = null,
+                dropoffAddress = null,
+                proposedPrice = 80.0,
+                requestMessage = "Can carry",
+            ),
+        )
+        advanceUntilIdle()
+        assertEquals(VerifyPhoneReason.CreateTrip, viewModel.uiState.value.requiresPhoneVerification)
+
+        viewModel.consumeRequiresPhoneVerification()
+
+        assertNull(viewModel.uiState.value.requiresPhoneVerification)
     }
 
     private fun testTrip(id: Int): Trip = Trip(

@@ -6,6 +6,10 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageRequestStatus
 import com.efthemiosprime.pasabayan.features.trips.model.PopularRoute
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.packages.model.PackageRequest
+import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
+import com.efthemiosprime.pasabayan.features.verification.services.RequirePhoneVerificationUseCase
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -26,13 +30,16 @@ class BrowseTripsViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var fakeRepo: FakeTripsRepository
+    private lateinit var requirePhoneVerification: RequirePhoneVerificationUseCase
     private lateinit var viewModel: BrowseTripsViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeRepo = FakeTripsRepository()
-        viewModel = BrowseTripsViewModel(fakeRepo)
+        requirePhoneVerification = mockk()
+        every { requirePhoneVerification.invoke() } returns Result.success(Unit)
+        viewModel = BrowseTripsViewModel(fakeRepo, requirePhoneVerification)
     }
 
     @After
@@ -247,6 +254,54 @@ class BrowseTripsViewModelTest {
         assertNull(state.selectedPackage)
         assertNull(state.compatibilityResult)
         assertNull(state.bookingSuccessMessage)
+    }
+
+    @Test
+    fun `bookTrip blocked when phone not verified emits gate flag`() = runTest {
+        val trip = testTrip(id = 41, status = TripStatus.ACTIVE).copy(availableWeightKg = 5.0)
+        val pkg = testPackage(id = 42, packageWeightKg = 1.0)
+        viewModel.selectTrip(trip)
+        viewModel.selectPackage(pkg)
+        advanceUntilIdle()
+        viewModel.showBookingSheet()
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+
+        viewModel.bookTrip()
+
+        val state = viewModel.uiState.value
+        assertEquals(VerifyPhoneReason.BookTrip, state.requiresPhoneVerification)
+        assertFalse(state.isBookingTrip)
+    }
+
+    @Test
+    fun `bookTripDirectly blocked when phone not verified emits gate flag`() = runTest {
+        val trip = testTrip(id = 51, status = TripStatus.ACTIVE).copy(availableWeightKg = 5.0)
+        val pkg = testPackage(id = 52, packageWeightKg = 1.0)
+        viewModel.selectTrip(trip)
+        viewModel.selectPackage(pkg)
+        advanceUntilIdle()
+        viewModel.showBookingSheet()
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+
+        viewModel.bookTripDirectly()
+
+        val state = viewModel.uiState.value
+        assertEquals(VerifyPhoneReason.BookTrip, state.requiresPhoneVerification)
+        assertFalse(state.isBookingTrip)
+    }
+
+    @Test
+    fun `consumeRequiresPhoneVerification clears the gate flag`() = runTest {
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+        viewModel.bookTrip()
+        assertEquals(VerifyPhoneReason.BookTrip, viewModel.uiState.value.requiresPhoneVerification)
+
+        viewModel.consumeRequiresPhoneVerification()
+
+        assertNull(viewModel.uiState.value.requiresPhoneVerification)
     }
 
     private fun testPackage(

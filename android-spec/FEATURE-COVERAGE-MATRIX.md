@@ -48,3 +48,11 @@
 - [ ] [08-notifications-device-tokens.md](08-notifications-device-tokens.md) handles **all** `NotificationType` raw values.
 - [ ] `docs/tabs/*.md` covered by navigation design ([13](13-ui-tab-explore.md), [15](15-platform-and-tab-index.md)).
 - [ ] Onboarding + auth gate ordering matches [`ContentView`](../../Pasabayan/ContentView.swift) / [`PasabayanApp`](../../Pasabayan/PasabayanApp.swift) — [17-onboarding.md](17-onboarding.md).
+
+## Behavior deltas vs iOS
+
+Areas where Android intentionally diverges from iOS. Each delta documents the spec entry that records it.
+
+| Delta | iOS today | Android | Spec |
+|---|---|---|---|
+| Phone-verification gate on create-package / create-trip / book-trip / request-to-carry | **Not gated** — `User.isPhoneVerified` read for display only; UI/VMs proceed regardless. | **Hard-gated** at UI button (`MainTabScreen`, `ShipperExploreContent`) and VM entry (`RequirePhoneVerificationUseCase`). Surfaces shared `VerifyPhonePromptSheet`. Action is **not** auto-resumed after verification. | [10-verification.md](10-verification.md) § Phone-verification gate |

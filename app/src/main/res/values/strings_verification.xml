@@ -58,4 +58,12 @@
     <string name="verification_premium_status_under_review">Under review</string>
     <string name="verification_premium_status_approved">Approved</string>
     <string name="verification_premium_status_rejected">Rejected</string>
+    <!-- Phone verification gate (action-blocking prompt) -->
+    <string name="verification_gate_title">Verify your phone to continue</string>
+    <string name="verification_gate_body_create_package">Phone verification is required to create a package. Verify your number to keep deliveries safe for everyone.</string>
+    <string name="verification_gate_body_create_trip">Phone verification is required to create a trip. Verify your number so shippers can trust your route.</string>
+    <string name="verification_gate_body_book_trip">Phone verification is required to request a trip booking. Verify your number to send your request.</string>
+    <string name="verification_gate_body_request_to_carry">Phone verification is required to request to carry a package. Verify your number to send your offer.</string>
+    <string name="verification_gate_cta_verify">Verify phone</string>
+    <string name="verification_gate_cta_dismiss">Not now</string>
 </resources>

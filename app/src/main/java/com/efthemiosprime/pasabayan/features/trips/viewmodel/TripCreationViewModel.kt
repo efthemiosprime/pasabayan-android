@@ -10,6 +10,8 @@ import com.efthemiosprime.pasabayan.features.trips.services.SavedRouteTemplatesS
 import com.efthemiosprime.pasabayan.features.trips.services.TripTutorialStore
 import com.efthemiosprime.pasabayan.features.trips.services.TripsRepository
 import com.efthemiosprime.pasabayan.features.trips.services.UsualTransportStore
+import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
+import com.efthemiosprime.pasabayan.features.verification.services.RequirePhoneVerificationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +26,8 @@ data class TripCreationUiState(
     val errorMessage: String? = null,
     val shouldShowSaveRoutePrompt: Boolean = false,
     val shouldShowTutorial: Boolean = false,
+    /** One-shot: action blocked because the user's phone is not verified. */
+    val requiresPhoneVerification: VerifyPhoneReason? = null,
 )
 
 @HiltViewModel
@@ -32,6 +36,7 @@ class TripCreationViewModel @Inject constructor(
     private val usualTransportStore: UsualTransportStore,
     private val savedRouteTemplatesStore: SavedRouteTemplatesStore,
     private val tripTutorialStore: TripTutorialStore,
+    private val requirePhoneVerification: RequirePhoneVerificationUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(TripCreationUiState())
     val uiState: StateFlow<TripCreationUiState> = _uiState.asStateFlow()
@@ -48,6 +53,10 @@ class TripCreationViewModel @Inject constructor(
     }
 
     fun createTrip(request: CreateTripRequestJson) {
+        if (requirePhoneVerification().isFailure) {
+            _uiState.update { it.copy(requiresPhoneVerification = VerifyPhoneReason.CreateTrip) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
@@ -100,5 +109,9 @@ class TripCreationViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.update { it.copy(errorMessage = null) }
+    }
+
+    fun consumeRequiresPhoneVerification() {
+        _uiState.update { it.copy(requiresPhoneVerification = null) }
     }
 }

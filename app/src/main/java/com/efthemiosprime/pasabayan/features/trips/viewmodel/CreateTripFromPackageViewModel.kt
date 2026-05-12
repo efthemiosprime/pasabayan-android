@@ -6,6 +6,8 @@ import com.efthemiosprime.pasabayan.features.trips.model.CreateTripFromPackageRe
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.model.TripTemplateData
 import com.efthemiosprime.pasabayan.features.trips.services.CreateTripFromPackageUseCase
+import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
+import com.efthemiosprime.pasabayan.features.verification.services.RequirePhoneVerificationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,11 +22,14 @@ data class CreateTripFromPackageUiState(
     val isSavingTrip: Boolean = false,
     val createdTrip: Trip? = null,
     val errorMessage: String? = null,
+    /** One-shot: action blocked because the user's phone is not verified. */
+    val requiresPhoneVerification: VerifyPhoneReason? = null,
 )
 
 @HiltViewModel
 class CreateTripFromPackageViewModel @Inject constructor(
     private val useCase: CreateTripFromPackageUseCase,
+    private val requirePhoneVerification: RequirePhoneVerificationUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CreateTripFromPackageUiState())
     val uiState: StateFlow<CreateTripFromPackageUiState> = _uiState.asStateFlow()
@@ -49,6 +54,10 @@ class CreateTripFromPackageViewModel @Inject constructor(
     }
 
     fun createTrip(request: CreateTripFromPackageRequest, userId: Long? = null) {
+        if (requirePhoneVerification().isFailure) {
+            _uiState.update { it.copy(requiresPhoneVerification = VerifyPhoneReason.CreateTrip) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isSavingTrip = true, errorMessage = null, createdTrip = null) }
             useCase.createTrip(request, userId = userId).fold(
@@ -69,5 +78,9 @@ class CreateTripFromPackageViewModel @Inject constructor(
 
     fun clearCreatedTrip() {
         _uiState.update { it.copy(createdTrip = null) }
+    }
+
+    fun consumeRequiresPhoneVerification() {
+        _uiState.update { it.copy(requiresPhoneVerification = null) }
     }
 }

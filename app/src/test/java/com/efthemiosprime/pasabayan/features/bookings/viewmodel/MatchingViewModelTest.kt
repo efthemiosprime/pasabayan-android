@@ -8,6 +8,10 @@ import com.efthemiosprime.pasabayan.features.bookings.model.NegotiationMetadata
 import com.efthemiosprime.pasabayan.features.bookings.model.RequestMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.RefundResult
 import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepository
+import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
+import com.efthemiosprime.pasabayan.features.verification.services.RequirePhoneVerificationUseCase
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -29,13 +33,16 @@ class MatchingViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var fakeRepo: FakeBookingsRepository
+    private lateinit var requirePhoneVerification: RequirePhoneVerificationUseCase
     private lateinit var viewModel: MatchingViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeRepo = FakeBookingsRepository()
-        viewModel = MatchingViewModel(fakeRepo)
+        requirePhoneVerification = mockk()
+        every { requirePhoneVerification.invoke() } returns Result.success(Unit)
+        viewModel = MatchingViewModel(fakeRepo, requirePhoneVerification)
     }
 
     @After
@@ -278,6 +285,99 @@ class MatchingViewModelTest {
         val state = viewModel.uiState.value
         assertTrue(state.errorMessage != null)
         assertFalse(state.isSubmittingCounterOffer)
+    }
+
+    // -- phone verification gate --
+
+    @Test
+    fun `submitCounterOffer (shipper) blocked when phone not verified emits BookTrip gate`() = runTest {
+        fakeRepo.loadResult = Result.success(listOf(testMatch(1, MatchStatus.CARRIER_REQUESTED)))
+        viewModel.loadMatches("shipper")
+        advanceUntilIdle()
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+
+        viewModel.submitCounterOffer(matchId = 1, proposedPrice = 100.0, message = null, isShipper = true)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(VerifyPhoneReason.BookTrip, state.requiresPhoneVerification)
+        assertFalse(state.isSubmittingCounterOffer)
+    }
+
+    @Test
+    fun `submitCounterOffer (carrier) blocked when phone not verified emits RequestToCarry gate`() = runTest {
+        fakeRepo.loadResult = Result.success(listOf(testMatch(1, MatchStatus.SHIPPER_REQUESTED)))
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+
+        viewModel.submitCounterOffer(matchId = 1, proposedPrice = 100.0, message = null, isShipper = false)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(VerifyPhoneReason.RequestToCarry, state.requiresPhoneVerification)
+        assertFalse(state.isSubmittingCounterOffer)
+    }
+
+    @Test
+    fun `requestPackageAsCarrier blocked when phone not verified does not call repo`() = runTest {
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+
+        viewModel.requestPackageAsCarrier(
+            tripId = 7,
+            packageId = 9,
+            proposedPrice = 50.0,
+            message = "Please",
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(VerifyPhoneReason.RequestToCarry, state.requiresPhoneVerification)
+        assertFalse(state.isSubmittingCounterOffer)
+    }
+
+    @Test
+    fun `requestPackageAsCarrier success appends match and surfaces negotiation`() = runTest {
+        val newMatch = testMatch(99, MatchStatus.CARRIER_REQUESTED)
+        fakeRepo.carrierRequestResult = Result.success(
+            RequestMatchResult(
+                match = newMatch,
+                negotiation = NegotiationMetadata(
+                    warnings = emptyList(),
+                    negotiationNeeded = false,
+                    isCounterOffer = false,
+                ),
+            ),
+        )
+
+        viewModel.requestPackageAsCarrier(
+            tripId = 7,
+            packageId = 9,
+            proposedPrice = 50.0,
+            message = "Please",
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.matches.any { it.id == 99 })
+        assertNotNull(state.lastNegotiation)
+        assertFalse(state.isSubmittingCounterOffer)
+    }
+
+    @Test
+    fun `consumeRequiresPhoneVerification clears the gate flag`() = runTest {
+        every { requirePhoneVerification.invoke() } returns
+            Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
+        viewModel.requestPackageAsCarrier(tripId = 1, packageId = 2, proposedPrice = 10.0, message = null)
+        advanceUntilIdle()
+        assertEquals(VerifyPhoneReason.RequestToCarry, viewModel.uiState.value.requiresPhoneVerification)
+
+        viewModel.consumeRequiresPhoneVerification()
+
+        assertNull(viewModel.uiState.value.requiresPhoneVerification)
     }
 
     @Test
