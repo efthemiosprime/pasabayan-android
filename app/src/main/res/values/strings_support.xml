@@ -38,4 +38,43 @@
     <string name="support_priority_low">Low</string>
     <string name="support_priority_medium">Medium</string>
     <string name="support_priority_high">High</string>
+
+    <!-- Help Center (iOS HelpCenterView parity) -->
+    <string name="support_help_center_title">Help Center</string>
+    <string name="support_help_center_close">Close Help Center</string>
+    <string name="support_help_center_popular_articles">Popular Articles</string>
+    <string name="support_help_center_contact_support">Contact Support</string>
+    <string name="support_help_center_badge_available">Available</string>
+    <string name="support_help_center_live_chat_title">Live Chat</string>
+    <string name="support_help_center_live_chat_subtitle">Average response: 2 min</string>
+    <string name="support_help_center_submit_title">Submit Support Request</string>
+    <string name="support_help_center_submit_subtitle">Report issues or ask questions</string>
+    <string name="support_help_center_phone_title">Phone Support</string>
+    <string name="support_help_center_phone_subtitle">Mon-Fri, 9AM-6PM EST</string>
+    <string name="support_help_center_phone_number">+1-555-0123</string>
+    <string name="support_help_center_footer">Need more help? Contact us anytime at</string>
+    <string name="support_help_center_footer_email">support@pasabayan.com</string>
+    <string name="support_help_center_article_close">Close article</string>
+
+    <!-- Help Center articles -->
+    <string name="support_help_center_article_getting_started_title">Getting started with Pasabayan</string>
+    <string name="support_help_center_article_getting_started_reading_time">5 min</string>
+    <string name="support_help_center_article_create_delivery_title">How to create a delivery request</string>
+    <string name="support_help_center_article_create_delivery_reading_time">3 min</string>
+    <string name="support_help_center_article_payment_billing_title">Payment methods and billing</string>
+    <string name="support_help_center_article_payment_billing_reading_time">5 min</string>
+    <string name="support_help_center_article_verifying_account_title">Verifying your account</string>
+    <string name="support_help_center_article_verifying_account_reading_time">4 min</string>
+    <string name="support_help_center_article_carrier_safety_title">Safety guidelines for carriers</string>
+    <string name="support_help_center_article_carrier_safety_reading_time">6 min</string>
+    <string name="support_help_center_article_tracking_updates_title">Package tracking and updates</string>
+    <string name="support_help_center_article_tracking_updates_reading_time">3 min</string>
+    <string name="support_help_center_article_switching_roles_title">Switching role</string>
+    <string name="support_help_center_article_switching_roles_reading_time">4 min</string>
+    <string name="support_help_center_article_accepting_deliveries_title">Accepting and completing deliveries</string>
+    <string name="support_help_center_article_accepting_deliveries_reading_time">6 min</string>
+    <string name="support_help_center_article_carrier_payouts_title">Carrier payouts and earnings</string>
+    <string name="support_help_center_article_carrier_payouts_reading_time">5 min</string>
+    <string name="support_help_center_article_create_trip_title">How to create a trip</string>
+    <string name="support_help_center_article_create_trip_reading_time">4 min</string>
 </resources>

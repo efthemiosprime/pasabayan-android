@@ -67,6 +67,9 @@ import com.efthemiosprime.pasabayan.features.packages.ui.PackageDetailScreen
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageRequestScreen
 import com.efthemiosprime.pasabayan.features.bookings.ui.RequestToCarrySheet
 import com.efthemiosprime.pasabayan.features.legal.ui.LegalViewerSheet
+import com.efthemiosprime.pasabayan.features.support.model.HelpArticle
+import com.efthemiosprime.pasabayan.features.support.ui.ArticleDetailSheet
+import com.efthemiosprime.pasabayan.features.support.ui.HelpCenterSheet
 import com.efthemiosprime.pasabayan.features.support.ui.SupportTicketFormScreen
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageCreationAssistViewModel
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
@@ -167,6 +170,8 @@ fun MainTabScreen(
     var carrierRequestPackage by remember { mutableStateOf<AvailablePackage?>(null) }
     // Profile menu → Support / Legal modal sheets (iOS HelpCenterView / TermsAndPrivacyView).
     var showHelpCenterSheet by remember { mutableStateOf(false) }
+    var helpCenterArticle by remember { mutableStateOf<HelpArticle?>(null) }
+    var showSupportTicketFormSheet by remember { mutableStateOf(false) }
     var showLegalViewerSheet by remember { mutableStateOf(false) }
     var favoritesOpen by remember { mutableStateOf(false) }
     var sendRequestCarrier by remember { mutableStateOf<FavoriteCarrierInfoJson?>(null) }
@@ -550,15 +555,40 @@ fun MainTabScreen(
         }
     }
 
-    // Profile menu → Help center (iOS HelpCenterView). For v1 this opens the support
-    // ticket form directly — the Popular Articles section from iOS will follow when
-    // we wire the article catalog UI.
+    // Profile menu → Help Center (iOS HelpCenterView). Landing page shows Popular
+    // Articles (each opens its HTML via ArticleDetailSheet) and a Contact Support
+    // section; the "Submit a Support Request" entry opens the existing ticket form.
     if (showHelpCenterSheet) {
         com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
             onDismissRequest = { showHelpCenterSheet = false },
         ) {
-            SupportTicketFormScreen(
+            HelpCenterSheet(
                 onClose = { showHelpCenterSheet = false },
+                onOpenArticle = { article -> helpCenterArticle = article },
+                onOpenSupportTicketForm = { showSupportTicketFormSheet = true },
+            )
+        }
+    }
+
+    helpCenterArticle?.let { article ->
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { helpCenterArticle = null },
+        ) {
+            val languageCode = java.util.Locale.getDefault().language
+            ArticleDetailSheet(
+                title = stringResource(article.titleRes),
+                htmlFilename = article.resolveHtmlFilename(languageCode = languageCode),
+                onClose = { helpCenterArticle = null },
+            )
+        }
+    }
+
+    if (showSupportTicketFormSheet) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showSupportTicketFormSheet = false },
+        ) {
+            SupportTicketFormScreen(
+                onClose = { showSupportTicketFormSheet = false },
             )
         }
     }
