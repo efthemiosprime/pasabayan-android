@@ -38,8 +38,11 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PCardVariant
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 
 /**
- * User header card — parity with iOS `UserHeaderCard.swift`.
- * Avatar + welcome + name + role chip + verification badge + three-dot menu.
+ * User header card — avatar + welcome + name + role chip + verification badge.
+ *
+ * Role switching lives **only** in the top-bar [DashboardTopBar] (`SwapHoriz` icon)
+ * — the in-card three-dot menu and the profile-header `CompactRolePickerRow` were
+ * removed as redundant secondary entry points (single source of truth).
  */
 @Composable
 fun UserHeaderCard(
@@ -47,7 +50,6 @@ fun UserHeaderCard(
     currentRole: UserRole,
     verificationLevel: String?,
     avatarUrl: String?,
-    onSwitchRole: () -> Unit,
     modifier: Modifier = Modifier,
     avatarContent: @Composable (() -> Unit)? = null,
 ) {
@@ -93,11 +95,6 @@ fun UserHeaderCard(
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-
-                RoleSwitcherIconButton(
-                    currentRole = currentRole,
-                    onSwitchRole = onSwitchRole,
-                )
             }
 
             // Role chip + verification badge
@@ -177,7 +174,6 @@ private fun UserHeaderCardCarrierPreview() {
             currentRole = UserRole.CARRIER,
             verificationLevel = "basic",
             avatarUrl = null,
-            onSwitchRole = {},
             modifier = Modifier.padding(PasabayanSpacing.lg),
         )
     }
@@ -192,7 +188,6 @@ private fun UserHeaderCardShipperPreview() {
             currentRole = UserRole.SHIPPER,
             verificationLevel = "verified",
             avatarUrl = null,
-            onSwitchRole = {},
             modifier = Modifier.padding(PasabayanSpacing.lg),
         )
     }

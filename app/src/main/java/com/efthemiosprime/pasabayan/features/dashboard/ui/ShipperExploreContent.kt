@@ -105,7 +105,6 @@ fun ShipperExploreContent(
             currentRole = UserRole.SHIPPER,
             verificationLevel = null,
             avatarUrl = user.avatar,
-            onSwitchRole = onSwitchRole,
         )
 
         // Find Carriers header
@@ -470,7 +469,6 @@ private fun ShipperExplorePreview() {
                 currentRole = UserRole.SHIPPER,
                 verificationLevel = "basic",
                 avatarUrl = null,
-                onSwitchRole = {},
             )
             Text(
                 text = stringResource(R.string.dashboard_shipper_find_carriers),

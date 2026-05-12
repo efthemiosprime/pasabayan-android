@@ -59,10 +59,12 @@ fun ChatMessageBubble(
                 )
             } else {
                 if (message.isSystemMessage) {
+                    // iOS parity (ConversationDetailView.swift:175-179): caption font,
+                    // secondary colour — reads as a status notice, not a participant message.
                     Text(
                         text = message.message,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 } else {
                     Text(

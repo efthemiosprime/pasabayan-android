@@ -90,7 +90,6 @@ fun CarrierExploreContent(
             currentRole = UserRole.CARRIER,
             verificationLevel = null,
             avatarUrl = user.avatar,
-            onSwitchRole = onSwitchRole,
         )
 
         // Find Packages header
@@ -355,7 +354,6 @@ private fun CarrierExplorePreview() {
                 currentRole = UserRole.CARRIER,
                 verificationLevel = "basic",
                 avatarUrl = null,
-                onSwitchRole = {},
             )
             Text(
                 text = stringResource(R.string.dashboard_carrier_find_packages),

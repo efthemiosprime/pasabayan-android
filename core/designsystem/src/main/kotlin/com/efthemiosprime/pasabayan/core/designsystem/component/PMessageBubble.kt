@@ -33,15 +33,30 @@ fun PMessageBubble(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     if (style == PMessageBubbleStyle.System) {
+        // iOS parity (`ConversationDetailView.swift:225`): system messages render in a
+        // centered, muted bubble using the surface-variant token — distinct from own/other
+        // bubbles so notification-style "Booking confirmed" / "Pickup scheduled" reads as
+        // chrome, not as a participant's message.
         Box(
             modifier = modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                content = content,
-            )
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(PasabayanRadius.md),
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp,
+            ) {
+                Column(
+                    modifier = Modifier.padding(
+                        horizontal = PasabayanSpacing.md,
+                        vertical = PasabayanSpacing.sm,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    content = content,
+                )
+            }
         }
         return
     }
@@ -84,7 +99,7 @@ private fun PMessageBubblePreview() {
                 Text(text = "On my way", color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
             PMessageBubble(style = PMessageBubbleStyle.System) {
-                Text(text = "Delivery updated", color = MaterialTheme.colorScheme.primary)
+                Text(text = "Delivery updated", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

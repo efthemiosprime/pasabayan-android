@@ -375,7 +375,6 @@ fun MainTabScreen(
                     viewModel = packageViewModel,
                 )
                 "messages" -> MessagesTabScreen(
-                    currentRole = state.currentRole,
                     currentUserId = user.id,
                     initialConversationId = pendingConversationId,
                     onInitialConversationConsumed = { pendingConversationId = null },

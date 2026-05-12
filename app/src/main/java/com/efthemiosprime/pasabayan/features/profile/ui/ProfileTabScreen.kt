@@ -52,7 +52,7 @@ import com.efthemiosprime.pasabayan.features.profile.model.shouldShowPackageHist
 import com.efthemiosprime.pasabayan.features.profile.model.shouldShowPayoutSetup
 import com.efthemiosprime.pasabayan.features.profile.model.shouldShowVehicleInfo
 import com.efthemiosprime.pasabayan.features.profile.model.shouldShowVerificationCard
-import com.efthemiosprime.pasabayan.features.dashboard.components.CompactRolePickerRow
+import com.efthemiosprime.pasabayan.features.dashboard.components.RoleChip
 import com.efthemiosprime.pasabayan.features.profile.viewmodel.ProfileTabViewModel
 
 @Composable
@@ -162,7 +162,6 @@ fun ProfileTabContent(
             name = state.userProfile?.fullName?.takeIf { it.isNotBlank() } ?: user.name,
             email = user.email,
             currentRole = currentRole,
-            onSwitchRole = onSwitchRole,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag(ProfileTestTags.Header),
@@ -330,7 +329,6 @@ private fun ProfileUserHeader(
     name: String,
     email: String,
     currentRole: UserRole,
-    onSwitchRole: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     PCard(modifier = modifier, variant = PCardVariant.Large) {
@@ -351,9 +349,10 @@ private fun ProfileUserHeader(
                     style = PasabayanTextStyles.Body.small,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                CompactRolePickerRow(
-                    currentRole = currentRole,
-                    onSwitchRole = onSwitchRole,
+                // Role switching lives in DashboardTopBar's SwapHoriz icon (single source
+                // of truth). Render a static chip here for identification only.
+                RoleChip(
+                    role = currentRole,
                     modifier = Modifier.testTag(ProfileTestTags.Role),
                 )
             }
@@ -498,7 +497,6 @@ private fun ProfileTabScreenPreview() {
             name = "Alex",
             email = "a@b.c",
             currentRole = UserRole.SHIPPER,
-            onSwitchRole = {},
             modifier = Modifier.padding(PasabayanSpacing.md),
         )
     }
