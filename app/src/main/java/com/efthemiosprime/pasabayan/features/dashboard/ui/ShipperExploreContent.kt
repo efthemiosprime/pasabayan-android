@@ -62,7 +62,9 @@ import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.bookings.ui.ShipperMatchCreationSheet
 import com.efthemiosprime.pasabayan.features.dashboard.components.ShipperExploreTripCard
 import com.efthemiosprime.pasabayan.features.dashboard.components.UserHeaderCard
+import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
+import com.efthemiosprime.pasabayan.features.profile.ui.UserProfilePopover
 import com.efthemiosprime.pasabayan.features.shipper.components.NearbyCarriersSection
 import com.efthemiosprime.pasabayan.features.shipper.viewmodel.NearbyCarriersViewModel
 import com.efthemiosprime.pasabayan.features.trips.ui.TripDetailsScreen
@@ -96,6 +98,9 @@ fun ShipperExploreContent(
     val nearbyCarriersState by nearbyCarriersViewModel.uiState.collectAsStateWithLifecycle()
     var detailTrip by remember { mutableStateOf<Trip?>(null) }
     var requestBookTrip by remember { mutableStateOf<Trip?>(null) }
+    // Profile popover state — non-null when the user tapped a trip card's carrier header
+    // (or, future, a nearby-carrier chip). iOS parity: UserProfilePopover.swift.
+    var profileSheetCarrier by remember { mutableStateOf<UserSummary?>(null) }
 
     LaunchedEffect(Unit) {
         browseTripsViewModel.loadAvailableTrips()
@@ -244,6 +249,9 @@ fun ShipperExploreContent(
                                 requestBookTrip = trip
                             }
                         },
+                        onOpenCarrierProfile = trip.carrier?.let { carrier ->
+                            { profileSheetCarrier = carrier }
+                        },
                     )
                 }
                 // Trailing footer drives the auto-paginate signal (visible to
@@ -317,6 +325,22 @@ fun ShipperExploreContent(
                 requestBookTrip = null
                 packageViewModel.clearTripRequestState()
             },
+        )
+    }
+
+    profileSheetCarrier?.let { carrier ->
+        UserProfilePopover(
+            userId = carrier.id,
+            userName = carrier.name,
+            userAvatar = carrier.avatar,
+            verificationLevel = carrier.verificationLevel,
+            initialRating = carrier.ratingValue,
+            initialTotalRatings = carrier.totalRatings,
+            userRole = UserRole.CARRIER,
+            memberSince = null, // not exposed by UserSummary today
+            currentUserId = user.id.toInt(),
+            currentUserRole = UserRole.SHIPPER,
+            onDismiss = { profileSheetCarrier = null },
         )
     }
 }

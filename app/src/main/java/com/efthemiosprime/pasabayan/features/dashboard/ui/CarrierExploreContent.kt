@@ -57,11 +57,13 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextFie
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.dashboard.components.UserHeaderCard
+import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.features.packages.components.CarrierExplorePackageCard
 import com.efthemiosprime.pasabayan.features.packages.components.NearbyFallbackBanner
 import com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageFilterSheet
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
+import com.efthemiosprime.pasabayan.features.profile.ui.UserProfilePopover
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.RouteActivitySummaryViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -85,6 +87,8 @@ fun CarrierExploreContent(
     val state by packageViewModel.uiState.collectAsStateWithLifecycle()
     val routeActivityState by routeActivityViewModel.uiState.collectAsStateWithLifecycle()
     var showFilterSheet by remember { mutableStateOf(false) }
+    // Profile popover state — set when the user taps a package card's shipper header.
+    var profileSheetShipper by remember { mutableStateOf<UserSummary?>(null) }
 
     LaunchedEffect(Unit) {
         packageViewModel.applyBrowseFilter()
@@ -185,6 +189,9 @@ fun CarrierExploreContent(
                         pkg = available,
                         onViewDetails = { onViewPackageDetails(available.effectiveId) },
                         onRequestToCarry = { onRequestToCarry(available.effectiveId) },
+                        onOpenShipperProfile = available.shipper?.let { shipper ->
+                            { profileSheetShipper = shipper }
+                        },
                     )
                 }
                 // Footer: spinner, retry, or end-of-list.
@@ -224,6 +231,22 @@ fun CarrierExploreContent(
                 packageViewModel.clearBrowseFilter()
                 showFilterSheet = false
             },
+        )
+    }
+
+    profileSheetShipper?.let { shipper ->
+        UserProfilePopover(
+            userId = shipper.id,
+            userName = shipper.name,
+            userAvatar = shipper.avatar,
+            verificationLevel = shipper.verificationLevel,
+            initialRating = shipper.ratingValue,
+            initialTotalRatings = shipper.totalRatings,
+            userRole = UserRole.SHIPPER,
+            memberSince = null, // not exposed by UserSummary today
+            currentUserId = user.id.toInt(),
+            currentUserRole = UserRole.CARRIER,
+            onDismiss = { profileSheetShipper = null },
         )
     }
 }
