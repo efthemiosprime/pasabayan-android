@@ -293,6 +293,9 @@ fun MainTabScreen(
                 userName = user.name,
                 currentRole = state.currentRole,
                 onSwitchRole = { viewModel.switchRole() },
+                verificationLevel = VerificationLevel.normalized(
+                    profileState.userProfile?.verificationLevel,
+                ),
                 notificationsUnreadCount = notificationState.unreadCount,
                 onOpenNotifications = { notificationsSheetOpen = true },
             )

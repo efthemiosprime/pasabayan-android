@@ -56,7 +56,6 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.session.AuthUser
-import com.efthemiosprime.pasabayan.features.dashboard.components.UserHeaderCard
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.features.packages.components.CarrierExplorePackageCard
 import com.efthemiosprime.pasabayan.features.packages.components.NearbyFallbackBanner
@@ -128,14 +127,6 @@ fun CarrierExploreContent(
         contentPadding = PaddingValues(PasabayanSpacing.screenPadding),
         verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
     ) {
-        item("user-header") {
-            UserHeaderCard(
-                userName = user.name,
-                currentRole = UserRole.CARRIER,
-                verificationLevel = null,
-                avatarUrl = user.avatar,
-            )
-        }
         item("find-packages-header") {
             Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
                 Text(
@@ -513,12 +504,6 @@ private fun CarrierExplorePreview() {
                 .padding(PasabayanSpacing.screenPadding),
             verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
         ) {
-            UserHeaderCard(
-                userName = "Bong Suyat",
-                currentRole = UserRole.CARRIER,
-                verificationLevel = "basic",
-                avatarUrl = null,
-            )
             Text(
                 text = stringResource(R.string.dashboard_carrier_find_packages),
                 style = PasabayanTextStyles.Heading.h4,

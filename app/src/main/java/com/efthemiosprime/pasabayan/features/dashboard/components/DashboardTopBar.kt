@@ -1,12 +1,17 @@
 package com.efthemiosprime.pasabayan.features.dashboard.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +34,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanRadius
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
+import com.efthemiosprime.pasabayan.core.domain.`enum`.VerificationLevel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +43,7 @@ fun DashboardTopBar(
     currentRole: UserRole,
     onSwitchRole: () -> Unit,
     modifier: Modifier = Modifier,
+    verificationLevel: VerificationLevel = VerificationLevel.BASIC,
     notificationsUnreadCount: Int = 0,
     onOpenNotifications: (() -> Unit)? = null,
 ) {
@@ -52,10 +59,16 @@ fun DashboardTopBar(
     TopAppBar(
         modifier = modifier,
         title = {
-            Text(
-                text = stringResource(R.string.dashboard_greeting, userName),
-                style = PasabayanTextStyles.Heading.h5,
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+            ) {
+                Text(
+                    text = userName,
+                    style = PasabayanTextStyles.Heading.h5,
+                )
+                VerificationBadge(level = verificationLevel)
+            }
         },
         actions = {
             Text(
@@ -89,6 +102,30 @@ fun DashboardTopBar(
             containerColor = MaterialTheme.colorScheme.background,
         ),
     )
+}
+
+/**
+ * Tiny verification indicator next to the user name. iOS parity: verified accounts show
+ * a check; premium accounts show a star. Basic accounts show nothing — the absence is
+ * the signal.
+ */
+@Composable
+private fun VerificationBadge(level: VerificationLevel) {
+    when (level) {
+        VerificationLevel.VERIFIED -> Icon(
+            imageVector = Icons.Filled.CheckCircle,
+            contentDescription = stringResource(R.string.dashboard_verification_verified),
+            tint = PasabayanColors.Success,
+            modifier = Modifier.size(14.dp),
+        )
+        VerificationLevel.PREMIUM -> Icon(
+            imageVector = Icons.Filled.Star,
+            contentDescription = stringResource(R.string.dashboard_verification_premium),
+            tint = PasabayanColors.BadgeGold,
+            modifier = Modifier.size(14.dp),
+        )
+        VerificationLevel.BASIC -> Unit
+    }
 }
 
 /**

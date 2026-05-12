@@ -27,9 +27,9 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 
 /**
- * Static role pill — used for identification only (in `UserHeaderCard` welcome panel and
- * the profile header). Role switching itself lives **only** in `DashboardTopBar`'s
- * `SwapHoriz` icon (single source of truth). iOS `RoleBadge` parity.
+ * Static role pill — used for identification only (e.g. in the profile header). Role
+ * switching itself lives **only** in `DashboardTopBar`'s `SwapHoriz` icon (single source
+ * of truth). iOS `RoleBadge` parity.
  */
 @Composable
 fun RoleChip(role: UserRole, modifier: Modifier = Modifier) {

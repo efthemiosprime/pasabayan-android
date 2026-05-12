@@ -61,7 +61,6 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.bookings.ui.ShipperMatchCreationSheet
 import com.efthemiosprime.pasabayan.features.dashboard.components.ShipperExploreTripCard
-import com.efthemiosprime.pasabayan.features.dashboard.components.UserHeaderCard
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.profile.ui.UserProfilePopover
@@ -139,14 +138,6 @@ fun ShipperExploreContent(
         contentPadding = PaddingValues(PasabayanSpacing.screenPadding),
         verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
     ) {
-        item("user-header") {
-            UserHeaderCard(
-                userName = user.name,
-                currentRole = UserRole.SHIPPER,
-                verificationLevel = null,
-                avatarUrl = user.avatar,
-            )
-        }
         item("find-carriers-header") {
             Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
                 Text(
@@ -531,12 +522,6 @@ private fun ShipperExplorePreview() {
                 .padding(PasabayanSpacing.screenPadding),
             verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
         ) {
-            UserHeaderCard(
-                userName = "Bong Suyat",
-                currentRole = UserRole.SHIPPER,
-                verificationLevel = "basic",
-                avatarUrl = null,
-            )
             Text(
                 text = stringResource(R.string.dashboard_shipper_find_carriers),
                 style = PasabayanTextStyles.Heading.h4,

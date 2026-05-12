@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="dashboard_title">Home</string>
-    <string name="dashboard_greeting">Hi, %1$s</string>
     <string name="dashboard_switch_role">Switch role</string>
     <string name="dashboard_role_carrier">Carrier</string>
     <string name="dashboard_role_shipper">Shipper</string>
@@ -32,10 +31,6 @@
     <string name="dashboard_stub_messages_description">Your conversations will appear here.</string>
     <string name="dashboard_stub_profile_title">Profile</string>
     <string name="dashboard_stub_profile_description">Your profile settings will appear here.</string>
-
-    <!-- Welcome messages -->
-    <string name="dashboard_carrier_welcome">Welcome back, Carrier!</string>
-    <string name="dashboard_shipper_welcome">Welcome back!</string>
 
     <!-- Verification badges -->
     <string name="dashboard_verification_basic">Basic</string>
