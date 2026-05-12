@@ -82,6 +82,21 @@
     <string name="bookings_counter_offer_error_not_found">Package or trip not found.</string>
     <string name="bookings_counter_offer_error_rate_limited">Too many requests. Please wait a moment and try again.</string>
 
+    <!-- Counter offer banner -->
+    <string name="bookings_counter_offer_banner_from">from %1$s</string>
+    <string name="bookings_counter_offer_banner_was">Was</string>
+    <string name="bookings_counter_offer_banner_now">Now</string>
+    <string name="bookings_counter_offer_banner_dismiss">Dismiss counter offer</string>
+    <string name="bookings_counter_offer_banner_initiated_by_shipper">Initiated by shipper</string>
+    <string name="bookings_counter_offer_banner_initiated_by_carrier">Initiated by carrier</string>
+    <string name="bookings_counter_offer_you">You</string>
+    <string name="bookings_counter_offer_summary_unchanged">Price unchanged</string>
+    <string name="bookings_counter_offer_summary_you_saved">You saved %1$s</string>
+    <string name="bookings_counter_offer_summary_increased_by">Increased by %1$s</string>
+    <string name="bookings_counter_offer_summary_earned_more">You\'ll earn %1$s more</string>
+    <string name="bookings_counter_offer_summary_below_rate">%1$s below your rate</string>
+    <string name="bookings_counter_offer_summary_reduced_by">Reduced by %1$s</string>
+
     <!-- Request to carry -->
     <string name="bookings_request_to_carry_title">Request to Carry</string>
     <string name="bookings_request_to_carry_price">Your proposed price</string>

@@ -82,6 +82,21 @@
     <string name="bookings_counter_offer_error_not_found">Colis ou trajet introuvable.</string>
     <string name="bookings_counter_offer_error_rate_limited">Trop de requ\u00eates. Veuillez patienter un instant et r\u00e9essayer.</string>
 
+    <!-- Counter offer banner -->
+    <string name="bookings_counter_offer_banner_from">de %1$s</string>
+    <string name="bookings_counter_offer_banner_was">Avant</string>
+    <string name="bookings_counter_offer_banner_now">Maintenant</string>
+    <string name="bookings_counter_offer_banner_dismiss">Fermer la contre-offre</string>
+    <string name="bookings_counter_offer_banner_initiated_by_shipper">Initi\u00e9e par l\'exp\u00e9diteur</string>
+    <string name="bookings_counter_offer_banner_initiated_by_carrier">Initi\u00e9e par le transporteur</string>
+    <string name="bookings_counter_offer_you">Vous</string>
+    <string name="bookings_counter_offer_summary_unchanged">Prix inchang\u00e9</string>
+    <string name="bookings_counter_offer_summary_you_saved">Vous \u00e9conomisez %1$s</string>
+    <string name="bookings_counter_offer_summary_increased_by">Augment\u00e9 de %1$s</string>
+    <string name="bookings_counter_offer_summary_earned_more">Vous gagnerez %1$s de plus</string>
+    <string name="bookings_counter_offer_summary_below_rate">%1$s sous votre tarif</string>
+    <string name="bookings_counter_offer_summary_reduced_by">R\u00e9duit de %1$s</string>
+
     <!-- Request to carry -->
     <string name="bookings_request_to_carry_title">Demande de transport</string>
     <string name="bookings_request_to_carry_price">Votre prix propos\u00e9</string>
