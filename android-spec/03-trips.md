@@ -241,6 +241,35 @@ All fields optional — only send changed values:
 | `TripsResponse` | `{ message: String, data: PaginatedResponse<Trip> }` |
 | `TripsSuccessResponse` | `{ success: Bool, data: PaginatedResponse<Trip> }` |
 
+### Android browse-pagination contract (iOS-parity)
+
+The shipper-explore browse path uses an envelope-aware page model, mirroring iOS `BrowseTripsViewModel`.
+
+**`AvailableTripsPage`** (`features/trips/model/`) — domain envelope:
+
+| Field | Source key | Notes |
+|-------|-----------|-------|
+| `trips` | `data.data[]` | Mapped to `Trip` via `toDomain()` |
+| `currentPage` | `data.current_page` | |
+| `lastPage` | `data.last_page` | |
+| `total` | `data.total` | |
+| `perPage` | `data.per_page` | Default 15 (`TripsRepository.DEFAULT_PER_PAGE` mirrors iOS `Pagination.defaultPerPage`) |
+| `hasMore` | computed | `currentPage < lastPage` — **never** "the filtered list came back empty" (would mis-fire when the client-side bookable-status filter empties a non-final page) |
+
+> **No `nearby` flag**: `/trips/available` does not return a top-level proximity flag (the symmetric concept for packages does). This is a server-side asymmetry, not an Android gap.
+
+**VM state machine** (`BrowseTripsViewModel`):
+- `loadAvailableTrips(reset = true)` — bumps `loadGeneration`, fetches page 1, replaces the list. Reset is the default for filter applies, pull-to-refresh, and initial mount.
+- `loadAvailableTrips(reset = false)` — fetches `currentPage + 1`, appends (`distinctBy { it.id }`). Driven by `loadMoreTrips()`.
+- `loadMoreTrips()` — early-returns if `isLoading || isLoadingMore || !hasMore` or before the first page lands; delegates to the reset=false path.
+- `loadGeneration` private counter — race-guards stale responses after fast filter-toggle.
+
+**Client-side filter** — `applyPage()` filters out non-bookable trip statuses (`BOOKABLE_STATUSES = { PLANNING, ACTIVE }`) before merging.
+
+**UI behaviour** (`ShipperExploreContent` on `LazyColumn`):
+- End-of-list auto-paginate via the same `derivedStateOf { lastVisible >= total - 3 }` pattern carrier-explore uses; no manual "Load More" button.
+- `PaginationFooter` `Box` at list end carries the in-flight `PCircularProgress`; layoutInfo-driven trigger reads the footer's index as the last visible item.
+
 ### Trip matching models (from [`TripModels.swift`](../../Pasabayan/Features/Trips/Models/TripModels.swift))
 
 #### `TripMatchesResponse`

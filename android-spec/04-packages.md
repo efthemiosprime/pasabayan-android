@@ -307,6 +307,46 @@ All computed properties (`effectiveVerificationLevel`, `ratingValue`, `formatted
 | `packages` | [AvailablePackage] | Extracted from paginated response |
 | `nearby` | Bool? | Response-level flag indicating GPS proximity filtering |
 
+### Android browse-pagination contract (iOS-parity)
+
+The carrier-explore browse path uses a structured filter + envelope-aware page model, mirroring iOS `BrowseTripsViewModel` / `CarrierBrowsePackagesViewModel`.
+
+**`PackageBrowseFilter`** (`features/packages/model/`) — drives the wire request:
+
+| Field | Wire key | Notes |
+|-------|----------|-------|
+| `searchText` | `q` | Trimmed; blank omits |
+| `urgency` | `urgency` | Lowercase `UrgencyLevel` name (`low`/`normal`/`high`/`urgent`/`express`/`flexible`) |
+| `maxWeight` | `max_weight` | Raw user-input String; parsed to Double at `toQueryMap()`, unparseable values silently dropped |
+| `maxPrice` | `max_budget` | Same string-parse rule. **Wire key is `max_budget`** even though the UI label says "max price" — iOS-parity |
+| `packageType` | — | **Never sent server-side.** Applied client-side via `PackageUiState.visibleAvailablePackages` (iOS `// TODO` to move server-side) |
+
+**`AvailablePackagesPage`** (`features/packages/model/`) — domain envelope:
+
+| Field | Source key | Notes |
+|-------|-----------|-------|
+| `packages` | `data.data[]` | Mapped to `AvailablePackage` via `toDomain()` |
+| `currentPage` | `data.current_page` | |
+| `lastPage` | `data.last_page` | |
+| `total` | `data.total` | |
+| `perPage` | `data.per_page` | Default 15 (`PackagesRepository.DEFAULT_PER_PAGE` mirrors iOS `Pagination.defaultPerPage`) |
+| `nearby` | top-level `nearby` | Top-level, not nested under `data` |
+| `hasMore` | computed | `currentPage < lastPage` — **never** "the page came back empty" (would mis-fire when `packageType` client-side filter empties a non-final page) |
+
+**VM state machine** (`PackageViewModel`):
+- `setBrowseFilter(filter)` — updates filter without fetching (typing inside the sheet).
+- `applyBrowseFilter()` — bumps `loadGeneration`, resets pagination, fetches page 1.
+- `clearBrowseFilter()` — resets filter to empty + applies.
+- `loadMoreAvailablePackages()` — fetches `currentPage + 1` and appends (dedupes by `effectiveId`). No-op when `isLoadingMore`, `!hasMore`, or before the first page lands.
+- `loadGeneration` private counter — each in-flight fetch captures the value; responses with stale snapshots are dropped. Prevents fast filter-toggle from replaying a slow earlier response onto the freshly reset list.
+
+**UI behaviour** (`CarrierExploreContent` on `LazyColumn`):
+- End-of-list auto-paginate via `derivedStateOf { lastVisible >= total - 3 }` → `snapshotFlow().distinctUntilChanged().collect { loadMore() }`.
+- `PaginationFooter` shows `PCircularProgress` when `isLoadingMore`, a retry affordance when `loadMoreError != null`, nothing when `!hasMore`.
+- `NearbyFallbackBanner` renders above the list when `availablePackagesNearby == false` — informs the user that the server expanded results beyond their home city. `true` and `null` deliberately render nothing.
+
+> **Android delta vs iOS:** iOS `CarrierBrowsePackagesView.swift:35-37` references a `nearbyBanner` but never implements it. Android wires the banner in `features/packages/components/NearbyBanner.kt`; the iOS dead code remains untouched (different repo).
+
 ### Compatible trips models
 
 | Type | Fields | Notes |
