@@ -36,8 +36,10 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PStatusBadge
 import com.efthemiosprime.pasabayan.core.domain.`enum`.InitiatedBy
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
+import com.efthemiosprime.pasabayan.features.bookings.components.CounterOfferBanner
 import com.efthemiosprime.pasabayan.features.bookings.components.MatchStatusBadgeConfig
 import com.efthemiosprime.pasabayan.features.bookings.model.BookingAction
+import com.efthemiosprime.pasabayan.features.bookings.model.CounterOfferContext
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.CarrierTripInfo
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.PackageRequestInfo
@@ -51,6 +53,7 @@ fun ShipperMatchDetailsSheetContent(
     onClose: () -> Unit,
     onAction: (BookingAction) -> Unit,
     modifier: Modifier = Modifier,
+    currentUserId: Int? = null,
 ) {
     val statusLabel = matchStatusLabel(match.matchStatus)
     val currentStep = timelineCurrentIndex(match.matchStatus)
@@ -61,6 +64,19 @@ fun ShipperMatchDetailsSheetContent(
         onClose = onClose,
         modifier = modifier,
     ) {
+        // Counter-offer banner — iOS parity with top-of-screen banner in
+        // ShipperMatchDetailsView / CarrierMatchDetailsView. Renders only
+        // when the match is a counter-offer with a recoverable original
+        // price. Self-dismisses via local state inside the banner.
+        CounterOfferContext.fromMatch(match)?.let { ctx ->
+            CounterOfferBanner(
+                context = ctx,
+                currentUserId = currentUserId,
+                onDismiss = {},
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
         PDetailSheetCard(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -344,12 +360,14 @@ private fun ShipperMatchDetailsSheetPreview() {
                 packageRequestId = 401,
                 matchStatus = MatchStatus.IN_TRANSIT,
                 agreedPrice = 120.0,
-                initiatedBy = InitiatedBy.SHIPPER,
-                isCounterOffer = false,
-                originalPrice = null,
+                initiatedBy = InitiatedBy.CARRIER,
+                isCounterOffer = true,
+                originalPrice = "150.00",
                 canCounterOffer = true,
                 remainingCounterOffers = 2,
-                counterOfferRound = null,
+                counterOfferRound = 1,
+                counterOffererId = 7,
+                counterOffererName = "Sarah Carrier",
                 carrierMessage = null,
                 shipperMessage = null,
                 carrier = UserSummary(id = 7, name = "Sarah Carrier", rating = "4.9", verificationLevel = "verified"),
