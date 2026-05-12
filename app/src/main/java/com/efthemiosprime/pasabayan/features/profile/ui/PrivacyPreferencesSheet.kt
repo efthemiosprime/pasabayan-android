@@ -59,26 +59,15 @@ fun PrivacyPreferencesSheet(
     )
     state.pendingDisable?.let { pending ->
         val descriptionRes = pending.disableConfirmRes ?: pending.descriptionRes
-        AlertDialog(
-            onDismissRequest = viewModel::cancelPendingDisable,
-            title = { Text(stringResource(R.string.profile_privacy_confirm_disable_title)) },
-            text = { Text(stringResource(descriptionRes)) },
-            confirmButton = {
-                TextButton(
-                    onClick = viewModel::confirmPendingDisable,
-                    modifier = Modifier.testTag(PrivacyPreferencesTestTags.ConfirmDisable),
-                ) {
-                    Text(
-                        text = stringResource(R.string.profile_privacy_confirm_turn_off),
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = viewModel::cancelPendingDisable) {
-                    Text(stringResource(R.string.profile_privacy_confirm_keep))
-                }
-            },
+        com.efthemiosprime.pasabayan.core.designsystem.component.PAlertDialog(
+            title = stringResource(R.string.profile_privacy_confirm_disable_title),
+            message = stringResource(descriptionRes),
+            confirmText = stringResource(R.string.profile_privacy_confirm_turn_off),
+            onConfirm = viewModel::confirmPendingDisable,
+            dismissText = stringResource(R.string.profile_privacy_confirm_keep),
+            onDismiss = viewModel::cancelPendingDisable,
+            isDestructive = true,
+            confirmModifier = Modifier.testTag(PrivacyPreferencesTestTags.ConfirmDisable),
         )
     }
 }

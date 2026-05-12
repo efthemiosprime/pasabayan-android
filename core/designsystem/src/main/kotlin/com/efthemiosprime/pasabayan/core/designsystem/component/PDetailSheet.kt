@@ -40,7 +40,10 @@ fun PDetailSheetScaffold(
     closeContentDescription: String,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = Color(0xFFF2F2F7),
+    // Was hardcoded #F2F2F7 — the light-mode value — which made every sheet render
+    // a light-gray container in dark mode. Theme-driven default so sheets adapt
+    // to dark + the inner PDetailSheetCard / PCard surfaces stay readable.
+    backgroundColor: Color = MaterialTheme.colorScheme.background,
     contentSpacing: androidx.compose.ui.unit.Dp = 12.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {

@@ -365,28 +365,17 @@ fun TripDetailsScreen(
                 )
             }
             if (showCancelConfirm) {
-                AlertDialog(
-                    onDismissRequest = { showCancelConfirm = false },
-                    title = { Text(stringResource(R.string.trips_cancel_confirm_title)) },
-                    text = { Text(stringResource(R.string.trips_cancel_confirm_message)) },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                showCancelConfirm = false
-                                onCancel()
-                            },
-                        ) {
-                            Text(
-                                text = stringResource(R.string.trips_cancel_confirm_action),
-                                color = PasabayanColors.Error,
-                            )
-                        }
+                com.efthemiosprime.pasabayan.core.designsystem.component.PAlertDialog(
+                    title = stringResource(R.string.trips_cancel_confirm_title),
+                    message = stringResource(R.string.trips_cancel_confirm_message),
+                    confirmText = stringResource(R.string.trips_cancel_confirm_action),
+                    onConfirm = {
+                        showCancelConfirm = false
+                        onCancel()
                     },
-                    dismissButton = {
-                        TextButton(onClick = { showCancelConfirm = false }) {
-                            Text(stringResource(R.string.trips_cancel_confirm_keep))
-                        }
-                    },
+                    dismissText = stringResource(R.string.trips_cancel_confirm_keep),
+                    onDismiss = { showCancelConfirm = false },
+                    isDestructive = true,
                 )
             }
         }

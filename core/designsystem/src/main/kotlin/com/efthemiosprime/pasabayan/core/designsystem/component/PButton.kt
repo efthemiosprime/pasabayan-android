@@ -139,7 +139,7 @@ fun PButton(
         .background(backgroundColor, shape)
         .then(
             if (showBorder) {
-                Modifier.border(PasabayanBorder.width, PasabayanColors.Border, shape)
+                Modifier.border(PasabayanBorder.width, colorScheme.outline, shape)
             } else {
                 Modifier
             },

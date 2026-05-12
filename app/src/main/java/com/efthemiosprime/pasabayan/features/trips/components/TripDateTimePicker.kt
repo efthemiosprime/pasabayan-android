@@ -170,10 +170,9 @@ private fun TripTimePickerDialog(
         initialHour = cal.get(Calendar.HOUR_OF_DAY),
         initialMinute = cal.get(Calendar.MINUTE),
     )
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.trips_create_picker_time_title)) },
-        text = {
+    com.efthemiosprime.pasabayan.core.designsystem.component.PAlertDialog(
+        title = stringResource(R.string.trips_create_picker_time_title),
+        content = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -181,16 +180,10 @@ private fun TripTimePickerDialog(
                 TimePicker(state = state)
             }
         },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(state.hour, state.minute) }) {
-                Text(stringResource(R.string.trips_create_picker_done))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.trips_create_picker_cancel))
-            }
-        },
+        confirmText = stringResource(R.string.trips_create_picker_done),
+        onConfirm = { onConfirm(state.hour, state.minute) },
+        dismissText = stringResource(R.string.trips_create_picker_cancel),
+        onDismiss = onDismiss,
     )
 }
 

@@ -527,7 +527,7 @@ private fun OnboardingProgressDots(
             val color = when {
                 index == currentStepIndex -> accent
                 index < currentStepIndex -> accent.copy(alpha = 0.5f)
-                else -> PasabayanColors.Border
+                else -> MaterialTheme.colorScheme.outline
             }
             Box(
                 modifier = Modifier
@@ -734,7 +734,7 @@ private fun OnboardingCompletionActionCard(
             .dsShadowOnboardingCard(shape),
         shape = shape,
         color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(PasabayanBorder.width, PasabayanColors.Border),
+        border = BorderStroke(PasabayanBorder.width, MaterialTheme.colorScheme.outline),
     ) {
         Row(
             modifier = Modifier.padding(PasabayanSpacing.cardPadding),
@@ -827,7 +827,7 @@ private fun OnboardingAllCaughtUpBadge() {
                 .fillMaxWidth()
                 .height(6.dp)
                 .clip(RoundedCornerShape(999.dp))
-                .background(PasabayanColors.Border),
+                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
         ) {
             Box(
                 modifier = Modifier

@@ -44,7 +44,9 @@ fun PCard(
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
-        border = BorderStroke(PasabayanBorder.width, PasabayanColors.Border),
+        // Theme-aware outline — `PasabayanColors.Border` is the light-mode value (#C6C6C8);
+        // the dark scheme provides #48484A via `colorScheme.outline`.
+        border = BorderStroke(PasabayanBorder.width, MaterialTheme.colorScheme.outline),
     ) {
         Column(
             Modifier.padding(PasabayanSpacing.cardPadding),

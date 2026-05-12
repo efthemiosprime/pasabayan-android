@@ -293,7 +293,7 @@ private fun AuthGoogleLogoMark(
             modifier = modifier
                 .clip(RoundedCornerShape(4.dp))
                 .background(
-                    if (tint != null) tint.copy(alpha = 0.35f) else Color(0xFFE0E0E0),
+                    if (tint != null) tint.copy(alpha = 0.35f) else MaterialTheme.colorScheme.outline,
                 ),
         )
     } else {
@@ -424,7 +424,7 @@ private fun GoogleSignInRow(
             .height(50.dp)
             .clip(RoundedCornerShape(PasabayanRadius.sm))
             .background(fill)
-            .border(1.dp, Color.Black.copy(alpha = 0.08f), RoundedCornerShape(PasabayanRadius.sm))
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(PasabayanRadius.sm))
             .clickable(enabled = enabled) { onClick() }
             .padding(horizontal = PasabayanSpacing.lg),
         verticalAlignment = Alignment.CenterVertically,
@@ -456,7 +456,7 @@ private fun FacebookSignInRow(
             .height(50.dp)
             .clip(RoundedCornerShape(PasabayanRadius.md))
             .background(fill)
-            .border(1.dp, Color.Black.copy(alpha = 0.08f), RoundedCornerShape(PasabayanRadius.md))
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(PasabayanRadius.md))
             .clickable(enabled = enabled) { onClick() }
             .padding(horizontal = PasabayanSpacing.lg),
         verticalAlignment = Alignment.CenterVertically,

@@ -1,0 +1,146 @@
+---
+description: Every view, component, and UI must promote reuse and inherit from :core:designsystem — search before writing, build on P*, extract early, promote when shared
+alwaysApply: true
+---
+
+# UI reusability and design-system inheritance
+
+Every view, component, and Compose UI in this app must be **reusable by construction** and **built on top of `:core:designsystem`**. Bespoke, single-use, design-system-bypassing UI is not acceptable in feature modules.
+
+This rule sits next to two siblings:
+
+- **`design-system-enforcement.mdc`** — *what* tokens / `P*` to use (no bespoke styling).
+- **`lean-classes-separation.mdc`** — *how big* a file/class can grow before extraction.
+
+This rule covers the **before-you-write** decision: is there already a reusable composable for this, and how do I build mine so the next feature can reuse it?
+
+## Hard rules (always apply)
+
+### 1. Search before you write
+
+Before adding any composable under `features/*/ui/` or `features/*/components/`:
+
+1. **Search `:core:designsystem`** for an existing **`P*`** primitive (`PButton`, `PCard`, `PDetailRow`, `PStatusBadge`, `PEmptyState`, `PRouteSection`, `PModalBottomSheet`, etc.).
+2. **Search the feature's `components/`** folder for an existing local composable.
+3. **Search sibling features' `components/`** when the surface is cross-role (e.g. shipper/carrier showing the same package data).
+4. Only after all three searches come up empty, write a new composable — and write it to be reusable from the start (see rule 3).
+
+A new composable that duplicates an existing `P*` or feature component is grounds to reject the PR.
+
+### 2. Inherit from the design system — never reimplement it
+
+Every new UI must **compose `P*` primitives and `Pasabayan*` tokens**, not reach around them:
+
+| Building a… | Build it from | Never |
+|---|---|---|
+| Section card with a title and rows | `PCard` + `PDetailRow` + `PasabayanSpacing.*` | hand-rolled `Surface` + `Column` + `.padding(12.dp)` |
+| Action footer | `PButton` (primary/secondary/tertiary variants) | Material3 `Button` with custom colors |
+| Status indicator | `PStatusBadge` (extend with new status if missing) | hand-rolled `Box` with `.background(Color(0xFF…))` |
+| Empty / zero state | `PEmptyState` | bespoke icon + headline + body layout |
+| Sheet / modal scaffold | `PDetailSheetScaffold` (see `detail-sheet-scaffold-conformance.mdc`) | hand-rolled title row + close + scroll |
+| Loading state | `PCircularProgress` inside the same scaffold/card pattern as siblings | inline `CircularProgressIndicator` with bespoke padding |
+
+**Rule of thumb:** if your new composable's body contains a raw `Color(0xFF…)`, a raw `.dp` literal where a token exists, a Material3 component a `P*` already wraps, or a hand-rolled "card-like" `Surface` + `clip(RoundedCornerShape(...))` — you are reimplementing the design system. Stop and use / extend the primitive.
+
+### 3. Design every new composable to be reused
+
+When you do write a new composable, write it as if a second caller already exists:
+
+- **No private state coupling.** Take inputs as parameters; emit outputs as callbacks (`onClick: () -> Unit`). Do **not** read from a `ViewModel` directly inside a reusable component.
+- **No business logic.** Reusable composables format and lay out — they don't fetch, decide, or persist. Logic stays in the ViewModel / use case.
+- **Parameter shape is data, not entities.** Prefer small data classes or primitives (`title: String`, `status: PackageStatus`) over passing the whole DTO/domain entity. The component should not know about `PackageDto`.
+- **Modifier as the first optional parameter** (`modifier: Modifier = Modifier`), per Compose convention, so callers can size/place it.
+- **Slot APIs over flag explosions.** When a component might host varying content, take a `content: @Composable () -> Unit` slot rather than 8 boolean flags.
+- **Sensible defaults.** Optional parameters default to the most common case so the simplest call site stays one-line.
+- **Previews wrapped in `PasabayanTheme`**, light + dark, with realistic sample data — see `compose-ui-previews.mdc`.
+
+A composable that takes a `ViewModel`, mixes in business logic, or accepts a domain entity is **not reusable** even if it lives in `components/`. Refactor before merging.
+
+### 4. Extract early — share at the right level
+
+| Usage pattern | Where it lives |
+|---|---|
+| Used in **one screen** only | Inline in the screen file is fine, **until** the block exceeds ~30 lines or becomes its own concept — then extract to `features/<feature>/components/`. |
+| Used by **≥ 2 composables in the same feature** | Extract to `features/<feature>/components/`. |
+| Used by **≥ 2 features** (e.g. shipper + carrier) | Promote to `:core:designsystem` as a `P*` primitive (or a feature-shared composable in `shared/` only when truly shell-level). |
+| Recurring **visual pattern** (card chrome, row layout, badge, empty state) | Promote to `:core:designsystem` and add a token entry in `android-spec/14-design-system.md`. |
+
+**Trigger for promotion:** the second time you'd need to copy-paste a composable across features, **stop and promote it** to `:core:designsystem` in its own PR before consuming it from the feature.
+
+### 5. Cross-role parity — same primitives, same composition
+
+When the same content exists for two roles (shipper vs carrier package detail, sender vs recipient address card), the two views must:
+
+- Use the **same `P*` primitives** in the **same order**.
+- Share **section composables** (extracted under the feature's `components/` or `:core:designsystem`).
+- Differ **only** in actions (buttons), data, and copy — **not** chrome, spacing, typography, or background.
+
+If you find yourself writing two separate "PackageDetailSheetShipper" and "PackageDetailSheetCarrier" composables with copy-pasted section layouts, extract a shared `PackageDetailSections` composable and have each role compose it with role-specific actions.
+
+### 6. Don't fork — extend
+
+When an existing `P*` *almost* fits but is missing a variant (e.g. `PButton` has primary / secondary but you need destructive):
+
+1. **Extend** the existing primitive with the new variant in `:core:designsystem` (add the variant to the enum/sealed type, add tokens, add light + dark previews, add tests).
+2. Update `android-spec/14-design-system.md` with the new variant.
+3. Land that PR.
+4. **Then** consume the new variant from the feature.
+
+Do **not** copy `PButton` into the feature as a one-off bespoke button. Do **not** add a `customStyle: Boolean` flag that bypasses tokens.
+
+### 7. Workflow before adding a UI file
+
+```
+About to add a composable
+        │
+        ▼
+1. Search :core:designsystem for an existing P*
+        │ found → use it (stop)
+        ▼ not found
+2. Search this feature's components/
+        │ found → use / extend it (stop)
+        ▼ not found
+3. Search sibling features' components/ (cross-role surfaces)
+        │ found → promote it to shared / :core:designsystem (separate PR), then use it
+        ▼ not found
+4. Will this be used by ≥ 2 features?
+        │ yes → add the primitive to :core:designsystem first (with tests + previews + spec update)
+        │ no  → add to features/<feature>/components/ as a reusable composable (rule 3)
+        ▼
+5. Build it ONLY from P* + Pasabayan* tokens (rule 2)
+6. Add light + dark previews wrapped in PasabayanTheme
+7. Stop after the slice for the user to commit
+```
+
+## Catching violations (review / self-review checklist)
+
+Flag any of these in new or changed UI code:
+
+- [ ] A new composable that duplicates the shape/role of an existing `P*` (a hand-rolled "card", "badge", "empty state", "row", "sheet header").
+- [ ] A composable in `features/*/components/` that takes a `ViewModel`, performs I/O, or accepts a DTO/domain entity directly.
+- [ ] A repeated UI block (≥ 2 uses or ≥ 30 lines) that was inlined instead of extracted.
+- [ ] Two role-specific screens (shipper / carrier) with copy-pasted section layouts instead of a shared composable.
+- [ ] A composable in `features/*/components/` that is actually used by **two or more** features — promote to `:core:designsystem`.
+- [ ] A new variant added by a `Boolean` flag or `customColor: Color` parameter instead of being added to the `P*`'s variant enum in `:core:designsystem`.
+- [ ] Missing `modifier: Modifier = Modifier` parameter on a reusable composable.
+- [ ] Missing light + dark `@Preview` wrapped in `PasabayanTheme`.
+
+## Anti-patterns
+
+| Avoid | Prefer |
+|---|---|
+| `Card(modifier = Modifier.padding(12.dp).background(Color(0xFFF5F5F5)))` inline | `PCard { … }` (or extend `PCard` with the variant) |
+| `MyFeatureButton(...)` that wraps `PButton` only to hardcode colors | Add the variant to `PButton` in `:core:designsystem` |
+| `PackageDetailSheetShipper` + `PackageDetailSheetCarrier` with copied sections | `PackageDetailSections(...)` shared composable + role-specific action footers |
+| `@Composable fun TripCard(viewModel: TripViewModel)` | `@Composable fun TripCard(state: TripCardState, onClick: () -> Unit, modifier: Modifier = Modifier)` |
+| Inlining the same 40-line "user header row" in three screens | Extract `UserHeaderRow` to `features/<feature>/components/` (or `:core:designsystem` if cross-feature) |
+| Adding `useDestructiveStyle: Boolean` to `PButton` | Add a `PButtonVariant.Destructive` enum case with proper tokens |
+
+## Cross-references
+
+- **What tokens / `P*` to use:** `.cursor/rules/design-system-enforcement.mdc`
+- **Sheet scaffolding parity:** `.cursor/rules/detail-sheet-scaffold-conformance.mdc`
+- **Preview requirements (light + dark):** `.cursor/rules/compose-ui-previews.mdc`
+- **File size / extraction triggers:** `.cursor/rules/lean-classes-separation.mdc`
+- **Where reusable composables live:** `.cursor/rules/app-feature-package-layout.mdc`
+- **Design-system spec + `P*` catalog:** `android-spec/14-design-system.md`

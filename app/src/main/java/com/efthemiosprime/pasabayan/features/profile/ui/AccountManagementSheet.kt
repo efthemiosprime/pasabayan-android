@@ -85,26 +85,15 @@ fun AccountManagementSheet(
         modifier = modifier,
     )
     if (state.showDeleteConfirm) {
-        AlertDialog(
-            onDismissRequest = viewModel::cancelDelete,
-            title = { Text(stringResource(R.string.profile_account_delete_confirm_title)) },
-            text = { Text(stringResource(R.string.profile_account_delete_confirm_message)) },
-            confirmButton = {
-                TextButton(
-                    onClick = viewModel::confirmDelete,
-                    modifier = Modifier.testTag(AccountManagementTestTags.DeleteConfirm),
-                ) {
-                    Text(
-                        text = stringResource(R.string.profile_account_delete_confirm_yes),
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = viewModel::cancelDelete) {
-                    Text(stringResource(R.string.profile_account_delete_confirm_cancel))
-                }
-            },
+        com.efthemiosprime.pasabayan.core.designsystem.component.PAlertDialog(
+            title = stringResource(R.string.profile_account_delete_confirm_title),
+            message = stringResource(R.string.profile_account_delete_confirm_message),
+            confirmText = stringResource(R.string.profile_account_delete_confirm_yes),
+            onConfirm = viewModel::confirmDelete,
+            dismissText = stringResource(R.string.profile_account_delete_confirm_cancel),
+            onDismiss = viewModel::cancelDelete,
+            isDestructive = true,
+            confirmModifier = Modifier.testTag(AccountManagementTestTags.DeleteConfirm),
         )
     }
 }

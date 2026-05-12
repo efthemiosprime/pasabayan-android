@@ -44,7 +44,7 @@ fun PFilterChip(
     val border = if (selected) {
         null
     } else {
-        BorderStroke(PasabayanBorder.width, PasabayanColors.Border)
+        BorderStroke(PasabayanBorder.width, MaterialTheme.colorScheme.outline)
     }
 
     Surface(

@@ -215,7 +215,7 @@ private fun AvatarWithVerificationBadge(
             modifier = Modifier
                 .size(AVATAR_SIZE)
                 .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
-                .border(2.dp, PasabayanColors.Border, CircleShape),
+                .border(2.dp, MaterialTheme.colorScheme.outline, CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -263,7 +263,7 @@ private fun VerificationPill(level: String) {
             stringResource(R.string.profile_verification_premium),
         )
         else -> Triple(
-            PasabayanColors.Border.copy(alpha = 0.3f),
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
             MaterialTheme.colorScheme.onSurfaceVariant,
             stringResource(R.string.profile_verification_basic),
         )
@@ -345,7 +345,7 @@ private fun RoleTag(userRole: UserRole?) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         fontWeight = FontWeight.Medium,
         modifier = Modifier
-            .background(PasabayanColors.Border.copy(alpha = 0.3f), RoundedCornerShape(PasabayanRadius.sm))
+            .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(PasabayanRadius.sm))
             .padding(horizontal = PasabayanSpacing.md, vertical = 6.dp),
     )
 }
@@ -609,7 +609,7 @@ private fun RatingDistributionView(distribution: Map<Int, Int>) {
                             .fillMaxWidth()
                             .height(8.dp)
                             .background(
-                                PasabayanColors.Border.copy(alpha = 0.3f),
+                                MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                                 RoundedCornerShape(4.dp),
                             ),
                     )

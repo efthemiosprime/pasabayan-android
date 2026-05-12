@@ -168,7 +168,7 @@ fun PExpandableCardHost(
                         color = MaterialTheme.colorScheme.surface,
                         tonalElevation = 0.dp,
                         shadowElevation = 0.dp,
-                        border = BorderStroke(PasabayanBorder.width, PasabayanColors.Border),
+                        border = BorderStroke(PasabayanBorder.width, MaterialTheme.colorScheme.outline),
                     ) {
                         Column(modifier = Modifier.fillMaxSize()) {
                             // Close button

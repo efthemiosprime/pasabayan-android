@@ -429,24 +429,14 @@ private fun AttachmentChip(uri: Uri, onRemove: () -> Unit) {
 
 @Composable
 private fun SubmissionSuccessDialog(ticket: SupportTicket, onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        icon = {
-            Icon(
-                imageVector = Icons.Filled.CheckCircle,
-                contentDescription = null,
-                tint = PasabayanColors.Success,
-            )
-        },
-        title = { Text(stringResource(R.string.support_success_title)) },
-        text = {
-            Text(stringResource(R.string.support_success_description, ticket.id, ticket.email))
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.support_success_dismiss))
-            }
-        },
+    com.efthemiosprime.pasabayan.core.designsystem.component.PAlertDialog(
+        title = stringResource(R.string.support_success_title),
+        message = stringResource(R.string.support_success_description, ticket.id, ticket.email),
+        confirmText = stringResource(R.string.support_success_dismiss),
+        onConfirm = onDismiss,
+        onDismiss = onDismiss,
+        icon = Icons.Filled.CheckCircle,
+        iconTint = PasabayanColors.Success,
     )
 }
 

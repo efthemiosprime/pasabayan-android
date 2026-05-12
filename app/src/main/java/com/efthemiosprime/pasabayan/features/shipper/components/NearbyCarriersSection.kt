@@ -91,7 +91,7 @@ private fun TopCarrierChip(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(PasabayanRadius.card),
         color = MaterialTheme.colorScheme.surface,
-        border = androidx.compose.foundation.BorderStroke(PasabayanBorder.width, PasabayanColors.Border),
+        border = androidx.compose.foundation.BorderStroke(PasabayanBorder.width, MaterialTheme.colorScheme.outline),
     ) {
         Column(
             modifier = Modifier

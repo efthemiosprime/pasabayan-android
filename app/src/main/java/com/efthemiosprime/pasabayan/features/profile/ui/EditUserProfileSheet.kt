@@ -138,26 +138,15 @@ fun EditUserProfileSheet(
         modifier = modifier,
     )
     if (state.showDeleteAvatarConfirm) {
-        AlertDialog(
-            onDismissRequest = viewModel::cancelDeleteAvatar,
-            title = { Text(stringResource(R.string.profile_avatar_confirm_title)) },
-            text = { Text(stringResource(R.string.profile_avatar_confirm_message)) },
-            confirmButton = {
-                TextButton(
-                    onClick = viewModel::confirmDeleteAvatar,
-                    modifier = Modifier.testTag(EditUserProfileTestTags.AvatarConfirmDelete),
-                ) {
-                    Text(
-                        text = stringResource(R.string.profile_avatar_confirm_remove),
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = viewModel::cancelDeleteAvatar) {
-                    Text(stringResource(R.string.profile_edit_cancel))
-                }
-            },
+        com.efthemiosprime.pasabayan.core.designsystem.component.PAlertDialog(
+            title = stringResource(R.string.profile_avatar_confirm_title),
+            message = stringResource(R.string.profile_avatar_confirm_message),
+            confirmText = stringResource(R.string.profile_avatar_confirm_remove),
+            onConfirm = viewModel::confirmDeleteAvatar,
+            dismissText = stringResource(R.string.profile_edit_cancel),
+            onDismiss = viewModel::cancelDeleteAvatar,
+            isDestructive = true,
+            confirmModifier = Modifier.testTag(EditUserProfileTestTags.AvatarConfirmDelete),
         )
     }
 }

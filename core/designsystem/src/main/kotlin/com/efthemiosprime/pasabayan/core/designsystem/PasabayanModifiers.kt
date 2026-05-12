@@ -29,10 +29,11 @@ fun Modifier.dsCardStyle(
     contentPadding: Dp = PasabayanSpacing.cardPadding,
 ): Modifier {
     val surface = MaterialTheme.colorScheme.surface
+    val outline = MaterialTheme.colorScheme.outline
     val shape = RoundedCornerShape(radius)
     return this
         .background(surface, shape)
-        .border(PasabayanBorder.width, PasabayanColors.Border, shape)
+        .border(PasabayanBorder.width, outline, shape)
         .padding(contentPadding)
 }
 

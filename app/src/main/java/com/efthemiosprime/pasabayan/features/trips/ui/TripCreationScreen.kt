@@ -601,39 +601,28 @@ fun TripCreationScreen(
         } else {
             null
         }
-        AlertDialog(
-            onDismissRequest = {},
-            title = { Text(text = stringResource(R.string.trips_create_success_title)) },
-            text = { Text(text = stringResource(R.string.trips_create_success_save_route_prompt)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.completeSuccessFlow(
-                            userId = userId,
-                            transportationMethod = transportationMethod,
-                            saveRouteTemplate = routeTemplate,
-                            saveRoute = true,
-                        )
-                        onTripCreated()
-                    },
-                ) {
-                    Text(text = stringResource(R.string.trips_create_success_save_route_action))
-                }
+        com.efthemiosprime.pasabayan.core.designsystem.component.PAlertDialog(
+            title = stringResource(R.string.trips_create_success_title),
+            message = stringResource(R.string.trips_create_success_save_route_prompt),
+            confirmText = stringResource(R.string.trips_create_success_save_route_action),
+            onConfirm = {
+                viewModel.completeSuccessFlow(
+                    userId = userId,
+                    transportationMethod = transportationMethod,
+                    saveRouteTemplate = routeTemplate,
+                    saveRoute = true,
+                )
+                onTripCreated()
             },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.completeSuccessFlow(
-                            userId = userId,
-                            transportationMethod = transportationMethod,
-                            saveRouteTemplate = routeTemplate,
-                            saveRoute = false,
-                        )
-                        onTripCreated()
-                    },
-                ) {
-                    Text(text = stringResource(R.string.trips_create_success_skip_route_action))
-                }
+            dismissText = stringResource(R.string.trips_create_success_skip_route_action),
+            onDismiss = {
+                viewModel.completeSuccessFlow(
+                    userId = userId,
+                    transportationMethod = transportationMethod,
+                    saveRouteTemplate = routeTemplate,
+                    saveRoute = false,
+                )
+                onTripCreated()
             },
         )
     }
