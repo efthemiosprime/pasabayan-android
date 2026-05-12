@@ -61,6 +61,8 @@
     <string name="trips_detail_flat_rate_label">Flat rate</string>
     <string name="trips_detail_weight">Weight</string>
     <string name="trips_detail_notes">Special Notes</string>
+    <string name="trips_detail_carrier_information">Carrier Information</string>
+    <string name="trips_detail_no_ratings_yet">No ratings yet</string>
     <string name="trips_detail_earnings">Earnings</string>
     <!-- iOS parity (tripEarningsOverviewCard): two-column layout, label left, value right. -->
     <string name="trips_detail_earnings_title">Trip Earnings</string>

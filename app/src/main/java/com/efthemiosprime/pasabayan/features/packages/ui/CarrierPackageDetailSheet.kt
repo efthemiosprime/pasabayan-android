@@ -20,8 +20,10 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSectionTi
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetScaffold
 import com.efthemiosprime.pasabayan.core.designsystem.component.PRouteSection
+import com.efthemiosprime.pasabayan.core.designsystem.component.PUserInfoCard
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UrgencyLevel
+import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.features.packages.components.packageTypeLabel
 import com.efthemiosprime.pasabayan.features.packages.components.urgencyLevelLabel
 import com.efthemiosprime.pasabayan.features.packages.model.AvailablePackage
@@ -48,6 +50,7 @@ fun CarrierPackageDetailSheet(
         modifier = modifier,
     ) {
         HeaderCard(pkg = pkg)
+        pkg.shipper?.let { ShipperInfoCard(shipper = it) }
         RouteCard(pkg = pkg)
         InfoCard(pkg = pkg)
         ScheduleCard(pkg = pkg)
@@ -58,6 +61,19 @@ fun CarrierPackageDetailSheet(
             modifier = Modifier.fillMaxWidth(),
         )
     }
+}
+
+@Composable
+private fun ShipperInfoCard(shipper: UserSummary) {
+    PUserInfoCard(
+        name = shipper.name,
+        title = stringResource(R.string.carrier_package_detail_sender_information),
+        rating = shipper.rating?.takeIf { it.isNotBlank() },
+        totalRatings = shipper.totalRatings,
+        verificationLevel = shipper.verificationLevel,
+        noRatingsLabel = stringResource(R.string.carrier_package_card_no_ratings_yet),
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 @Composable
@@ -190,7 +206,14 @@ private fun CarrierPackageDetailSheetPreview() {
                 createdAt = "2026-05-10T12:00:00Z",
                 daysSincePosted = 2.0,
                 distanceKm = null,
-                shipper = null,
+                shipper = UserSummary(
+                    id = 42,
+                    name = "Jane Shipper",
+                    avatar = null,
+                    verificationLevel = "verified",
+                    rating = "4.7",
+                    totalRatings = 12,
+                ),
                 serviceType = null,
             ),
             onRequestToCarry = {},

@@ -213,4 +213,5 @@
     <string name="carrier_package_detail_handling">Manutention</string>
     <string name="carrier_package_detail_fragile_item">Article fragile</string>
     <string name="carrier_package_detail_request_to_carry">Proposer de transporter</string>
+    <string name="carrier_package_detail_sender_information">Informations sur l\'expéditeur</string>
 </resources>

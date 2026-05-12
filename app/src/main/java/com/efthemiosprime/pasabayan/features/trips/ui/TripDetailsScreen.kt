@@ -54,6 +54,8 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetScaffold
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDivider
 import com.efthemiosprime.pasabayan.core.designsystem.component.PFilterChip
+import com.efthemiosprime.pasabayan.core.designsystem.component.PUserInfoCard
+import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PricingType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
@@ -121,6 +123,12 @@ fun TripDetailsScreen(
                     }
                 }
             }
+        }
+
+        // Carrier info card — iOS parity with the carrier header in BrowseTripsView,
+        // surfaced inside the detail view so shippers see who they're booking with.
+        if (!isCarrier) {
+            trip.carrier?.let { CarrierInfoCard(carrier = it) }
         }
 
         // Route information card
@@ -440,6 +448,19 @@ private fun CarrierAcceptedPackagesSection(
 }
 
 @Composable
+private fun CarrierInfoCard(carrier: UserSummary) {
+    PUserInfoCard(
+        name = carrier.name,
+        title = stringResource(R.string.trips_detail_carrier_information),
+        rating = carrier.rating?.takeIf { it.isNotBlank() },
+        totalRatings = carrier.totalRatings,
+        verificationLevel = carrier.verificationLevel,
+        noRatingsLabel = stringResource(R.string.trips_detail_no_ratings_yet),
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+@Composable
 private fun NoPackagesAssignedChip() {
     Row(
         modifier = Modifier
@@ -748,6 +769,56 @@ private fun TripDetailsPreview() {
                     createdAt = "2026-03-27T08:00:00Z",
                 ),
             ),
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "TripDetails (shipper) — light", heightDp = 900)
+@Preview(
+    showBackground = true,
+    name = "TripDetails (shipper) — dark",
+    heightDp = 900,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun TripDetailsShipperPreview() {
+    PasabayanTheme {
+        TripDetailsScreen(
+            trip = Trip(
+                id = 1, carrierId = 42,
+                originCity = "Toronto", originCountry = "Canada",
+                originLat = 43.65, originLng = -79.38,
+                destinationCity = "Vancouver", destinationCountry = "Canada",
+                destinationLat = 49.28, destinationLng = -123.12,
+                departureDate = "2026-04-01T08:00:00Z",
+                arrivalDate = "2026-04-01T14:00:00Z",
+                availableWeightKg = 25.0, availableSpaceLiters = 50.0,
+                pricePerKg = 15.0, tripStatus = TripStatus.ACTIVE,
+                transportationMethod = TransportationMethod.FLIGHT,
+                specialNotes = "Handle with care — fragile electronics",
+                carrier = UserSummary(
+                    id = 42,
+                    name = "Alex Carrier",
+                    avatar = null,
+                    verificationLevel = "verified",
+                    rating = "4.9",
+                    totalRatings = 87,
+                ),
+                createdAt = null, updatedAt = null,
+                pricingType = null, pricingMethod = null,
+                flatTripPrice = null, basePrice = null, calculatedPrice = null,
+                pickupAddress = "123 Main St", pickupLandmark = "Near Central Station",
+                dropoffAddress = "456 Oak Ave", dropoffLandmark = null,
+                tripEarningsTotal = null, tripEarningsCurrency = null,
+                tripEarningsBreakdown = null,
+                hasPendingRequests = null, pendingRequestCount = null,
+                pendingRequests = null, distanceKm = 3365.0,
+            ),
+            isCarrier = false,
+            onEdit = {},
+            onCancel = {},
+            onBack = {},
+            onRequestBook = {},
         )
     }
 }

@@ -61,6 +61,8 @@
     <string name="trips_detail_flat_rate_label">Tarif forfaitaire</string>
     <string name="trips_detail_weight">Poids</string>
     <string name="trips_detail_notes">Notes sp\u00e9ciales</string>
+    <string name="trips_detail_carrier_information">Informations sur le transporteur</string>
+    <string name="trips_detail_no_ratings_yet">Aucun avis pour le moment</string>
     <string name="trips_detail_earnings">Revenus</string>
     <!-- Parit\u00e9 iOS (tripEarningsOverviewCard) : libell\u00e9 \u00e0 gauche, valeur \u00e0 droite. -->
     <string name="trips_detail_earnings_title">Revenus du trajet</string>

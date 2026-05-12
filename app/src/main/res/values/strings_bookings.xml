@@ -74,6 +74,14 @@
     <string name="bookings_counter_offer_propose_price">Propose a new price</string>
     <string name="bookings_counter_offer_message">Message (optional)</string>
     <string name="bookings_counter_offer_submit">Submit Counter Offer</string>
+    <string name="bookings_counter_offer_no_thanks">No thanks</string>
+    <string name="bookings_counter_offer_header">Propose a new price for this match.</string>
+    <string name="bookings_counter_offer_declined_price">Declined Price</string>
+    <string name="bookings_counter_offer_your_price">Your Counter-Offer</string>
+    <string name="bookings_counter_offer_minimum_hint">Minimum: %1$s</string>
+    <string name="bookings_counter_offer_error_positive">Price must be greater than zero.</string>
+    <string name="bookings_counter_offer_error_minimum">Minimum price is %1$s.</string>
+    <string name="bookings_counter_offer_error_different">Counter-offer must differ from the declined price.</string>
     <string name="bookings_counter_offer_price_increase">Price increased by $%1$.2f</string>
     <string name="bookings_counter_offer_price_decrease">Price decreased by $%1$.2f</string>
     <string name="bookings_counter_offer_error_limit_reached">You\'ve reached the counter-offer limit for this match.</string>

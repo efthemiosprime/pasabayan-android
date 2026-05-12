@@ -213,4 +213,5 @@
     <string name="carrier_package_detail_handling">Handling</string>
     <string name="carrier_package_detail_fragile_item">Fragile item</string>
     <string name="carrier_package_detail_request_to_carry">Request to Carry</string>
+    <string name="carrier_package_detail_sender_information">Sender Information</string>
 </resources>

@@ -74,6 +74,14 @@
     <string name="bookings_counter_offer_propose_price">Proposer un nouveau prix</string>
     <string name="bookings_counter_offer_message">Message (optionnel)</string>
     <string name="bookings_counter_offer_submit">Soumettre la contre-offre</string>
+    <string name="bookings_counter_offer_no_thanks">Non merci</string>
+    <string name="bookings_counter_offer_header">Proposez un nouveau prix pour cette correspondance.</string>
+    <string name="bookings_counter_offer_declined_price">Prix refus\u00e9</string>
+    <string name="bookings_counter_offer_your_price">Votre contre-offre</string>
+    <string name="bookings_counter_offer_minimum_hint">Minimum\u00a0: %1$s</string>
+    <string name="bookings_counter_offer_error_positive">Le prix doit \u00eatre sup\u00e9rieur \u00e0 z\u00e9ro.</string>
+    <string name="bookings_counter_offer_error_minimum">Le prix minimum est de %1$s.</string>
+    <string name="bookings_counter_offer_error_different">La contre-offre doit diff\u00e9rer du prix refus\u00e9.</string>
     <string name="bookings_counter_offer_price_increase">Prix augment\u00e9 de %1$.2f $</string>
     <string name="bookings_counter_offer_price_decrease">Prix diminu\u00e9 de %1$.2f $</string>
     <string name="bookings_counter_offer_error_limit_reached">Vous avez atteint la limite de contre-offres pour cette correspondance.</string>

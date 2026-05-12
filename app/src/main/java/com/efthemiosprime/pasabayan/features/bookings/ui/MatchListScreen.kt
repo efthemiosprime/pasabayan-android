@@ -83,6 +83,18 @@ fun MatchListScreen(
     // Distinct surface from [selectedMatch]: the composer is shown on its own so it doesn't
     // require stacking the details sheet underneath.
     var counterOfferTarget by remember { mutableStateOf<DeliveryMatch?>(null) }
+    // Tracks whether we've entered the in-flight submit state since the sheet opened,
+    // so we can dismiss the sheet on the trailing edge of the spinner rather than
+    // immediately on tap (lets the user see the loading state).
+    var counterOfferSubmissionStarted by remember { mutableStateOf(false) }
+    LaunchedEffect(state.isSubmittingCounterOffer) {
+        if (state.isSubmittingCounterOffer) {
+            counterOfferSubmissionStarted = true
+        } else if (counterOfferSubmissionStarted) {
+            counterOfferSubmissionStarted = false
+            counterOfferTarget = null
+        }
+    }
 
     LaunchedEffect(role) { viewModel.loadMatches(role) }
 
@@ -266,9 +278,11 @@ fun MatchListScreen(
                     message = message,
                     isShipper = !isCarrier,
                 )
-                counterOfferTarget = null
+                // Sheet stays open while in flight — the trailing-edge effect
+                // above clears `counterOfferTarget` when submission completes.
             },
             onDismiss = { counterOfferTarget = null },
+            isSubmitting = state.isSubmittingCounterOffer,
         )
     }
 }
