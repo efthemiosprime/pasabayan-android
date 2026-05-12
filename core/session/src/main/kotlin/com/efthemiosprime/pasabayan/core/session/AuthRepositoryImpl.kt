@@ -5,6 +5,9 @@ import com.efthemiosprime.pasabayan.core.network.ApiErrorMapper
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.network.auth.AuthApi
 import com.efthemiosprime.pasabayan.core.network.auth.ProviderLoginRequestJson
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,6 +18,14 @@ class AuthRepositoryImpl @Inject constructor(
     private val json: Json,
     private val tokenStore: TokenStore,
 ) : AuthRepository {
+
+    private val _currentUser = MutableStateFlow<AuthUser?>(null)
+
+    override fun currentUser(): StateFlow<AuthUser?> = _currentUser.asStateFlow()
+
+    override fun clearCurrentUser() {
+        _currentUser.value = null
+    }
 
     override suspend fun loginWithProviderAccessToken(provider: String, accessToken: String): Result<AuthUser> {
         return try {
@@ -36,7 +47,9 @@ class AuthRepositoryImpl @Inject constructor(
             }
             val authData = requireNotNull(responseBody.data)
             tokenStore.setToken(authData.token)
-            Result.success(authData.user.toAuthUser())
+            val user = authData.user.toAuthUser()
+            _currentUser.value = user
+            Result.success(user)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }
@@ -55,7 +68,9 @@ class AuthRepositoryImpl @Inject constructor(
             if (!body.success) {
                 return Result.failure(DomainErrorMapperException(DomainError.ServerError("Invalid session")))
             }
-            Result.success(body.data.user.toAuthUser())
+            val user = body.data.user.toAuthUser()
+            _currentUser.value = user
+            Result.success(user)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }
@@ -65,6 +80,7 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val res = authApi.logout()
             tokenStore.clear()
+            _currentUser.value = null
             if (!res.isSuccessful) {
                 return Result.failure(
                     DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
@@ -73,6 +89,7 @@ class AuthRepositoryImpl @Inject constructor(
             Result.success(Unit)
         } catch (e: Exception) {
             tokenStore.clear()
+            _currentUser.value = null
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }
     }

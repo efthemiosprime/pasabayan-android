@@ -123,6 +123,7 @@ class AuthViewModel @Inject constructor(
                 onSuccess = { user -> applySignedInWithCityGate(user) },
                 onFailure = { e ->
                     tokenStore.clear()
+                    authRepository.clearCurrentUser()
                     googleSignInHelper.signOutGoogle()
                     _uiState.update { s ->
                         s.copy(
@@ -290,6 +291,7 @@ class AuthViewModel @Inject constructor(
     }
 
     private fun handleUnauthorizedFromNetwork() {
+        authRepository.clearCurrentUser()
         googleSignInHelper.signOutGoogle()
         _uiState.update { s ->
             s.copy(

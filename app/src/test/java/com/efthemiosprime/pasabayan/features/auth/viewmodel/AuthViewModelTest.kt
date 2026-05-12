@@ -334,14 +334,26 @@ private class FakeAuthRepository : AuthRepository {
     var loadCurrentUserResult: Result<AuthUser> = Result.failure(RuntimeException("not set"))
     var logoutResult: Result<Unit> = Result.success(Unit)
 
+    private val _currentUser = kotlinx.coroutines.flow.MutableStateFlow<AuthUser?>(null)
+
     override suspend fun loginWithProviderAccessToken(
         provider: String,
         accessToken: String,
-    ): Result<AuthUser> = loginResult
+    ): Result<AuthUser> = loginResult.also { res ->
+        res.getOrNull()?.let { _currentUser.value = it }
+    }
 
-    override suspend fun loadCurrentUser(): Result<AuthUser> = loadCurrentUserResult
+    override suspend fun loadCurrentUser(): Result<AuthUser> = loadCurrentUserResult.also { res ->
+        res.getOrNull()?.let { _currentUser.value = it }
+    }
 
-    override suspend fun logout(): Result<Unit> = logoutResult
+    override suspend fun logout(): Result<Unit> = logoutResult.also {
+        _currentUser.value = null
+    }
+
+    override fun currentUser(): kotlinx.coroutines.flow.StateFlow<AuthUser?> = _currentUser
+
+    override fun clearCurrentUser() { _currentUser.value = null }
 }
 
 private class FakeTokenStore : TokenStore {

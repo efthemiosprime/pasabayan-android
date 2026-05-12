@@ -114,4 +114,112 @@ class AuthRepositoryIntegrationTest {
         assertTrue(result.isSuccess)
         assertNull(tokenStore.getToken())
     }
+
+    @Test
+    fun currentUser_initialValue_isNull() {
+        val repo = AuthRepositoryImpl(authApi, json, tokenStore)
+        assertNull(repo.currentUser().value)
+    }
+
+    @Test
+    fun loginWithProvider_success_updatesCurrentUser() = runBlocking {
+        val body = javaClass.getResourceAsStream("/api-fixtures/auth/provider_login_success.json")!!
+            .bufferedReader().use { it.readText() }
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(body)
+                .addHeader("Content-Type", "application/json"),
+        )
+        val repo = AuthRepositoryImpl(authApi, json, tokenStore)
+
+        repo.loginWithProviderAccessToken("google", "id-token-xyz")
+
+        val cached = repo.currentUser().value
+        assertEquals(42L, cached?.id)
+        assertEquals("test@example.com", cached?.email)
+    }
+
+    @Test
+    fun loadCurrentUser_success_updatesCurrentUser() = runBlocking {
+        val body = javaClass.getResourceAsStream("/api-fixtures/auth/auth_me_success.json")!!
+            .bufferedReader().use { it.readText() }
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(body)
+                .addHeader("Content-Type", "application/json"),
+        )
+        val repo = AuthRepositoryImpl(authApi, json, tokenStore)
+
+        repo.loadCurrentUser()
+
+        assertEquals(7L, repo.currentUser().value?.id)
+    }
+
+    @Test
+    fun logout_clearsCurrentUser() = runBlocking {
+        // First, seed a user via login.
+        val loginBody = javaClass.getResourceAsStream("/api-fixtures/auth/provider_login_success.json")!!
+            .bufferedReader().use { it.readText() }
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(loginBody)
+                .addHeader("Content-Type", "application/json"),
+        )
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"success":true,"message":"ok"}""")
+                .addHeader("Content-Type", "application/json"),
+        )
+        val repo = AuthRepositoryImpl(authApi, json, tokenStore)
+        repo.loginWithProviderAccessToken("google", "id-token-xyz")
+        assertEquals(42L, repo.currentUser().value?.id)
+
+        repo.logout()
+
+        assertNull(repo.currentUser().value)
+    }
+
+    @Test
+    fun logout_apiFailure_stillClearsCurrentUser() = runBlocking {
+        val loginBody = javaClass.getResourceAsStream("/api-fixtures/auth/provider_login_success.json")!!
+            .bufferedReader().use { it.readText() }
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(loginBody)
+                .addHeader("Content-Type", "application/json"),
+        )
+        // logout returns 500 — repo should still clear the cached user
+        server.enqueue(MockResponse().setResponseCode(500).setBody("{}"))
+        val repo = AuthRepositoryImpl(authApi, json, tokenStore)
+        repo.loginWithProviderAccessToken("google", "id-token-xyz")
+
+        val result = repo.logout()
+
+        assertTrue(result.isFailure)
+        assertNull(repo.currentUser().value)
+    }
+
+    @Test
+    fun clearCurrentUser_setsValueToNull() = runBlocking {
+        val body = javaClass.getResourceAsStream("/api-fixtures/auth/auth_me_success.json")!!
+            .bufferedReader().use { it.readText() }
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(body)
+                .addHeader("Content-Type", "application/json"),
+        )
+        val repo = AuthRepositoryImpl(authApi, json, tokenStore)
+        repo.loadCurrentUser()
+        assertEquals(7L, repo.currentUser().value?.id)
+
+        repo.clearCurrentUser()
+
+        assertNull(repo.currentUser().value)
+    }
 }
