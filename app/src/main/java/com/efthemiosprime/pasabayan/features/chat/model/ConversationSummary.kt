@@ -37,5 +37,7 @@ data class LastMessage(
     val messageType: String,
     val senderName: String?,
     val createdAt: String?,
+    /** Server-side flag for the last-message preview in the conversations list. */
+    val isSystemMessage: Boolean = false,
 )
 

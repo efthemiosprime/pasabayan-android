@@ -131,6 +131,65 @@ class ChatJsonModelsDecodeTest {
     }
 
     @Test
+    fun `SenderJson decodes is_me from the API payload`() {
+        val raw = """
+            {
+              "id": 42,
+              "name": "Alice",
+              "is_me": true
+            }
+        """.trimIndent()
+
+        val decoded = json.decodeFromString<SenderJson>(raw)
+
+        assertEquals(42, decoded.id)
+        assertEquals("Alice", decoded.name)
+        assertEquals(true, decoded.isMe)
+    }
+
+    @Test
+    fun `SenderJson defaults is_me to false when omitted`() {
+        // Older payloads / synthetic system-message sender objects may omit is_me.
+        val raw = """{ "id": 0, "name": "System" }"""
+
+        val decoded = json.decodeFromString<SenderJson>(raw)
+
+        assertEquals(false, decoded.isMe)
+    }
+
+    @Test
+    fun `LastMessageJson decodes is_system_message`() {
+        val raw = """
+            {
+              "id": 5,
+              "message": "Match created",
+              "message_type": "system",
+              "is_system_message": true,
+              "created_at": "2026-01-01T00:00:00Z"
+            }
+        """.trimIndent()
+
+        val decoded = json.decodeFromString<LastMessageJson>(raw)
+
+        assertEquals(true, decoded.isSystemMessage)
+    }
+
+    @Test
+    fun `LastMessageJson defaults is_system_message to false when omitted`() {
+        val raw = """
+            {
+              "id": 5,
+              "message": "Regular chat message",
+              "message_type": "text"
+            }
+        """.trimIndent()
+
+        val decoded = json.decodeFromString<LastMessageJson>(raw)
+
+        assertEquals(false, decoded.isSystemMessage)
+    }
+
+    @Test
     fun `SendMessageResponseJson prefers chat_message when present`() {
         val raw = """
             {

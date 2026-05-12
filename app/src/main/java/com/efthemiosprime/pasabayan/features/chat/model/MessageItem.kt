@@ -31,6 +31,8 @@ data class Sender(
     val id: Int,
     val name: String,
     val avatar: String?,
+    /** Server-authoritative — true when this sender is the current user. */
+    val isMe: Boolean = false,
 )
 
 data class Attachment(

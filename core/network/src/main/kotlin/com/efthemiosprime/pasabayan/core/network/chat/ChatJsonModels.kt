@@ -198,6 +198,7 @@ data class LastMessageJson(
     val message: String = "",
     @SerialName("message_type") val messageType: String = "text",
     @SerialName("sender_name") val senderName: String? = null,
+    @SerialName("is_system_message") val isSystemMessage: Boolean = false,
     @SerialName("created_at") val createdAt: String? = null,
 )
 
@@ -234,6 +235,14 @@ data class SenderJson(
     val id: Int = 0,
     val name: String = "",
     val avatar: String? = null,
+    /**
+     * Server-authoritative "this message is from the current user" flag.
+     * iOS reads this directly. Android UI used to compare `sender.id ==
+     * currentUserId`; that still works as a fallback but `is_me` avoids
+     * id-comparison edge cases (e.g. system messages with synthetic
+     * `sender_id = 0`).
+     */
+    @SerialName("is_me") val isMe: Boolean = false,
 )
 
 @Serializable

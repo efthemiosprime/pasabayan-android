@@ -162,7 +162,13 @@ fun ChatThreadContent(
                 verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
             ) {
                 items(state.messages, key = { it.id }) { message ->
-                    val isOwnMessage = message.id < 0 || message.sender?.id?.toLong() == currentUserId || message.canDelete
+                    // Prefer the server-authoritative `sender.isMe`; fall back to
+                    // optimistic-id / sender-id / canDelete heuristics for temp
+                    // messages and older payloads that didn't carry the flag.
+                    val isOwnMessage = message.sender?.isMe == true ||
+                        message.id < 0 ||
+                        message.sender?.id?.toLong() == currentUserId ||
+                        message.canDelete
                     ChatMessageBubble(
                         message = message,
                         isOwnMessage = isOwnMessage,

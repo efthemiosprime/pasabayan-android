@@ -49,6 +49,7 @@ fun LastMessageJson.toDomain(): LastMessage = LastMessage(
     message = message,
     messageType = messageType,
     senderName = senderName,
+    isSystemMessage = isSystemMessage,
     createdAt = createdAt,
 )
 
@@ -73,7 +74,7 @@ fun MessageItemJson.toDomain(): MessageItem = MessageItem(
     metadata = metadata?.toDomain(),
 )
 
-fun SenderJson.toDomain(): Sender = Sender(id = id, name = name, avatar = avatar)
+fun SenderJson.toDomain(): Sender = Sender(id = id, name = name, avatar = avatar, isMe = isMe)
 
 fun AttachmentJson.toDomain(): Attachment = Attachment(id = id, url = url, type = type)
 
