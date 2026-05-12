@@ -63,6 +63,21 @@
     <string name="dashboard_carrier_card_tip_title">Conseil transporteur</string>
     <string name="dashboard_carrier_card_tip_body">Des d\u00e9tails d\'itin\u00e9raire complets et des horaires clairs aident les exp\u00e9diteurs \u00e0 d\u00e9cider plus vite et augmentent les demandes de qualit\u00e9.</string>
 
+    <!-- Carrier explore filters (iOS PackageFiltersSheet parity) -->
+    <string name="dashboard_carrier_filters_title">Filtres</string>
+    <string name="dashboard_carrier_filters_close">Fermer les filtres</string>
+    <string name="dashboard_carrier_filters_urgency_section">Urgence</string>
+    <string name="dashboard_carrier_filters_urgency_all">Toutes les urgences</string>
+    <string name="dashboard_carrier_filters_package_type_section">Type de colis</string>
+    <string name="dashboard_carrier_filters_package_type_all">Tous les types</string>
+    <string name="dashboard_carrier_filters_weight_price_section">Poids et prix</string>
+    <string name="dashboard_carrier_filters_max_weight_label">Poids max (kg)</string>
+    <string name="dashboard_carrier_filters_max_price_label">Prix max ($)</string>
+    <string name="dashboard_carrier_filters_apply">Appliquer</string>
+    <string name="dashboard_carrier_filters_clear_all">Effacer tous les filtres</string>
+    <string name="dashboard_carrier_filters_open">Ouvrir les filtres</string>
+    <string name="dashboard_carrier_load_more_retry">Chargement impossible. Touchez pour r\u00e9essayer.</string>
+
     <!-- Shipper explore -->
     <string name="dashboard_shipper_find_carriers">Trouver des transporteurs</string>
     <string name="dashboard_shipper_find_carriers_subtitle">Exp\u00e9diez vos colis avec des transporteurs de confiance</string>

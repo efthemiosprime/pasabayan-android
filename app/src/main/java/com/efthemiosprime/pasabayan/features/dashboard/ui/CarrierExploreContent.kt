@@ -5,11 +5,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,16 +21,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -43,20 +50,24 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
-import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDivider
+import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.dashboard.components.UserHeaderCard
 import com.efthemiosprime.pasabayan.features.packages.components.CarrierExplorePackageCard
+import com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter
+import com.efthemiosprime.pasabayan.features.packages.ui.PackageFilterSheet
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.RouteActivitySummaryViewModel
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 /**
- * Carrier Explore tab — browse available packages.
- * Parity with iOS `CarrierHomeContent.swift` → `CarrierDashboardView`.
+ * Carrier Explore tab — browse available packages with iOS-parity
+ * infinite scroll, filter sheet, and `nearby` envelope flag capture.
+ * Mirrors iOS `CarrierBrowsePackagesView`.
  */
 @Composable
 fun CarrierExploreContent(
@@ -70,57 +81,163 @@ fun CarrierExploreContent(
 ) {
     val state by packageViewModel.uiState.collectAsStateWithLifecycle()
     val routeActivityState by routeActivityViewModel.uiState.collectAsStateWithLifecycle()
-    var searchText by remember { mutableStateOf("") }
+    var showFilterSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        packageViewModel.loadAvailablePackages(force = true)
+        packageViewModel.applyBrowseFilter()
         routeActivityViewModel.loadSummary()
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(PasabayanSpacing.screenPadding),
+    val listState = rememberLazyListState()
+    // Auto-paginate: when the user scrolls within 3 items of the end, trigger
+    // the next page. Mirrors iOS `onAppear { viewModel.loadNextPage() }` on
+    // the trailing PaginationFooter.
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val layoutInfo = listState.layoutInfo
+            val total = layoutInfo.totalItemsCount
+            if (total == 0) return@derivedStateOf false
+            val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: return@derivedStateOf false
+            lastVisible >= total - 3
+        }
+    }
+    LaunchedEffect(listState) {
+        snapshotFlow { shouldLoadMore }
+            .distinctUntilChanged()
+            .collect { atEnd ->
+                if (atEnd) packageViewModel.loadMoreAvailablePackages()
+            }
+    }
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        state = listState,
+        contentPadding = PaddingValues(PasabayanSpacing.screenPadding),
         verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
     ) {
-        // User header
-        UserHeaderCard(
-            userName = user.name,
-            currentRole = UserRole.CARRIER,
-            verificationLevel = null,
-            avatarUrl = user.avatar,
-        )
+        item("user-header") {
+            UserHeaderCard(
+                userName = user.name,
+                currentRole = UserRole.CARRIER,
+                verificationLevel = null,
+                avatarUrl = user.avatar,
+            )
+        }
+        item("find-packages-header") {
+            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
+                Text(
+                    text = stringResource(R.string.dashboard_carrier_find_packages),
+                    style = PasabayanTextStyles.Heading.h4,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = stringResource(R.string.dashboard_carrier_find_packages_subtitle),
+                    style = PasabayanTextStyles.Body.small,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        item("search-row") {
+            SearchAndFilterRow(
+                searchText = state.availablePackagesFilter.searchText,
+                onSearchTextChange = { newText ->
+                    packageViewModel.setBrowseFilter(state.availablePackagesFilter.copy(searchText = newText))
+                },
+                onSubmitSearch = { packageViewModel.applyBrowseFilter() },
+                onOpenFilters = { showFilterSheet = true },
+            )
+        }
 
-        // Find Packages header
-        Text(
-            text = stringResource(R.string.dashboard_carrier_find_packages),
-            style = PasabayanTextStyles.Heading.h4,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Text(
-            text = stringResource(R.string.dashboard_carrier_find_packages_subtitle),
-            style = PasabayanTextStyles.Body.small,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        routeActivityState.summary?.let { summary ->
+            item("route-activity") {
+                RouteActivityCard(summary = summary)
+            }
+            item("route-activity-divider") { PDivider() }
+        }
 
-        // Search field
+        // Nearby flag is captured but Slice 4 wires the banner UI. For now we
+        // only render the package list; the flag sits in state for that slice.
+
+        when {
+            state.isLoadingAvailablePackages && state.availablePackages.isEmpty() -> {
+                item("loading") {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        PCircularProgress()
+                    }
+                }
+            }
+            state.hasLoadedAvailablePackages && state.visibleAvailablePackages.isEmpty() -> {
+                item("empty") {
+                    CarrierBrowseEmptyState(onPostTrip = { /* TODO: switch to My Trips tab */ })
+                }
+            }
+            else -> {
+                items(state.visibleAvailablePackages, key = { it.effectiveId }) { available ->
+                    CarrierExplorePackageCard(
+                        pkg = available,
+                        onViewDetails = { onViewPackageDetails(available.effectiveId) },
+                        onRequestToCarry = { onRequestToCarry(available.effectiveId) },
+                    )
+                }
+                // Footer: spinner, retry, or end-of-list.
+                item("pagination-footer") {
+                    PaginationFooter(
+                        isLoadingMore = state.availablePackagesIsLoadingMore,
+                        loadMoreError = state.availablePackagesLoadMoreError,
+                        hasMore = state.availablePackagesHasMore,
+                        onRetry = { packageViewModel.loadMoreAvailablePackages() },
+                    )
+                }
+            }
+        }
+    }
+
+    if (showFilterSheet) {
+        PackageFilterSheet(
+            filter = state.availablePackagesFilter,
+            onDismiss = { showFilterSheet = false },
+            onUrgencyChange = { urgency ->
+                packageViewModel.setBrowseFilter(state.availablePackagesFilter.copy(urgency = urgency))
+            },
+            onPackageTypeChange = { type ->
+                packageViewModel.setBrowseFilter(state.availablePackagesFilter.copy(packageType = type))
+            },
+            onMaxWeightChange = { weight ->
+                packageViewModel.setBrowseFilter(state.availablePackagesFilter.copy(maxWeight = weight))
+            },
+            onMaxPriceChange = { price ->
+                packageViewModel.setBrowseFilter(state.availablePackagesFilter.copy(maxPrice = price))
+            },
+            onApply = {
+                packageViewModel.applyBrowseFilter()
+                showFilterSheet = false
+            },
+            onClear = {
+                packageViewModel.clearBrowseFilter()
+                showFilterSheet = false
+            },
+        )
+    }
+}
+
+@Composable
+private fun SearchAndFilterRow(
+    searchText: String,
+    onSearchTextChange: (String) -> Unit,
+    onSubmitSearch: () -> Unit,
+    onOpenFilters: () -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+    ) {
         POutlinedTextField(
             value = searchText,
-            onValueChange = { searchText = it },
+            onValueChange = onSearchTextChange,
             label = { Text(stringResource(R.string.dashboard_carrier_search_placeholder)) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.weight(1f),
             trailingIcon = {
-                IconButton(
-                    onClick = {
-                        val params = if (searchText.isBlank()) {
-                            emptyMap()
-                        } else {
-                            mapOf("search" to searchText.trim())
-                        }
-                        packageViewModel.refreshAvailablePackages(params)
-                    },
-                ) {
+                IconButton(onClick = onSubmitSearch) {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = null,
@@ -129,83 +246,86 @@ fun CarrierExploreContent(
                 }
             },
         )
-
-        PDivider()
-
-        routeActivityState.summary?.let { summary ->
-            PCard {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(PasabayanSpacing.sm),
-                    verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
-                ) {
-                    Text(
-                        text = stringResource(R.string.trips_route_activity_title),
-                        style = PasabayanTextStyles.Body.medium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.trips_route_activity_total_trips_count,
-                            summary.totalTrips,
-                        ),
-                        style = PasabayanTextStyles.Body.small,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.trips_route_activity_active_trips_count,
-                            summary.activeTrips,
-                        ),
-                        style = PasabayanTextStyles.Body.small,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.trips_route_activity_completed_trips_count,
-                            summary.completedTrips,
-                        ),
-                        style = PasabayanTextStyles.Body.small,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    val earningsText = summary.totalEarnings?.let { earnings ->
-                        val currency = summary.currency ?: "CAD"
-                        stringResource(R.string.trips_route_activity_total_earnings, currency, earnings)
-                    } ?: stringResource(R.string.trips_route_activity_total_earnings_unavailable)
-                    Text(
-                        text = earningsText,
-                        style = PasabayanTextStyles.Body.small,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            PDivider()
+        IconButton(onClick = onOpenFilters) {
+            Icon(
+                imageVector = Icons.Outlined.Tune,
+                contentDescription = stringResource(R.string.dashboard_carrier_filters_open),
+                tint = MaterialTheme.colorScheme.onSurface,
+            )
         }
+    }
+}
 
-        // Browse content
+@Composable
+private fun RouteActivityCard(
+    summary: com.efthemiosprime.pasabayan.features.trips.model.RouteActivitySummary,
+) {
+    PCard {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(PasabayanSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+        ) {
+            Text(
+                text = stringResource(R.string.trips_route_activity_title),
+                style = PasabayanTextStyles.Body.medium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = stringResource(R.string.trips_route_activity_total_trips_count, summary.totalTrips),
+                style = PasabayanTextStyles.Body.small,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(R.string.trips_route_activity_active_trips_count, summary.activeTrips),
+                style = PasabayanTextStyles.Body.small,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(R.string.trips_route_activity_completed_trips_count, summary.completedTrips),
+                style = PasabayanTextStyles.Body.small,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            val earningsText = summary.totalEarnings?.let { earnings ->
+                val currency = summary.currency ?: "CAD"
+                stringResource(R.string.trips_route_activity_total_earnings, currency, earnings)
+            } ?: stringResource(R.string.trips_route_activity_total_earnings_unavailable)
+            Text(
+                text = earningsText,
+                style = PasabayanTextStyles.Body.small,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun PaginationFooter(
+    isLoadingMore: Boolean,
+    loadMoreError: String?,
+    hasMore: Boolean,
+    onRetry: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = PasabayanSpacing.md),
+        contentAlignment = Alignment.Center,
+    ) {
         when {
-            state.isLoadingAvailablePackages -> {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    PCircularProgress()
-                }
-            }
-            state.hasLoadedAvailablePackages && state.availablePackages.isEmpty() -> {
-                CarrierBrowseEmptyState(
-                    onPostTrip = { /* TODO: switch to My Trips tab */ },
-                )
-            }
-            else -> {
-                state.availablePackages.forEach { available ->
-                    CarrierExplorePackageCard(
-                        pkg = available,
-                        onViewDetails = { onViewPackageDetails(available.effectiveId) },
-                        onRequestToCarry = { onRequestToCarry(available.effectiveId) },
+            isLoadingMore -> PCircularProgress()
+            loadMoreError != null -> {
+                IconButton(onClick = onRetry) {
+                    Text(
+                        text = stringResource(R.string.dashboard_carrier_load_more_retry),
+                        style = PasabayanTextStyles.Caption.regular,
+                        color = MaterialTheme.colorScheme.error,
                     )
                 }
+            }
+            !hasMore -> {
+                // End-of-list — no marker today; iOS shows `endOfList` empty state.
             }
         }
     }
