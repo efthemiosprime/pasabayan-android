@@ -58,6 +58,7 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.dashboard.components.UserHeaderCard
 import com.efthemiosprime.pasabayan.features.packages.components.CarrierExplorePackageCard
+import com.efthemiosprime.pasabayan.features.packages.components.NearbyFallbackBanner
 import com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageFilterSheet
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
@@ -155,8 +156,13 @@ fun CarrierExploreContent(
             item("route-activity-divider") { PDivider() }
         }
 
-        // Nearby flag is captured but Slice 4 wires the banner UI. For now we
-        // only render the package list; the flag sits in state for that slice.
+        // Server-driven proximity fallback: the `/packages/available` envelope
+        // carries a `nearby` flag set to `false` when no proximity-matched
+        // packages were found and the response fell back to non-proximity
+        // results. iOS captures the same flag but never wired the UI; we do.
+        if (state.availablePackagesNearby == false) {
+            item("nearby-fallback-banner") { NearbyFallbackBanner() }
+        }
 
         when {
             state.isLoadingAvailablePackages && state.availablePackages.isEmpty() -> {
