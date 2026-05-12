@@ -66,6 +66,8 @@ import com.efthemiosprime.pasabayan.features.packages.ui.PackageErrandRequestScr
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageDetailScreen
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageRequestScreen
 import com.efthemiosprime.pasabayan.features.bookings.ui.RequestToCarrySheet
+import com.efthemiosprime.pasabayan.features.legal.ui.LegalViewerSheet
+import com.efthemiosprime.pasabayan.features.support.ui.SupportTicketFormScreen
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageCreationAssistViewModel
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
@@ -163,6 +165,9 @@ fun MainTabScreen(
     // Carrier flow: after "View Details → Request to Carry", track which package the carrier
     // intends to offer on. The submit currently no-ops (TODO: trip-picker + VM wiring).
     var carrierRequestPackage by remember { mutableStateOf<AvailablePackage?>(null) }
+    // Profile menu → Support / Legal modal sheets (iOS HelpCenterView / TermsAndPrivacyView).
+    var showHelpCenterSheet by remember { mutableStateOf(false) }
+    var showLegalViewerSheet by remember { mutableStateOf(false) }
     var favoritesOpen by remember { mutableStateOf(false) }
     var sendRequestCarrier by remember { mutableStateOf<FavoriteCarrierInfoJson?>(null) }
     var ratingsOpen by remember { mutableStateOf(false) }
@@ -490,6 +495,8 @@ fun MainTabScreen(
                             onOpenAccountManagement = { showAccountManagementSheet = true },
                             onOpenFavorites = { favoritesOpen = true },
                             onOpenRatings = { ratingsOpen = true },
+                            onOpenHelpCenter = { showHelpCenterSheet = true },
+                            onOpenLegal = { showLegalViewerSheet = true },
                         )
                     }
                 }
@@ -540,6 +547,28 @@ fun MainTabScreen(
                     onLogout()
                 },
             )
+        }
+    }
+
+    // Profile menu → Help center (iOS HelpCenterView). For v1 this opens the support
+    // ticket form directly — the Popular Articles section from iOS will follow when
+    // we wire the article catalog UI.
+    if (showHelpCenterSheet) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showHelpCenterSheet = false },
+        ) {
+            SupportTicketFormScreen(
+                onClose = { showHelpCenterSheet = false },
+            )
+        }
+    }
+
+    // Profile menu → Terms & Privacy read-only viewer (iOS TermsAndPrivacyView).
+    if (showLegalViewerSheet) {
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { showLegalViewerSheet = false },
+        ) {
+            LegalViewerSheet()
         }
     }
 

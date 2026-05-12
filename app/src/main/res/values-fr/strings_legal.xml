@@ -16,4 +16,11 @@
     <string name="legal_retry">Réessayer</string>
     <string name="legal_withdraw_warning_title">À noter</string>
     <string name="legal_withdraw_warning_dismiss">Compris</string>
+
+    <!-- Legal viewer (read-only, iOS TermsAndPrivacyView parity) -->
+    <string name="legal_viewer_title">Conditions et confidentialité</string>
+    <string name="legal_viewer_tab_terms">Conditions</string>
+    <string name="legal_viewer_tab_privacy">Confidentialité</string>
+    <string name="legal_viewer_tab_service">Service</string>
+    <string name="legal_viewer_tab_liability">Responsabilité</string>
 </resources>

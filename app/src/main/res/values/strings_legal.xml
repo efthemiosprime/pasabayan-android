@@ -16,4 +16,11 @@
     <string name="legal_retry">Retry</string>
     <string name="legal_withdraw_warning_title">Heads up</string>
     <string name="legal_withdraw_warning_dismiss">Got it</string>
+
+    <!-- Legal viewer (read-only, iOS TermsAndPrivacyView parity) -->
+    <string name="legal_viewer_title">Terms &amp; Privacy</string>
+    <string name="legal_viewer_tab_terms">Terms</string>
+    <string name="legal_viewer_tab_privacy">Privacy</string>
+    <string name="legal_viewer_tab_service">Service</string>
+    <string name="legal_viewer_tab_liability">Liability</string>
 </resources>

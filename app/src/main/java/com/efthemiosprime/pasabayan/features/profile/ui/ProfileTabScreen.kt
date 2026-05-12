@@ -70,6 +70,8 @@ fun ProfileTabScreen(
     onOpenAccountManagement: () -> Unit = {},
     onOpenFavorites: () -> Unit = {},
     onOpenRatings: () -> Unit = {},
+    onOpenHelpCenter: () -> Unit = {},
+    onOpenLegal: () -> Unit = {},
     onOpenPlaceholder: (String) -> Unit = { },
     viewModel: ProfileTabViewModel = hiltViewModel(),
     modifier: Modifier = Modifier,
@@ -120,6 +122,8 @@ fun ProfileTabScreen(
         onOpenAccountManagement = onOpenAccountManagement,
         onOpenFavorites = onOpenFavorites,
         onOpenRatings = onOpenRatings,
+        onOpenHelpCenter = onOpenHelpCenter,
+        onOpenLegal = onOpenLegal,
         onOpenPlaceholder = onOpenPlaceholder,
         modifier = modifier,
     )
@@ -142,6 +146,8 @@ fun ProfileTabContent(
     onOpenAccountManagement: () -> Unit = {},
     onOpenFavorites: () -> Unit = {},
     onOpenRatings: () -> Unit = {},
+    onOpenHelpCenter: () -> Unit = {},
+    onOpenLegal: () -> Unit = {},
     onOpenPlaceholder: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -292,13 +298,13 @@ fun ProfileTabContent(
         ) {
             MenuRow(
                 stringResource(R.string.profile_menu_help),
-            ) { onOpenPlaceholder("help") }
+            ) { onOpenHelpCenter() }
             MenuRow(
                 stringResource(R.string.profile_menu_settings),
             ) { onOpenSettings() }
             MenuRow(
                 stringResource(R.string.profile_menu_terms),
-            ) { onOpenPlaceholder("terms") }
+            ) { onOpenLegal() }
         }
         PButton(
             text = stringResource(R.string.profile_actions_logout),
