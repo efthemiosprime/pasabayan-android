@@ -35,9 +35,11 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgres
 import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
 import com.efthemiosprime.pasabayan.core.designsystem.component.PFilterChip
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
+import com.efthemiosprime.pasabayan.features.bookings.components.IncomingRequestSnackbar
 import com.efthemiosprime.pasabayan.features.bookings.components.MatchCard
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.BookingAction
+import com.efthemiosprime.pasabayan.features.bookings.model.IncomingRequestContext
 import com.efthemiosprime.pasabayan.features.bookings.viewmodel.MatchingViewModel
 import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
 
@@ -99,6 +101,22 @@ fun MatchListScreen(
         onInitialCounterOfferConsumed()
     }
 
+    // Snackbar review section (spec § 1278: max 3 IncomingRequestSnackbar items above the
+    // match list; "+N more" pill when there are more pending than rendered). Independent
+    // of the status filter — the snackbar surfaces real pending incoming requests
+    // regardless of which status bucket the user is browsing.
+    val snackbarItems = IncomingRequestContext.incomingRequestSnackbarItems(
+        matches = state.matches,
+        isCarrier = isCarrier,
+        reviewedIds = state.reviewedIncomingRequestIds,
+    )
+    val totalUnseenIncoming = IncomingRequestContext.unseenIncomingRequestBadgeCount(
+        matches = state.matches,
+        isCarrier = isCarrier,
+        reviewedIds = state.reviewedIncomingRequestIds,
+    )
+    val extraPending = (totalUnseenIncoming - snackbarItems.size).coerceAtLeast(0)
+
     Column(modifier = modifier.fillMaxSize()) {
         // Status filter chips
         MatchStatusFilterRow(
@@ -120,7 +138,7 @@ fun MatchListScreen(
                     PCircularProgress()
                 }
             }
-            state.filteredMatches.isEmpty() -> {
+            state.filteredMatches.isEmpty() && snackbarItems.isEmpty() -> {
                 PEmptyState(
                     icon = Icons.Outlined.SwapHoriz,
                     title = stringResource(R.string.bookings_empty_no_matches),
@@ -137,6 +155,36 @@ fun MatchListScreen(
                         vertical = PasabayanSpacing.sm,
                     ),
                 ) {
+                    // Review section — snackbar items + "+N more" pill.
+                    items(snackbarItems, key = { "incoming-${it.matchId}" }) { incoming ->
+                        IncomingRequestSnackbar(
+                            item = incoming,
+                            isCarrier = isCarrier,
+                            onOpen = {
+                                state.matches.firstOrNull { it.id == incoming.matchId }
+                                    ?.let { selectedMatch = it }
+                            },
+                            onDismiss = {
+                                viewModel.markIncomingRequestReviewed(incoming.matchId)
+                            },
+                        )
+                    }
+                    if (extraPending > 0) {
+                        item(key = "incoming-more") {
+                            androidx.compose.material3.Text(
+                                text = stringResource(
+                                    R.string.bookings_incoming_snackbar_more,
+                                    extraPending,
+                                ),
+                                style = com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles.Caption.regular,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = PasabayanSpacing.xs, bottom = PasabayanSpacing.sm),
+                            )
+                        }
+                    }
+
                     items(state.filteredMatches, key = { it.id }) { match ->
                         MatchCard(
                             match = match,

@@ -121,4 +121,10 @@
     <string name="bookings_trip_in_transit">Trajet en transit</string>
     <string name="bookings_trip_departed">Trajet parti</string>
     <string name="bookings_trip_unavailable">Trajet indisponible</string>
+
+    <!-- IncomingRequestSnackbar (Android-only review section above MatchListScreen) -->
+    <string name="bookings_incoming_snackbar_title_shipper_to_carrier">Nouvelle demande de %1$s</string>
+    <string name="bookings_incoming_snackbar_title_carrier_to_shipper">Nouvelle offre de transport de %1$s</string>
+    <string name="bookings_incoming_snackbar_dismiss">Ignorer la demande</string>
+    <string name="bookings_incoming_snackbar_more">+%1$d en attente</string>
 </resources>

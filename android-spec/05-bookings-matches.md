@@ -68,6 +68,12 @@ iOS has **separate** carrier and shipper views for match lists, match details, a
 
 Counter-offer components, auto-charge confirmation, pickup/delivery code views, booking success, liability banner — all role-agnostic, keep as shared components.
 
+### Android-only surfaces (no iOS counterpart)
+
+| Surface | What it does | iOS approach |
+|---|---|---|
+| **`IncomingRequestSnackbar`** (`features/bookings/components/IncomingRequestSnackbar.kt`) + **`IncomingRequestContext`** model | Stack of up to 3 review-section cards above the match list summarising pending incoming requests (carrier-side: `SHIPPER_REQUESTED`; shipper-side: `CARRIER_REQUESTED`). Tap → match detail; close → dismissed for the session via `MatchingViewModel.markIncomingRequestReviewed`. Companion helpers `incomingRequestSnackbarItems` (max-3 cap) and `unseenIncomingRequestBadgeCount` (real backlog, no cap) drive the snackbar list and the Matches-tab badge count. | iOS renders incoming requests inline in `CarrierRequestCard` / `BookingRequestCard` / `ShipperMatchCard` filtered by status; no separate review section. |
+
 ---
 
 ## Package layout (feature-first)
@@ -1825,7 +1831,7 @@ All display strings must use `stringResource(R.string.key)`. Add to `res/values/
 - [ ] Counter-offer: `ShipperCounterOfferRequest` / `CarrierCounterOfferRequest` encode; `CounterOfferResponse` decode
 - [ ] `CounterOfferContext` factory methods from match, booking, and notification data; computed properties
 - [ ] `CounterOfferNotificationData` — `isPriceIncrease`, `priceChangeDescription`
-- [ ] `IncomingRequestContext` — factory, snackbar items with max 3, dismissal set
+- [x] `IncomingRequestContext` — factory, snackbar items with max 3, dismissal set, badge count
 - [ ] Pickup/delivery code models decode with expiration logic
 - [ ] `ReceiverAccessToken` decode with PIN and access tracking
 - [ ] `CarrierLocationResponse` decode with String coordinates, `latitudeDouble`/`longitudeDouble` computed

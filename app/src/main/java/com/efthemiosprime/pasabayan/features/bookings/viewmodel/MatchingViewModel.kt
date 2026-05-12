@@ -28,6 +28,13 @@ data class MatchingUiState(
     val isSubmittingCounterOffer: Boolean = false,
     /** One-shot: action blocked because the user's phone is not verified. */
     val requiresPhoneVerification: VerifyPhoneReason? = null,
+    /**
+     * Match ids the user has dismissed from the `IncomingRequestSnackbar` review section
+     * (session-only — survives recomposition, resets on process restart). Read by
+     * `IncomingRequestContext.incomingRequestSnackbarItems(...)` and
+     * `IncomingRequestContext.unseenIncomingRequestBadgeCount(...)`.
+     */
+    val reviewedIncomingRequestIds: Set<Int> = emptySet(),
 ) {
     val filteredMatches: List<DeliveryMatch>
         get() = when (statusFilter) {
@@ -65,6 +72,17 @@ class MatchingViewModel @Inject constructor(
 
     fun filterByStatus(status: MatchStatus?) {
         _uiState.update { it.copy(statusFilter = status) }
+    }
+
+    /**
+     * Adds [matchId] to [MatchingUiState.reviewedIncomingRequestIds] so the
+     * `IncomingRequestSnackbar` for this match disappears from the review section.
+     * Idempotent (a `Set` swallows duplicates).
+     */
+    fun markIncomingRequestReviewed(matchId: Int) {
+        _uiState.update { state ->
+            state.copy(reviewedIncomingRequestIds = state.reviewedIncomingRequestIds + matchId)
+        }
     }
 
     fun acceptMatch(matchId: Int, isCarrier: Boolean) {

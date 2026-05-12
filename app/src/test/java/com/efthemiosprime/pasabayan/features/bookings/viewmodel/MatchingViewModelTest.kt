@@ -415,6 +415,54 @@ class MatchingViewModelTest {
         assertNull(viewModel.uiState.value.errorMessage)
     }
 
+    // -- IncomingRequestSnackbar review state --
+
+    @Test
+    fun `initial state has empty reviewedIncomingRequestIds`() {
+        assertTrue(viewModel.uiState.value.reviewedIncomingRequestIds.isEmpty())
+    }
+
+    @Test
+    fun `markIncomingRequestReviewed adds matchId to the set`() {
+        viewModel.markIncomingRequestReviewed(matchId = 7)
+
+        assertEquals(setOf(7), viewModel.uiState.value.reviewedIncomingRequestIds)
+    }
+
+    @Test
+    fun `markIncomingRequestReviewed is idempotent`() {
+        viewModel.markIncomingRequestReviewed(matchId = 7)
+        viewModel.markIncomingRequestReviewed(matchId = 7)
+
+        assertEquals(setOf(7), viewModel.uiState.value.reviewedIncomingRequestIds)
+    }
+
+    @Test
+    fun `markIncomingRequestReviewed accumulates ids across calls`() {
+        viewModel.markIncomingRequestReviewed(matchId = 7)
+        viewModel.markIncomingRequestReviewed(matchId = 12)
+        viewModel.markIncomingRequestReviewed(matchId = 99)
+
+        assertEquals(setOf(7, 12, 99), viewModel.uiState.value.reviewedIncomingRequestIds)
+    }
+
+    @Test
+    fun `markIncomingRequestReviewed preserves other state fields`() {
+        fakeRepo.loadResult = Result.success(listOf(testMatch(1)))
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+        val before = viewModel.uiState.value
+
+        viewModel.markIncomingRequestReviewed(matchId = 1)
+
+        val after = viewModel.uiState.value
+        assertEquals(before.matches, after.matches)
+        assertEquals(before.isLoading, after.isLoading)
+        assertEquals(before.errorMessage, after.errorMessage)
+        assertEquals(before.statusFilter, after.statusFilter)
+        assertEquals(setOf(1), after.reviewedIncomingRequestIds)
+    }
+
     private fun testMatch(
         id: Int,
         status: MatchStatus = MatchStatus.CONFIRMED,

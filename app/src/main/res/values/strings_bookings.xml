@@ -121,4 +121,10 @@
     <string name="bookings_trip_in_transit">Trip In Transit</string>
     <string name="bookings_trip_departed">Trip Departed</string>
     <string name="bookings_trip_unavailable">Trip Unavailable</string>
+
+    <!-- IncomingRequestSnackbar (Android-only review section above MatchListScreen) -->
+    <string name="bookings_incoming_snackbar_title_shipper_to_carrier">New shipper request from %1$s</string>
+    <string name="bookings_incoming_snackbar_title_carrier_to_shipper">New carrier offer from %1$s</string>
+    <string name="bookings_incoming_snackbar_dismiss">Dismiss request</string>
+    <string name="bookings_incoming_snackbar_more">+%1$d more pending</string>
 </resources>
