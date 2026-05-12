@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="chat_conversations_title">Messages</string>
     <string name="chat_conversations_empty">No conversations yet</string>
     <string name="chat_conversations_unknown_route">Route unavailable</string>
     <string name="chat_conversations_no_messages_yet">No messages yet</string>
