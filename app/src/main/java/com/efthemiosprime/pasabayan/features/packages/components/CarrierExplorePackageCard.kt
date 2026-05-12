@@ -3,16 +3,13 @@ package com.efthemiosprime.pasabayan.features.packages.components
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +39,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.StatusBadgeVaria
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UrgencyLevel
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
+import com.efthemiosprime.pasabayan.features.dashboard.components.UserCardHeader
 import com.efthemiosprime.pasabayan.features.packages.model.AvailablePackage
 
 /**
@@ -61,7 +59,7 @@ fun CarrierExplorePackageCard(
     PCard(modifier = modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
             pkg.shipper?.let { shipper ->
-                ShipperHeader(shipper = shipper, onOpenProfile = onOpenShipperProfile)
+                UserCardHeader(user = shipper, onClick = onOpenShipperProfile)
                 PDivider()
             }
 
@@ -97,47 +95,6 @@ fun CarrierExplorePackageCard(
                     onClick = onRequestToCarry,
                 ),
             )
-        }
-    }
-}
-
-@Composable
-private fun ShipperHeader(
-    shipper: UserSummary,
-    onOpenProfile: (() -> Unit)?,
-) {
-    val rowModifier = if (onOpenProfile != null) {
-        Modifier
-            .fillMaxWidth()
-            .padding(end = PasabayanSpacing.xs)
-    } else {
-        Modifier.fillMaxWidth()
-    }
-    Row(
-        modifier = rowModifier,
-        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AvatarInitials(name = shipper.name)
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = shipper.name,
-                    style = PasabayanTextStyles.Body.large,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                VerificationDot(level = shipper.verificationLevel)
-            }
-            RatingRow(formattedRating = shipper.formattedRating, totalRatings = shipper.totalRatings)
         }
     }
 }
@@ -227,39 +184,6 @@ private fun FragileChip() {
 }
 
 @Composable
-private fun RatingRow(formattedRating: String, totalRatings: Int?) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (totalRatings != null && totalRatings > 0) {
-            Icon(
-                imageVector = Icons.Default.Star,
-                contentDescription = null,
-                tint = PasabayanColors.BadgeGold,
-                modifier = Modifier.size(12.dp),
-            )
-            Text(
-                text = formattedRating,
-                style = PasabayanTextStyles.Caption.regular,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = "($totalRatings)",
-                style = PasabayanTextStyles.Caption.regular,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        } else {
-            Text(
-                text = stringResource(R.string.carrier_package_card_no_ratings_yet),
-                style = PasabayanTextStyles.Caption.regular,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
-@Composable
 private fun ScheduleRow(pkg: AvailablePackage) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -298,38 +222,6 @@ private fun ScheduleRow(pkg: AvailablePackage) {
     }
 }
 
-@Composable
-private fun AvatarInitials(name: String) {
-    val initial = name.firstOrNull()?.uppercase() ?: "?"
-    Box(
-        modifier = Modifier
-            .size(36.dp)
-            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = initial,
-            style = PasabayanTextStyles.Heading.h6,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-            fontWeight = FontWeight.SemiBold,
-        )
-    }
-}
-
-@Composable
-private fun VerificationDot(level: String?) {
-    val normalized = level?.lowercase()?.trim() ?: return
-    val tint = when (normalized) {
-        "verified" -> PasabayanColors.Success
-        "premium" -> PasabayanColors.BadgeGold
-        else -> return
-    }
-    Box(
-        modifier = Modifier
-            .size(8.dp)
-            .background(color = tint, shape = CircleShape),
-    )
-}
 
 @Preview(showBackground = true, name = "CarrierExplorePackageCard — light")
 @Preview(showBackground = true, name = "CarrierExplorePackageCard — dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
