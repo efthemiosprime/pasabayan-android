@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +38,7 @@ object VerifyPhonePromptTestTags {
  * @param onVerifyNow Caller chains the existing phone verification entry (e.g. show
  *                    [PhoneVerificationSheet]). The prompt does not auto-resume the action.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerifyPhonePromptSheet(
     reason: VerifyPhoneReason,

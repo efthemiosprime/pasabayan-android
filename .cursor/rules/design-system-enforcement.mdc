@@ -1,0 +1,125 @@
+---
+description: All styling and reusable UI must derive from :core:designsystem. No bespoke styling in features.
+alwaysApply: true
+---
+
+# Design system is global — no bespoke styling
+
+Every visual decision in the app is a **design-system decision**. Buttons, sheets/modals, cards, text fields, top bars, dividers, progress, badges, every color, every spacing/radius/typography/border value, every motion duration — **all** must be expressed through `:core:designsystem`.
+
+This rule is about *consistency by construction*: a designer should be able to change a token in one place and have the entire app follow. Feature code must never reinvent styling locally.
+
+Authoritative doc: **`android-spec/14-design-system.md`**.
+
+## Hard rules (always apply)
+
+### 1. Components — use `P*`, never roll your own
+
+| If you need… | Use this (no exceptions) | Never |
+|---|---|---|
+| Button | `PButton` | Material3 `Button`, `OutlinedButton`, `TextButton`, `IconButton` with bespoke styling, custom `Box` with `clickable` for tap targets |
+| Card / surface | `PCard` (or `PDetailSheetCard` inside a detail sheet) | bespoke `Surface` / `Card` with hand-rolled padding/shape |
+| Bottom sheet / modal | `PModalBottomSheet` | Material3 `ModalBottomSheet` directly |
+| Detail / info sheet scaffolding | `PDetailSheetScaffold` (see `detail-sheet-scaffold-conformance.mdc`) | hand-rolled title row + close button + scroll container |
+| Text input | `POutlinedTextField` | Material3 `OutlinedTextField` / `TextField` |
+| Top app bar | `PTopBar` | Material3 `TopAppBar` / `CenterAlignedTopAppBar` |
+| Snackbar host | `PScaffold` + `PSnackbar` / `PSnackbarHost` | Material3 `SnackbarHost` |
+| Divider | `PDivider` | Material3 `HorizontalDivider` / `Divider` |
+| Progress | `PCircularProgress` | Material3 `CircularProgressIndicator` |
+| Detail row (label / value) | `PDetailRow` | hand-rolled `Row` with `Spacer(Modifier.weight(1f))` |
+| Route summary (origin → destination) | `PRouteSection` | hand-rolled vertical dotted route |
+| Status pill | `PStatusBadge` | hand-rolled colored `Box` with `Text` |
+| Empty state | `PEmptyState` | bespoke icon + headline + body layout |
+
+If the `P*` component you need doesn't exist, **add it to `:core:designsystem` first** (with light + dark previews and JVM/instrumented tests where applicable), update `android-spec/14-design-system.md`, **then** consume it from features. The PR adding the primitive comes before the PR using it.
+
+### 2. Tokens — every value comes from a `Pasabayan*` object
+
+| Property | Source | Never |
+|---|---|---|
+| Color | `MaterialTheme.colorScheme.*` or `PasabayanColors.*` | `Color(0xFFxxxxxx)`, `Color.White`, `Color.Black`, `Color.Red`, etc. |
+| Spacing / padding | `PasabayanSpacing.{xs,sm,md,lg,xl,screenPadding,…}` | raw `.dp` literals (e.g. `Modifier.padding(12.dp)`) |
+| Corner radius | `PasabayanRadius.{sm,md,lg,modal,…}` | raw `.dp` for `RoundedCornerShape(…)` |
+| Typography (size / weight / line height) | `PasabayanTextStyles.*` or `MaterialTheme.typography.*` | raw `.sp` literals, ad-hoc `TextStyle(...)` |
+| Border width / stroke | `PasabayanBorder.*` | raw `.dp` for `BorderStroke(...)` |
+| Component dimensions (button height, FAB size, …) | `PasabayanLayout.*` | hand-tuned `.dp` constants |
+| Animation duration / easing | `PasabayanMotion.*` | raw `tween(300)` or `spring()` defaults |
+
+The only legitimate raw `.dp` is when expressing *relative* layout (e.g. `Modifier.weight(1f)` doesn't need a token; `Spacer(Modifier.height(PasabayanSpacing.sm))` does).
+
+### 3. Light + dark mode are not optional
+
+- `PasabayanTheme` defines both `lightColorScheme` and `darkColorScheme`.
+- Read color via `MaterialTheme.colorScheme.*` or `PasabayanColors.*` so dark mode is automatic.
+- Every new/changed composable ships a `@Preview` for **both** light and `@Preview(uiMode = UI_MODE_NIGHT_YES)` — see `compose-ui-previews.mdc`.
+
+### 4. Cross-role / cross-feature parity
+
+When the same kind of screen exists for two roles (e.g. shipper-side and carrier-side package details), use **the same `P*` building blocks and the same layout primitives** so the two views feel like the same sheet. Differences should be limited to the action buttons and the data shown — not spacing, not card chrome, not background, not typography.
+
+When extracting shared composition (sections, cards, rows) for reuse across roles, put it in `features/<feature>/components/` (feature-shared) or `:core:designsystem` (truly cross-feature). Do **not** copy-paste section layouts between roles.
+
+### 5. Workflow when a new pattern is needed
+
+```
+Feature needs a new visual pattern
+        │
+        ▼
+Does an existing P* or token cover it?
+        │
+        ├─ yes → use it (and stop)
+        │
+        ▼
+        no
+        │
+        ▼
+1. Add the primitive / token to :core:designsystem
+2. Add light + dark previews and a token-invariant test
+3. Update android-spec/14-design-system.md (rename catalog, add usage)
+4. Land that PR
+        │
+        ▼
+Then in a follow-up PR, consume it from the feature
+```
+
+Do not inline the styling "for now" — that's how the design system rots.
+
+### 6. Exceptions
+
+Rare exceptions (e.g. a one-off marketing surface) require:
+
+1. An **Exception** subsection in the feature's spec under `android-spec/`.
+2. A justification in the PR description.
+3. A follow-up issue to migrate to a `P*` / token when the pattern recurs.
+
+A single bespoke `Color(0xFF…)` without these three is grounds to reject the PR.
+
+## Catching violations (review / self-review checklist)
+
+Flag any of these in new or changed code:
+
+- [ ] `Color(0x…)`, `Color.White`, `Color.Black`, or any `Color.<name>` not coming from the theme.
+- [ ] Raw `.dp` or `.sp` literals where a `Pasabayan*` token exists.
+- [ ] Material3 components (`Button`, `Card`, `OutlinedTextField`, `ModalBottomSheet`, `TopAppBar`, `Snackbar`, `Divider`, `CircularProgressIndicator`) used directly when a `P*` exists.
+- [ ] Hand-rolled "card-like" containers (`Surface` + `Modifier.background` + `Modifier.padding` + `Modifier.clip(RoundedCornerShape(...))`) that duplicate `PCard`.
+- [ ] Two role-specific screens (shipper / carrier) for the same content that don't share section composables.
+- [ ] Missing dark-mode `@Preview` or any preview that doesn't wrap content in `PasabayanTheme`.
+- [ ] New string literal in any UI surface (also catches `localization-enforcement.mdc`).
+
+## When generating new UI code
+
+Before writing a composable:
+
+1. Identify which `P*` components and `Pasabayan*` tokens the layout requires.
+2. If anything is missing, plan the `:core:designsystem` addition **first**.
+3. Write the feature composable using only `P*` + tokens.
+4. Add light + dark previews wrapped in `PasabayanTheme`.
+
+## Cross-references
+
+- **Spec:** `android-spec/14-design-system.md` (token catalog + `P*` inventory + PR checklist)
+- **Sheet scaffolding:** `.cursor/rules/detail-sheet-scaffold-conformance.mdc`
+- **Previews:** `.cursor/rules/compose-ui-previews.mdc`
+- **UI / TDD conformance:** `.cursor/rules/tdd-and-ui-conformance.mdc`
+- **Localization:** `.cursor/rules/localization-enforcement.mdc`
+- **Project context:** `.cursor/rules/pasabayan-android-spec-context.mdc`

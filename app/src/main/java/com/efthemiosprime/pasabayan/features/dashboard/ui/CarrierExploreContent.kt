@@ -205,6 +205,9 @@ fun CarrierExploreContent(
                     PackageRequestCard(
                         pkg = pkg,
                         onViewDetails = { onViewPackageDetails(pkg.id) },
+                        // Carrier-side: don't expand in place — open the dedicated detail
+                        // sheet (mirrors shipper-explore trip-details sheet pattern).
+                        expandable = false,
                     )
                 }
             }

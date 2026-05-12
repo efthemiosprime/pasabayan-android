@@ -75,10 +75,11 @@ Cursor rule: `.cursor/rules/lean-classes-separation.mdc`. Architecture: `android
 - Spacing, radius, typography, borders, layout, motion: **`Pasabayan*`** token objects in `:core:designsystem`.
 - Prefer **`PButton`**, **`PCard`**, **`POutlinedTextField`**, **`PScaffold`** / **`PSnackbar`**, **`PModalBottomSheet`**, **`PTopBar`**, **`PDivider`**, **`PCircularProgress`**, and future **`P*`** primitives; use **`ds*`** modifiers for repeated patterns.
 - **Do not** add ad-hoc colors, `dp`/`sp`, or bespoke `Button`/`Card` styling in feature modules. **Extend `:core:designsystem` + update `14-design-system.md`** when something is missing. Document rare exceptions in the feature spec + PR (per **14**).
+- **Cross-role parity:** when the same content exists for two roles (e.g. shipper vs carrier sheets), use the same `P*` building blocks and the same section composables so the views feel identical. Differences are limited to actions and data — not chrome, spacing, or typography.
 - **Light + dark theme (mandatory):** All UI must work in both light and dark mode. Use `MaterialTheme.colorScheme.*` or `PasabayanColors.*` — never `Color.White`, `Color.Black`, or `Color(0xFF...)` directly. Preview composables with `@Preview(uiMode = UI_MODE_NIGHT_YES)`. `PasabayanTheme` must define both `lightColorScheme` and `darkColorScheme`.
 - **Compose previews (mandatory):** Any new or changed composable under **`features/*/ui/`**, **`features/*/components/`**, or **`:core:designsystem`** must include **`@Preview`** composables: wrap in **`PasabayanTheme`**, and include **light + dark** previews for non-trivial UI. Use fake/static state for screens; do not depend on Hilt/`ViewModel` in previews.
 
-Cursor rule: `.cursor/rules/compose-ui-previews.mdc`.
+Cursor rules: `.cursor/rules/design-system-enforcement.mdc` (component + token catalog, workflow when a pattern is missing), `.cursor/rules/detail-sheet-scaffold-conformance.mdc` (sheets/modals), `.cursor/rules/compose-ui-previews.mdc` (preview requirements).
 
 ## Localization (strict — always apply)
 

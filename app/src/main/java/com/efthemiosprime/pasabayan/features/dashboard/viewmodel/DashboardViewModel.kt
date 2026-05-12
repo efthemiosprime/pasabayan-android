@@ -26,16 +26,29 @@ class DashboardViewModel @Inject constructor() : ViewModel() {
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
     /**
-     * Initialize the role based on the signed-in user's active roles.
+     * Whether [initializeRole] has run for this VM instance. Prevents the role from
+     * being reset back to the user's default every time `MainTabScreen` re-enters
+     * composition (e.g. after `PExpandableCardHost` dismisses an expanded card),
+     * which would overwrite any subsequent [switchRole] selection.
+     */
+    private var roleInitialized: Boolean = false
+
+    /**
+     * Initialize the role based on the signed-in user's active roles. **Idempotent** —
+     * runs once per VM instance; subsequent calls are no-ops so user-driven role
+     * switches survive composition cycles.
+     *
      * Prefer carrier if active, otherwise shipper.
      */
     fun initializeRole(user: AuthUser) {
+        if (roleInitialized) return
         val role = when {
             user.isActiveCarrier -> UserRole.CARRIER
             user.isActiveShipper -> UserRole.SHIPPER
             else -> UserRole.SHIPPER
         }
         _uiState.update { it.copy(currentRole = role) }
+        roleInitialized = true
     }
 
     fun switchRole() {
@@ -83,6 +96,12 @@ class DashboardViewModel @Inject constructor() : ViewModel() {
     fun openPackageDetailSheet(packageId: Int) {
         _uiState.update {
             it.copy(activeSheetRoute = DashboardSheetRoute.PackageDetail(packageId = packageId))
+        }
+    }
+
+    fun openCarrierPackageDetailSheet(packageId: Int) {
+        _uiState.update {
+            it.copy(activeSheetRoute = DashboardSheetRoute.CarrierPackageDetail(packageId = packageId))
         }
     }
 

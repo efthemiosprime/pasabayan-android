@@ -54,6 +54,23 @@ class DashboardViewModelTest {
         assertEquals(UserRole.CARRIER, viewModel.uiState.value.currentRole)
     }
 
+    /**
+     * Regression: `MainTabScreen`'s `LaunchedEffect(user)` calls `initializeRole` every time
+     * the screen re-enters composition (e.g. after `PExpandableCardHost` dismisses an
+     * expanded card). A re-run must not overwrite a user-driven `switchRole` selection.
+     */
+    @Test
+    fun `initializeRole is idempotent — does not overwrite a later switchRole`() {
+        val user = testUser(isActiveCarrier = false, isActiveShipper = true)
+        viewModel.initializeRole(user)
+        viewModel.switchRole()
+        assertEquals(UserRole.CARRIER, viewModel.uiState.value.currentRole)
+
+        viewModel.initializeRole(user)
+
+        assertEquals(UserRole.CARRIER, viewModel.uiState.value.currentRole)
+    }
+
     @Test
     fun `switchRole toggles from carrier to shipper`() {
         viewModel.initializeRole(testUser(isActiveCarrier = true))

@@ -59,10 +59,13 @@ import com.efthemiosprime.pasabayan.features.notifications.viewmodel.Notificatio
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.VerificationLevel
 import com.efthemiosprime.pasabayan.features.packages.components.CreatePackageOptionsSheet
+import com.efthemiosprime.pasabayan.features.packages.model.AvailablePackage
+import com.efthemiosprime.pasabayan.features.packages.ui.CarrierPackageDetailSheet
 import com.efthemiosprime.pasabayan.features.packages.ui.EditPackageSheet
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageErrandRequestScreen
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageDetailScreen
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageRequestScreen
+import com.efthemiosprime.pasabayan.features.bookings.ui.RequestToCarrySheet
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageCreationAssistViewModel
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
@@ -157,6 +160,9 @@ fun MainTabScreen(
     // (e.g. tapping "Create package" while unverified). VM-side guards in feature view-models
     // also surface a `requiresPhoneVerification` flag — we OR them in `gateReason` below.
     var verifyPhoneReason by remember { mutableStateOf<VerifyPhoneReason?>(null) }
+    // Carrier flow: after "View Details → Request to Carry", track which package the carrier
+    // intends to offer on. The submit currently no-ops (TODO: trip-picker + VM wiring).
+    var carrierRequestPackage by remember { mutableStateOf<AvailablePackage?>(null) }
     var favoritesOpen by remember { mutableStateOf(false) }
     var sendRequestCarrier by remember { mutableStateOf<FavoriteCarrierInfoJson?>(null) }
     var ratingsOpen by remember { mutableStateOf(false) }
@@ -303,7 +309,7 @@ fun MainTabScreen(
                             user = user,
                             onSwitchRole = { viewModel.switchRole() },
                             onViewPackageDetails = { packageId ->
-                                viewModel.openPackageDetailSheet(packageId)
+                                viewModel.openCarrierPackageDetailSheet(packageId)
                             },
                             packageViewModel = packageViewModel,
                         )
@@ -795,6 +801,40 @@ fun MainTabScreen(
                 )
             }
         }
+    }
+
+    val carrierPackageDetailRoute = state.activeSheetRoute as? DashboardSheetRoute.CarrierPackageDetail
+    carrierPackageDetailRoute?.let { route ->
+        val available = packageUiState.availablePackages.firstOrNull { it.effectiveId == route.packageId }
+        if (available != null) {
+            com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+                onDismissRequest = { dismissActiveSheetRoute() },
+            ) {
+                CarrierPackageDetailSheet(
+                    pkg = available,
+                    onRequestToCarry = {
+                        dismissActiveSheetRoute()
+                        carrierRequestPackage = available
+                    },
+                    onClose = { dismissActiveSheetRoute() },
+                )
+            }
+        } else {
+            // Package no longer in the available list (refresh, filter change) — dismiss silently.
+            LaunchedEffect(route.packageId) { dismissActiveSheetRoute() }
+        }
+    }
+
+    carrierRequestPackage?.let { _ ->
+        RequestToCarrySheet(
+            onSubmit = { _, _ ->
+                // TODO: wire to MatchingViewModel.requestPackageAsCarrier once the trip-picker UI lands
+                // (iOS RequestToCarrySheet asks the carrier to pick one of their trips, then calls
+                // POST /matches/carrier-request with that tripId + packageId + offeredPrice).
+                carrierRequestPackage = null
+            },
+            onDismiss = { carrierRequestPackage = null },
+        )
     }
 
     val editPackageRoute = state.activeSheetRoute as? DashboardSheetRoute.EditPackage
