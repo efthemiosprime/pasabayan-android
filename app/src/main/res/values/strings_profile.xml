@@ -1,5 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- UserProfilePopover (iOS UserProfilePopover.swift parity) -->
+    <string name="profile_user_profile_title">User Profile</string>
+    <string name="profile_user_profile_close">Close user profile</string>
+    <string name="profile_user_number">User #%1$d</string>
+    <string name="profile_verification_basic">Basic</string>
+    <string name="profile_verification_verified">Verified</string>
+    <string name="profile_verification_premium">Premium</string>
+    <string name="profile_carrier_since">Carrier since %1$s</string>
+    <string name="profile_member_since">Member since %1$s</string>
+    <string name="profile_not_yet_rated">Not yet rated</string>
+    <string name="profile_trip_count">(%1$d)</string>
+    <string name="profile_performance">Performance</string>
+    <string name="profile_unable_load_stats">Unable to load stats</string>
+    <string name="profile_stats_deliveries">Deliveries</string>
+    <string name="profile_stats_earned">Earned</string>
+    <string name="profile_stats_rating">Rating</string>
+    <string name="profile_favorites_add">Add to Favorites</string>
+    <string name="profile_favorites_remove">Remove from Favorites</string>
+    <string name="profile_favorites_adding">Adding…</string>
+    <string name="profile_favorites_removing">Removing…</string>
+    <string name="profile_favorites_checking">Checking…</string>
+    <string name="profile_ratings_and_reviews">Ratings &amp; Reviews</string>
+    <string name="profile_no_reviews_yet">No reviews yet</string>
+    <string name="profile_no_reviews_description">Reviews from past deliveries will appear here.</string>
+    <string name="profile_load_more_reviews">Load more reviews</string>
+
     <string name="profile_back_payments">Back to profile</string>
     <string name="profile_header_title">Profile</string>
     <string name="profile_stats_title">Your stats</string>
