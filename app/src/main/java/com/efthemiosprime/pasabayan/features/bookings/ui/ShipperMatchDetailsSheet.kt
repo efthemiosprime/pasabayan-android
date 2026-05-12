@@ -435,7 +435,7 @@ private fun CarrierMatchDetailsSheetPreview() {
                 isCounterOffer = false,
                 originalPrice = null,
                 canCounterOffer = false,
-                remainingCounterOffers = null,
+                remainingCounterOffers = 0,
                 counterOfferRound = null,
                 counterOffererId = null,
                 counterOffererName = null,
