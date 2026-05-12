@@ -23,6 +23,8 @@ data class DeliveryMatch(
     val canCounterOffer: Boolean,
     val remainingCounterOffers: Int,
     val counterOfferRound: Int?,
+    val counterOffererId: Int? = null,
+    val counterOffererName: String? = null,
     // Messages
     val carrierMessage: String?,
     val shipperMessage: String?,

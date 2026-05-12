@@ -250,4 +250,26 @@ class BookingMapperTest {
         assertEquals(2, match.remainingCounterOffers)
         assertTrue(match.canCounterOffer)
     }
+
+    @Test
+    fun `DeliveryMatchJson toDomain propagates counterOfferer identity`() {
+        val json = DeliveryMatchJson(
+            id = 100,
+            isCounterOffer = true,
+            counterOffererId = 42,
+            counterOffererName = "Bob",
+        )
+        val match = json.toDomain()
+
+        assertEquals(42, match.counterOffererId)
+        assertEquals("Bob", match.counterOffererName)
+    }
+
+    @Test
+    fun `DeliveryMatchJson toDomain leaves counterOfferer identity null when absent`() {
+        val match = DeliveryMatchJson(id = 100).toDomain()
+
+        assertNull(match.counterOffererId)
+        assertNull(match.counterOffererName)
+    }
 }
