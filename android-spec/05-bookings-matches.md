@@ -704,6 +704,8 @@ Full field table — similar to `DeliveryMatch` but uses `BookingStatus` and add
 
 ### Compatibility models
 
+> See [§ Advisory-weight policy](#advisory-weight-policy-over-capacity-matches) for **`MatchCompatibility`** (the inline `compatibility` object on request/counter-offer responses) and **`OverageConfirmationData`** (ViewModel UI state for the Accept Anyway? sheet). The models below are for the dedicated `/compatibility` lookup endpoint, which carries a different shape.
+
 **`CompatibilityResult`:**
 
 | Field | Type | Wire key |
@@ -740,6 +742,51 @@ Full field table — similar to `DeliveryMatch` but uses `BookingStatus` and add
 **`ReceiptUploadResponse`:** `success: Boolean`, `message: String`, `data: { receiptPhoto: String, receiptUrl: String }`
 
 **`ReceiptResponse`:** `success: Boolean`, `data: { receiptPhoto: String, receiptUrl: String, uploadedAt: String }`
+
+---
+
+## Advisory-weight policy (over-capacity matches)
+
+Weight is **advisory at request time** and only enforced at accept time via an explicit acknowledgment flag. This mirrors the iOS policy and backend contract — over-capacity requests (initial and counter-offer) are allowed to flow; the accepting party explicitly confirms they can accommodate the overage at accept time.
+
+### Inline compatibility object
+
+`POST /trips/{tripId}/packages/{packageId}/request` and `POST /packages/{packageId}/request-trip/{tripId}` return a sibling `compatibility` block on 201 (also echoed in the 422 capacity-ack-required body). Decoded into **`MatchCompatibility`**:
+
+| Field | Type | Wire key | Notes |
+|-------|------|----------|-------|
+| `weightOverCapacity` | `Boolean` | `weight_over_capacity` | True when `packageWeightKg > tripAvailableWeightKg`. |
+| `packageWeightKg` | `Double?` | `package_weight_kg` | |
+| `tripAvailableWeightKg` | `Double?` | `trip_available_weight_kg` | |
+| `overageKg` | `Double?` | `overage_kg` | 0 when within capacity, positive when over. |
+| `datesMisaligned` | `Boolean` | `dates_misaligned` | Surfaced via existing warnings UI. |
+| `routeUncertain` | `Boolean` | `route_uncertain` | Surfaced via existing warnings UI. |
+| `requiresCapacityAcknowledgment` | `Boolean` | `requires_capacity_acknowledgment` | True only when `weightOverCapacity` is true. Backend renamed from the earlier `requires_acknowledgment` so each future overage type can get its own `requires_*_acknowledgment` flag. |
+
+`MatchCompatibility` rides on `RequestMatchResult.compatibility` from the request endpoints; the banner in match details reads the same values from the match record itself (`packageRequest.weightKg` vs `carrierTrip.availableWeightKg`) so it persists across reopens. Weight overage **never** appears in the envelope `warnings[]` array — that field still carries `dates_misaligned` / `pickup_address_outside_range` etc., but not capacity.
+
+### Accept flow (pre-flight + 422 fallback)
+
+`MatchingViewModel.acceptMatch(matchId, isCarrier)` runs a local pre-flight: if `package.weightKg > trip.availableWeightKg`, it surfaces `MatchingUiState.pendingOverageConfirmation: OverageConfirmationData?` instead of hitting the network. UI renders **`OverageConfirmationDialog`** ("Accept Anyway?"); `confirmOverageAcceptance()` retries the accept call with `acknowledge_overage = true`; `dismissOverageConfirmation()` clears state without an API call.
+
+Defense in depth — if the local check missed (stale `availableWeightKg`), the server returns 422 with `error: "capacity_acknowledgment_required"`. `ApiErrorMapper` produces **`DomainError.CapacityAcknowledgmentRequired`** carrying the kg values from the 422 body; the ViewModel's failure handler surfaces the **same** sheet (using server-provided kg, falling back to local match fields). On confirm, the retry sends `acknowledge_overage = true`.
+
+### Trip overcommitted (409)
+
+After a successful over-capacity accept, the trip's `available_weight_kg` is clamped to 0. Subsequent accept attempts return HTTP 409 with `message: "Trip is fully booked; no remaining capacity to accept matches."`. `ApiErrorMapper.map409` keys on "fully booked" / "no remaining capacity" → **`DomainError.TripOvercommitted`**; the ViewModel surfaces this as `MatchingUiState.tripOvercommitted: String?` so the UI renders a distinct "Trip is full" `PAlertDialog`, **not** the generic Conflict copy.
+
+### Send / Counter-Offer never blocks
+
+Per policy, **do not** add a local pre-flight gate on `CounterOfferPromptSheet` or `RequestToCarrySheet`. The send button stays enabled regardless of weight; the server accepts. The Counter-Offer CTA visibility keys only on the server's `canCounterOffer` flag — Android does not hide it on over-capacity matches.
+
+### Components
+
+- **`OverCapacityBanner`** (`features/bookings/components/`) — non-blocking caution surface (amber-tinted) rendered on match details when `packageRequest.weightKg > carrierTrip.availableWeightKg`. Pure: takes `(packageWeightKg, availableWeightKg, modifier)`.
+- **`OverageConfirmationDialog`** (`features/bookings/components/`) — wraps `PAlertDialog` with `WarningAmber` icon, picks carrier vs shipper body via `OverageConfirmationData.isCarrierAccepting`. Pure: takes `(data, onConfirm, onDismiss)`.
+
+### Deprecation tripwire
+
+The legacy `POST /api/trips/{tripId}/packages/{packageId}/accept` emits `Deprecation: true` + `Link: …; rel="successor-version"`. Android does not call it — `BookingsRepositoryImpl` migrated to `PUT /matches/{id}/accept-carrier-request` in slice 1. The `DeprecationLoggingInterceptor` in `:core:network` logs a single `Log.w` warning on debug builds whenever any response carries the header, so a regression would be visible immediately during development.
 
 ---
 
@@ -793,11 +840,14 @@ Full field table — similar to `DeliveryMatch` but uses `BookingStatus` and add
 
 ### Accept/decline flows
 
-**`CarrierAcceptRequest`:** `message: String?`, `manualConfirmation: Boolean?`
+**`AcceptMatchRequest`** (shared body for both `PUT /matches/{id}/accept-shipper-request` and `PUT /matches/{id}/accept-carrier-request`):
+
+| Field | Type | Wire key | Notes |
+|-------|------|----------|-------|
+| `message` | `String?` | `message` | Optional message to the counterparty. |
+| `acknowledgeOverage` | `Boolean?` | `acknowledge_overage` | Set to `true` **only** when the user has confirmed the "Accept Anyway?" sheet for an over-capacity match. Omitted (null) on the fitting-weight path — matches iOS. Server treats absent / `false` identically. See [§ Advisory-weight policy](#advisory-weight-policy-over-capacity-matches) below. |
 
 **`CarrierDeclineRequest`:** `reason: String?`
-
-**`ShipperAcceptRequest`:** `message: String?`
 
 **`ShipperDeclineRequest`:** `reason: String?`
 
@@ -1862,7 +1912,8 @@ All display strings must use `stringResource(R.string.key)`. Add to `res/values/
 ### Repository
 - [ ] Match listing — shipper, carrier, all, pending, single
 - [ ] Match creation and all status transitions (confirm, pickup, transit, deliver, cancel)
-- [ ] Accept/decline — both roles (4 endpoints)
+- [x] Accept/decline — both roles (4 endpoints) → `BookingsRepositoryImplTest` (slice 1 of advisory-weight sweep: `PUT /matches/{id}/accept-carrier-request` + `acknowledge_overage` body)
+- [x] `RequestMatchResult.compatibility` decoded on 201 → `BookingsRepositoryImplTest.shipperRequestTrip surfaces compatibility when over capacity`
 - [ ] Counter-offer submission — both roles
 - [ ] Auto-charge retry
 - [ ] Code generation and confirmation (pickup + delivery)
@@ -1875,6 +1926,8 @@ All display strings must use `stringResource(R.string.key)`. Add to `res/values/
 - [ ] Error response parsing (`ShipperRequestErrorResponse`, `ConflictErrorResponse`, `ValidationErrorResponse`)
 
 ### ViewModels
+- [x] `ApiErrorMapper`: 422 `capacity_acknowledgment_required` → `DomainError.CapacityAcknowledgmentRequired`; 409 "fully booked" → `DomainError.TripOvercommitted` → `ApiErrorMapperTest` (slice 3)
+- [x] `MatchingViewModel`: pre-flight overage check + `confirmOverageAcceptance` retry with `acknowledge_overage=true`; `dismissOverageConfirmation`; 422 fallback into the same sheet state; `TripOvercommitted` surfaces as a distinct one-shot → `MatchingViewModelTest` (slice 4)
 - [ ] `MatchingViewModel`: load by role, accept/decline both roles, counter-offer flow, throttling
 - [ ] `MatchingViewModel`: receiver access CRUD, auto-charge retry
 - [ ] `MatchingViewModel`: badge count with dismissal set
