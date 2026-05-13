@@ -62,14 +62,20 @@ interface BookingsApi {
 
     // -- Accept/decline flows --
 
-    @POST("matches/{matchId}/accept")
-    suspend fun shipperAccept(@Path("matchId") matchId: Int): Response<MatchResponseJson>
+    @PUT("matches/{matchId}/accept-carrier-request")
+    suspend fun shipperAcceptCarrierRequest(
+        @Path("matchId") matchId: Int,
+        @Body body: AcceptMatchRequestJson = AcceptMatchRequestJson(),
+    ): Response<MatchResponseJson>
 
     @POST("matches/{matchId}/decline")
     suspend fun shipperDecline(@Path("matchId") matchId: Int): Response<MatchResponseJson>
 
     @PUT("matches/{matchId}/accept-shipper-request")
-    suspend fun carrierAcceptShipperRequest(@Path("matchId") matchId: Int): Response<MatchResponseJson>
+    suspend fun carrierAcceptShipperRequest(
+        @Path("matchId") matchId: Int,
+        @Body body: AcceptMatchRequestJson = AcceptMatchRequestJson(),
+    ): Response<MatchResponseJson>
 
     @PUT("matches/{matchId}/decline-shipper-request")
     suspend fun carrierDeclineShipperRequest(@Path("matchId") matchId: Int): Response<MatchResponseJson>

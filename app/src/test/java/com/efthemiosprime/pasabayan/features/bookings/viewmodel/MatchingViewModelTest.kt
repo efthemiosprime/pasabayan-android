@@ -138,7 +138,7 @@ class MatchingViewModelTest {
     }
 
     @Test
-    fun `acceptMatch calls shipperAccept and updates list`() = runTest {
+    fun `acceptMatch (shipper) calls shipperAcceptCarrierRequest and updates list`() = runTest {
         val accepted = testMatch(1, MatchStatus.CONFIRMED)
         fakeRepo.loadResult = Result.success(listOf(testMatch(1, MatchStatus.CARRIER_REQUESTED)))
         fakeRepo.shipperAcceptResult = Result.success(accepted)
@@ -540,9 +540,11 @@ class FakeBookingsRepository : BookingsRepository {
     override suspend fun markPickedUp(matchId: Int) = confirmResult ?: Result.failure(Exception("Not set"))
     override suspend fun markInTransit(matchId: Int) = confirmResult ?: Result.failure(Exception("Not set"))
     override suspend fun markDelivered(matchId: Int) = confirmResult ?: Result.failure(Exception("Not set"))
-    override suspend fun shipperAccept(matchId: Int) = shipperAcceptResult ?: Result.failure(Exception("Not set"))
+    override suspend fun shipperAcceptCarrierRequest(matchId: Int, acknowledgeOverage: Boolean?) =
+        shipperAcceptResult ?: Result.failure(Exception("Not set"))
     override suspend fun shipperDecline(matchId: Int) = shipperDeclineResult ?: Result.failure(Exception("Not set"))
-    override suspend fun carrierAcceptShipperRequest(matchId: Int) = carrierAcceptResult ?: Result.failure(Exception("Not set"))
+    override suspend fun carrierAcceptShipperRequest(matchId: Int, acknowledgeOverage: Boolean?) =
+        carrierAcceptResult ?: Result.failure(Exception("Not set"))
     override suspend fun carrierDeclineShipperRequest(matchId: Int) = carrierDeclineResult ?: Result.failure(Exception("Not set"))
     override suspend fun generatePickupCode(matchId: Int) = Result.success("123456")
     override suspend fun generateDeliveryCode(matchId: Int) = Result.success("654321")

@@ -20,11 +20,17 @@ interface BookingsRepository {
 
     suspend fun markDelivered(matchId: Int): Result<DeliveryMatch>
 
-    suspend fun shipperAccept(matchId: Int): Result<DeliveryMatch>
+    suspend fun shipperAcceptCarrierRequest(
+        matchId: Int,
+        acknowledgeOverage: Boolean? = null,
+    ): Result<DeliveryMatch>
 
     suspend fun shipperDecline(matchId: Int): Result<DeliveryMatch>
 
-    suspend fun carrierAcceptShipperRequest(matchId: Int): Result<DeliveryMatch>
+    suspend fun carrierAcceptShipperRequest(
+        matchId: Int,
+        acknowledgeOverage: Boolean? = null,
+    ): Result<DeliveryMatch>
 
     suspend fun carrierDeclineShipperRequest(matchId: Int): Result<DeliveryMatch>
 

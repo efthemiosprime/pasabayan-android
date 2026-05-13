@@ -3,6 +3,7 @@ package com.efthemiosprime.pasabayan.features.bookings.services
 import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.network.ApiErrorMapper
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
+import com.efthemiosprime.pasabayan.core.network.bookings.AcceptMatchRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.BookingsApi
 import com.efthemiosprime.pasabayan.core.network.bookings.CarrierCounterOfferRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.MatchResponseJson
@@ -71,14 +72,28 @@ class BookingsRepositoryImpl @Inject constructor(
     override suspend fun markDelivered(matchId: Int): Result<DeliveryMatch> =
         matchAction { bookingsApi.markDelivered(matchId) }
 
-    override suspend fun shipperAccept(matchId: Int): Result<DeliveryMatch> =
-        matchAction { bookingsApi.shipperAccept(matchId) }
+    override suspend fun shipperAcceptCarrierRequest(
+        matchId: Int,
+        acknowledgeOverage: Boolean?,
+    ): Result<DeliveryMatch> = matchAction {
+        bookingsApi.shipperAcceptCarrierRequest(
+            matchId = matchId,
+            body = AcceptMatchRequestJson(acknowledgeOverage = acknowledgeOverage),
+        )
+    }
 
     override suspend fun shipperDecline(matchId: Int): Result<DeliveryMatch> =
         matchAction { bookingsApi.shipperDecline(matchId) }
 
-    override suspend fun carrierAcceptShipperRequest(matchId: Int): Result<DeliveryMatch> =
-        matchAction { bookingsApi.carrierAcceptShipperRequest(matchId) }
+    override suspend fun carrierAcceptShipperRequest(
+        matchId: Int,
+        acknowledgeOverage: Boolean?,
+    ): Result<DeliveryMatch> = matchAction {
+        bookingsApi.carrierAcceptShipperRequest(
+            matchId = matchId,
+            body = AcceptMatchRequestJson(acknowledgeOverage = acknowledgeOverage),
+        )
+    }
 
     override suspend fun carrierDeclineShipperRequest(matchId: Int): Result<DeliveryMatch> =
         matchAction { bookingsApi.carrierDeclineShipperRequest(matchId) }

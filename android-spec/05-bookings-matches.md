@@ -1020,9 +1020,9 @@ Computed: `title: String`
 
 | Method | Path | Request body | Response | Notes |
 |--------|------|-------------|----------|-------|
-| POST | `/matches/{matchId}/accept` | `ShipperAcceptRequest` | `ShipperMatchResponse` | Shipper accepts carrier's request |
+| PUT | `/matches/{matchId}/accept-carrier-request` | `AcceptMatchRequest` | `ShipperMatchResponse` | Shipper accepts carrier's offer. Body supports optional `acknowledge_overage` for advisory-weight policy (see slice 1/4 of the over-capacity sweep). |
 | POST | `/matches/{matchId}/decline` | `ShipperDeclineRequest` | `ShipperMatchResponse` | Shipper declines carrier's request |
-| PUT | `/matches/{matchId}/accept-shipper-request` | `CarrierAcceptRequest` | `AcceptShipperRequestResponse` | Carrier accepts shipper's request |
+| PUT | `/matches/{matchId}/accept-shipper-request` | `AcceptMatchRequest` | `AcceptShipperRequestResponse` | Carrier accepts shipper's request. Body supports optional `acknowledge_overage`. |
 | PUT | `/matches/{matchId}/decline-shipper-request` | `CarrierDeclineRequest` | `CarrierResponseResult` | Carrier declines shipper's request |
 
 ### Code generation

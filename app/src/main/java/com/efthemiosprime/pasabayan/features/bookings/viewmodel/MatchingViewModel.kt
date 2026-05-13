@@ -113,7 +113,7 @@ class MatchingViewModel @Inject constructor(
             val result = if (isCarrier) {
                 bookingsRepository.carrierAcceptShipperRequest(matchId)
             } else {
-                bookingsRepository.shipperAccept(matchId)
+                bookingsRepository.shipperAcceptCarrierRequest(matchId)
             }
             result.fold(
                 onSuccess = { updatedMatch ->

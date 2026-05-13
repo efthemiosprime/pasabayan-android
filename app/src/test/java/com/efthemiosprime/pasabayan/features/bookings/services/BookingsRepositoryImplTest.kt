@@ -173,18 +173,82 @@ class BookingsRepositoryImplTest {
         assertEquals("123456", result.getOrThrow())
     }
 
-    // -- shipperAccept --
+    // -- shipperAcceptCarrierRequest (new contract — PUT /matches/{id}/accept-carrier-request) --
 
     @Test
-    fun `shipperAccept returns match on success`() = runBlocking {
+    fun `shipperAcceptCarrierRequest hits PUT accept-carrier-request`() = runBlocking {
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(
                 """{"success": true, "message": "Accepted", "data": {"id": 100, "match_status": "confirmed"}}""",
             ),
         )
 
-        val result = repo.shipperAccept(100)
+        val result = repo.shipperAcceptCarrierRequest(100)
         assertTrue(result.isSuccess)
+
+        val request = server.takeRequest()
+        assertEquals("PUT", request.method)
+        assertEquals("/api/matches/100/accept-carrier-request", request.path)
+    }
+
+    @Test
+    fun `shipperAcceptCarrierRequest omits acknowledge_overage when not requested`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Accepted", "data": {"id": 100, "match_status": "confirmed"}}""",
+            ),
+        )
+
+        repo.shipperAcceptCarrierRequest(100)
+
+        val body = server.takeRequest().body.readUtf8()
+        assertFalse("payload should not include acknowledge_overage", body.contains("acknowledge_overage"))
+    }
+
+    @Test
+    fun `shipperAcceptCarrierRequest sends acknowledge_overage true when acknowledged`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Accepted", "data": {"id": 100, "match_status": "confirmed"}}""",
+            ),
+        )
+
+        repo.shipperAcceptCarrierRequest(100, acknowledgeOverage = true)
+
+        val body = server.takeRequest().body.readUtf8()
+        assertTrue("payload should include acknowledge_overage=true", body.contains("\"acknowledge_overage\":true"))
+    }
+
+    // -- carrierAcceptShipperRequest (PUT /matches/{id}/accept-shipper-request) --
+
+    @Test
+    fun `carrierAcceptShipperRequest hits PUT accept-shipper-request`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Accepted", "data": {"id": 100, "match_status": "carrier_accepted"}}""",
+            ),
+        )
+
+        val result = repo.carrierAcceptShipperRequest(100)
+        assertTrue(result.isSuccess)
+
+        val request = server.takeRequest()
+        assertEquals("PUT", request.method)
+        assertEquals("/api/matches/100/accept-shipper-request", request.path)
+    }
+
+    @Test
+    fun `carrierAcceptShipperRequest sends acknowledge_overage true when acknowledged`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Accepted", "data": {"id": 100, "match_status": "carrier_accepted"}}""",
+            ),
+        )
+
+        repo.carrierAcceptShipperRequest(100, acknowledgeOverage = true)
+
+        val body = server.takeRequest().body.readUtf8()
+        assertTrue("payload should include acknowledge_overage=true", body.contains("\"acknowledge_overage\":true"))
     }
 
     // -- shipperRequestTrip envelope (iOS parity 8c9646d) --
