@@ -115,9 +115,13 @@ fun CarrierExploreContent(
     }
     val returnToNearby: () -> Unit = {
         contentMode = CarrierExploreContentMode.Nearby
-        if (state.availablePackagesFilter.searchText.isNotBlank()) {
+        // Clear any state that the non-Nearby modes set on the filter so the default
+        // package feed comes back: searchText (set by PopularDestination + Search) and
+        // recent (set by Recent mode → adds new_this_week / sort_by / sort_order params).
+        val currentFilter = state.availablePackagesFilter
+        if (currentFilter.searchText.isNotBlank() || currentFilter.recent) {
             packageViewModel.setBrowseFilter(
-                state.availablePackagesFilter.copy(searchText = ""),
+                currentFilter.copy(searchText = "", recent = false),
             )
             packageViewModel.applyBrowseFilter()
         }
@@ -208,9 +212,16 @@ fun CarrierExploreContent(
                         showPopular = showPopular,
                         // iOS parity: tapping a dropdown row swaps the main content
                         // area to the matching mode and unfocuses the search field.
+                        // Recent additionally sets `recent = true` on the filter so the
+                        // next fetch sends `new_this_week=true&sort_by=created_at&sort_order=desc`
+                        // — iOS parity with `CarrierBrowseContentMode.recent`.
                         onSelectRecent = {
                             contentMode = CarrierExploreContentMode.Recent
                             isSearchFocused = false
+                            packageViewModel.setBrowseFilter(
+                                state.availablePackagesFilter.copy(recent = true),
+                            )
+                            packageViewModel.applyBrowseFilter()
                         },
                         onSelectPopular = {
                             contentMode = CarrierExploreContentMode.PopularList
@@ -237,10 +248,11 @@ fun CarrierExploreContent(
         }
 
         // iOS parity: main content area branches on `exploreContentMode`. Nearby +
-        // PopularDestination + Search all render the package list (PopularDestination
-        // adds a "Showing packages for X" header). PopularList renders the popular
-        // routes list. Recent ships as a "coming soon" placeholder until the backend
-        // contract for the Recent feed is confirmed (tracked in IMPLEMENTATION-STATUS).
+        // PopularDestination + Search + Recent all render the same package list
+        // (each non-Nearby mode prepends a Back affordance + header). PopularList
+        // is the only mode with bespoke content — the popular-routes picker.
+        // Recent additionally drives the API filter via `recent = true` on
+        // `PackageBrowseFilter` (sends `new_this_week=true&sort_by=created_at&sort_order=desc`).
         when (val mode = contentMode) {
             CarrierExploreContentMode.PopularList -> {
                 item("popular-list-back") {
@@ -268,37 +280,42 @@ fun CarrierExploreContent(
                     )
                 }
             }
-            CarrierExploreContentMode.Recent -> {
-                item("recent-back") {
-                    BackToNearbyRow(onClick = returnToNearby)
-                }
-                item("recent-coming-soon") {
-                    PCard(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(R.string.dashboard_carrier_explore_recent_coming_soon),
-                            style = PasabayanTextStyles.Body.medium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(PasabayanSpacing.md),
-                        )
-                    }
-                }
-            }
             else -> {
-                if (mode is CarrierExploreContentMode.PopularDestination) {
-                    item("destination-back") {
-                        BackToNearbyRow(onClick = returnToNearby)
+                // Recent and PopularDestination both layer a "back" affordance + a
+                // header above the otherwise-shared package list. Recent fetches
+                // with `new_this_week=true&sort_by=created_at&sort_order=desc` —
+                // iOS parity with `CarrierBrowseContentMode.recent`.
+                when (mode) {
+                    CarrierExploreContentMode.Recent -> {
+                        item("recent-back") {
+                            BackToNearbyRow(onClick = returnToNearby)
+                        }
+                        item("recent-header") {
+                            Text(
+                                text = stringResource(R.string.dashboard_carrier_explore_recent_header),
+                                style = PasabayanTextStyles.Heading.h6,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
                     }
-                    item("destination-header") {
-                        Text(
-                            text = stringResource(
-                                R.string.dashboard_carrier_explore_showing_destination,
-                                mode.displayName,
-                            ),
-                            style = PasabayanTextStyles.Heading.h6,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
+                    is CarrierExploreContentMode.PopularDestination -> {
+                        item("destination-back") {
+                            BackToNearbyRow(onClick = returnToNearby)
+                        }
+                        item("destination-header") {
+                            Text(
+                                text = stringResource(
+                                    R.string.dashboard_carrier_explore_showing_destination,
+                                    mode.displayName,
+                                ),
+                                style = PasabayanTextStyles.Heading.h6,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
                     }
+                    else -> Unit
                 }
                 when {
                     state.isLoadingAvailablePackages && state.availablePackages.isEmpty() -> {

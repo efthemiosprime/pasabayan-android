@@ -31,6 +31,7 @@ class PackageBrowseFilterTest {
         assertFalse(PackageBrowseFilter(packageType = PackageType.ELECTRONICS).isEmpty)
         assertFalse(PackageBrowseFilter(maxWeight = "5").isEmpty)
         assertFalse(PackageBrowseFilter(maxPrice = "100").isEmpty)
+        assertFalse(PackageBrowseFilter(recent = true).isEmpty)
     }
 
     @Test
@@ -92,6 +93,40 @@ class PackageBrowseFilterTest {
                 "urgency" to "high",
                 "max_weight" to "10.0",
                 "max_budget" to "200.0",
+            ),
+            q,
+        )
+    }
+
+    @Test
+    fun `recent flag emits new_this_week sort_by and sort_order`() {
+        // iOS parity: `CarrierBrowseContentMode.recent` in CarrierHomeContent.swift
+        // sends exactly these three params alongside the user-controlled filters.
+        val q = PackageBrowseFilter(recent = true).toQueryMap()
+        assertEquals(
+            mapOf(
+                "new_this_week" to "true",
+                "sort_by" to "created_at",
+                "sort_order" to "desc",
+            ),
+            q,
+        )
+    }
+
+    @Test
+    fun `recent layered on top of user filters preserves both`() {
+        val q = PackageBrowseFilter(
+            searchText = "doc",
+            urgency = UrgencyLevel.HIGH,
+            recent = true,
+        ).toQueryMap()
+        assertEquals(
+            mapOf(
+                "q" to "doc",
+                "urgency" to "high",
+                "new_this_week" to "true",
+                "sort_by" to "created_at",
+                "sort_order" to "desc",
             ),
             q,
         )

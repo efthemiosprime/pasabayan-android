@@ -46,7 +46,7 @@
     <string name="dashboard_carrier_explore_back_to_nearby">Back to Nearby</string>
     <string name="dashboard_carrier_explore_popular_list_title">Popular Routes</string>
     <string name="dashboard_carrier_explore_showing_destination">Showing packages for %1$s</string>
-    <string name="dashboard_carrier_explore_recent_coming_soon">Recent packages near you — coming soon.</string>
+    <string name="dashboard_carrier_explore_recent_header">Recent Packages Near You</string>
     <string name="dashboard_carrier_available_packages">Available Packages</string>
     <string name="dashboard_carrier_not_nearby">No packages nearby \u2014 showing from other areas</string>
     <string name="dashboard_carrier_post_trip">Post Trip Schedule</string>

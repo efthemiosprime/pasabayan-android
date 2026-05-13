@@ -46,7 +46,7 @@
     <string name="dashboard_carrier_explore_back_to_nearby">Retour aux environs</string>
     <string name="dashboard_carrier_explore_popular_list_title">Itin\u00e9raires populaires</string>
     <string name="dashboard_carrier_explore_showing_destination">Colis pour %1$s</string>
-    <string name="dashboard_carrier_explore_recent_coming_soon">Colis r\u00e9cents pr\u00e8s de vous \u2014 bient\u00f4t.</string>
+    <string name="dashboard_carrier_explore_recent_header">Colis r\u00e9cents pr\u00e8s de vous</string>
     <string name="dashboard_carrier_available_packages">Colis disponibles</string>
     <string name="dashboard_carrier_not_nearby">Aucun colis \u00e0 proximit\u00e9 \u2014 affichage d\'autres r\u00e9gions</string>
     <string name="dashboard_carrier_post_trip">Publier un horaire de trajet</string>

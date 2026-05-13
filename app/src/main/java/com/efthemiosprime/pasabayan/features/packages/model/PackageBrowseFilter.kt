@@ -24,13 +24,22 @@ data class PackageBrowseFilter(
     val packageType: PackageType? = null,
     val maxWeight: String = "",
     val maxPrice: String = "",
+    /**
+     * Drives the carrier-explore Recent content mode (`CarrierExploreContentMode.Recent`).
+     * When `true`, [toQueryMap] adds `new_this_week=true&sort_by=created_at&sort_order=desc`
+     * — iOS parity with `CarrierBrowseContentMode.recent` in `CarrierHomeContent.swift:1824`.
+     * Independent of the user-controlled filter chips so toggling Recent doesn't clobber
+     * urgency / weight / budget selections.
+     */
+    val recent: Boolean = false,
 ) {
     val isEmpty: Boolean
         get() = searchText.isBlank() &&
             urgency == null &&
             packageType == null &&
             maxWeight.isBlank() &&
-            maxPrice.isBlank()
+            maxPrice.isBlank() &&
+            !recent
 
     /**
      * Server-side query parameters. `packageType` is intentionally omitted —
@@ -42,5 +51,10 @@ data class PackageBrowseFilter(
         urgency?.let { put("urgency", it.name.lowercase()) }
         maxWeight.trim().toDoubleOrNull()?.let { put("max_weight", it.toString()) }
         maxPrice.trim().toDoubleOrNull()?.let { put("max_budget", it.toString()) }
+        if (recent) {
+            put("new_this_week", "true")
+            put("sort_by", "created_at")
+            put("sort_order", "desc")
+        }
     }
 }
