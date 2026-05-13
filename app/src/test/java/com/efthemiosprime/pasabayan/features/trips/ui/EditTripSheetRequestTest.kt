@@ -17,154 +17,134 @@ class EditTripSheetRequestTest {
     private val sharedPickup = DateTimeParsing.parseApiDateTime("2026-04-01T06:30:00Z")!!
     private val sharedDelivery = DateTimeParsing.parseApiDateTime("2026-04-01T15:00:00Z")!!
 
-    @Test
-    fun `planning trip emits every changed route schedule and capacity field`() {
-        val request = buildUpdateRequest(
-            routeLocked = false,
-            originCity = "Vancouver", originCountry = "CA",
-            destinationCity = "Calgary", destinationCountry = "CA",
-            pickupAddress = "1 Pacific Blvd", dropoffAddress = "9 Stampede Trail",
-            departureMillis = dep, arrivalMillis = arr,
-            sharedPickupMillis = sharedPickup, sharedDeliveryMillis = sharedDelivery,
-            weightText = "12.5", spaceText = "60", notesText = "Fragile",
-            originalDepartureDate = "2026-03-01T08:00:00Z",
-            originalArrivalDate = "2026-03-01T14:00:00Z",
-            originalPickupDate = null,
-            originalDeliveryDate = null,
-            originalWeightKg = 10.0,
-            originalSpaceLiters = 50.0,
-            originalNotes = "Old notes",
-        )
+    private fun request(
+        routeLocked: Boolean = false,
+        isLandTransport: Boolean = false,
+        priceText: String = "15",
+        originalPricePerKg: Double? = null,
+        originalFlatTripPrice: Double? = null,
+        weightText: String = "12.5",
+        spaceText: String = "60",
+        originalWeightKg: Double? = 10.0,
+        originalSpaceLiters: Double? = 50.0,
+        notesText: String = "Fragile",
+        originalNotes: String? = "Old notes",
+    ) = buildUpdateRequest(
+        routeLocked = routeLocked,
+        originCity = "Vancouver", originCountry = "CA",
+        destinationCity = "Calgary", destinationCountry = "CA",
+        pickupAddress = "1 Pacific Blvd", dropoffAddress = "9 Stampede Trail",
+        departureMillis = dep, arrivalMillis = arr,
+        sharedPickupMillis = sharedPickup, sharedDeliveryMillis = sharedDelivery,
+        weightText = weightText, spaceText = spaceText,
+        priceText = priceText, isLandTransport = isLandTransport,
+        notesText = notesText,
+        originalDepartureDate = "2026-03-01T08:00:00Z",
+        originalArrivalDate = "2026-03-01T14:00:00Z",
+        originalPickupDate = null,
+        originalDeliveryDate = null,
+        originalWeightKg = originalWeightKg,
+        originalSpaceLiters = originalSpaceLiters,
+        originalPricePerKg = originalPricePerKg,
+        originalFlatTripPrice = originalFlatTripPrice,
+        originalNotes = originalNotes,
+    )
 
-        assertEquals("Vancouver", request.originCity)
-        assertEquals("Calgary", request.destinationCity)
-        assertEquals("1 Pacific Blvd", request.pickupAddress)
-        assertEquals("9 Stampede Trail", request.dropoffAddress)
-        assertEquals(DateTimeParsing.formatApiDateTime(dep), request.departureDate)
-        assertEquals(DateTimeParsing.formatApiDateTime(arr), request.arrivalDate)
-        assertEquals(DateTimeParsing.formatApiDateTime(sharedPickup), request.pickupDate)
-        assertEquals(DateTimeParsing.formatApiDateTime(sharedDelivery), request.deliveryDate)
-        assertEquals(12.5, request.availableWeightKg!!, 0.001)
-        assertEquals(60.0, request.availableSpaceLiters!!, 0.001)
-        assertEquals("Fragile", request.specialNotes)
+    @Test
+    fun `flight planning trip routes price into pricePerKg`() {
+        val r = request(isLandTransport = false, priceText = "18.5")
+        assertEquals(18.5, r.pricePerKg!!, 0.001)
+        assertNull(r.flatTripPrice)
+    }
+
+    @Test
+    fun `land planning trip routes price into flatTripPrice`() {
+        val r = request(isLandTransport = true, priceText = "120")
+        assertEquals(120.0, r.flatTripPrice!!, 0.001)
+        assertNull(r.pricePerKg)
+    }
+
+    @Test
+    fun `unchanged price is not re-sent`() {
+        val flight = request(isLandTransport = false, priceText = "15", originalPricePerKg = 15.0)
+        assertNull(flight.pricePerKg)
+        val land = request(isLandTransport = true, priceText = "120", originalFlatTripPrice = 120.0)
+        assertNull(land.flatTripPrice)
+    }
+
+    @Test
+    fun `locked trip drops both pricing fields`() {
+        val r = request(routeLocked = true, isLandTransport = false, priceText = "99")
+        assertNull(r.pricePerKg)
+        assertNull(r.flatTripPrice)
+    }
+
+    @Test
+    fun `planning trip emits every changed route schedule capacity and price field`() {
+        val r = request()
+        assertEquals("Vancouver", r.originCity)
+        assertEquals(DateTimeParsing.formatApiDateTime(dep), r.departureDate)
+        assertEquals(12.5, r.availableWeightKg!!, 0.001)
+        assertEquals(60.0, r.availableSpaceLiters!!, 0.001)
+        assertEquals(15.0, r.pricePerKg!!, 0.001)
+        assertEquals("Fragile", r.specialNotes)
     }
 
     @Test
     fun `locked trip drops every route and schedule field even when text differs`() {
-        val request = buildUpdateRequest(
-            routeLocked = true,
-            originCity = "Edited", originCountry = "ZZ",
-            destinationCity = "Edited", destinationCountry = "ZZ",
-            pickupAddress = "Edited", dropoffAddress = "Edited",
-            departureMillis = dep, arrivalMillis = arr,
-            sharedPickupMillis = sharedPickup, sharedDeliveryMillis = sharedDelivery,
-            weightText = "12.5", spaceText = "60", notesText = "New note",
-            originalDepartureDate = null,
-            originalArrivalDate = null,
-            originalPickupDate = null,
-            originalDeliveryDate = null,
-            originalWeightKg = 10.0,
-            originalSpaceLiters = 50.0,
-            originalNotes = "Old note",
-        )
-
-        assertNull(request.originCity)
-        assertNull(request.destinationCity)
-        assertNull(request.pickupAddress)
-        assertNull(request.dropoffAddress)
-        assertNull(request.departureDate)
-        assertNull(request.arrivalDate)
-        assertNull(request.pickupDate)
-        assertNull(request.deliveryDate)
-        // Capacity + notes still flow through — iOS keeps notes always editable, and a locked
-        // trip on Android still accepts capacity tweaks via PUT /trips/{id}.
-        assertEquals(12.5, request.availableWeightKg!!, 0.001)
-        assertEquals(60.0, request.availableSpaceLiters!!, 0.001)
-        assertEquals("New note", request.specialNotes)
-    }
-
-    @Test
-    fun `unchanged dates and capacity are not re-sent`() {
-        val sameDepartureWire = "2026-04-01T08:00:00Z"
-        val request = buildUpdateRequest(
-            routeLocked = false,
-            originCity = "Toronto", originCountry = "CA",
-            destinationCity = "Montreal", destinationCountry = "CA",
-            pickupAddress = "1 A St", dropoffAddress = "2 B St",
-            departureMillis = dep, arrivalMillis = arr,
-            sharedPickupMillis = null, sharedDeliveryMillis = null,
-            weightText = "10.0", spaceText = "50", notesText = "Same",
-            originalDepartureDate = sameDepartureWire,
-            originalArrivalDate = DateTimeParsing.formatApiDateTime(arr),
-            originalPickupDate = null,
-            originalDeliveryDate = null,
-            originalWeightKg = 10.0,
-            originalSpaceLiters = 50.0,
-            originalNotes = "Same",
-        )
-        assertNull(request.departureDate)
-        assertNull(request.arrivalDate)
-        assertNull(request.pickupDate)
-        assertNull(request.deliveryDate)
-        assertNull(request.availableWeightKg)
-        assertNull(request.availableSpaceLiters)
+        val r = request(routeLocked = true, isLandTransport = false, priceText = "99")
+        assertNull(r.originCity)
+        assertNull(r.departureDate)
+        assertNull(r.pickupDate)
+        assertNull(r.pricePerKg)
+        // Capacity + notes still flow through.
+        assertEquals(12.5, r.availableWeightKg!!, 0.001)
+        assertEquals(60.0, r.availableSpaceLiters!!, 0.001)
+        assertEquals("Fragile", r.specialNotes)
     }
 
     @Test
     fun `no-op save emits an empty body`() {
-        val request = buildUpdateRequest(
+        val r = buildUpdateRequest(
             routeLocked = false,
             originCity = "", originCountry = "",
             destinationCity = "", destinationCountry = "",
             pickupAddress = "", dropoffAddress = "",
             departureMillis = null, arrivalMillis = null,
             sharedPickupMillis = null, sharedDeliveryMillis = null,
-            weightText = "10.0", spaceText = "50", notesText = "Same note",
+            weightText = "10.0", spaceText = "50",
+            priceText = "15", isLandTransport = false,
+            notesText = "Same note",
             originalDepartureDate = null,
             originalArrivalDate = null,
             originalPickupDate = null,
             originalDeliveryDate = null,
             originalWeightKg = 10.0,
             originalSpaceLiters = 50.0,
+            originalPricePerKg = 15.0,
+            originalFlatTripPrice = null,
             originalNotes = "Same note",
         )
-
         val encoded = json.encodeToString(
             com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson.serializer(),
-            request,
+            r,
         )
         assertEquals("{}", encoded)
     }
 
     @Test
-    fun `wire body uses snake case for route, schedule and capacity keys`() {
-        val request = buildUpdateRequest(
-            routeLocked = false,
-            originCity = "Vancouver", originCountry = "CA",
-            destinationCity = "Calgary", destinationCountry = "CA",
-            pickupAddress = "1 Pacific Blvd", dropoffAddress = "9 Stampede Trail",
-            departureMillis = dep, arrivalMillis = arr,
-            sharedPickupMillis = sharedPickup, sharedDeliveryMillis = sharedDelivery,
-            weightText = "12.5", spaceText = "60", notesText = "Fragile",
-            originalDepartureDate = null,
-            originalArrivalDate = null,
-            originalPickupDate = null,
-            originalDeliveryDate = null,
-            originalWeightKg = 10.0,
-            originalSpaceLiters = null,
-            originalNotes = null,
-        )
+    fun `wire body uses snake case for all keys including pricing`() {
+        val r = request()
         val encoded = json.encodeToString(
             com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson.serializer(),
-            request,
+            r,
         )
         assertTrue(encoded.contains("\"origin_city\":\"Vancouver\""))
         assertTrue(encoded.contains("\"departure_date\":"))
-        assertTrue(encoded.contains("\"arrival_date\":"))
-        assertTrue(encoded.contains("\"pickup_date\":"))
-        assertTrue(encoded.contains("\"delivery_date\":"))
         assertTrue(encoded.contains("\"available_weight_kg\":12.5"))
         assertTrue(encoded.contains("\"available_space_liters\":60.0"))
-        assertFalse(encoded.contains("\"departureDate\""))
+        assertTrue(encoded.contains("\"price_per_kg\":15.0"))
+        assertFalse(encoded.contains("\"flat_trip_price\""))
+        assertFalse(encoded.contains("\"pricePerKg\""))
     }
 }

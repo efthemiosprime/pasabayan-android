@@ -19,6 +19,9 @@ object TripFormValidator {
     /** iOS parity (`EditTripSheet.swift:1260`): space is capped at 5000 L. */
     const val MAX_SPACE_LITERS: Double = 5000.0
 
+    /** iOS parity (`EditTripSheet.swift:1276`): non-land price-per-kg is capped at $100/kg. */
+    const val MAX_PRICE_PER_KG: Double = 100.0
+
     fun validate(form: TripFormState): List<TripValidationError> = buildList {
         // Origin / destination
         if (form.originCity.isBlank()) add(TripValidationError.OriginRequired)
@@ -56,15 +59,19 @@ object TripFormValidator {
             add(TripValidationError.TransportMethodRequired)
         }
 
-        // Pricing
+        // Pricing — branches by transport method. Land uses flatTripPrice; flight/ship use
+        // pricePerKg with an iOS-parity upper bound of $100/kg.
         if (form.transportationMethod != TransportationMethod.NONE) {
             if (form.transportationMethod.isLandTransport) {
                 if (form.flatTripPrice == null || form.flatTripPrice <= 0.0) {
                     add(TripValidationError.PriceRequired)
                 }
             } else {
-                if (form.pricePerKg == null || form.pricePerKg <= 0.0) {
+                val perKg = form.pricePerKg
+                if (perKg == null || perKg <= 0.0) {
                     add(TripValidationError.PriceRequired)
+                } else if (perKg > MAX_PRICE_PER_KG) {
+                    add(TripValidationError.PricePerKgOutOfRange)
                 }
             }
         }

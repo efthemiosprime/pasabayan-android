@@ -195,6 +195,7 @@
     <string name="trips_create_validation_weight_out_of_range">Weight capacity must be 2000 kg or less.</string>
     <string name="trips_create_validation_space_invalid">Space must be greater than zero when provided.</string>
     <string name="trips_create_validation_space_out_of_range">Space must be 5000 liters or less.</string>
+    <string name="trips_create_validation_price_per_kg_out_of_range">Price per kg must be $100 or less.</string>
     <string name="trips_create_validation_price_required">Enter a valid trip price.</string>
     <string name="trips_create_validation_transport_required">Select a transportation method.</string>
     <string name="trips_create_validation_departure_required">Departure date is required.</string>
@@ -209,6 +210,7 @@
     <string name="trips_edit_shared_pickup">Shared pickup window</string>
     <string name="trips_edit_shared_delivery">Shared delivery window</string>
     <string name="trips_edit_capacity_section">Capacity</string>
+    <string name="trips_edit_pricing_section">Pricing</string>
 
     <!-- Browse -->
     <string name="trips_browse_title">Browse Trips</string>

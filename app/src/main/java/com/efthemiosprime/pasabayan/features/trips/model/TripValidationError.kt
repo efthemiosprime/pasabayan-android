@@ -15,6 +15,11 @@ sealed interface TripValidationError {
     /** Space exceeds the iOS-parity upper bound of 5000 L (`EditTripSheet.swift:1260`). */
     data object SpaceOutOfRange : TripValidationError
     data object PriceRequired : TripValidationError
+    /**
+     * Non-land price-per-kg exceeds the iOS-parity upper bound of $100/kg
+     * (`EditTripSheet.swift:1276`).
+     */
+    data object PricePerKgOutOfRange : TripValidationError
     data object TransportMethodRequired : TripValidationError
     data object DepartureRequired : TripValidationError
     data object DepartureTooSoon : TripValidationError

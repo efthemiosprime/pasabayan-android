@@ -1,0 +1,80 @@
+---
+description: Non-exhaustive checklist of common pitfalls to scan for during implementation. Grows as we encounter new ones.
+alwaysApply: true
+---
+
+# Implementation checklist — common pitfalls (non-exhaustive)
+
+A growing list of issues we've hit more than once. **Treat as a scan checklist, not a complete contract** — each row links to the canonical rule for the full rationale and exceptions. If you catch a new recurring issue, append a row (see "How to add" at the bottom).
+
+This list **complements** but does not replace the more thorough rules in `.cursor/rules/`. Each row should fit in one line of intent.
+
+---
+
+## During implementation — scan for these before committing
+
+| # | Pitfall | What to do | Canonical rule |
+|---|---|---|---|
+| 1 | Hardcoded English string in `Text(...)`, `Toast`, `Snackbar`, error message, or `contentDescription` | Move to `res/values/strings_<feature>.xml` AND `res/values-fr/strings_<feature>.xml` (mark TODO if no translation) | `localization-enforcement.mdc` |
+| 2 | Raw `Color(0xFF...)`, `Color.White`, `Color.Black` in feature code | Use `MaterialTheme.colorScheme.*` or `PasabayanColors.*`; verify both light + dark previews render correctly | `dark-light-theme-support.mdc`, `design-system-enforcement.mdc` |
+| 3 | Raw `*.dp` / `*.sp` literals in feature code | Use `PasabayanSpacing` / `PasabayanRadius` / `PasabayanTextStyles` tokens. Document if a one-off is unavoidable | `design-system-enforcement.mdc` |
+| 4 | Material 3 "experimental API" warning at a `P*` call site (`PModalBottomSheet`, `PTopBar`, `PScaffold`, etc.) | Add `@OptIn(ExperimentalMaterial3Api::class)` to the **enclosing function** + import. Never `@file:OptIn`, never module-wide | `material3-experimental-optin.mdc` |
+| 5 | New or changed composable in `features/*/ui/`, `features/*/components/`, or `:core:designsystem` without `@Preview` | Add light + dark previews wrapped in `PasabayanTheme`; use fake state, no Hilt | `compose-ui-previews.mdc`, `dark-light-theme-support.mdc` |
+| 6 | `!!` (non-null assertion) in production code | Use safe calls / `requireNotNull` with a message / nullable destructuring; reserve `!!` for tests where intent is documented | `android-gotchas.mdc` |
+| 7 | `GlobalScope.launch` or `GlobalScope` reference | Use `viewModelScope` / `lifecycleScope` / a scoped `CoroutineScope` injected via DI | `android-gotchas.mdc` |
+| 8 | Network/disk I/O on `Dispatchers.Main` (Retrofit synchronous, Room blocking, file/SharedPreferences read) | Move to `Dispatchers.IO` or use a suspend API. Room queries must be suspend or return Flow | `android-gotchas.mdc` |
+| 9 | `state.value = state.value.copy(...)` (read-then-write) on `MutableStateFlow` | Use `state.update { it.copy(...) }` for atomic update | `android-gotchas.mdc` |
+| 10 | `Float` for currency / monetary arithmetic | Use `BigDecimal` or `Long` cents. Verify any new `Money*` formatter does not round through `Float` | `android-gotchas.mdc` |
+| 11 | New DTO field declared non-nullable but the server may omit it | Make nullable; map to a sensible default in the mapper. Add a JSON fixture test covering the missing-field case | `android-gotchas.mdc`, `tdd-and-ui-conformance.mdc` |
+| 12 | Click handler that can fire twice on rapid double-tap (navigation, payment, API trigger) | Debounce via `rememberCoroutineScope` + lock flag, or use `dsClickableOnce` if available; otherwise gate at the ViewModel | `android-gotchas.mdc` |
+| 13 | Forking a `P*` primitive with a one-off bespoke variant in a feature | Extend the primitive in `:core:designsystem` (with tests + previews + spec update) instead | `ui-reusability-and-inheritance.mdc`, `design-system-enforcement.mdc` |
+| 14 | Adding a new enum case in a feature when an equivalent already exists in `core/domain/enum/` | Reuse / extend the canonical enum. Don't fork | `reuse-before-create.mdc` |
+| 15 | New `*Utils.kt`, `*Helpers.kt`, or `*Manager.kt` catch-all file | Name by responsibility (`DateParser`, `PriceFormatter`, `ReceiptUploader`); split by single concern | `lean-classes-separation.mdc` |
+| 16 | Composable file > 400 lines or function > 30 lines | Decompose into smaller composables/components in `components/`. Move state out of the screen if possible | `lean-classes-separation.mdc` |
+| 17 | ViewModel > 150 lines of logic, or holding inline API/mapping logic | Extract into a use case / repository method. ViewModels orchestrate, they don't transform | `lean-classes-separation.mdc` |
+| 18 | New screen lacks corresponding tests (DTO, mapper, repo, VM) | Add red-green-refactor tests at each layer touched | `tdd-and-ui-conformance.mdc` |
+| 19 | Bug fix without a regression test | Add the failing case as a test before the fix | `tdd-and-ui-conformance.mdc` |
+| 20 | Starting a new phase without confirming the prior phase's exit gate | Stop, suggest commits for current slice, wait for user confirmation per `PHASES-AND-FEATURES.md` | `phase-commit-workflow.mdc`, `pasabayan-android-spec-context.mdc` |
+| 21 | Detail/info sheet that hand-rolls title row + close + scroll instead of using `PDetailSheetScaffold` | Use the scaffold; add the missing variant to the scaffold if needed | `detail-sheet-scaffold-conformance.mdc` |
+| 22 | Running `./gradlew` and reporting build success/failure as authoritative | Provide copy-paste Gradle commands; let the user run them. Cursor terminal can have stripped JRE / `jlink` issues | `gradle-user-runs-builds.mdc` |
+
+---
+
+## How to add a row
+
+When you encounter a recurring issue (caught it twice, or it's a class of bug like the Material 3 opt-in that affects many files at once):
+
+1. **Confirm it has a canonical rule.** If yes, add a row here pointing to it. If not, write the canonical rule first (a focused `.cursor/rules/<topic>.mdc`), then add the row.
+2. **Keep the row to one line of intent.** This file is a scan-checklist, not a knowledge base. The "what to do" cell should be a directive, not an explanation.
+3. **Order by likelihood of being hit during a typical slice**, not by severity. The most-likely-to-trip items go near the top within their cluster (UI, async, structure, etc.).
+4. **Don't duplicate.** If a row covers (a), don't add a sibling row for (b) when (b) is just a special case of (a). Prefer expanding the canonical rule.
+5. **Number the rows so they're easy to reference in PRs / commits** ("flagged by checklist #4"). When inserting in the middle, renumber — this file is short enough that drift isn't expensive.
+
+---
+
+## What this list is not
+
+- **Not exhaustive.** Many bugs (race conditions, accessibility regressions, layout-direction issues, large-screen layouts, animation jank) aren't here yet. Add them when you encounter them.
+- **Not a substitute for the canonical rules.** The rules in this directory contain the *why* and the edge cases. This file is a fast scan you can run before opening a PR.
+- **Not a code review checklist.** Code reviewers should still apply judgment. This is for the *implementer* to self-check.
+- **Not load-bearing for correctness.** Tests and the build catch most things. This catches the recurring "I keep forgetting X" issues.
+
+---
+
+## Linked rules (alphabetical)
+
+- `android-gotchas.mdc` — null safety, threading, lifecycle, async, currency
+- `app-feature-package-layout.mdc` — where new files live
+- `compose-ui-previews.mdc` — preview requirements
+- `dark-light-theme-support.mdc` — both themes from day one
+- `design-system-enforcement.mdc` — `P*` primitives + tokens
+- `detail-sheet-scaffold-conformance.mdc` — sheet structure
+- `gradle-user-runs-builds.mdc` — let the user run Gradle
+- `lean-classes-separation.mdc` — file/class size limits
+- `localization-enforcement.mdc` — strings + EN/FR from day one
+- `material3-experimental-optin.mdc` — `@OptIn(ExperimentalMaterial3Api::class)` convention
+- `pasabayan-android-spec-context.mdc` — spec-driven workflow
+- `phase-commit-workflow.mdc` — slice → commit → confirm
+- `reuse-before-create.mdc` — search before adding
+- `tdd-and-ui-conformance.mdc` — tests first or with each slice
+- `ui-reusability-and-inheritance.mdc` — promote on second use

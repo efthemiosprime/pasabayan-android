@@ -29,6 +29,7 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.core.domain.util.DateTimeParsing
 import com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripCapacitySection
+import com.efthemiosprime.pasabayan.features.trips.components.EditTripPricingSection
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripRouteSection
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripScheduleSection
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
@@ -57,6 +58,18 @@ fun EditTripSheet(
     var sharedDeliveryMillis by remember { mutableStateOf(DateTimeParsing.parseApiDateTime(trip.deliveryDate)) }
     var weightText by remember { mutableStateOf(trip.availableWeightKg?.toString().orEmpty()) }
     var spaceText by remember { mutableStateOf(trip.availableSpaceLiters?.toString().orEmpty()) }
+    // iOS parity (`EditTripSheet.swift:896-991`): the single price input is sourced from
+    // flatTripPrice for land transport and pricePerKg for flight/ship; submit serializes
+    // back into the appropriate wire field.
+    var priceText by remember {
+        mutableStateOf(
+            if (trip.transportationMethod.isLandTransport) {
+                trip.flatTripPrice?.toString().orEmpty()
+            } else {
+                trip.pricePerKg?.toString().orEmpty()
+            },
+        )
+    }
     var notesText by remember { mutableStateOf(trip.specialNotes.orEmpty()) }
 
     PModalBottomSheet(onDismissRequest = onDismiss) {
@@ -107,6 +120,13 @@ fun EditTripSheet(
                     locked = routeLocked,
                 )
 
+                EditTripPricingSection(
+                    transportationMethod = trip.transportationMethod,
+                    priceText = priceText,
+                    onPriceChange = { priceText = it },
+                    locked = routeLocked,
+                )
+
                 POutlinedTextField(
                     value = notesText,
                     onValueChange = { notesText = it },
@@ -135,6 +155,8 @@ fun EditTripSheet(
                                     sharedDeliveryMillis = sharedDeliveryMillis,
                                     weightText = weightText,
                                     spaceText = spaceText,
+                                    priceText = priceText,
+                                    isLandTransport = trip.transportationMethod.isLandTransport,
                                     notesText = notesText,
                                     originalDepartureDate = trip.departureDate,
                                     originalArrivalDate = trip.arrivalDate,
@@ -142,6 +164,8 @@ fun EditTripSheet(
                                     originalDeliveryDate = trip.deliveryDate,
                                     originalWeightKg = trip.availableWeightKg,
                                     originalSpaceLiters = trip.availableSpaceLiters,
+                                    originalPricePerKg = trip.pricePerKg,
+                                    originalFlatTripPrice = trip.flatTripPrice,
                                     originalNotes = trip.specialNotes,
                                 ),
                             )
@@ -181,6 +205,8 @@ internal fun buildUpdateRequest(
     sharedDeliveryMillis: Long?,
     weightText: String,
     spaceText: String,
+    priceText: String,
+    isLandTransport: Boolean,
     notesText: String,
     originalDepartureDate: String?,
     originalArrivalDate: String?,
@@ -188,11 +214,22 @@ internal fun buildUpdateRequest(
     originalDeliveryDate: String?,
     originalWeightKg: Double?,
     originalSpaceLiters: Double?,
+    originalPricePerKg: Double?,
+    originalFlatTripPrice: Double?,
     originalNotes: String?,
 ): TripUpdateRequestJson {
     val parsedWeight = weightText.toDoubleOrNull()
     val parsedSpace = spaceText.toDoubleOrNull()
+    val parsedPrice = priceText.toDoubleOrNull()
     val notesNormalized = notesText.ifBlank { null }
+
+    // Pricing — like capacity, this is gated by the same lock as route since iOS' canEditDetails
+    // mirrors canEditRoute (both turn off outside planning). The price routes into one of two
+    // wire fields per transport: land → flat_trip_price, flight/ship → price_per_kg.
+    val newPricePerKg = if (routeLocked || isLandTransport) null
+        else parsedPrice?.takeIf { it != originalPricePerKg }
+    val newFlatTripPrice = if (routeLocked || !isLandTransport) null
+        else parsedPrice?.takeIf { it != originalFlatTripPrice }
 
     // Schedule fields use the same lock as route: only PLANNING trips can change them
     // (iOS `EditTripSheet.swift:148-150`, `canEditRoute`). Notes are always editable.
@@ -214,6 +251,8 @@ internal fun buildUpdateRequest(
         deliveryDate = newSharedDelivery?.takeIf { it != originalDeliveryDate },
         availableWeightKg = parsedWeight?.takeIf { it != originalWeightKg },
         availableSpaceLiters = parsedSpace?.takeIf { it != originalSpaceLiters },
+        pricePerKg = newPricePerKg,
+        flatTripPrice = newFlatTripPrice,
         specialNotes = notesNormalized?.takeIf { it != originalNotes },
     )
 }

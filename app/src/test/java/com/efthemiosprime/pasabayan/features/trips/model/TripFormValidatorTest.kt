@@ -148,6 +148,41 @@ class TripFormValidatorTest {
     }
 
     @Test
+    fun `flight pricePerKg above 100 returns out-of-range`() {
+        val errors = TripFormValidator.validate(
+            validForm().copy(
+                transportationMethod = TransportationMethod.FLIGHT,
+                pricePerKg = 100.01,
+            ),
+        )
+        assertTrue(errors.any { it is TripValidationError.PricePerKgOutOfRange })
+        assertTrue(errors.none { it is TripValidationError.PriceRequired })
+    }
+
+    @Test
+    fun `flight pricePerKg of exactly 100 is ok`() {
+        val errors = TripFormValidator.validate(
+            validForm().copy(
+                transportationMethod = TransportationMethod.FLIGHT,
+                pricePerKg = 100.0,
+            ),
+        )
+        assertTrue(errors.none { it is TripValidationError.PricePerKgOutOfRange })
+    }
+
+    @Test
+    fun `land flatTripPrice over 100 does not trigger per-kg out-of-range`() {
+        val errors = TripFormValidator.validate(
+            validForm().copy(
+                transportationMethod = TransportationMethod.CAR,
+                pricePerKg = null,
+                flatTripPrice = 500.0,
+            ),
+        )
+        assertTrue(errors.none { it is TripValidationError.PricePerKgOutOfRange })
+    }
+
+    @Test
     fun `flight with no pricePerKg returns error`() {
         val errors = TripFormValidator.validate(
             validForm().copy(transportationMethod = TransportationMethod.FLIGHT, pricePerKg = null),

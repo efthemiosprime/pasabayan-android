@@ -194,6 +194,7 @@
     <string name="trips_create_validation_weight_out_of_range">La capacit\u00e9 de poids doit \u00eatre de 2000 kg ou moins.</string>
     <string name="trips_create_validation_space_invalid">L\'espace doit \u00eatre sup\u00e9rieur \u00e0 z\u00e9ro lorsqu\'il est fourni.</string>
     <string name="trips_create_validation_space_out_of_range">L\'espace doit \u00eatre de 5000 litres ou moins.</string>
+    <string name="trips_create_validation_price_per_kg_out_of_range">Le prix par kg doit \u00eatre de 100 $ ou moins.</string>
     <string name="trips_create_validation_price_required">Saisissez un prix de trajet valide.</string>
     <string name="trips_create_validation_transport_required">S\u00e9lectionnez un mode de transport.</string>
     <string name="trips_create_validation_departure_required">La date de d\u00e9part est requise.</string>
@@ -208,6 +209,7 @@
     <string name="trips_edit_shared_pickup">Fen\u00eatre de ramassage partag\u00e9e</string>
     <string name="trips_edit_shared_delivery">Fen\u00eatre de livraison partag\u00e9e</string>
     <string name="trips_edit_capacity_section">Capacit\u00e9</string>
+    <string name="trips_edit_pricing_section">Tarification</string>
 
     <!-- Browse -->
     <string name="trips_browse_title">Parcourir les trajets</string>
