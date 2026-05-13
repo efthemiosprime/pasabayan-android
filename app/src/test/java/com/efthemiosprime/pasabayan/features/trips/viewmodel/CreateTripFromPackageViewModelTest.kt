@@ -62,6 +62,70 @@ class CreateTripFromPackageViewModelTest {
         Dispatchers.resetMain()
     }
 
+    // -- request-to-carry alert (Slice C) --
+
+    @Test
+    fun `loadTemplate routes request-to-carry phrase to alert state not error`() = runTest {
+        fakeRepo.tripTemplateResult =
+            Result.failure(Exception("You already have a trip that is compatible with this package."))
+        viewModel.loadTemplate(4)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertNotNull(state.requestToCarryMessage)
+        assertNull(state.errorMessage)
+        assertEquals(false, state.isLoadingTemplate)
+    }
+
+    @Test
+    fun `loadTemplate matches request to carry compatible trip and has compatible trips phrases`() = runTest {
+        val phrases = listOf(
+            "Please request to carry instead.",
+            "You have a compatible trip.",
+            "This shipper has compatible trips already.",
+        )
+        for (phrase in phrases) {
+            fakeRepo.tripTemplateResult = Result.failure(Exception(phrase))
+            viewModel.loadTemplate(4)
+            advanceUntilIdle()
+            assertNotNull("phrase should route to request-to-carry: $phrase",
+                viewModel.uiState.value.requestToCarryMessage)
+            viewModel.consumeRequestToCarryPrompt()
+        }
+    }
+
+    @Test
+    fun `loadTemplate is case-insensitive when matching phrases`() = runTest {
+        fakeRepo.tripTemplateResult =
+            Result.failure(Exception("REQUEST TO CARRY ONLY"))
+        viewModel.loadTemplate(4)
+        advanceUntilIdle()
+        assertNotNull(viewModel.uiState.value.requestToCarryMessage)
+    }
+
+    @Test
+    fun `loadTemplate unrelated error stays in errorMessage`() = runTest {
+        fakeRepo.tripTemplateResult = Result.failure(Exception("Server unavailable"))
+        viewModel.loadTemplate(4)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertNull(state.requestToCarryMessage)
+        assertEquals("Server unavailable", state.errorMessage)
+    }
+
+    @Test
+    fun `consumeRequestToCarryPrompt clears the alert`() = runTest {
+        fakeRepo.tripTemplateResult =
+            Result.failure(Exception("You have a compatible trip on that route."))
+        viewModel.loadTemplate(4)
+        advanceUntilIdle()
+        assertNotNull(viewModel.uiState.value.requestToCarryMessage)
+
+        viewModel.consumeRequestToCarryPrompt()
+        assertNull(viewModel.uiState.value.requestToCarryMessage)
+    }
+
     @Test
     fun `loadTemplate stores returned template`() = runTest {
         fakeRepo.tripTemplateResult = Result.success(

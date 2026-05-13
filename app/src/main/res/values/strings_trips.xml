@@ -215,6 +215,8 @@
     <string name="trips_edit_status_locked_note">Use Update Status to move past Active.</string>
     <string name="trips_details_cancel_error_match_in_progress_hint">A package on this trip is already in progress. Complete or hand it off before cancelling the trip.</string>
     <string name="trips_edit_cancel_error_generic">Trip could not be cancelled. Please try again.</string>
+    <string name="trips_from_package_alert_trip_exists_title">You already have a compatible trip</string>
+    <string name="trips_from_package_alert_request_to_carry">Request to carry</string>
 
     <!-- Browse -->
     <string name="trips_browse_title">Browse Trips</string>

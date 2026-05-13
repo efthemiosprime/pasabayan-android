@@ -42,4 +42,6 @@
     <string name="error_capacity_ack_required_message">%1$s</string>
     <string name="error_trip_overcommitted">This trip is full and cannot accept more matches.</string>
     <string name="error_trip_overcommitted_message">%1$s</string>
+    <string name="error_trip_has_blocking_match">Cannot cancel — this trip has an active package match.</string>
+    <string name="error_trip_has_blocking_match_message">%1$s</string>
 </resources>

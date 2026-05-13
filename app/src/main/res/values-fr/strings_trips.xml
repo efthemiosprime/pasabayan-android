@@ -214,6 +214,8 @@
     <string name="trips_edit_status_locked_note">Utilisez Mettre à jour le statut pour aller au-delà d\'Actif.</string>
     <string name="trips_details_cancel_error_match_in_progress_hint">Un colis sur ce trajet est déjà en cours. Terminez-le ou transférez-le avant d\'annuler le trajet.</string>
     <string name="trips_edit_cancel_error_generic">Le trajet n\'a pas pu être annulé. Veuillez réessayer.</string>
+    <string name="trips_from_package_alert_trip_exists_title">Vous avez déjà un trajet compatible</string>
+    <string name="trips_from_package_alert_request_to_carry">Demander à transporter</string>
 
     <!-- Browse -->
     <string name="trips_browse_title">Parcourir les trajets</string>

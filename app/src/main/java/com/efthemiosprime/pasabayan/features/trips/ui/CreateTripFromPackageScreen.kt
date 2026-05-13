@@ -17,9 +17,11 @@ import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,6 +62,7 @@ fun CreateTripFromPackageScreen(
     userId: Long? = null,
     onClose: () -> Unit,
     onTripCreated: (Int) -> Unit,
+    onRequestToCarry: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: CreateTripFromPackageViewModel = hiltViewModel(),
 ) {
@@ -99,6 +102,29 @@ fun CreateTripFromPackageScreen(
         val tripId = state.createdTrip?.id ?: return@LaunchedEffect
         onTripCreated(tripId)
         viewModel.clearCreatedTrip()
+    }
+
+    // Request-to-carry alert — iOS CreateTripFromPackageView.swift:86-92. When the template
+    // load fails because the carrier already has a compatible trip, prompt the user to switch
+    // to the request-to-carry flow instead of creating a duplicate trip.
+    state.requestToCarryMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { viewModel.consumeRequestToCarryPrompt() },
+            title = { Text(stringResource(R.string.trips_from_package_alert_trip_exists_title)) },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.consumeRequestToCarryPrompt()
+                    onClose()
+                    onRequestToCarry(packageId)
+                }) { Text(stringResource(R.string.trips_from_package_alert_request_to_carry)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.consumeRequestToCarryPrompt() }) {
+                    Text(stringResource(R.string.common_buttons_cancel))
+                }
+            },
+        )
     }
 
     PDetailSheetScaffold(

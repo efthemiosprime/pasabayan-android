@@ -53,6 +53,11 @@ fun DomainError.localizedMessage(context: Context): String {
             if (m != null) c.getString(R.string.error_trip_overcommitted_message, m)
             else c.getString(R.string.error_trip_overcommitted)
         }
+        is DomainError.TripHasBlockingMatch -> {
+            val m = message?.takeIf { it.isNotBlank() }
+            if (m != null) c.getString(R.string.error_trip_has_blocking_match_message, m)
+            else c.getString(R.string.error_trip_has_blocking_match)
+        }
         is DomainError.CapacityAcknowledgmentRequired -> {
             val m = message?.takeIf { it.isNotBlank() }
             if (m != null) c.getString(R.string.error_capacity_ack_required_message, m)

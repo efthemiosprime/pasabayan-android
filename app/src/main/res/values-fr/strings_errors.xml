@@ -38,4 +38,6 @@
     <string name="error_capacity_ack_required_message">%1$s</string>
     <string name="error_trip_overcommitted">Ce trajet est complet et ne peut plus accepter de correspondances.</string>
     <string name="error_trip_overcommitted_message">%1$s</string>
+    <string name="error_trip_has_blocking_match">Annulation impossible — ce trajet a une correspondance de colis active.</string>
+    <string name="error_trip_has_blocking_match_message">%1$s</string>
 </resources>
