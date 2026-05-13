@@ -28,6 +28,7 @@ securityCrypto = "1.1.0-alpha06"
 stripe = "21.5.1"
 browser = "1.8.0"
 mockk = "1.13.16"
+coil = "3.0.4"
 
 [libraries]
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
@@ -72,6 +73,8 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 stripe-android = { group = "com.stripe", name = "stripe-android", version.ref = "stripe" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

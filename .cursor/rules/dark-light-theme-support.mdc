@@ -1,0 +1,103 @@
+---
+description: Every UI, view, and component must support both light and dark themes by default — never hardcode colors, always read from theme/tokens, always preview both modes
+alwaysApply: true
+---
+
+# Dark + light theme support (mandatory, by default)
+
+Every piece of UI — every screen, view, component, `P*` primitive, sheet, dialog, banner, badge, illustration wrapper — **must render correctly in both light and dark mode out of the box**. Dark-mode support is not an opt-in step that can be added later; it is a precondition for the work being considered complete.
+
+Authoritative docs: **`android-spec/14-design-system.md`** (theme + tokens), **`.cursor/rules/compose-ui-previews.mdc`** (preview requirements), **`.cursor/rules/design-system-enforcement.mdc`** (`P*` + token usage).
+
+## Hard rules (always apply)
+
+### 1. All colors come from the theme — no exceptions
+
+| Source | Use | Never |
+|---|---|---|
+| Semantic role color (background, surface, primary, onSurface, error, outline, …) | `MaterialTheme.colorScheme.*` | `Color.White`, `Color.Black`, `Color.Red`, `Color.Gray`, any `Color.<name>` |
+| Brand / app-specific palette | `PasabayanColors.*` (defined in `:core:designsystem`) | inline `Color(0xFFxxxxxx)` literals in feature code |
+| Translucent overlays / scrims | A token from `PasabayanColors.*` or `MaterialTheme.colorScheme.*` with `.copy(alpha = …)` | `Color.Black.copy(alpha = …)` or `Color(0x80000000)` |
+| Tint for icons / dividers / borders | `MaterialTheme.colorScheme.onSurfaceVariant`, `outline`, `outlineVariant`, etc. | hand-picked hex values that "look right in light mode" |
+
+A single `Color(0xFF…)` or `Color.White` / `Color.Black` in feature code is grounds to reject the change. If a needed color doesn't exist, **add it to `:core:designsystem` with both light and dark values** before consuming it.
+
+### 2. `PasabayanTheme` defines both color schemes
+
+- `PasabayanTheme` must compose `lightColorScheme(...)` **and** `darkColorScheme(...)`, with every brand token mapped to a sensible dark counterpart (not just an inverted lightness — review contrast for `onPrimary`, `onSurface`, `error`, etc.).
+- Every screen's root must be wrapped in `PasabayanTheme { … }` (via `PScaffold` / app shell). Never call `MaterialTheme { … }` directly in feature code.
+- New brand colors added to `:core:designsystem` must ship **both** light and dark values in the same change — never "light now, dark later".
+
+### 3. Composables read color through the theme — never capture it at construction time
+
+- Don't pass hardcoded `Color` parameters into composables when a semantic role exists. Take a `colorScheme` role at call time, or expose an optional `color: Color = MaterialTheme.colorScheme.onSurface` default.
+- Don't cache `Color` in `remember { … }` without a `key` tied to the color scheme — it will stale across theme changes.
+- Don't read `isSystemInDarkTheme()` inside a composable to branch on color manually. Use the theme; the theme already branched for you.
+
+### 4. Images, icons, and illustrations
+
+- Vector `ImageVector` / icons must be tinted via `tint = MaterialTheme.colorScheme.<role>` (or left to the component default), never a hardcoded color.
+- Raster assets that only work on a light background must have a dark-mode variant in `drawable-night/` (or be replaced by a theme-aware vector). Adding a raster without a dark counterpart is incomplete.
+- For Rive / Lottie / WebView surfaces, set the host background from the theme and verify the asset reads correctly on a dark surface; if it doesn't, supply a dark variant.
+
+### 5. Previews must show both modes
+
+Every new or changed composable under `features/*/ui/`, `features/*/components/`, or `:core:designsystem` must ship **two** `@Preview` composables (in the same file):
+
+```kotlin
+@Preview(name = "Light", showBackground = true)
+@Preview(
+    name = "Dark",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun MyComponentPreview() {
+    PasabayanTheme {
+        MyComponent(/* sample state */)
+    }
+}
+```
+
+Or, equivalently, two separate `@Preview` functions — one default, one with `uiMode = UI_MODE_NIGHT_YES`. Both must wrap content in `PasabayanTheme`. See `.cursor/rules/compose-ui-previews.mdc`.
+
+### 6. System bars and window chrome
+
+- Status bar and navigation bar colors must follow the theme. Set them from `MaterialTheme.colorScheme.background` (or the appropriate role) — never hardcode.
+- Status bar icon contrast (`isAppearanceLightStatusBars`) must follow `isSystemInDarkTheme()` so icons stay legible in both modes.
+
+### 7. State-dependent colors (selected, pressed, disabled, error)
+
+- Disabled / pressed / selected variants must come from the theme (`colorScheme.onSurface.copy(alpha = …)`, `colorScheme.primary`, etc.) or from a `Pasabayan*` token, so they shift correctly between light and dark.
+- Error and success states must read from `colorScheme.error` / a `PasabayanColors` success token defined for both modes — never red/green hex literals.
+
+## Catching violations (self-review checklist)
+
+Flag any of these in new or changed code:
+
+- [ ] `Color(0x…)`, `Color.White`, `Color.Black`, `Color.Red`, `Color.Gray`, or any `Color.<name>` outside `:core:designsystem` internals.
+- [ ] A composable that visually changes appearance but only ships one `@Preview` (light).
+- [ ] A new brand color added to `:core:designsystem` with only a light value (or only a dark value).
+- [ ] A composable that takes a `Color` parameter with a hardcoded default like `Color.White`.
+- [ ] `isSystemInDarkTheme()` used to manually branch on color values inside a feature composable.
+- [ ] A raster `drawable-*` asset added without a `drawable-night-*` counterpart when the image embeds a light background.
+- [ ] A screen that calls `MaterialTheme { … }` or `lightColorScheme()` directly instead of going through `PasabayanTheme`.
+- [ ] Status-bar / nav-bar color set to a literal instead of a theme role.
+
+## When generating new UI code
+
+Before writing a composable:
+
+1. Identify which `colorScheme` roles and `PasabayanColors.*` tokens you need.
+2. If a needed semantic color isn't in `:core:designsystem` with **both** light and dark values, add it there first (with token-invariant tests + light + dark previews of any affected `P*`).
+3. Write the feature composable using only theme roles / `Pasabayan*` tokens — no `Color(0x…)` anywhere.
+4. Add **light + dark** `@Preview`s in the same file, wrapped in `PasabayanTheme`.
+5. Manually verify in the preview panel (or on a device with system dark mode toggled) that the result is legible in both modes — check contrast on text, dividers, disabled states, and icons in particular.
+
+## Cross-references
+
+- **Spec:** `android-spec/14-design-system.md` (theme, tokens, `P*` catalog, PR checklist)
+- **Design system enforcement:** `.cursor/rules/design-system-enforcement.mdc`
+- **Compose previews:** `.cursor/rules/compose-ui-previews.mdc`
+- **UI reusability + inheritance:** `.cursor/rules/ui-reusability-and-inheritance.mdc`
+- **Project context:** `.cursor/rules/pasabayan-android-spec-context.mdc`

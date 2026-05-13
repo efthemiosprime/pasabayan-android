@@ -64,6 +64,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
+import com.efthemiosprime.pasabayan.core.designsystem.component.PAvatar
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCardVariant
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
@@ -213,6 +214,8 @@ fun ProfileTabContent(
             currentRole = currentRole,
             verificationLevel = VerificationLevel.normalized(verificationLevel),
             isCarrierActive = carrierActive,
+            avatarUrl = state.userProfile?.profilePicture ?: user.avatar,
+            avatarCacheBuster = state.avatarCacheBuster,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag(ProfileTestTags.Header),
@@ -426,6 +429,8 @@ private fun ProfileUserHeader(
     currentRole: UserRole,
     verificationLevel: VerificationLevel,
     isCarrierActive: Boolean,
+    avatarUrl: String?,
+    avatarCacheBuster: String,
     modifier: Modifier = Modifier,
 ) {
     PCard(modifier = modifier, variant = PCardVariant.Large) {
@@ -434,7 +439,12 @@ private fun ProfileUserHeader(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top,
             ) {
-                ProfileLetterAvatar(name = name)
+                PAvatar(
+                    url = avatarUrl,
+                    fallbackName = name,
+                    size = ProfileHeaderAvatarSize,
+                    cacheBuster = avatarCacheBuster,
+                )
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -470,24 +480,6 @@ private fun ProfileUserHeader(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun ProfileLetterAvatar(name: String) {
-    val initial = name.firstOrNull()?.uppercase() ?: "?"
-    Box(
-        modifier = Modifier
-            .size(ProfileHeaderAvatarSize)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = initial,
-            style = PasabayanTextStyles.Heading.h2,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-        )
     }
 }
 
@@ -845,6 +837,8 @@ private fun ProfileTabScreenPreview() {
                 currentRole = UserRole.SHIPPER,
                 verificationLevel = VerificationLevel.VERIFIED,
                 isCarrierActive = false,
+                avatarUrl = null,
+                avatarCacheBuster = "",
                 modifier = Modifier.padding(PasabayanSpacing.md),
             )
             ProfileUserHeader(
@@ -853,6 +847,8 @@ private fun ProfileTabScreenPreview() {
                 currentRole = UserRole.CARRIER,
                 verificationLevel = VerificationLevel.PREMIUM,
                 isCarrierActive = true,
+                avatarUrl = null,
+                avatarCacheBuster = "",
                 modifier = Modifier.padding(PasabayanSpacing.md),
             )
         }
