@@ -199,7 +199,17 @@ fun ShipperExploreContent(
             item("nearby-carriers-section") {
                 NearbyCarriersSection(
                     carriers = topCarriers,
-                    onCarrierTap = { /* TODO: open carrier profile sheet (separate feature surface) */ },
+                    onCarrierTap = { carrier ->
+                        // iOS parity: ShipperHomeContent sets `selectedCarrierForProfile`
+                        // and renders the same UserProfilePopover used by trip-card carrier
+                        // headers. NearbyCarrier carries id/name/avatar; rating + verification
+                        // are fetched fresh by the popover's VM.
+                        profileSheetCarrier = UserSummary(
+                            id = carrier.id,
+                            name = carrier.name,
+                            avatar = carrier.avatar,
+                        )
+                    },
                 )
             }
             item("nearby-carriers-divider") { PDivider() }

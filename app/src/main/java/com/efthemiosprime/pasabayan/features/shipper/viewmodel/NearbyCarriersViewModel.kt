@@ -2,12 +2,16 @@ package com.efthemiosprime.pasabayan.features.shipper.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.efthemiosprime.pasabayan.core.session.AuthRepository
 import com.efthemiosprime.pasabayan.features.shipper.model.NearbyCarrier
 import com.efthemiosprime.pasabayan.features.shipper.services.ShipperRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -37,10 +41,26 @@ data class NearbyCarriersUiState(
 @HiltViewModel
 class NearbyCarriersViewModel @Inject constructor(
     private val shipperRepository: ShipperRepository,
+    authRepository: AuthRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NearbyCarriersUiState())
     val uiState: StateFlow<NearbyCarriersUiState> = _uiState.asStateFlow()
+
+    init {
+        // iOS parity: `ShipperHomeContent` calls `nearbyCarriersViewModel.resetForNewSession()`
+        // from `.onChange(of: roleViewModel.currentRole)`. On Android we react to the
+        // session-level user transition instead — equivalent on logout, broader on user
+        // swap, no-op on no change. `drop(1)` skips the StateFlow's initial replay so
+        // we don't reset on first composition.
+        viewModelScope.launch {
+            authRepository.currentUser()
+                .map { it?.id }
+                .distinctUntilChanged()
+                .drop(1)
+                .collect { resetForNewSession() }
+        }
+    }
 
     /** Idempotent first-load entry point. Safe to call from `LaunchedEffect(Unit)`. */
     fun loadNearbyCarriersIfNeeded() {

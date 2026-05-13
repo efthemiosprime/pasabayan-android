@@ -1,10 +1,15 @@
 package com.efthemiosprime.pasabayan.features.shipper.viewmodel
 
+import com.efthemiosprime.pasabayan.core.session.AuthRepository
+import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.shipper.model.NearbyCarrier
 import com.efthemiosprime.pasabayan.features.shipper.model.NearbyCarriers
 import com.efthemiosprime.pasabayan.features.shipper.services.ShipperRepository
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -23,13 +28,18 @@ class NearbyCarriersViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var fakeRepo: FakeShipperRepository
+    private lateinit var currentUserFlow: MutableStateFlow<AuthUser?>
+    private lateinit var authRepository: AuthRepository
     private lateinit var viewModel: NearbyCarriersViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeRepo = FakeShipperRepository()
-        viewModel = NearbyCarriersViewModel(fakeRepo)
+        currentUserFlow = MutableStateFlow(null)
+        authRepository = mockk()
+        every { authRepository.currentUser() } returns currentUserFlow
+        viewModel = NearbyCarriersViewModel(fakeRepo, authRepository)
     }
 
     @After
@@ -116,6 +126,44 @@ class NearbyCarriersViewModelTest {
     }
 
     @Test
+    fun `auth user transition triggers resetForNewSession`() = runTest {
+        fakeRepo.result = Result.success(
+            NearbyCarriers(
+                homeCityId = 7,
+                homeCityName = "Toronto",
+                radiusKm = 25.0,
+                carriers = listOf(carrier(1, completed = 3)),
+            ),
+        )
+        viewModel.loadNearbyCarriersIfNeeded()
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.hasLoaded)
+        assertEquals(1, viewModel.uiState.value.carriers.size)
+
+        // Sign in: user-id transition (null → 7) drops state.
+        currentUserFlow.value = signedInUser(id = 7)
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.hasLoaded)
+        assertTrue(viewModel.uiState.value.carriers.isEmpty())
+
+        // Re-load + swap user: another transition (7 → 99) drops state again.
+        viewModel.loadNearbyCarriersIfNeeded()
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.hasLoaded)
+        currentUserFlow.value = signedInUser(id = 99)
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.hasLoaded)
+
+        // No-op transition (same id) preserves state.
+        viewModel.loadNearbyCarriersIfNeeded()
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.hasLoaded)
+        currentUserFlow.value = signedInUser(id = 99)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.hasLoaded)
+    }
+
+    @Test
     fun `failure populates errorMessage and clears carriers`() = runTest {
         fakeRepo.result = Result.failure(RuntimeException("boom"))
 
@@ -140,6 +188,20 @@ class NearbyCarriersViewModelTest {
 
         assertFalse(viewModel.uiState.value.isHomeCitySet)
     }
+
+    private fun signedInUser(id: Int): AuthUser = AuthUser(
+        id = id.toLong(),
+        name = "User $id",
+        email = "u$id@x",
+        avatar = null,
+        phone = null,
+        phoneVerified = true,
+        profileCompleted = true,
+        provider = "test",
+        userTypes = listOf("shipper"),
+        isActiveCarrier = false,
+        isActiveShipper = true,
+    )
 
     private fun carrier(id: Int, completed: Int): NearbyCarrier = NearbyCarrier(
         id = id,
