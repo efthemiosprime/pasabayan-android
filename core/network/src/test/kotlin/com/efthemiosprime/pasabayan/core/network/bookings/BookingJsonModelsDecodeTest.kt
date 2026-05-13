@@ -55,16 +55,12 @@ class BookingJsonModelsDecodeTest {
         assertEquals(77, match.chatConversationId)
     }
 
-    @Test
-    fun `DeliveryMatchJson decodes auto_charge nested object`() {
-        val raw = fixture("delivery_match_full.json")
-        val match = json.decodeFromString<DeliveryMatchJson>(raw)
-
-        assertNotNull(match.autoCharge)
-        assertEquals("pending", match.autoCharge!!.status)
-        assertEquals(150.50, match.autoCharge!!.amount!!, 0.001)
-        assertEquals("CAD", match.autoCharge!!.currency)
-    }
+    // Note: `auto_charge` was moved out of DeliveryMatchJson in the advisory-weight
+    // sweep (slice A.1) — it now lives on MatchConfirmResponseJson (sibling of `data`)
+    // and is covered by BookingsRepositoryImplTest.confirmMatch decodes auto_charge.
+    // Decoder tolerance for an extra `auto_charge` field in a match-shaped body
+    // (the fixture still contains one) is verified implicitly by the full-match test
+    // above succeeding with `ignoreUnknownKeys = true`.
 
     @Test
     fun `DeliveryMatchJson decodes with minimal fields`() {

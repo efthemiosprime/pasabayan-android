@@ -10,6 +10,7 @@ import com.efthemiosprime.pasabayan.core.network.SupplementalApi
 import com.efthemiosprime.pasabayan.core.network.profile.ProfileApi
 import com.efthemiosprime.pasabayan.core.network.auth.AuthApi
 import com.efthemiosprime.pasabayan.core.network.bookings.BookingsApi
+import com.efthemiosprime.pasabayan.core.network.bookings.MatchReceiptApi
 import com.efthemiosprime.pasabayan.core.network.chat.ChatApi
 import com.efthemiosprime.pasabayan.core.network.packages.PackagesApi
 import com.efthemiosprime.pasabayan.core.network.payments.PaymentApi
@@ -129,6 +130,11 @@ object NetworkModule {
     @Singleton
     fun provideBookingsApi(retrofit: Retrofit): BookingsApi =
         retrofit.create(BookingsApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideMatchReceiptApi(retrofit: Retrofit): MatchReceiptApi =
+        retrofit.create(MatchReceiptApi::class.java)
 
     @Provides
     @Singleton
