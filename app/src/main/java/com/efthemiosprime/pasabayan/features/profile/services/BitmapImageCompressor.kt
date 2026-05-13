@@ -11,13 +11,16 @@ import javax.inject.Inject
  */
 class BitmapImageCompressor @Inject constructor() : ImageCompressor {
 
-    override fun compressToJpeg(input: ByteArray): ByteArray {
+    override fun compressToJpeg(input: ByteArray): ByteArray =
+        compressToJpeg(input, maxDimension = DEFAULT_MAX_DIMENSION, jpegQuality = DEFAULT_JPEG_QUALITY)
+
+    override fun compressToJpeg(input: ByteArray, maxDimension: Int, jpegQuality: Int): ByteArray {
         require(input.isNotEmpty()) { "empty image bytes" }
         val decoded = BitmapFactory.decodeByteArray(input, 0, input.size)
             ?: throw IllegalArgumentException("could not decode image")
-        val scaled = scaleToMaxDimension(decoded, MAX_DIMENSION)
+        val scaled = scaleToMaxDimension(decoded, maxDimension)
         return ByteArrayOutputStream().use { out ->
-            scaled.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, out)
+            scaled.compress(Bitmap.CompressFormat.JPEG, jpegQuality, out)
             out.toByteArray()
         }
     }
@@ -36,7 +39,7 @@ class BitmapImageCompressor @Inject constructor() : ImageCompressor {
     }
 
     private companion object {
-        const val MAX_DIMENSION = 512
-        const val JPEG_QUALITY = 70
+        const val DEFAULT_MAX_DIMENSION = 512
+        const val DEFAULT_JPEG_QUALITY = 70
     }
 }

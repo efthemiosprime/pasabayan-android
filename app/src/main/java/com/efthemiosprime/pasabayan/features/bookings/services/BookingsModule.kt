@@ -13,4 +13,8 @@ abstract class BookingsModule {
     @Binds
     @Singleton
     abstract fun bindBookingsRepository(impl: BookingsRepositoryImpl): BookingsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMatchReceiptRepository(impl: MatchReceiptRepositoryImpl): MatchReceiptRepository
 }
