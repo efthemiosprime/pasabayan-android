@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
@@ -328,10 +329,39 @@ fun ProfileTabContent(
             title = stringResource(R.string.profile_menu_feedback),
             testTag = ProfileTestTags.MenuFeedback,
         ) {
+            // iOS parity with FeedbackMenuSection.swift — two rows: pending reviews to
+            // submit, and "my ratings" with an inline average + count preview.
             PMenuRow(
-                title = stringResource(R.string.profile_menu_reviews),
-                leadingIcon = Icons.Filled.Star,
+                title = stringResource(R.string.profile_menu_pending_reviews),
+                subtitle = stringResource(R.string.profile_menu_pending_reviews_subtitle),
+                leadingIcon = Icons.Filled.RateReview,
+                // TODO: wire `badgeCount = attention.pendingReviewsCount` once
+                // ProfileAttentionViewModel (#21) lands.
                 onClick = onOpenRatings,
+            )
+            val (avgRating, ratingCount) = profileRatingPreview(currentRole, state)
+            PMenuRow(
+                title = stringResource(R.string.profile_menu_my_ratings),
+                subtitle = stringResource(R.string.profile_menu_my_ratings_subtitle),
+                leadingIcon = Icons.Filled.Star,
+                leadingIconTint = PasabayanColors.BadgeGold,
+                onClick = onOpenRatings,
+                trailing = {
+                    val previewText = if (avgRating != null && ratingCount > 0) {
+                        stringResource(
+                            R.string.profile_menu_my_ratings_inline,
+                            "%.2f".format(avgRating),
+                            ratingCount,
+                        )
+                    } else {
+                        stringResource(R.string.profile_menu_no_ratings_yet)
+                    }
+                    Text(
+                        text = previewText,
+                        style = PasabayanTextStyles.Caption.regular,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                },
             )
         }
         ProfileMenuSection(
@@ -501,6 +531,27 @@ private fun StatLine(stringRes: Int, value: String) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(text = stringResource(stringRes), style = PasabayanTextStyles.Body.small)
         Text(text = value, style = PasabayanTextStyles.Body.medium)
+    }
+}
+
+/**
+ * Resolves the (average rating, total ratings) tuple for the My Ratings inline preview.
+ * Carrier ratings come back as a string from the server, shipper as a Double — coalesce
+ * both into a uniform pair. Returns (null, 0) when no ratings exist.
+ */
+private fun profileRatingPreview(
+    role: UserRole,
+    state: ProfileTabUiState,
+): Pair<Double?, Int> = when (role) {
+    UserRole.CARRIER -> {
+        val avg = state.carrierStats?.ratings?.averageRating?.toDoubleOrNull()
+        val count = state.carrierStats?.ratings?.totalRatings ?: 0
+        avg to count
+    }
+    UserRole.SHIPPER -> {
+        val avg = state.userStats?.averageRating
+        val count = state.userStats?.totalRatings ?: 0
+        avg to count
     }
 }
 
