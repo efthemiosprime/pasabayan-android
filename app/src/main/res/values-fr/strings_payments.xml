@@ -97,6 +97,19 @@
     <string name="payments_payout_disabled">Désactivé</string>
     <string name="payments_payout_connected_on">Connecté le %1$s</string>
 
+    <!-- Refund status card -->
+    <string name="payments_refund_status_title">Demande de remboursement</string>
+    <string name="payments_refund_status_amount_label">Montant</string>
+    <string name="payments_refund_status_amount_full">Remboursement complet</string>
+    <string name="payments_refund_status_reason_label">Raison</string>
+    <string name="payments_refund_status_reason_unspecified">Non spécifiée</string>
+    <string name="payments_refund_status_admin_notes_label">Notes administratives</string>
+    <string name="payments_refund_status_submitted_label">Soumise</string>
+    <string name="payments_refund_status_message_pending">Nous avons reçu votre demande de remboursement et l\'examinerons sous peu.</string>
+    <string name="payments_refund_status_message_approved">Votre remboursement a été approuvé et est en cours de traitement.</string>
+    <string name="payments_refund_status_message_rejected">Votre demande de remboursement a été refusée. Consultez les notes administratives pour plus de détails.</string>
+    <string name="payments_refund_status_message_processed">Votre remboursement a été traité. Les fonds apparaissent généralement sur votre compte sous 5 à 10 jours ouvrables.</string>
+
     <!-- Pay CTA + already-paid badge -->
     <string name="payments_pay_button">Payer %1$s</string>
     <string name="payments_paid_badge">Payé</string>

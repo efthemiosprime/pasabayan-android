@@ -97,6 +97,19 @@
     <string name="payments_payout_disabled">Disabled</string>
     <string name="payments_payout_connected_on">Connected on %1$s</string>
 
+    <!-- Refund status card -->
+    <string name="payments_refund_status_title">Refund request</string>
+    <string name="payments_refund_status_amount_label">Amount</string>
+    <string name="payments_refund_status_amount_full">Full refund</string>
+    <string name="payments_refund_status_reason_label">Reason</string>
+    <string name="payments_refund_status_reason_unspecified">Not specified</string>
+    <string name="payments_refund_status_admin_notes_label">Admin notes</string>
+    <string name="payments_refund_status_submitted_label">Submitted</string>
+    <string name="payments_refund_status_message_pending">We have received your refund request and will review it shortly.</string>
+    <string name="payments_refund_status_message_approved">Your refund has been approved and is being processed.</string>
+    <string name="payments_refund_status_message_rejected">Your refund request was declined. See admin notes for details.</string>
+    <string name="payments_refund_status_message_processed">Your refund has been processed. Funds typically arrive in your account within 5–10 business days.</string>
+
     <!-- Pay CTA + already-paid badge -->
     <string name="payments_pay_button">Pay %1$s</string>
     <string name="payments_paid_badge">Paid</string>
