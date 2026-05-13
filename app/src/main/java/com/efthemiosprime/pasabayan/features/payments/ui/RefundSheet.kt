@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +43,7 @@ import com.efthemiosprime.pasabayan.features.payments.viewmodel.RefundUiState
  * in; the host wires them to [RefundViewModel]. Dismissing the sheet does NOT pop
  * the underlying detail screen — back-stack is the host's concern.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RefundSheet(
     state: RefundUiState,

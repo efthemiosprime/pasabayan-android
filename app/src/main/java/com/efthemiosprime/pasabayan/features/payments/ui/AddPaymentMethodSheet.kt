@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,6 +40,7 @@ import com.efthemiosprime.pasabayan.features.payments.viewmodel.AddCardFlowState
  * - [onContinue] should call `paymentMethodsViewModel.prepareAddPaymentMethod()`.
  *   The host watches `state.addCardFlowState` and presents the Stripe sheet when Ready.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPaymentMethodSheet(
     flowState: AddCardFlowState,

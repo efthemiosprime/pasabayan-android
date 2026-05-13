@@ -412,6 +412,51 @@ class CarrierTripsViewModelTest {
         assertTrue(fakeRepo.activatedTripIds.isEmpty())
     }
 
+    // -- editTrip --
+
+    @Test
+    fun `editTrip sends partial body to repository and mirrors trip on success`() = runTest {
+        val existing = testTrip(7, TripStatus.PLANNING)
+        val updated = existing.copy(originCity = "Vancouver", destinationCity = "Calgary")
+        fakeRepo.carrierTripsResult = Result.success(listOf(existing))
+        fakeRepo.updateResult = Result.success(updated)
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        viewModel.editTrip(
+            tripId = 7,
+            request = TripUpdateRequestJson(
+                originCity = "Vancouver",
+                originCountry = "CA",
+                destinationCity = "Calgary",
+                destinationCountry = "CA",
+                pickupAddress = "1 Pacific Blvd",
+                dropoffAddress = "9 Stampede Trail",
+            ),
+        )
+        advanceUntilIdle()
+
+        assertEquals("Vancouver", viewModel.uiState.value.trips.first().originCity)
+        assertEquals("Calgary", viewModel.uiState.value.trips.first().destinationCity)
+        assertNull(viewModel.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `editTrip surfaces repository failure as error message`() = runTest {
+        val existing = testTrip(7, TripStatus.PLANNING)
+        fakeRepo.carrierTripsResult = Result.success(listOf(existing))
+        fakeRepo.updateResult = Result.failure(Exception("Backend rejected"))
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        viewModel.editTrip(7, TripUpdateRequestJson(specialNotes = "Updated note"))
+        advanceUntilIdle()
+
+        assertEquals("Backend rejected", viewModel.uiState.value.errorMessage)
+        // Local trip is untouched on failure.
+        assertEquals(existing.originCity, viewModel.uiState.value.trips.first().originCity)
+    }
+
     @Test
     fun `updateTripDetails sends weight and notes and updates state`() = runTest {
         val existing = testTrip(7, TripStatus.ACTIVE).copy(availableWeightKg = 20.0, specialNotes = "Old")

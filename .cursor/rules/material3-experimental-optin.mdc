@@ -1,0 +1,84 @@
+---
+description: Suppress "This material API is experimental" warnings with per-function @OptIn(ExperimentalMaterial3Api::class) — never @file:OptIn, never module-wide.
+alwaysApply: true
+---
+
+# Material 3 experimental opt-in — per-function only
+
+## What the warning is
+
+When you call a `P*` design-system primitive (or a Material 3 component directly), Kotlin may emit:
+
+```
+This material API is experimental and is likely to change or to be removed in the future.
+```
+
+It's compile-time only — nothing breaks at runtime. The cause: the component (or one of its default parameter values, or a type in its public signature) is annotated with `@ExperimentalMaterial3Api`, and Kotlin propagates that requirement to every caller.
+
+## Why it leaks from `P*` primitives
+
+Several of our `P*` wrappers internally `@OptIn(ExperimentalMaterial3Api::class)` themselves but **still leak the requirement to consumers** because their public signatures expose experimental types or default expressions:
+
+- **`PModalBottomSheet`** — default value `rememberModalBottomSheetState(...)` and `SheetState` parameter type are both experimental.
+- **`PTopBar`** — wraps `TopAppBar` / `CenterAlignedTopAppBar`, both experimental.
+- **`PScaffold`** — when its `topBar` slot embeds `PTopBar`, the experimental requirement propagates upward through the call.
+- Any future `P*` wrapping `SearchBar`, `PullToRefreshBox`, `SegmentedButton`, etc.
+
+This is a known Kotlin/Compose limitation. We **don't** "fix" it at the primitive (doing so would require either marking the `P*` itself experimental — same problem — or hiding the experimental types behind non-experimental wrappers, which would mean re-implementing state management). The pragmatic, codebase-wide convention is to opt in at the call site.
+
+## The convention — apply this every time
+
+**Per-function annotation directly above `@Composable`** + the matching import:
+
+```kotlin
+import androidx.compose.material3.ExperimentalMaterial3Api
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MyScreen(...) {
+    PScaffold(topBar = { PTopBar(...) }) { ... }
+}
+```
+
+Apply to whatever composable function the warning points to (the **enclosing** composable, not the helper that contains the call). For sheet wrappers, that's typically the public entry composable; for screens with extracted top-bar helpers like `private fun DetailTopBar(...)`, annotate the helper.
+
+### What NOT to do
+
+| ❌ Don't | Why |
+|---|---|
+| `@file:OptIn(ExperimentalMaterial3Api::class)` | Inconsistent with the rest of the codebase — every other file uses per-function. Reviewers also lose the per-call signal that experimental API is in play. |
+| Module-wide `-opt-in=androidx.compose.material3.ExperimentalMaterial3Api` in `build.gradle.kts` | Hides future API churn from the entire module. When the component graduates from experimental, you won't notice and can't audit. |
+| Suppress with `@Suppress("OPT_IN_USAGE")` | Loses intent — `@OptIn` documents *which* unstable API you accepted. |
+| Mark the consumer composable itself with `@ExperimentalMaterial3Api` | Propagates the requirement further up the call chain — same problem one level higher. |
+
+## Established pattern in this codebase
+
+Existing examples to follow when in doubt:
+
+- `app/src/main/java/com/efthemiosprime/pasabayan/features/bookings/ui/RequestToCarrySheet.kt`
+- `app/src/main/java/com/efthemiosprime/pasabayan/features/trips/ui/EditTripSheet.kt`
+- `app/src/main/java/com/efthemiosprime/pasabayan/features/payments/ui/AddPaymentMethodSheet.kt`
+- `app/src/main/java/com/efthemiosprime/pasabayan/features/payments/ui/PaymentMethodsScreen.kt`
+
+All use `@OptIn(ExperimentalMaterial3Api::class)` immediately above `@Composable`, with the import alphabetically placed alongside the other `androidx.compose.material3.*` imports.
+
+## When a component graduates from experimental
+
+When a Compose Material 3 release (check `androidx.compose.material3.*` annotations) drops `@ExperimentalMaterial3Api` from a component we use:
+
+1. Remove the unused `@OptIn(ExperimentalMaterial3Api::class)` annotations from consumers (Lint will flag them as unused).
+2. Remove the `import androidx.compose.material3.ExperimentalMaterial3Api` from those files.
+3. If **no** experimental APIs remain in use, also clean up the `@OptIn` on the corresponding `P*` primitive in `:core:designsystem`.
+4. Document the change in `android-spec/14-design-system.md` under "Material 3 experimental status."
+
+Search command to find all opt-ins:
+
+```bash
+grep -rln "ExperimentalMaterial3Api" app/src/main core/designsystem/src/main
+```
+
+## Linked rules + docs
+
+- `design-system-enforcement.mdc` — use `P*` primitives (which is *why* the experimental requirement reaches consumers; you don't get to bypass `P*` to avoid the warning)
+- `compose-ui-previews.mdc` — previews must compile too; annotate previews if they call experimental APIs directly
+- `android-spec/14-design-system.md` — primitive catalog

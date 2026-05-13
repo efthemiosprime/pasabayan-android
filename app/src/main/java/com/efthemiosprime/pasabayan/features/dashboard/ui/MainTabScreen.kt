@@ -1021,12 +1021,8 @@ fun MainTabScreen(
         EditTripSheet(
             trip = trip,
             onDismiss = dismissActiveSheetRoute,
-            onSave = { availableWeightKg, notes ->
-                carrierTripsViewModel.updateTripDetails(
-                    tripId = trip.id,
-                    availableWeightKg = availableWeightKg,
-                    specialNotes = notes,
-                )
+            onSave = { request ->
+                carrierTripsViewModel.editTrip(tripId = trip.id, request = request)
                 dismissActiveSheetRoute()
             },
         )

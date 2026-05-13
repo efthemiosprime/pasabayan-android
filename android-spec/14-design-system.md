@@ -24,6 +24,7 @@ Android must implement a **single Compose theme** (Material 3) whose tokens **ma
 | Typography | **`MaterialTheme.typography`** or **`PasabayanTextStyles`** — no arbitrary `TextStyle(fontSize = …)` unless it matches a documented scale row. |
 | Components | **`P*`** when the pattern exists; raw Material **only** as a temporary gap with a tracked follow-up to add a **`P*`** or documented exception. |
 | Modifiers | Prefer **`ds*`** helpers for card borders, screen padding, and repeated elevation patterns defined in this module. |
+| Material 3 experimental opt-in | Composables that call `PModalBottomSheet`, `PTopBar`, `PScaffold` (or any future `P*` wrapping experimental M3) must annotate the **enclosing function** with `@OptIn(ExperimentalMaterial3Api::class)` + import. **Never** `@file:OptIn` and **never** module-wide opt-in. Full convention + rationale: [`.cursor/rules/material3-experimental-optin.mdc`](../.cursor/rules/material3-experimental-optin.mdc). |
 
 ---
 

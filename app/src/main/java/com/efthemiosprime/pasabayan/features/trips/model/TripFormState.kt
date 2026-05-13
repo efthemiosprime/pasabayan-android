@@ -4,7 +4,9 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 
 data class TripFormState(
     val originCity: String = "",
+    val originCountry: String = "",
     val destinationCity: String = "",
+    val destinationCountry: String = "",
     /** Required (iOS parity — `TripCreationFormState.isFormValid` enforces non-empty). */
     val pickupAddress: String = "",
     /** Required (iOS parity). */

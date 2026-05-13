@@ -274,14 +274,27 @@ class CarrierTripsViewModel @Inject constructor(
         availableWeightKg: Double?,
         specialNotes: String?,
     ) {
+        editTrip(
+            tripId,
+            TripUpdateRequestJson(
+                availableWeightKg = availableWeightKg,
+                specialNotes = specialNotes,
+            ),
+        )
+    }
+
+    /**
+     * Sends a partial `PUT /trips/{id}` body and patches the local trips list on success.
+     * Used by `EditTripSheet` so the sheet can vary its payload by section (route, capacity,
+     * pricing, notes) without forcing the VM to enumerate every field.
+     *
+     * The repository's [TripsRepository.updateTrip] silently drops fields it shouldn't accept
+     * for the trip's current status; the sheet is responsible for not surfacing locked
+     * controls (iOS parity with `TripEditSheetEditingPolicy.allowsFullEdit(for:)`).
+     */
+    fun editTrip(tripId: Int, request: TripUpdateRequestJson) {
         viewModelScope.launch {
-            tripsRepository.updateTrip(
-                id = tripId,
-                request = TripUpdateRequestJson(
-                    availableWeightKg = availableWeightKg,
-                    specialNotes = specialNotes,
-                ),
-            ).fold(
+            tripsRepository.updateTrip(id = tripId, request = request).fold(
                 onSuccess = { updated ->
                     _uiState.update { state ->
                         state.copy(
