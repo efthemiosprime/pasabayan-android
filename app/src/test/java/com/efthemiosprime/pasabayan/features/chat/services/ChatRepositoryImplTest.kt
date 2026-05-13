@@ -35,7 +35,7 @@ class ChatRepositoryImplTest {
             chatApi.getConversations(any(), any(), any())
         } returns Response.success(
             ConversationsResponseJson(
-                data = listOf(
+                conversations = listOf(
                     ConversationSummaryJson(
                         id = 5,
                         status = "active",

@@ -118,6 +118,10 @@ fun RouteActivitySummaryDataJson?.toDomainOrZero(): RouteActivitySummary {
         completedTrips = summary?.completedTrips ?: (legacy?.serviceErrandNearHome ?: 0),
         totalEarnings = summary?.totalEarnings,
         currency = summary?.currency,
+        // Surfaced for the carrier-explore search dropdown ("Recent" section). The
+        // mapper still folds this count into `totalTrips` above for back-compat with
+        // existing carrier-stats-card callers; this field is the un-aggregated value.
+        newPackagesThisWeekNearHome = legacy?.newPackagesThisWeekNearHome ?: 0,
     )
 }
 

@@ -1,0 +1,156 @@
+---
+description: Reuse before create — for models, DTOs, mappers, repositories, use cases, services, ViewModels, utilities, components, and UI. Search first, extend or compose what exists; only create new when nothing fits.
+alwaysApply: true
+---
+
+# Reuse before create (every layer — model, UI, component, service, anything)
+
+Before introducing **any** new type, file, function, or composable — whether it's a model, DTO, enum, mapper, repository, use case, service, ViewModel, utility, hook, component, or screen — **search the codebase for an existing equivalent first**. Reuse, extend, or compose what already exists. Create new only when nothing covers the need.
+
+This is the project-wide generalization of `.cursor/rules/ui-reusability-and-inheritance.mdc` (which still governs UI specifics). Together with `.cursor/rules/lean-classes-separation.mdc` (extraction triggers) and `.cursor/rules/design-system-enforcement.mdc` (tokens / `P*`), this rule keeps the codebase modular and DRY end-to-end.
+
+## Hard rules (always apply)
+
+### 1. Search-before-write is mandatory for every layer
+
+Before adding a new symbol, run a quick targeted search and check the canonical homes for that layer:
+
+| You are about to add… | Search here **first** | Default home if you must create it |
+|---|---|---|
+| Shared enum, value type, or cross-feature domain model | `core/domain/src/main/kotlin/.../core/domain/{enum,model,util}/` | `core/domain` (cross-feature) or `features/<feature>/model/` (feature-only) |
+| Date / number / currency / decoding helper | `core/domain/.../util/` (e.g. `DateTimeParsing`, `FlexibleDecoders`) | `core/domain/util/` |
+| Network / interceptor / error-mapping helper | `core/network/.../` (e.g. `ApiErrorMapper`, `AuthInterceptor`, `ResponseExt`) | `core/network` |
+| Session / token / auth-state helper | `core/session/` | `core/session` |
+| Domain error type / mapping | `core/domain-error/` | `core/domain-error` |
+| DTO for an API response | `features/<feature>/model/` (and cross-feature DTOs in `core/network`) | The feature that owns the endpoint |
+| Mapper (DTO ⇄ domain) | `features/<feature>/model/` (e.g. `*Mapper.kt`) | Alongside the DTO it maps |
+| Repository / API interface | `features/<feature>/services/` | Feature's `services/` |
+| Use case | `features/<feature>/services/` (or `model/` if pure) | Feature's `services/` |
+| ViewModel state holder / sealed event type | `features/<feature>/viewmodel/` | Feature's `viewmodel/` |
+| Reusable composable / `P*` primitive | `:core:designsystem` → `features/<feature>/components/` → sibling features' `components/` | See `ui-reusability-and-inheritance.mdc` |
+| Hilt `@Module` / binding | `features/<feature>/services/di/` and `:core:*` di modules | Feature's `services/di/` |
+| String resource key | `res/values/strings_<feature>.xml` + `res/values-fr/...` | Per `localization-enforcement.mdc` |
+
+A duplicate of something that already exists in `:core:*` or a feature's `model/` / `services/` / `components/` is grounds to reject the change.
+
+### 2. The search routine (do this before writing)
+
+1. **Grep by responsibility name**, not the name you were about to type. If you were going to add `parseIsoDate`, grep for `parse`, `Date`, `Iso`, `DateTime` across `core/` and `features/*/model/`. The thing that exists may be called `parseServerTimestamp` or live in `FlexibleDecoders.kt`.
+2. **Look at the iOS reference implementation** (`/Users/efthemios/Documents/projects/pasabayan/pasabayan-ios/Pasabayan/Features/<Feature>/`, `Services/`, `Models/`) — if iOS has a `*Service`, `*Mapper`, or `*Model` with this responsibility, the Android counterpart almost always exists or is the next thing to be added. Match its shape and naming.
+3. **Check `core/domain` enums / models** before defining a new enum in a feature — many shared enums (PackageType, PackageSize, MatchStatus, TransactionStatus, VerificationLevel, …) are already there.
+4. **Check `:core:designsystem`** before adding any composable (see `ui-reusability-and-inheritance.mdc`).
+5. **Check the feature's own `model/`, `services/`, `viewmodel/`, `components/`** — extraction usually happens within a feature before promotion.
+
+Only after these come up empty should you create something new.
+
+### 3. Extend or compose — don't fork or copy-paste
+
+When something *almost* fits:
+
+- **Extend the existing type** (add an enum case, a new method on the repository, a new variant to the sealed type, a new parameter with a sensible default, a slot/callback to the composable). Update tests + specs.
+- **Compose** with the existing helper rather than reimplementing it. If `FlexibleDecoders` handles "server might send number or string," call into it from your new mapper instead of writing a parallel decoder.
+- **Promote** when the second feature needs it: the moment you'd copy-paste a model, mapper, helper, or composable across two features, **stop**, lift it to `core/*` or `:core:designsystem` (with tests + previews + spec update) in its own slice, then consume it.
+
+Never:
+
+- Copy a DTO into a second feature so you can "tweak one field."
+- Re-declare a shared enum (e.g. a second `PackageStatus`) inside a feature.
+- Wrap an existing repository in a thin "facade" just to rename a method.
+- Fork a `P*` composable into the feature instead of adding the variant upstream.
+- Add a `Boolean` flag or `customX: X` parameter as a workaround for a missing variant — add the proper variant to the type itself.
+
+### 4. Design new code to be reused from day one
+
+When the search truly comes up empty and you do create something new, write it as if a second caller already exists:
+
+- **Single responsibility.** Name by the responsibility (`PriceFormatter`, `DateParser`), not by where it's used today (`PackageListPriceUtil`). One concept per file (see `lean-classes-separation.mdc`).
+- **Pure where possible.** Mappers, use cases, formatters, and validators take inputs and return outputs — no hidden state, no held context.
+- **No leaky dependencies.** Don't pin a util to a single feature's DTO; take the primitive types (`String`, `BigDecimal`, `Instant`) it actually needs.
+- **Defaults for the common case.** Optional parameters mean the simplest call site stays one-line.
+- **Testable in isolation.** If exercising the new code requires unrelated dependencies, split it (see `lean-classes-separation.mdc`).
+- **Document non-obvious invariants** with one short line — not what it does, but a constraint that wouldn't survive a casual rename.
+
+For UI specifically, add the standard scaffolding: `modifier: Modifier = Modifier`, state in / callbacks out, light + dark `@Preview` under `PasabayanTheme` (see `dark-light-theme-support.mdc`, `compose-ui-previews.mdc`).
+
+### 5. Promotion ladder (where things should live)
+
+```
+                  used by ≥ 2 features
+features/<feature>/{model,services,components}/  ───────►  :core:<appropriate-module>
+        ▲                                                        ▲
+        │ used in ≥ 2 places within one feature                  │ truly cross-feature
+        │                                                        │
+   inline in screen / repository / VM                       (with tests + spec update)
+```
+
+Triggers:
+
+- **Inline → feature folder:** the second usage inside the same feature, or the file/function exceeds the size triggers in `lean-classes-separation.mdc`.
+- **Feature folder → `core/*`:** the second feature needs it. Promote in its own slice **before** the second consumer's PR.
+- **`features/*/components/` → `:core:designsystem`:** the second feature uses the composable, or it's a true design-system primitive. Update `android-spec/14-design-system.md` and ship light + dark previews + tests.
+
+### 6. Match iOS parity by shape, not by reinvention
+
+iOS is the reference implementation. If iOS already has `PackageService`, `BookingMapper`, `VerificationLevel`, `formatPrice`, etc., the Android equivalent should match name, responsibility, and shape — and there's a high chance a partial version already exists in this repo. **Search before adding the iOS-parity counterpart** so you extend the existing Android piece instead of creating a parallel one.
+
+### 7. Workflow before adding a new file
+
+```
+About to add a model / DTO / mapper / repo / use case / VM / util / component / screen
+        │
+        ▼
+1. Grep by responsibility across core/* and features/*/
+        │ found → use / extend it (stop)
+        ▼ not found
+2. Check iOS reference for the equivalent name + shape
+        │ exists in iOS, partial in Android → extend the Android piece
+        │ not in either → continue
+        ▼
+3. Will ≥ 2 features consume this?
+        │ yes → place it in the right core/* module (with tests, spec update if applicable)
+        │ no  → place it inside the feature, in the correct subfolder (model/services/viewmodel/components/ui)
+        ▼
+4. Write it pure / reusable per rule 4 (state in, outputs out, no hidden coupling)
+5. Add tests (TDD per .cursor/rules/tdd-and-ui-conformance.mdc)
+6. For UI: light + dark @Preview wrapped in PasabayanTheme
+7. Stop after the slice for the user to commit
+```
+
+## Catching violations (review / self-review checklist)
+
+Flag any of these in new or changed code:
+
+- [ ] A new enum that duplicates one already in `core/domain/enum/` (e.g. a feature-local `PackageStatus` when one exists in core).
+- [ ] A second DTO with the same shape as an existing one because "we only need three fields" — reuse the DTO, ignore unused fields.
+- [ ] A new mapper / parser / formatter that does what `FlexibleDecoders`, `DateTimeParsing`, or an existing feature mapper already does.
+- [ ] A new util file (`*Utils.kt`, `*Helpers.kt`) — split by responsibility and search for an existing home first (see `lean-classes-separation.mdc`).
+- [ ] A repository / API interface that wraps another one with no added value.
+- [ ] A composable that duplicates the role of an existing `P*` or feature component (see `ui-reusability-and-inheritance.mdc`).
+- [ ] A `Boolean` flag or `customX: X` added to bypass missing variants of an existing type — extend the type instead.
+- [ ] Copy-pasted model / mapper / section composable across two features — promote to `core/*` or `:core:designsystem`.
+- [ ] iOS has a `Service` / `Model` / `Mapper` with this responsibility, and instead of matching its shape, a parallel Android type with a different name was created.
+- [ ] A new file under `app/` for something that belongs in `core/*` (or vice versa).
+
+## Anti-patterns
+
+| Avoid | Prefer |
+|---|---|
+| New `data class PackageStatus(...)` inside a feature | Reuse the enum in `core/domain/enum/PackageRequestStatus.kt` (or extend it) |
+| New `parseDate(...)` helper in a feature | Use / extend `core/domain/util/DateTimeParsing.kt` |
+| New `ApiException` mirror in a feature | Use `core/network/ApiErrorMapper` + `core/domain-error` types |
+| `BookingsApiV2` wrapping `BookingsApi` to rename one method | Extend `BookingsApi` (or update callers) |
+| Two feature-local `*PriceFormatter` files | One `PriceFormatter` in `core/domain/util/` |
+| Forking `PButton` into `MyFeatureButton` to hardcode a color | Add the variant to `PButton` in `:core:designsystem` |
+| `data class TripDtoLite(...)` duplicating `TripDto` minus fields | Reuse `TripDto`; ignore unused fields |
+| `Utils.kt` / `Helpers.kt` / `Manager.kt` catch-alls | Name by responsibility (`DateParser`, `PriceFormatter`); see `lean-classes-separation.mdc` |
+
+## Cross-references
+
+- **UI specifics:** `.cursor/rules/ui-reusability-and-inheritance.mdc`
+- **Extraction size triggers:** `.cursor/rules/lean-classes-separation.mdc`
+- **Tokens / `P*` for UI:** `.cursor/rules/design-system-enforcement.mdc`
+- **Light + dark by default:** `.cursor/rules/dark-light-theme-support.mdc`
+- **Where things live (package layout):** `.cursor/rules/app-feature-package-layout.mdc`
+- **TDD per slice:** `.cursor/rules/tdd-and-ui-conformance.mdc`
+- **iOS reference codebase:** `/Users/efthemios/Documents/projects/pasabayan/pasabayan-ios/Pasabayan/`
+- **Architecture + module map:** `android-spec/00-architecture.md`

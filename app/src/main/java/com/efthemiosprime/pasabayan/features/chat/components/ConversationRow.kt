@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
+import com.efthemiosprime.pasabayan.core.designsystem.component.PAvatar
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
 import com.efthemiosprime.pasabayan.features.chat.model.ConversationSummary
 import com.efthemiosprime.pasabayan.features.chat.model.LastMessage
@@ -52,7 +53,11 @@ fun ConversationRow(
             horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
             verticalAlignment = Alignment.Top,
         ) {
-            AvatarBadge(name = conversation.otherParticipant.name)
+            PAvatar(
+                url = conversation.otherParticipant.avatar,
+                fallbackName = conversation.otherParticipant.name,
+                size = PasabayanSpacing.xxxl,
+            )
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
@@ -119,31 +124,6 @@ fun ConversationRow(
             }
         }
     }
-}
-
-@Composable
-private fun AvatarBadge(name: String) {
-    Box(
-        modifier = Modifier
-            .size(PasabayanSpacing.xxxl)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = initials(name),
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-            style = MaterialTheme.typography.labelMedium,
-        )
-    }
-}
-
-private fun initials(name: String): String {
-    val pieces = name.split(" ").filter { it.isNotBlank() }
-    if (pieces.isEmpty()) return "?"
-    val first = pieces.first().first().uppercase()
-    val second = pieces.drop(1).firstOrNull()?.first()?.uppercase() ?: ""
-    return first + second
 }
 
 private fun formatTimestamp(raw: String?): String {

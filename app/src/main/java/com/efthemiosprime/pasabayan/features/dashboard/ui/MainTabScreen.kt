@@ -124,6 +124,11 @@ fun MainTabScreen(
     val notificationsBootstrapViewModel: com.efthemiosprime.pasabayan.features.notifications.viewmodel.NotificationsBootstrapViewModel = hiltViewModel()
     val notificationViewModel: NotificationViewModel = hiltViewModel()
     val notificationState by notificationViewModel.uiState.collectAsStateWithLifecycle()
+    // Profile-tab attention badge — same activity-scoped instance ProfileTabScreen consumes,
+    // so the count stays in sync without an extra fetch.
+    val profileAttentionViewModel: com.efthemiosprime.pasabayan.features.profile.viewmodel.ProfileAttentionViewModel =
+        hiltViewModel()
+    val profileAttention by profileAttentionViewModel.attention.collectAsStateWithLifecycle()
     var notificationsSheetOpen by remember { mutableStateOf(false) }
     // iOS parity (ActionableItem aggregation): pull matches + profile so we can compute
     // booking-request / status-update / pickup-ready / verify-prompt cards on the sheet.
@@ -305,7 +310,10 @@ fun MainTabScreen(
                 tabs = tabs,
                 selectedIndex = state.selectedTabIndex,
                 onTabSelected = { viewModel.selectTab(it) },
-                badgeCountByRoute = mapOf("messages" to conversationsState.allUnreadCount),
+                badgeCountByRoute = mapOf(
+                    "messages" to conversationsState.allUnreadCount,
+                    "profile" to profileAttention.total,
+                ),
             )
         },
     ) { innerPadding ->
@@ -455,7 +463,7 @@ fun MainTabScreen(
                                     onOpenPrivacyPreferences = { showPrivacyPreferencesSheet = true },
                                     onOpenAccountManagement = { showAccountManagementSheet = true },
                                     onSignOut = onLogout,
-                                    onOpenTerms = { /* placeholder until 12-legal-support */ },
+                                    onOpenTerms = { showLegalViewerSheet = true },
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             }

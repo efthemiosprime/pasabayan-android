@@ -484,7 +484,7 @@ class MatchingViewModelTest {
     }
 
     @Test
-    fun `markIncomingRequestReviewed preserves other state fields`() {
+    fun `markIncomingRequestReviewed preserves other state fields`() = runTest {
         fakeRepo.loadResult = Result.success(listOf(testMatch(1)))
         viewModel.loadMatches("carrier")
         advanceUntilIdle()

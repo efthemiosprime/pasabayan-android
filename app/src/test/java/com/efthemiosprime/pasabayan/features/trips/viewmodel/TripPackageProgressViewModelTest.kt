@@ -51,8 +51,8 @@ class TripPackageProgressViewModelTest {
     fun `load derives loaded metrics`() = runTest {
         fakeRepo.tripMatchesResult = Result.success(
             listOf(
-                TripMatchPackage(1, MatchStatus.DELIVERED, null, null, null, null, null, null, null, null, null, null),
-                TripMatchPackage(2, MatchStatus.CONFIRMED, null, null, null, null, null, null, null, null, null, null),
+                TripMatchPackage(1, MatchStatus.DELIVERED, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+                TripMatchPackage(2, MatchStatus.CONFIRMED, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
             ),
         )
         viewModel.loadMatches(1, "Apr 1")
@@ -71,8 +71,8 @@ class TripPackageProgressViewModelTest {
     fun `load derives complete status when all matches delivered`() = runTest {
         fakeRepo.tripMatchesResult = Result.success(
             listOf(
-                TripMatchPackage(1, MatchStatus.DELIVERED, null, null, null, null, null, null, null, null, null, null),
-                TripMatchPackage(2, MatchStatus.DELIVERED, null, null, null, null, null, null, null, null, null, null),
+                TripMatchPackage(1, MatchStatus.DELIVERED, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+                TripMatchPackage(2, MatchStatus.DELIVERED, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
             ),
         )
         viewModel.loadMatches(8, "Apr 3")
@@ -86,7 +86,7 @@ class TripPackageProgressViewModelTest {
     fun `refresh reruns last load parameters`() = runTest {
         fakeRepo.tripMatchesResult = Result.success(
             listOf(
-                TripMatchPackage(1, MatchStatus.CONFIRMED, null, null, null, null, null, null, null, null, null, null),
+                TripMatchPackage(1, MatchStatus.CONFIRMED, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
             ),
         )
         viewModel.loadMatches(42, "Apr 9")

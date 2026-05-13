@@ -7,12 +7,13 @@ alwaysApply: true
 
 Every view, component, and Compose UI in this app must be **reusable by construction** and **built on top of `:core:designsystem`**. Bespoke, single-use, design-system-bypassing UI is not acceptable in feature modules.
 
-This rule sits next to two siblings:
+This rule sits next to three siblings:
 
+- **`reuse-before-create.mdc`** — the *project-wide* version of this rule (models, DTOs, mappers, repos, use cases, utilities, services, anything). This UI rule is its UI-specific specialization.
 - **`design-system-enforcement.mdc`** — *what* tokens / `P*` to use (no bespoke styling).
 - **`lean-classes-separation.mdc`** — *how big* a file/class can grow before extraction.
 
-This rule covers the **before-you-write** decision: is there already a reusable composable for this, and how do I build mine so the next feature can reuse it?
+This rule covers the **before-you-write** decision for UI: is there already a reusable composable for this, and how do I build mine so the next feature can reuse it?
 
 ## Hard rules (always apply)
 

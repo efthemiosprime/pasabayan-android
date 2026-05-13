@@ -2,6 +2,7 @@ package com.efthemiosprime.pasabayan.features.dashboard.ui
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Tune
@@ -36,8 +39,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -63,6 +68,8 @@ import com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageFilterSheet
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.profile.ui.UserProfilePopover
+import com.efthemiosprime.pasabayan.features.trips.model.CarrierExploreDropdownState
+import com.efthemiosprime.pasabayan.features.trips.viewmodel.BrowseTripsViewModel
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.RouteActivitySummaryViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -83,16 +90,24 @@ fun CarrierExploreContent(
     onNavigateToMyTrips: () -> Unit = {},
     packageViewModel: PackageViewModel = hiltViewModel(),
     routeActivityViewModel: RouteActivitySummaryViewModel = hiltViewModel(),
+    /** Activity-scoped — the same instance ShipperExploreContent uses, so the popular-routes
+     * fetch is shared across role-switches. iOS parity with `popularRoutesViewModel`. */
+    browseTripsViewModel: BrowseTripsViewModel = hiltViewModel(),
 ) {
     val state by packageViewModel.uiState.collectAsStateWithLifecycle()
     val routeActivityState by routeActivityViewModel.uiState.collectAsStateWithLifecycle()
+    val browseTripsState by browseTripsViewModel.uiState.collectAsStateWithLifecycle()
     var showFilterSheet by remember { mutableStateOf(false) }
     // Profile popover state — set when the user taps a package card's shipper header.
     var profileSheetShipper by remember { mutableStateOf<UserSummary?>(null) }
+    // Search-field focus drives the Recent/Popular dropdown visibility per iOS
+    // `CarrierExploreDropdownState.shouldShowDropdown(focused, empty, recent, popular)`.
+    var isSearchFocused by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         packageViewModel.applyBrowseFilter()
         routeActivityViewModel.loadSummary()
+        browseTripsViewModel.loadPopularRoutes()
     }
 
     val listState = rememberLazyListState()
@@ -149,7 +164,38 @@ fun CarrierExploreContent(
                 },
                 onSubmitSearch = { packageViewModel.applyBrowseFilter() },
                 onOpenFilters = { showFilterSheet = true },
+                onFocusChange = { isSearchFocused = it },
             )
+        }
+
+        // iOS parity: Recent / Popular dropdown surfaces only while the search field
+        // is focused, empty, and at least one section qualifies. Logic in
+        // `CarrierExploreDropdownState`; tested in `CarrierExploreDropdownStateTest`.
+        run {
+            val newPackagesNearHome = routeActivityState.summary?.newPackagesThisWeekNearHome ?: 0
+            val popularRoutesCount = browseTripsState.popularRoutes.size
+            val showRecent = CarrierExploreDropdownState.showRecentOption(newPackagesNearHome)
+            val showPopular = CarrierExploreDropdownState.showPopularOption(popularRoutesCount)
+            val showDropdown = CarrierExploreDropdownState.shouldShowDropdown(
+                isSearchFocused = isSearchFocused,
+                isSearchEmpty = state.availablePackagesFilter.searchText.isBlank(),
+                showRecentOption = showRecent,
+                showPopularOption = showPopular,
+            )
+            if (showDropdown) {
+                item("search-dropdown") {
+                    CarrierExploreSearchDropdown(
+                        showRecent = showRecent,
+                        showPopular = showPopular,
+                        // Mode-switching to a Recent / Popular content list (iOS
+                        // `exploreContentMode = .recent / .popularList`) is a separate
+                        // follow-up. For now we just dismiss focus so the dropdown
+                        // closes — matches the iOS unfocus side-effect either way.
+                        onSelectRecent = { isSearchFocused = false },
+                        onSelectPopular = { isSearchFocused = false },
+                    )
+                }
+            }
         }
 
         routeActivityState.summary?.let { summary ->
@@ -255,6 +301,7 @@ private fun SearchAndFilterRow(
     onSearchTextChange: (String) -> Unit,
     onSubmitSearch: () -> Unit,
     onOpenFilters: () -> Unit,
+    onFocusChange: (Boolean) -> Unit = {},
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -264,7 +311,9 @@ private fun SearchAndFilterRow(
             value = searchText,
             onValueChange = onSearchTextChange,
             label = { Text(stringResource(R.string.dashboard_carrier_search_placeholder)) },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .onFocusChanged { onFocusChange(it.isFocused) },
             trailingIcon = {
                 IconButton(onClick = onSubmitSearch) {
                     Icon(
@@ -288,6 +337,70 @@ private fun SearchAndFilterRow(
                 tint = MaterialTheme.colorScheme.onSurface,
             )
         }
+    }
+}
+
+/**
+ * Recent / Popular dropdown shown under the carrier-explore search field. iOS parity
+ * with `CarrierExploreDropdownOverlayView` in `CarrierHomeContent.swift` — two
+ * tappable rows, each gated by [showRecent] / [showPopular] computed via
+ * [CarrierExploreDropdownState].
+ */
+@Composable
+private fun CarrierExploreSearchDropdown(
+    showRecent: Boolean,
+    showPopular: Boolean,
+    onSelectRecent: () -> Unit,
+    onSelectPopular: () -> Unit,
+) {
+    PCard {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            if (showRecent) {
+                DropdownOptionRow(
+                    icon = Icons.Filled.History,
+                    label = stringResource(R.string.dashboard_carrier_explore_recent),
+                    onClick = onSelectRecent,
+                )
+            }
+            if (showRecent && showPopular) {
+                PDivider()
+            }
+            if (showPopular) {
+                DropdownOptionRow(
+                    icon = Icons.Filled.LocalFireDepartment,
+                    label = stringResource(R.string.dashboard_carrier_explore_popular),
+                    onClick = onSelectPopular,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DropdownOptionRow(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = PasabayanSpacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp),
+        )
+        Text(
+            text = label,
+            style = PasabayanTextStyles.Body.small,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 

@@ -41,6 +41,8 @@
     <string name="dashboard_carrier_find_packages">Trouver des colis</string>
     <string name="dashboard_carrier_find_packages_subtitle">Parcourir les colis et courses disponibles</string>
     <string name="dashboard_carrier_search_placeholder">Rechercher par ville ou description\u2026</string>
+    <string name="dashboard_carrier_explore_recent">R\u00e9cents</string>
+    <string name="dashboard_carrier_explore_popular">Populaires</string>
     <string name="dashboard_carrier_available_packages">Colis disponibles</string>
     <string name="dashboard_carrier_not_nearby">Aucun colis \u00e0 proximit\u00e9 \u2014 affichage d\'autres r\u00e9gions</string>
     <string name="dashboard_carrier_post_trip">Publier un horaire de trajet</string>

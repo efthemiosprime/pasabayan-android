@@ -55,6 +55,17 @@ Other locations:
 
 **Full rules:** `.cursor/rules/app-feature-package-layout.mdc`.
 
+## Reuse before create (strict — every layer)
+
+- **Search before writing anything new** — model, DTO, enum, mapper, repository, use case, service, ViewModel, util, component, or screen. Reuse, extend, or compose what exists; create only when nothing fits.
+- **Canonical homes:** shared enums + value types + utils in `core/domain/{enum,model,util}/`; network/error helpers in `core/network` + `core/domain-error`; session/token helpers in `core/session`; design-system primitives in `:core:designsystem`. Feature-scoped types live under `features/<feature>/{model,services,viewmodel,components,ui}/`.
+- **Search routine:** grep by *responsibility* (not the name you'd type); check the iOS reference (`pasabayan-ios/Pasabayan/Features/*`, `Services/*`, `Models/*`) for the equivalent shape; check `core/*`; check the feature's own folders.
+- **Extend, don't fork.** Add an enum case / variant / parameter to the existing type; don't copy a DTO to "tweak one field"; don't wrap a repo with a thin facade; don't add `Boolean` flags to bypass missing variants — add the variant properly.
+- **Promotion ladder:** inline → feature folder (on 2nd in-feature use or size trigger) → `core/*` or `:core:designsystem` (on 2nd cross-feature use, in its own slice **before** the second consumer's PR), with tests + spec update.
+- **Anti-patterns to flag:** duplicate enums (e.g. a feature-local `PackageStatus` when one exists in `core/domain/enum/`), parallel mappers/parsers when `FlexibleDecoders` / `DateTimeParsing` already cover it, `*Utils.kt`/`*Helpers.kt` catch-alls, forking `P*` instead of extending, copy-pasted section composables across roles.
+
+Cursor rules: `.cursor/rules/reuse-before-create.mdc` (all layers — models, services, utils, UI), `.cursor/rules/ui-reusability-and-inheritance.mdc` (UI specifics), `.cursor/rules/lean-classes-separation.mdc` (extraction triggers), `.cursor/rules/app-feature-package-layout.mdc` (where things live).
+
 ## Lean files and thin classes (strict)
 
 - **Single responsibility per file.** One class/composable/interface per file. DTOs, domain models, and mappers in separate files.

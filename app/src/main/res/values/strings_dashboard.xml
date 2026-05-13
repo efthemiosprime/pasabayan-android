@@ -41,6 +41,8 @@
     <string name="dashboard_carrier_find_packages">Find Packages</string>
     <string name="dashboard_carrier_find_packages_subtitle">Browse available packages and errands</string>
     <string name="dashboard_carrier_search_placeholder">Search by city or description\u2026</string>
+    <string name="dashboard_carrier_explore_recent">Recent</string>
+    <string name="dashboard_carrier_explore_popular">Popular</string>
     <string name="dashboard_carrier_available_packages">Available Packages</string>
     <string name="dashboard_carrier_not_nearby">No packages nearby \u2014 showing from other areas</string>
     <string name="dashboard_carrier_post_trip">Post Trip Schedule</string>

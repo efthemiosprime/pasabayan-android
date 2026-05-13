@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import com.efthemiosprime.pasabayan.core.designsystem.component.PAvatar
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
@@ -63,7 +64,11 @@ fun UserCardHeader(
         horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AvatarInitials(name = user.name)
+        PAvatar(
+            url = user.avatar,
+            fallbackName = user.name,
+            size = 36.dp,
+        )
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -93,24 +98,6 @@ fun UserCardHeader(
             )
         }
         trailing?.invoke()
-    }
-}
-
-@Composable
-private fun AvatarInitials(name: String) {
-    val initial = name.firstOrNull()?.uppercase() ?: "?"
-    Box(
-        modifier = Modifier
-            .size(36.dp)
-            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = initial,
-            style = PasabayanTextStyles.Heading.h6,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-            fontWeight = FontWeight.SemiBold,
-        )
     }
 }
 

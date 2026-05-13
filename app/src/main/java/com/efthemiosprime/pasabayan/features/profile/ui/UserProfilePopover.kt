@@ -118,6 +118,7 @@ fun UserProfilePopover(
             ProfileHeader(
                 userId = userId,
                 userName = userName,
+                userAvatar = userAvatar,
                 verificationLevel = verificationLevel,
                 initialRating = initialRating,
                 initialTotalRatings = initialTotalRatings,
@@ -156,6 +157,7 @@ fun UserProfilePopover(
 private fun ProfileHeader(
     userId: Int,
     userName: String?,
+    userAvatar: String?,
     verificationLevel: String?,
     initialRating: Double?,
     initialTotalRatings: Int?,
@@ -170,6 +172,7 @@ private fun ProfileHeader(
         AvatarWithVerificationBadge(
             name = userName,
             userId = userId,
+            avatarUrl = userAvatar,
             verificationLevel = verificationLevel,
         )
         Column(
@@ -208,23 +211,19 @@ private fun ProfileHeader(
 private fun AvatarWithVerificationBadge(
     name: String?,
     userId: Int,
+    avatarUrl: String?,
     verificationLevel: String?,
 ) {
     Box(modifier = Modifier.size(AVATAR_SIZE)) {
-        Box(
-            modifier = Modifier
-                .size(AVATAR_SIZE)
-                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
-                .border(2.dp, MaterialTheme.colorScheme.outline, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = initialsFor(name) ?: "#$userId",
-                style = PasabayanTextStyles.Heading.h3,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
+        // PAvatar handles initial fallback (and ignores `userId` — initialsFor falls
+        // back to "#42" only when the name is null AND no avatar; in popover the name
+        // is already required by callers, so the fallback letter is used).
+        com.efthemiosprime.pasabayan.core.designsystem.component.PAvatar(
+            url = avatarUrl,
+            fallbackName = name ?: "#$userId",
+            size = AVATAR_SIZE,
+            modifier = Modifier.border(2.dp, MaterialTheme.colorScheme.outline, CircleShape),
+        )
         if (verificationLevel?.lowercase() != null && verificationLevel.lowercase() != "basic") {
             Icon(
                 imageVector = Icons.Filled.CheckCircle,
@@ -649,6 +648,7 @@ private fun UserProfilePopoverPreview() {
             ProfileHeader(
                 userId = 123,
                 userName = "Jose Esplana",
+                userAvatar = null,
                 verificationLevel = "verified",
                 initialRating = 4.3,
                 initialTotalRatings = 20,
