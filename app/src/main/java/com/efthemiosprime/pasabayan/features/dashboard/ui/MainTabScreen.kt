@@ -360,6 +360,7 @@ fun MainTabScreen(
                     initialCounterOfferMatchId = pendingCounterOfferMatchId,
                     onInitialCounterOfferConsumed = { pendingCounterOfferMatchId = null },
                     onPhoneVerificationRequired = { reason -> verifyPhoneReason = reason },
+                    onContactSupport = { showSupportTicketFormSheet = true },
                 )
                 "my_trips" -> com.efthemiosprime.pasabayan.features.trips.ui.CarrierMyTripsScreen(
                     onViewTripDetails = { trip -> selectedCarrierTripId = trip.id },

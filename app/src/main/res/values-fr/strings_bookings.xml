@@ -19,6 +19,7 @@
     <string name="bookings_action_mark_in_transit">Marquer en transit</string>
     <string name="bookings_action_mark_delivered">Marquer livr\u00e9</string>
     <string name="bookings_action_track_live">Suivre en direct</string>
+    <string name="bookings_action_contact_support">Contacter l’assistance</string>
     <string name="bookings_action_generate_code">G\u00e9n\u00e9rer un code</string>
     <string name="bookings_action_enter_code">Entrer le code</string>
 

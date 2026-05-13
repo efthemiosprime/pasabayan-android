@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.Icon
@@ -55,6 +56,15 @@ fun ShipperMatchDetailsSheetContent(
     onAction: (BookingAction) -> Unit,
     modifier: Modifier = Modifier,
     currentUserId: Int? = null,
+    /**
+     * iOS parity: `BookingDetailsContentView` / `ShipperMatchDetailsView` /
+     * `CarrierMatchDetailsView` all expose a "Contact Support" / "Dispute Refund"
+     * tertiary button that opens `SupportTicketForm()`. Android collapses all
+     * three iOS surfaces into this single composable, so one button covers them.
+     * The form opens identically in either context (no match-id pre-fill on iOS),
+     * so we use one consolidated label.
+     */
+    onContactSupport: () -> Unit = {},
 ) {
     val statusLabel = matchStatusLabel(match.matchStatus)
     val currentStep = timelineCurrentIndex(match.matchStatus)
@@ -262,6 +272,17 @@ fun ShipperMatchDetailsSheetContent(
                 }
             }
         }
+
+        // iOS parity: every booking-detail variant ends with a Contact Support /
+        // Dispute Refund tertiary entry point that opens the support ticket form.
+        PButton(
+            text = stringResource(R.string.bookings_action_contact_support),
+            onClick = onContactSupport,
+            style = PButtonStyle.Tertiary,
+            size = PButtonSize.Small,
+            icon = Icons.AutoMirrored.Filled.HelpOutline,
+            modifier = Modifier.fillMaxWidth(),
+        )
 
         Spacer(modifier = Modifier.height(PasabayanSpacing.sm))
     }

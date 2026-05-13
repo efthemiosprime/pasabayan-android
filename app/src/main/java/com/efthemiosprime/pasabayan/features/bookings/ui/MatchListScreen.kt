@@ -71,6 +71,13 @@ fun MatchListScreen(
     onInitialCounterOfferConsumed: () -> Unit = {},
     /** Forwarded when a gated action (counter-offer / carrier request) was blocked. */
     onPhoneVerificationRequired: (VerifyPhoneReason) -> Unit = {},
+    /**
+     * Opens the support ticket form. Forwarded to [ShipperMatchDetailsSheetContent]'s
+     * Contact Support button — iOS parity with `BookingDetailsContentView` /
+     * `ShipperMatchDetailsView` / `CarrierMatchDetailsView` all opening
+     * `SupportTicketForm()` from a tertiary action.
+     */
+    onContactSupport: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val role = if (isCarrier) "carrier" else "shipper"
@@ -279,6 +286,7 @@ fun MatchListScreen(
                 match = match,
                 isCarrier = isCarrier,
                 onClose = { selectedMatch = null },
+                onContactSupport = onContactSupport,
                 onAction = { action ->
                     onAction(action, match.id)
                     when (action) {
