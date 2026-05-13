@@ -38,6 +38,7 @@ import com.efthemiosprime.pasabayan.features.payments.components.TippingRefundSe
 import com.efthemiosprime.pasabayan.features.payments.model.PaymentMethodDisplay
 import com.efthemiosprime.pasabayan.features.payments.model.PaymentReceipt
 import com.efthemiosprime.pasabayan.features.payments.model.Transaction
+import com.efthemiosprime.pasabayan.features.payments.services.PaymentSheetConfigFactory
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.PaymentFlowStatus
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.PaymentMethodsUiState
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.PaymentMethodsViewModel
@@ -157,7 +158,12 @@ fun PaymentsProfileScreen(
                         paymentViewModel.confirmCapture(deliveryMatchId)
                         return@PaymentsProfileContent
                     }
-                    val configuration = buildPaymentSheetConfiguration(paymentState)
+                    val configuration = PaymentSheetConfigFactory.build(
+                        customerId = paymentState.customerId,
+                        ephemeralKey = paymentState.ephemeralKey,
+                        stripeIsSandbox = paymentState.stripeIsSandbox,
+                        currencyCode = paymentState.stripeCurrencyCode,
+                    )
                     paymentSheet.presentWithPaymentIntent(secret, configuration)
                 },
                 onAddTip = { transactionId, amount ->
@@ -386,38 +392,6 @@ private fun paymentStatusText(paymentState: PaymentUiState): String {
         paymentState.flowStatus == PaymentFlowStatus.PAYMENT_SUCCESS -> stringResource(R.string.payments_profile_status_paid)
         paymentState.flowStatus == PaymentFlowStatus.ALREADY_PAID -> stringResource(R.string.payments_profile_status_already_paid)
         else -> stringResource(R.string.payments_profile_idle)
-    }
-}
-
-private fun buildPaymentSheetConfiguration(paymentState: PaymentUiState): PaymentSheet.Configuration {
-    val customerId = paymentState.customerId
-    val ephemeralKey = paymentState.ephemeralKey
-    val customerConfig =
-        if (!customerId.isNullOrBlank() && !ephemeralKey.isNullOrBlank()) {
-            PaymentSheet.CustomerConfiguration(
-                id = customerId,
-                ephemeralKeySecret = ephemeralKey,
-            )
-        } else {
-            null
-        }
-    return if (customerConfig != null) {
-        val googlePayConfig = PaymentSheet.GooglePayConfiguration(
-            environment = if (paymentState.stripeIsSandbox) {
-                PaymentSheet.GooglePayConfiguration.Environment.Test
-            } else {
-                PaymentSheet.GooglePayConfiguration.Environment.Production
-            },
-            countryCode = "CA",
-            currencyCode = paymentState.stripeCurrencyCode,
-        )
-        PaymentSheet.Configuration(
-            "Pasabayan",
-            customerConfig,
-            googlePayConfig,
-        )
-    } else {
-        PaymentSheet.Configuration("Pasabayan")
     }
 }
 

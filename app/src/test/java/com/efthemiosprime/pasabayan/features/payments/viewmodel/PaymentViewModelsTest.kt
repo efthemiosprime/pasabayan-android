@@ -170,6 +170,133 @@ class PaymentViewModelsTest {
         assertFalse(vm.uiState.value.isSheetReady)
     }
 
+    // -- B2: PaymentSheet config + 3DS + polling --
+
+    @Test
+    fun `configurePaymentSheet stores config built from current state`() = runTest {
+        fakePaymentRepo.createResult = Result.success(
+            CreatePaymentResponseJson(
+                success = true,
+                clientSecret = "pi_secret_123",
+                customerId = "cus_abc",
+                ephemeralKey = "ek_xyz",
+                data = TransactionJson(id = 1, status = "pending"),
+            ),
+        )
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
+        vm.createPayment(100, 150.0)
+        advanceUntilIdle()
+
+        // createPayment with a real secret triggers configurePaymentSheet automatically.
+        assertTrue(vm.uiState.value.paymentSheetConfig != null)
+    }
+
+    @Test
+    fun `mock client secret skips configurePaymentSheet`() = runTest {
+        fakePaymentRepo.createResult = Result.success(
+            CreatePaymentResponseJson(
+                success = true,
+                clientSecret = "mock_pi_skip",
+                data = TransactionJson(id = 1, status = "pending"),
+            ),
+        )
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
+        vm.createPayment(100, 150.0)
+        advanceUntilIdle()
+
+        // Mock path short-circuits — no sheet config built.
+        assertNull(vm.uiState.value.paymentSheetConfig)
+    }
+
+    @Test
+    fun `handle3DSChallenge sets requires authentication and rotates secrets`() = runTest {
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
+        advanceUntilIdle()
+
+        vm.handle3DSChallenge(
+            clientSecret = "pi_secret_3ds",
+            customerId = "cus_new",
+            ephemeralKey = "ek_new",
+            publicKey = "pk_test_new",
+            message = "Please complete verification",
+        )
+
+        val state = vm.uiState.value
+        assertTrue(state.requiresAuthentication)
+        assertEquals("pi_secret_3ds", state.authenticationClientSecret)
+        assertEquals("pi_secret_3ds", state.clientSecret)
+        assertEquals("cus_new", state.customerId)
+        assertEquals("ek_new", state.ephemeralKey)
+        assertEquals("pk_test_new", state.publicKey)
+        assertTrue(state.isSheetReady)
+        assertEquals(PaymentFlowStatus.SHEET_READY, state.flowStatus)
+        assertEquals("Please complete verification", state.statusMessage)
+        // Sheet is re-configured.
+        assertTrue(state.paymentSheetConfig != null)
+    }
+
+    @Test
+    fun `pollForConfirmation succeeds on first attempt`() = runTest {
+        fakePaymentRepo.confirmCaptureResult = Result.success(
+            TransactionJson(id = 1, status = "completed").toDomain(),
+        )
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
+        vm.pollForConfirmation(100, attempts = 3, delayMs = 100L)
+        advanceUntilIdle()
+
+        assertEquals(1, fakePaymentRepo.confirmCaptureCallCount)
+        assertTrue(vm.uiState.value.paymentSuccess)
+        assertEquals(PaymentFlowStatus.PAYMENT_SUCCESS, vm.uiState.value.flowStatus)
+        assertEquals(0, vm.uiState.value.pollAttempt)
+    }
+
+    @Test
+    fun `pollForConfirmation retries until success`() = runTest {
+        fakePaymentRepo.confirmCaptureQueue.addAll(
+            listOf(
+                Result.failure(Exception("transient")),
+                Result.failure(Exception("transient")),
+                Result.success(TransactionJson(id = 1, status = "completed").toDomain()),
+            ),
+        )
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
+        vm.pollForConfirmation(100, attempts = 3, delayMs = 50L)
+        advanceUntilIdle()
+
+        assertEquals(3, fakePaymentRepo.confirmCaptureCallCount)
+        assertTrue(vm.uiState.value.paymentSuccess)
+        assertNull(vm.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `pollForConfirmation gives up after N attempts`() = runTest {
+        fakePaymentRepo.confirmCaptureQueue.addAll(
+            listOf(
+                Result.failure(Exception("err 1")),
+                Result.failure(Exception("err 2")),
+                Result.failure(Exception("err 3 final")),
+            ),
+        )
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
+        vm.pollForConfirmation(100, attempts = 3, delayMs = 50L)
+        advanceUntilIdle()
+
+        assertEquals(3, fakePaymentRepo.confirmCaptureCallCount)
+        assertFalse(vm.uiState.value.paymentSuccess)
+        assertEquals("err 3 final", vm.uiState.value.errorMessage)
+        assertEquals(0, vm.uiState.value.pollAttempt)
+    }
+
+    @Test
+    fun `onStripeSDKError surfaces message and clears readiness`() = runTest {
+        val vm = PaymentViewModel(fakePaymentRepo, fakeStripeConfigRepo)
+        vm.onStripeSDKError("Card declined by issuer")
+
+        assertEquals("Card declined by issuer", vm.uiState.value.errorMessage)
+        assertFalse(vm.uiState.value.isSheetReady)
+        assertEquals(PaymentFlowStatus.IDLE, vm.uiState.value.flowStatus)
+    }
+
     // -- PaymentMethodsViewModel --
 
     @Test
@@ -380,6 +507,9 @@ class FakePaymentRepository : PaymentRepository {
     var listResult: Result<List<Transaction>> = Result.success(emptyList())
     var getResult: Result<Transaction>? = null
     var confirmCaptureResult: Result<Transaction>? = null
+    /** When non-empty, each `confirmCapture` call pops the next result. Use for polling tests. */
+    val confirmCaptureQueue: ArrayDeque<Result<Transaction>> = ArrayDeque()
+    var confirmCaptureCallCount: Int = 0
     var cancelResult: Result<Transaction>? = null
     var tipResult: Result<TipResponseJson> = Result.success(TipResponseJson(success = true))
 
@@ -387,7 +517,11 @@ class FakePaymentRepository : PaymentRepository {
     override suspend fun listTransactions(role: String?) = listResult
     override suspend fun getTransaction(id: Int) = getResult ?: Result.failure(Exception("Not set"))
     override suspend fun captureTransaction(id: Int) = getResult ?: Result.failure(Exception("Not set"))
-    override suspend fun confirmCapture(deliveryMatchId: Int) = confirmCaptureResult ?: Result.failure(Exception("Not set"))
+    override suspend fun confirmCapture(deliveryMatchId: Int): Result<Transaction> {
+        confirmCaptureCallCount++
+        confirmCaptureQueue.removeFirstOrNull()?.let { return it }
+        return confirmCaptureResult ?: Result.failure(Exception("Not set"))
+    }
     override suspend fun releaseTransaction(id: Int) = getResult ?: Result.failure(Exception("Not set"))
     var refundResult: Result<RefundRequestDataJson> = Result.failure(Exception("Not set"))
     override suspend fun requestRefund(transactionId: Int, amount: Double?, reason: String, description: String?) = refundResult

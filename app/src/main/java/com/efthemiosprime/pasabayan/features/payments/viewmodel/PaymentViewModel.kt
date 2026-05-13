@@ -4,14 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.features.payments.model.Transaction
 import com.efthemiosprime.pasabayan.features.payments.services.PaymentRepository
+import com.efthemiosprime.pasabayan.features.payments.services.PaymentSheetConfigFactory
 import com.efthemiosprime.pasabayan.features.payments.services.StripeConfigRepository
+import com.stripe.android.paymentsheet.PaymentSheet
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 enum class PaymentFlowStatus {
     IDLE,
@@ -36,6 +39,10 @@ data class PaymentUiState(
     val publicKey: String? = null,
     val stripeCurrencyCode: String = "CAD",
     val stripeIsSandbox: Boolean = true,
+    val paymentSheetConfig: PaymentSheet.Configuration? = null,
+    val requiresAuthentication: Boolean = false,
+    val authenticationClientSecret: String? = null,
+    val pollAttempt: Int = 0,
 )
 
 @HiltViewModel
@@ -80,6 +87,8 @@ class PaymentViewModel @Inject constructor(
                     isSheetReady = false,
                     statusMessage = null,
                     flowStatus = PaymentFlowStatus.IDLE,
+                    requiresAuthentication = false,
+                    authenticationClientSecret = null,
                 )
             }
             paymentRepository.createPayment(deliveryMatchId, amount, currency).fold(
@@ -113,6 +122,7 @@ class PaymentViewModel @Inject constructor(
                             statusMessage = if (isMock) "mock_payment_ready" else "sheet_ready",
                         )
                     }
+                    if (!isMock) configurePaymentSheet()
                 },
                 onFailure = { e ->
                     _uiState.update {
@@ -199,6 +209,100 @@ class PaymentViewModel @Inject constructor(
 
     fun isMockClientSecret(secret: String): Boolean = secret.startsWith("mock_pi_")
 
+    // -- B2: PaymentSheet config + 3DS + polling --
+
+    /** Builds + stores [PaymentSheet.Configuration] from current state. Idempotent. */
+    fun configurePaymentSheet() {
+        val state = _uiState.value
+        val config = PaymentSheetConfigFactory.build(
+            customerId = state.customerId,
+            ephemeralKey = state.ephemeralKey,
+            stripeIsSandbox = state.stripeIsSandbox,
+            currencyCode = state.stripeCurrencyCode,
+        )
+        _uiState.update { it.copy(paymentSheetConfig = config) }
+    }
+
+    /**
+     * Server returned a 3DS challenge — replace secret + customer credentials and re-arm the sheet.
+     * iOS mirror: `PaymentViewModel.swift` `requiresAuthentication` branch (lines 112–135).
+     */
+    fun handle3DSChallenge(
+        clientSecret: String,
+        customerId: String? = null,
+        ephemeralKey: String? = null,
+        publicKey: String? = null,
+        message: String? = null,
+    ) {
+        _uiState.update {
+            it.copy(
+                requiresAuthentication = true,
+                authenticationClientSecret = clientSecret,
+                clientSecret = clientSecret,
+                customerId = customerId ?: it.customerId,
+                ephemeralKey = ephemeralKey ?: it.ephemeralKey,
+                publicKey = publicKey ?: it.publicKey,
+                isSheetReady = true,
+                flowStatus = PaymentFlowStatus.SHEET_READY,
+                statusMessage = message,
+                isProcessing = false,
+                errorMessage = null,
+            )
+        }
+        configurePaymentSheet()
+    }
+
+    /** Polls `confirmCapture` up to [attempts] times with [delayMs] between attempts. */
+    fun pollForConfirmation(
+        deliveryMatchId: Int,
+        attempts: Int = DEFAULT_POLL_ATTEMPTS,
+        delayMs: Long = DEFAULT_POLL_DELAY_MS,
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isProcessing = true, errorMessage = null) }
+            var lastError: Throwable? = null
+            for (attempt in 1..attempts) {
+                _uiState.update { it.copy(pollAttempt = attempt) }
+                val result = paymentRepository.confirmCapture(deliveryMatchId)
+                if (result.isSuccess) {
+                    _uiState.update {
+                        it.copy(
+                            isProcessing = false,
+                            paymentSuccess = true,
+                            transaction = result.getOrNull(),
+                            flowStatus = PaymentFlowStatus.PAYMENT_SUCCESS,
+                            statusMessage = "payment_success",
+                            isSheetReady = false,
+                            pollAttempt = 0,
+                        )
+                    }
+                    return@launch
+                }
+                lastError = result.exceptionOrNull()
+                if (attempt < attempts) delay(delayMs)
+            }
+            _uiState.update {
+                it.copy(
+                    isProcessing = false,
+                    errorMessage = lastError?.message ?: "Confirmation failed after $attempts attempts",
+                    pollAttempt = 0,
+                )
+            }
+        }
+    }
+
+    /** Stripe SDK surfaced an error from the sheet — distinct from network failures. */
+    fun onStripeSDKError(message: String) {
+        _uiState.update {
+            it.copy(
+                isProcessing = false,
+                errorMessage = message,
+                isSheetReady = false,
+                flowStatus = PaymentFlowStatus.IDLE,
+            )
+        }
+    }
+
     private fun loadStripeConfig() {
         viewModelScope.launch {
             stripeConfigRepository.fetchConfig().onSuccess { config ->
@@ -220,5 +324,10 @@ class PaymentViewModel @Inject constructor(
                 stripeIsSandbox = current.stripeIsSandbox,
             )
         }
+    }
+
+    companion object {
+        const val DEFAULT_POLL_ATTEMPTS = 3
+        const val DEFAULT_POLL_DELAY_MS: Long = 1500L
     }
 }
