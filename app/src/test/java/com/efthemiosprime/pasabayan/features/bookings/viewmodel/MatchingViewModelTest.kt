@@ -695,6 +695,7 @@ class FakeBookingsRepository : BookingsRepository {
     override suspend fun generateDeliveryCode(matchId: Int) = Result.success("654321")
     override suspend fun confirmPickupWithCode(matchId: Int, code: String) = confirmResult ?: Result.failure(Exception("Not set"))
     override suspend fun confirmDeliveryWithCode(matchId: Int, code: String) = confirmResult ?: Result.failure(Exception("Not set"))
+    override suspend fun retryAutoCharge(matchId: Int): Result<Unit> = Result.failure(Exception("Not used"))
     override suspend fun shipperRequestTrip(
         packageId: Int,
         tripId: Int,

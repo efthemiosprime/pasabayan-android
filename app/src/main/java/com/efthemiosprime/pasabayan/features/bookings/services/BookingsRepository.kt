@@ -43,6 +43,13 @@ interface BookingsRepository {
 
     suspend fun confirmDeliveryWithCode(matchId: Int, code: String): Result<DeliveryMatch>
 
+    /**
+     * Retry the auto-charge for a match whose initial confirm enqueued no
+     * charge (e.g. shipper had no default payment method at confirm time).
+     * Backed by `POST /payments/matches/{id}/auto-charge`.
+     */
+    suspend fun retryAutoCharge(matchId: Int): Result<Unit>
+
     suspend fun shipperRequestTrip(
         packageId: Int,
         tripId: Int,

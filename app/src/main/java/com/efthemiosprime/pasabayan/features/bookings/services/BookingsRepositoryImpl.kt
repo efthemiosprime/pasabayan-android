@@ -144,6 +144,16 @@ class BookingsRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun retryAutoCharge(matchId: Int): Result<Unit> {
+        return try {
+            val res = bookingsApi.retryAutoCharge(matchId)
+            if (!res.isSuccessful) return Result.failure(mapError(res))
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
     override suspend fun confirmDeliveryWithCode(matchId: Int, code: String): Result<DeliveryMatch> {
         return try {
             val res = bookingsApi.confirmDeliveryWithCode(matchId, code)
