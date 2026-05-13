@@ -39,6 +39,13 @@
     <string name="trips_view_compatible">View Compatible Packages</string>
     <string name="trips_action_request_book">Request Book</string>
     <string name="trips_action_create_trip_from_package">Create trip from package</string>
+    <string name="trips_action_activate_trip">Activate Trip</string>
+    <string name="trips_action_activate_trip_confirm_title">Activate Trip?</string>
+    <string name="trips_action_activate_trip_confirm_message">Once active, shippers can find this trip and request to book. You can still edit notes after activation.</string>
+    <string name="trips_action_activate_trip_success">Trip activated. Shippers can now find and book it.</string>
+    <string name="trips_action_update_status">Update Status</string>
+    <string name="trips_action_cancel_trip_message">This will cancel your trip. This action cannot be undone.</string>
+    <string name="trips_action_keep_trip">Keep Trip</string>
 
     <!-- Trip details -->
     <string name="trips_detail_route">Route</string>

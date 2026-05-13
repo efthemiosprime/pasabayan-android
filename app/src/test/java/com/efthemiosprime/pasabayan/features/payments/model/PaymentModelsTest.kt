@@ -37,11 +37,11 @@ class PaymentModelsTest {
         assertEquals(500, tx.id)
         assertEquals(TransactionStatus.COMPLETED, tx.transactionStatus)
         assertEquals(100, tx.deliveryMatchId)
-        assertEquals("Alice", tx.shipperName)
-        assertEquals("John", tx.carrierName)
-        assertEquals(175.50, tx.totalAmount, 0.001)
-        assertEquals("cad", tx.currency)
-        assertEquals(5.0, tx.tipAmount!!, 0.001)
+        assertEquals("Alice", tx.shipper?.name)
+        assertEquals("John", tx.carrier?.name)
+        assertEquals(175.50, tx.amounts?.total!!, 0.001)
+        assertEquals("cad", tx.amounts?.currency)
+        assertEquals(5.0, tx.amounts?.tip!!, 0.001)
     }
 
     @Test
@@ -75,9 +75,10 @@ class PaymentModelsTest {
     fun `Transaction handles null amounts`() {
         val json = TransactionJson(id = 1, status = "pending")
         val tx = json.toDomain()
+        assertNull(tx.amounts)
         assertEquals(0.0, tx.totalAmount, 0.001)
         assertEquals("cad", tx.currency)
-        assertNull(tx.tipAmount)
+        assertNull(tx.tip)
     }
 
     // -- StripeConfig --

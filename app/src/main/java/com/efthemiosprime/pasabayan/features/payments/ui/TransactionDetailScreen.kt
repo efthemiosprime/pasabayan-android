@@ -93,10 +93,11 @@ private fun TransactionDetailContent(
             return
         }
         val isCarrier = filter == TransactionFilter.CARRIER
+        val tipAmount = transaction.amounts?.tip ?: 0.0
         val canCancel = !isCarrier && transaction.transactionStatus == TransactionStatus.PENDING
         val canTip = !isCarrier &&
             (transaction.transactionStatus == TransactionStatus.COMPLETED || transaction.transactionStatus == TransactionStatus.CAPTURED) &&
-            (transaction.tipAmount ?: 0.0) <= 0.0
+            tipAmount <= 0.0
         val canRefund = !isCarrier &&
             (transaction.transactionStatus == TransactionStatus.CAPTURED || transaction.transactionStatus == TransactionStatus.COMPLETED)
 
@@ -127,27 +128,27 @@ private fun TransactionDetailContent(
                         },
                         style = PasabayanTextStyles.Heading.h5,
                     )
+                    val amounts = transaction.amounts
+                    val currencyCode = transaction.currency.uppercase()
                     AmountRow(
                         label = stringResource(R.string.payments_transaction_detail_total_paid),
                         value = transaction.formattedTotal,
                     )
-                    if (transaction.platformFee != null) {
+                    if (amounts != null) {
                         AmountRow(
                             label = stringResource(R.string.payments_transaction_detail_platform_fee),
-                            value = String.format("$%.2f %s", transaction.platformFee, transaction.currency.uppercase()),
+                            value = String.format("$%.2f %s", amounts.platformFee, currencyCode),
                         )
-                    }
-                    if (transaction.carrierReceives != null) {
                         AmountRow(
                             label = stringResource(R.string.payments_transaction_detail_carrier_receives),
-                            value = String.format("$%.2f %s", transaction.carrierReceives, transaction.currency.uppercase()),
+                            value = String.format("$%.2f %s", amounts.carrierReceives, currencyCode),
                         )
-                    }
-                    if (transaction.tipAmount != null && transaction.tipAmount > 0) {
-                        AmountRow(
-                            label = stringResource(R.string.payments_transaction_detail_tip),
-                            value = String.format("$%.2f %s", transaction.tipAmount, transaction.currency.uppercase()),
-                        )
+                        if (amounts.tip > 0) {
+                            AmountRow(
+                                label = stringResource(R.string.payments_transaction_detail_tip),
+                                value = String.format("$%.2f %s", amounts.tip, currencyCode),
+                            )
+                        }
                     }
                 }
             }
@@ -169,32 +170,26 @@ private fun TransactionDetailContent(
                     Text(
                         text = stringResource(
                             R.string.payments_transaction_detail_shipper,
-                            transaction.shipperName ?: "-",
+                            transaction.shipper?.name ?: "-",
                         ),
                         style = PasabayanTextStyles.Body.small,
                     )
                     Text(
                         text = stringResource(
                             R.string.payments_transaction_detail_carrier,
-                            transaction.carrierName ?: "-",
+                            transaction.carrier?.name ?: "-",
                         ),
                         style = PasabayanTextStyles.Body.small,
                     )
-                    if (transaction.createdAt != null) {
+                    transaction.timestamps.createdAt.takeIf { it.isNotEmpty() }?.let {
                         Text(
-                            text = stringResource(
-                                R.string.payments_transaction_detail_created_at,
-                                transaction.createdAt,
-                            ),
+                            text = stringResource(R.string.payments_transaction_detail_created_at, it),
                             style = PasabayanTextStyles.Body.small,
                         )
                     }
-                    if (transaction.updatedAt != null) {
+                    transaction.timestamps.updatedAt.takeIf { it.isNotEmpty() }?.let {
                         Text(
-                            text = stringResource(
-                                R.string.payments_transaction_detail_updated_at,
-                                transaction.updatedAt,
-                            ),
+                            text = stringResource(R.string.payments_transaction_detail_updated_at, it),
                             style = PasabayanTextStyles.Body.small,
                         )
                     }
@@ -276,20 +271,25 @@ private fun TransactionDetailContentPreview() {
                     transactionStatus = TransactionStatus.COMPLETED,
                     deliveryMatchId = 77,
                     description = "Delivery payment",
-                    shipperName = "Alice",
-                    carrierName = "Bob",
-                    totalAmount = 155.0,
-                    subtotal = 140.0,
-                    platformFee = 15.0,
-                    carrierReceives = 132.0,
-                    currency = "cad",
-                    tipAmount = null,
-                    clientSecret = null,
-                    customerId = null,
-                    ephemeralKey = null,
-                    payoutStatus = "completed",
-                    createdAt = "2026-03-30T10:00:00Z",
-                    updatedAt = "2026-03-30T10:05:00Z",
+                    shipper = com.efthemiosprime.pasabayan.features.payments.model.TransactionUser(
+                        id = 1, name = "Alice",
+                    ),
+                    carrier = com.efthemiosprime.pasabayan.features.payments.model.TransactionUser(
+                        id = 2, name = "Bob",
+                    ),
+                    amounts = com.efthemiosprime.pasabayan.features.payments.model.TransactionAmounts(
+                        total = 155.0,
+                        subtotal = 140.0,
+                        platformFee = 15.0,
+                        carrierReceives = 132.0,
+                        currency = "cad",
+                        tip = 0.0,
+                    ),
+                    timestamps = com.efthemiosprime.pasabayan.features.payments.model.TransactionTimestamps(
+                        createdAt = "2026-03-30T10:00:00Z",
+                        updatedAt = "2026-03-30T10:05:00Z",
+                    ),
+                    payoutStatus = com.efthemiosprime.pasabayan.core.domain.`enum`.PayoutStatus.COMPLETED,
                 ),
             ),
             filter = TransactionFilter.SHIPPER,

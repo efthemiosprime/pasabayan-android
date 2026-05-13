@@ -9,6 +9,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 
 @Serializable
@@ -21,6 +22,7 @@ data class TransactionJson(
     val stripe: StripeInfoJson? = null,
     val status: String = "unknown",
     val description: String? = null,
+    val metadata: Map<String, JsonElement>? = null,
     @SerialName("client_secret") val clientSecret: String? = null,
     @SerialName("payout_status") val payoutStatus: String? = null,
     @SerialName("payout_notes") val payoutNotes: String? = null,
@@ -28,9 +30,21 @@ data class TransactionJson(
     val payout: PayoutJson? = null,
     val tip: TipInfoJson? = null,
     val refund: RefundInfoJson? = null,
+    val timestamps: TransactionTimestampsJson? = null,
     @SerialName("customer_id") val customerId: String? = null,
     @SerialName("ephemeral_key") val ephemeralKey: String? = null,
     @SerialName("transaction_status") val transactionStatus: String? = null,
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("updated_at") val updatedAt: String? = null,
+)
+
+@Serializable
+data class TransactionTimestampsJson(
+    @SerialName("authorized_at") val authorizedAt: String? = null,
+    @SerialName("captured_at") val capturedAt: String? = null,
+    @SerialName("completed_at") val completedAt: String? = null,
+    @SerialName("failed_at") val failedAt: String? = null,
+    @SerialName("payout_completed_at") val payoutCompletedAt: String? = null,
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("updated_at") val updatedAt: String? = null,
 )

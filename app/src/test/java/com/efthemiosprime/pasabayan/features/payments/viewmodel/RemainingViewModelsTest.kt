@@ -342,13 +342,16 @@ class RemainingViewModelsTest {
     // -- Helpers --
 
     private fun testTransaction(id: Int, status: String = "completed") = Transaction(
-        id = id, transactionStatus = TransactionStatus.COMPLETED,
-        deliveryMatchId = 100, description = "Test",
-        shipperName = "Alice", carrierName = "John",
-        totalAmount = 150.0, subtotal = null, platformFee = null,
-        carrierReceives = null, currency = "cad", tipAmount = null,
-        clientSecret = null, customerId = null, ephemeralKey = null,
-        payoutStatus = null, createdAt = null, updatedAt = null,
+        id = id,
+        transactionStatus = when (status) {
+            "cancelled" -> TransactionStatus.CANCELLED
+            else -> TransactionStatus.COMPLETED
+        },
+        deliveryMatchId = 100,
+        description = "Test",
+        shipper = com.efthemiosprime.pasabayan.features.payments.model.TransactionUser(id = 1, name = "Alice"),
+        carrier = com.efthemiosprime.pasabayan.features.payments.model.TransactionUser(id = 2, name = "John"),
+        amounts = com.efthemiosprime.pasabayan.features.payments.model.TransactionAmounts(total = 150.0),
     )
 
     private fun testReceipt(id: Int, url: String? = null) = PaymentReceipt(

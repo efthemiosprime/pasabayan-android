@@ -6,4 +6,6 @@
     <string name="common_country_canada">Canada</string>
     <string name="common_country_philippines">Philippines</string>
     <string name="common_country_india">Inde</string>
+    <string name="common_buttons_ok">OK</string>
+    <string name="common_buttons_cancel">Annuler</string>
 </resources>

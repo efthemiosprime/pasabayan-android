@@ -39,6 +39,13 @@
     <string name="trips_view_compatible">Voir les colis compatibles</string>
     <string name="trips_action_request_book">Demander la r\u00e9servation</string>
     <string name="trips_action_create_trip_from_package">Créer un trajet à partir du colis</string>
+    <string name="trips_action_activate_trip">Activer le trajet</string>
+    <string name="trips_action_activate_trip_confirm_title">Activer le trajet ?</string>
+    <string name="trips_action_activate_trip_confirm_message">Une fois actif, les expéditeurs pourront trouver ce trajet et demander une réservation. Vous pourrez toujours modifier les notes après l\'activation.</string>
+    <string name="trips_action_activate_trip_success">Trajet activé. Les expéditeurs peuvent maintenant le trouver et le réserver.</string>
+    <string name="trips_action_update_status">Mettre à jour le statut</string>
+    <string name="trips_action_cancel_trip_message">Cela annulera votre trajet. Cette action ne peut pas être annulée.</string>
+    <string name="trips_action_keep_trip">Garder le trajet</string>
 
     <!-- Trip details -->
     <string name="trips_detail_route">Itin\u00e9raire</string>

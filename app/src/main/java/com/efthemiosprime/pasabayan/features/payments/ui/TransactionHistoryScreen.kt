@@ -196,9 +196,9 @@ private fun TransactionRowCard(
                     text = transaction.description ?: stringResource(R.string.payments_transactions_default_description),
                     style = PasabayanTextStyles.Body.medium,
                 )
-                if (transaction.createdAt != null) {
+                transaction.timestamps.createdAt.takeIf { it.isNotEmpty() }?.let { createdAt ->
                     Text(
-                        text = transaction.createdAt,
+                        text = createdAt,
                         style = PasabayanTextStyles.Body.small,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -249,20 +249,21 @@ private fun TransactionHistoryContentPreview() {
                         transactionStatus = TransactionStatus.COMPLETED,
                         deliveryMatchId = 10,
                         description = "Delivery Toronto to Montreal",
-                        shipperName = "Shipper",
-                        carrierName = "Carrier",
-                        totalAmount = 120.0,
-                        subtotal = 100.0,
-                        platformFee = 20.0,
-                        carrierReceives = 95.0,
-                        currency = "cad",
-                        tipAmount = 5.0,
-                        clientSecret = null,
-                        customerId = null,
-                        ephemeralKey = null,
-                        payoutStatus = "completed",
-                        createdAt = "2026-03-30T12:00:00Z",
-                        updatedAt = "2026-03-30T12:10:00Z",
+                        shipper = com.efthemiosprime.pasabayan.features.payments.model.TransactionUser(id = 1, name = "Shipper"),
+                        carrier = com.efthemiosprime.pasabayan.features.payments.model.TransactionUser(id = 2, name = "Carrier"),
+                        amounts = com.efthemiosprime.pasabayan.features.payments.model.TransactionAmounts(
+                            total = 120.0,
+                            subtotal = 100.0,
+                            platformFee = 20.0,
+                            carrierReceives = 95.0,
+                            currency = "cad",
+                            tip = 5.0,
+                        ),
+                        timestamps = com.efthemiosprime.pasabayan.features.payments.model.TransactionTimestamps(
+                            createdAt = "2026-03-30T12:00:00Z",
+                            updatedAt = "2026-03-30T12:10:00Z",
+                        ),
+                        payoutStatus = com.efthemiosprime.pasabayan.core.domain.`enum`.PayoutStatus.COMPLETED,
                     ),
                 ),
             ),

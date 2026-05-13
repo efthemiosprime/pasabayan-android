@@ -15,12 +15,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.LocalShipping
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -30,14 +37,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
-import com.efthemiosprime.pasabayan.core.designsystem.component.CardMenuAction
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
 import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
 import com.efthemiosprime.pasabayan.core.designsystem.component.PFilterChip
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.features.trips.components.TripCard
+import com.efthemiosprime.pasabayan.features.trips.components.carrierTripMenuActions
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.CarrierTripsViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun CarrierMyTripsScreen(
@@ -48,12 +56,17 @@ fun CarrierMyTripsScreen(
     viewModel: CarrierTripsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+
+    var tripPendingStatusUpdate by remember { mutableStateOf<Trip?>(null) }
+    var tripPendingActivate by remember { mutableStateOf<Trip?>(null) }
+    var tripPendingCancel by remember { mutableStateOf<Trip?>(null) }
+    var activateSuccess by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.loadTrips() }
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Status filter chips
             TripStatusFilterRow(
                 statusCounts = state.statusCounts,
                 selectedFilter = state.statusFilter,
@@ -64,7 +77,6 @@ fun CarrierMyTripsScreen(
                 ),
             )
 
-            // Content
             when {
                 state.isLoading -> {
                     Box(
@@ -97,11 +109,12 @@ fun CarrierMyTripsScreen(
                                 onViewDetails = { onViewTripDetails(trip) },
                                 showCarrierHeader = false,
                                 showPackageProgress = true,
-                                menuActions = listOf(
-                                    CardMenuAction(
-                                        title = stringResource(R.string.trips_edit_trip),
-                                        onClick = { onEditTrip(trip) },
-                                    ),
+                                menuActions = carrierTripMenuActions(
+                                    trip = trip,
+                                    onEditTrip = { onEditTrip(trip) },
+                                    onActivateTrip = { tripPendingActivate = trip },
+                                    onUpdateStatus = { tripPendingStatusUpdate = trip },
+                                    onCancelTrip = { tripPendingCancel = trip },
                                 ),
                             )
                         }
@@ -110,7 +123,6 @@ fun CarrierMyTripsScreen(
             }
         }
 
-        // FAB
         FloatingActionButton(
             onClick = onCreateTrip,
             modifier = Modifier
@@ -124,6 +136,71 @@ fun CarrierMyTripsScreen(
                 contentDescription = stringResource(R.string.trips_create_trip),
             )
         }
+    }
+
+    // Activate Trip confirmation — iOS TripCard.swift:225-240.
+    tripPendingActivate?.let { trip ->
+        AlertDialog(
+            onDismissRequest = { tripPendingActivate = null },
+            title = { Text(stringResource(R.string.trips_action_activate_trip_confirm_title)) },
+            text = { Text(stringResource(R.string.trips_action_activate_trip_confirm_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    tripPendingActivate = null
+                    scope.launch {
+                        viewModel.suspendUpdateTripStatus(trip.id, TripStatus.ACTIVE)
+                            .onSuccess { activateSuccess = true }
+                    }
+                }) { Text(stringResource(R.string.trips_action_activate_trip)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { tripPendingActivate = null }) {
+                    Text(stringResource(R.string.common_buttons_cancel))
+                }
+            },
+        )
+    }
+
+    // Activate success — iOS TripCard.swift:241-243.
+    if (activateSuccess) {
+        AlertDialog(
+            onDismissRequest = { activateSuccess = false },
+            title = { Text(stringResource(R.string.trips_action_activate_trip_success)) },
+            confirmButton = {
+                TextButton(onClick = { activateSuccess = false }) {
+                    Text(stringResource(R.string.common_buttons_ok))
+                }
+            },
+        )
+    }
+
+    // Cancel Trip confirmation — iOS TripCard.swift:189-217.
+    tripPendingCancel?.let { trip ->
+        AlertDialog(
+            onDismissRequest = { tripPendingCancel = null },
+            title = { Text(stringResource(R.string.trips_cancel_trip)) },
+            text = { Text(stringResource(R.string.trips_action_cancel_trip_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    tripPendingCancel = null
+                    viewModel.cancelTrip(trip.id)
+                }) { Text(stringResource(R.string.trips_cancel_trip)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { tripPendingCancel = null }) {
+                    Text(stringResource(R.string.trips_action_keep_trip))
+                }
+            },
+        )
+    }
+
+    // Update Status sheet — iOS TripCard.swift:169-175.
+    tripPendingStatusUpdate?.let { trip ->
+        TripStatusUpdateSheet(
+            trip = trip,
+            onUpdateStatus = { target -> viewModel.suspendUpdateTripStatus(trip.id, target) },
+            onDismiss = { tripPendingStatusUpdate = null },
+        )
     }
 }
 
@@ -174,7 +251,6 @@ private fun tripStatusFilterLabel(status: TripStatus): String = when (status) {
 @Composable
 private fun CarrierMyTripsPreview() {
     PasabayanTheme {
-        // Preview shows empty state since no hiltViewModel
         PEmptyState(
             icon = Icons.Outlined.LocalShipping,
             title = "No trips yet",

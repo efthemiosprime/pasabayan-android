@@ -1,39 +1,121 @@
 package com.efthemiosprime.pasabayan.features.payments.model
 
+import com.efthemiosprime.pasabayan.core.domain.`enum`.PayoutStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionStatus
+import com.efthemiosprime.pasabayan.core.network.payments.PayoutJson
 import com.efthemiosprime.pasabayan.core.network.payments.PaymentMethodApiJson
 import com.efthemiosprime.pasabayan.core.network.payments.PaymentReceiptJson
+import com.efthemiosprime.pasabayan.core.network.payments.RefundInfoJson
 import com.efthemiosprime.pasabayan.core.network.payments.StripeConfigJson
+import com.efthemiosprime.pasabayan.core.network.payments.StripeInfoJson
+import com.efthemiosprime.pasabayan.core.network.payments.TipInfoJson
+import com.efthemiosprime.pasabayan.core.network.payments.TransactionAmountsJson
 import com.efthemiosprime.pasabayan.core.network.payments.TransactionJson
+import com.efthemiosprime.pasabayan.core.network.payments.TransactionTimestampsJson
+import com.efthemiosprime.pasabayan.core.network.payments.TransactionUserJson
+import kotlin.math.max
 
 fun TransactionJson.toDomain(): Transaction {
     val rawStatus = transactionStatus ?: status
-    val parsedStatus = try {
+    val parsedStatus = runCatching {
         TransactionStatus.valueOf(rawStatus.uppercase())
-    } catch (_: Exception) {
-        TransactionStatus.UNKNOWN
-    }
+    }.getOrDefault(TransactionStatus.UNKNOWN)
+
+    val parsedPayoutStatus = payoutStatus.toPayoutStatusOrNull()
+
+    val builtTimestamps = timestamps?.toDomain()
+        ?: TransactionTimestamps(
+            createdAt = createdAt ?: "",
+            updatedAt = updatedAt ?: createdAt ?: "",
+            payoutCompletedAt = payoutCompletedAt,
+        )
 
     return Transaction(
         id = id,
-        transactionStatus = parsedStatus,
+        shipper = shipper?.toDomain(),
+        carrier = carrier?.toDomain(),
         deliveryMatchId = deliveryMatchId,
+        amounts = amounts?.toDomain(),
+        stripe = stripe?.toDomain(),
+        transactionStatus = parsedStatus,
         description = description,
-        shipperName = shipper?.name,
-        carrierName = carrier?.name,
-        totalAmount = amounts?.total ?: 0.0,
-        subtotal = amounts?.subtotal,
-        platformFee = amounts?.platformFee,
-        carrierReceives = amounts?.carrierReceives,
-        currency = amounts?.currency ?: "cad",
-        tipAmount = amounts?.tip,
+        metadata = metadata,
+        refund = refund?.toDomain(),
+        timestamps = builtTimestamps,
         clientSecret = clientSecret,
+        payoutStatus = parsedPayoutStatus,
+        payoutNotes = payoutNotes,
+        payoutCompletedAt = payoutCompletedAt,
+        payout = payout?.toDomain(),
+        tip = tip?.toDomain(),
         customerId = customerId,
         ephemeralKey = ephemeralKey,
-        payoutStatus = payoutStatus,
-        createdAt = createdAt,
-        updatedAt = updatedAt,
     )
+}
+
+fun TransactionUserJson.toDomain() = TransactionUser(
+    id = id,
+    name = name,
+    email = email,
+    avatar = avatar,
+)
+
+fun TransactionAmountsJson.toDomain(): TransactionAmounts {
+    val resolvedTotal = total ?: 0.0
+    val resolvedPlatformFee = platformFee ?: 0.0
+    val resolvedTip = tip ?: 0.0
+    val resolvedCarrierReceives = carrierReceives
+        ?: max(0.0, resolvedTotal - resolvedPlatformFee)
+    return TransactionAmounts(
+        total = resolvedTotal,
+        subtotal = subtotal,
+        platformFee = resolvedPlatformFee,
+        carrierReceives = resolvedCarrierReceives,
+        currency = currency,
+        tip = resolvedTip,
+        tax = tax,
+        carrierTotal = carrierTotal ?: (resolvedCarrierReceives + resolvedTip),
+        baseAmount = baseAmount,
+    )
+}
+
+fun StripeInfoJson.toDomain() = StripeInfo(
+    paymentIntentId = paymentIntentId,
+    transferId = transferId,
+    chargeId = chargeId,
+    refundId = refundId,
+)
+
+fun RefundInfoJson.toDomain() = RefundInfo(
+    amount = amount,
+    reason = reason,
+    refundedAt = refundedAt,
+)
+
+fun PayoutJson.toDomain() = Payout(
+    status = status.toPayoutStatusOrNull(),
+    notes = notes,
+    completedAt = completedAt,
+)
+
+fun TipInfoJson.toDomain() = TipInfo(
+    amount = amount ?: 0.0,
+    paidAt = paidAt,
+    stripePaymentIntentId = stripePaymentIntentId,
+)
+
+fun TransactionTimestampsJson.toDomain() = TransactionTimestamps(
+    createdAt = createdAt ?: "",
+    updatedAt = updatedAt ?: createdAt ?: "",
+    authorizedAt = authorizedAt,
+    capturedAt = capturedAt,
+    completedAt = completedAt,
+    failedAt = failedAt,
+    payoutCompletedAt = payoutCompletedAt,
+)
+
+private fun String?.toPayoutStatusOrNull(): PayoutStatus? = this?.let { raw ->
+    runCatching { PayoutStatus.valueOf(raw.uppercase()) }.getOrNull()
 }
 
 fun StripeConfigJson.toDomain(): StripeConfig = StripeConfig(
