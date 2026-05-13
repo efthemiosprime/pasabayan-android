@@ -13,6 +13,12 @@ object TripFormValidator {
     private const val MIN_FLIGHT_DURATION_MS = 3 * 60 * 60 * 1000L // 3 hours
     private const val MAX_NOTES_LENGTH = 1000
 
+    /** iOS parity (`EditTripSheet.swift:1257`): weight is capped at 2000 kg. */
+    const val MAX_WEIGHT_KG: Double = 2000.0
+
+    /** iOS parity (`EditTripSheet.swift:1260`): space is capped at 5000 L. */
+    const val MAX_SPACE_LITERS: Double = 5000.0
+
     fun validate(form: TripFormState): List<TripValidationError> = buildList {
         // Origin / destination
         if (form.originCity.isBlank()) add(TripValidationError.OriginRequired)
@@ -27,13 +33,23 @@ object TripFormValidator {
         if (form.pickupAddress.isBlank()) add(TripValidationError.PickupAddressRequired)
         if (form.dropoffAddress.isBlank()) add(TripValidationError.DropoffAddressRequired)
 
-        // Weight
+        // Weight — required, > 0, ≤ 2000 kg (iOS parity).
         val weight = form.weightCapacityKg
-        if (weight == null || weight <= 0.0) add(TripValidationError.WeightRequired)
+        if (weight == null || weight <= 0.0) {
+            add(TripValidationError.WeightRequired)
+        } else if (weight > MAX_WEIGHT_KG) {
+            add(TripValidationError.WeightOutOfRange)
+        }
 
-        // Space (optional but if provided must be > 0)
+        // Space — optional, > 0 if provided, ≤ 5000 L (iOS parity).
         val space = form.spaceCapacityLiters
-        if (space != null && space <= 0.0) add(TripValidationError.SpaceInvalid)
+        if (space != null) {
+            if (space <= 0.0) {
+                add(TripValidationError.SpaceInvalid)
+            } else if (space > MAX_SPACE_LITERS) {
+                add(TripValidationError.SpaceOutOfRange)
+            }
+        }
 
         // Transportation method
         if (form.transportationMethod == TransportationMethod.NONE) {

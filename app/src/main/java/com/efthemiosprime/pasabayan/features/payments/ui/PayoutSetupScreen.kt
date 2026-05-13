@@ -67,9 +67,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDivider
 import com.efthemiosprime.pasabayan.core.designsystem.component.PScaffold
 import com.efthemiosprime.pasabayan.core.designsystem.component.PTopBar
-import com.efthemiosprime.pasabayan.core.network.payments.StripeConnectStatusJson
-import com.efthemiosprime.pasabayan.features.payments.model.canPayout
-import com.efthemiosprime.pasabayan.features.payments.model.hasAccount
+import com.efthemiosprime.pasabayan.features.payments.model.StripeConnectStatus
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.StripeConnectUiState
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.StripeConnectViewModel
 
@@ -212,7 +210,7 @@ private fun LoadingView() {
 }
 
 @Composable
-private fun StatusHeader(status: StripeConnectStatusJson?) {
+private fun StatusHeader(status: StripeConnectStatus?) {
     val tone = headerTone(status)
     Column(
         modifier = Modifier
@@ -251,7 +249,7 @@ private fun StatusHeader(status: StripeConnectStatusJson?) {
 }
 
 @Composable
-private fun InfoCard(status: StripeConnectStatusJson?) {
+private fun InfoCard(status: StripeConnectStatus?) {
     PCard(modifier = Modifier.fillMaxWidth()) {
         if (status?.canPayout == true) {
             CompletedInfoContent(status)
@@ -295,7 +293,7 @@ private fun SetupInfoContent() {
 }
 
 @Composable
-private fun CompletedInfoContent(status: StripeConnectStatusJson) {
+private fun CompletedInfoContent(status: StripeConnectStatus) {
     Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -385,7 +383,7 @@ private fun StatusRow(label: String, enabled: Boolean) {
 
 @Composable
 private fun ActionButton(
-    status: StripeConnectStatusJson?,
+    status: StripeConnectStatus?,
     isLoading: Boolean,
     onSetupOrContinue: () -> Unit,
     onOpenDashboard: () -> Unit,
@@ -451,7 +449,7 @@ private data class HeaderTone(
 )
 
 @Composable
-private fun headerTone(status: StripeConnectStatusJson?): HeaderTone {
+private fun headerTone(status: StripeConnectStatus?): HeaderTone {
     val primary = MaterialTheme.colorScheme.primary
     return when {
         status == null -> HeaderTone(
@@ -520,7 +518,7 @@ private fun PayoutSetupNotSetupPreview() {
     PasabayanTheme {
         PayoutSetupContent(
             state = StripeConnectUiState(
-                status = StripeConnectStatusJson(hasStripeAccount = false),
+                status = StripeConnectStatus(hasStripeAccount = false),
             ),
             onClose = {},
             onSetupOrContinue = {},
@@ -536,7 +534,7 @@ private fun PayoutSetupPartialPreview() {
     PasabayanTheme {
         PayoutSetupContent(
             state = StripeConnectUiState(
-                status = StripeConnectStatusJson(
+                status = StripeConnectStatus(
                     hasStripeAccount = true,
                     onboardingComplete = false,
                     chargesEnabled = false,
@@ -558,7 +556,7 @@ private fun PayoutSetupCompletePreview() {
     PasabayanTheme {
         PayoutSetupContent(
             state = StripeConnectUiState(
-                status = StripeConnectStatusJson(
+                status = StripeConnectStatus(
                     hasStripeAccount = true,
                     onboardingComplete = true,
                     chargesEnabled = true,
@@ -580,7 +578,7 @@ private fun PayoutSetupErrorPreview() {
     PasabayanTheme {
         PayoutSetupContent(
             state = StripeConnectUiState(
-                status = StripeConnectStatusJson(hasStripeAccount = false),
+                status = StripeConnectStatus(hasStripeAccount = false),
                 errorMessage = "Stripe Connect is only available for carriers",
             ),
             onClose = {},

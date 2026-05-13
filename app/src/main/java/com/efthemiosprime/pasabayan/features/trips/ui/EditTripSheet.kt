@@ -28,6 +28,7 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.core.domain.util.DateTimeParsing
 import com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson
+import com.efthemiosprime.pasabayan.features.trips.components.EditTripCapacitySection
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripRouteSection
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripScheduleSection
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
@@ -55,6 +56,7 @@ fun EditTripSheet(
     var sharedPickupMillis by remember { mutableStateOf(DateTimeParsing.parseApiDateTime(trip.pickupDate)) }
     var sharedDeliveryMillis by remember { mutableStateOf(DateTimeParsing.parseApiDateTime(trip.deliveryDate)) }
     var weightText by remember { mutableStateOf(trip.availableWeightKg?.toString().orEmpty()) }
+    var spaceText by remember { mutableStateOf(trip.availableSpaceLiters?.toString().orEmpty()) }
     var notesText by remember { mutableStateOf(trip.specialNotes.orEmpty()) }
 
     PModalBottomSheet(onDismissRequest = onDismiss) {
@@ -97,23 +99,22 @@ fun EditTripSheet(
                     locked = routeLocked,
                 )
 
-                Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                    POutlinedTextField(
-                        value = weightText,
-                        onValueChange = { if (!routeLocked) weightText = it },
-                        label = { Text(stringResource(R.string.trips_create_weight_capacity)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !routeLocked,
-                    )
-                    POutlinedTextField(
-                        value = notesText,
-                        onValueChange = { notesText = it },
-                        label = { Text(stringResource(R.string.trips_create_special_notes)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = false,
-                        maxLines = 4,
-                    )
-                }
+                EditTripCapacitySection(
+                    weightText = weightText,
+                    onWeightChange = { weightText = it },
+                    spaceText = spaceText,
+                    onSpaceChange = { spaceText = it },
+                    locked = routeLocked,
+                )
+
+                POutlinedTextField(
+                    value = notesText,
+                    onValueChange = { notesText = it },
+                    label = { Text(stringResource(R.string.trips_create_special_notes)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = false,
+                    maxLines = 4,
+                )
 
                 Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
                     PButton(
@@ -133,12 +134,14 @@ fun EditTripSheet(
                                     sharedPickupMillis = sharedPickupMillis,
                                     sharedDeliveryMillis = sharedDeliveryMillis,
                                     weightText = weightText,
+                                    spaceText = spaceText,
                                     notesText = notesText,
                                     originalDepartureDate = trip.departureDate,
                                     originalArrivalDate = trip.arrivalDate,
                                     originalPickupDate = trip.pickupDate,
                                     originalDeliveryDate = trip.deliveryDate,
                                     originalWeightKg = trip.availableWeightKg,
+                                    originalSpaceLiters = trip.availableSpaceLiters,
                                     originalNotes = trip.specialNotes,
                                 ),
                             )
@@ -177,15 +180,18 @@ internal fun buildUpdateRequest(
     sharedPickupMillis: Long?,
     sharedDeliveryMillis: Long?,
     weightText: String,
+    spaceText: String,
     notesText: String,
     originalDepartureDate: String?,
     originalArrivalDate: String?,
     originalPickupDate: String?,
     originalDeliveryDate: String?,
     originalWeightKg: Double?,
+    originalSpaceLiters: Double?,
     originalNotes: String?,
 ): TripUpdateRequestJson {
     val parsedWeight = weightText.toDoubleOrNull()
+    val parsedSpace = spaceText.toDoubleOrNull()
     val notesNormalized = notesText.ifBlank { null }
 
     // Schedule fields use the same lock as route: only PLANNING trips can change them
@@ -207,6 +213,7 @@ internal fun buildUpdateRequest(
         pickupDate = newSharedPickup?.takeIf { it != originalPickupDate },
         deliveryDate = newSharedDelivery?.takeIf { it != originalDeliveryDate },
         availableWeightKg = parsedWeight?.takeIf { it != originalWeightKg },
+        availableSpaceLiters = parsedSpace?.takeIf { it != originalSpaceLiters },
         specialNotes = notesNormalized?.takeIf { it != originalNotes },
     )
 }

@@ -18,7 +18,7 @@ class EditTripSheetRequestTest {
     private val sharedDelivery = DateTimeParsing.parseApiDateTime("2026-04-01T15:00:00Z")!!
 
     @Test
-    fun `planning trip emits every changed route and schedule field`() {
+    fun `planning trip emits every changed route schedule and capacity field`() {
         val request = buildUpdateRequest(
             routeLocked = false,
             originCity = "Vancouver", originCountry = "CA",
@@ -26,12 +26,13 @@ class EditTripSheetRequestTest {
             pickupAddress = "1 Pacific Blvd", dropoffAddress = "9 Stampede Trail",
             departureMillis = dep, arrivalMillis = arr,
             sharedPickupMillis = sharedPickup, sharedDeliveryMillis = sharedDelivery,
-            weightText = "12.5", notesText = "Fragile",
+            weightText = "12.5", spaceText = "60", notesText = "Fragile",
             originalDepartureDate = "2026-03-01T08:00:00Z",
             originalArrivalDate = "2026-03-01T14:00:00Z",
             originalPickupDate = null,
             originalDeliveryDate = null,
             originalWeightKg = 10.0,
+            originalSpaceLiters = 50.0,
             originalNotes = "Old notes",
         )
 
@@ -44,6 +45,7 @@ class EditTripSheetRequestTest {
         assertEquals(DateTimeParsing.formatApiDateTime(sharedPickup), request.pickupDate)
         assertEquals(DateTimeParsing.formatApiDateTime(sharedDelivery), request.deliveryDate)
         assertEquals(12.5, request.availableWeightKg!!, 0.001)
+        assertEquals(60.0, request.availableSpaceLiters!!, 0.001)
         assertEquals("Fragile", request.specialNotes)
     }
 
@@ -56,12 +58,13 @@ class EditTripSheetRequestTest {
             pickupAddress = "Edited", dropoffAddress = "Edited",
             departureMillis = dep, arrivalMillis = arr,
             sharedPickupMillis = sharedPickup, sharedDeliveryMillis = sharedDelivery,
-            weightText = "12.5", notesText = "New note",
+            weightText = "12.5", spaceText = "60", notesText = "New note",
             originalDepartureDate = null,
             originalArrivalDate = null,
             originalPickupDate = null,
             originalDeliveryDate = null,
             originalWeightKg = 10.0,
+            originalSpaceLiters = 50.0,
             originalNotes = "Old note",
         )
 
@@ -74,13 +77,14 @@ class EditTripSheetRequestTest {
         assertNull(request.pickupDate)
         assertNull(request.deliveryDate)
         // Capacity + notes still flow through — iOS keeps notes always editable, and a locked
-        // trip on Android still accepts a weight tweak via PUT /trips/{id}.
+        // trip on Android still accepts capacity tweaks via PUT /trips/{id}.
         assertEquals(12.5, request.availableWeightKg!!, 0.001)
+        assertEquals(60.0, request.availableSpaceLiters!!, 0.001)
         assertEquals("New note", request.specialNotes)
     }
 
     @Test
-    fun `unchanged dates are not re-sent`() {
+    fun `unchanged dates and capacity are not re-sent`() {
         val sameDepartureWire = "2026-04-01T08:00:00Z"
         val request = buildUpdateRequest(
             routeLocked = false,
@@ -89,18 +93,21 @@ class EditTripSheetRequestTest {
             pickupAddress = "1 A St", dropoffAddress = "2 B St",
             departureMillis = dep, arrivalMillis = arr,
             sharedPickupMillis = null, sharedDeliveryMillis = null,
-            weightText = "10.0", notesText = "Same",
+            weightText = "10.0", spaceText = "50", notesText = "Same",
             originalDepartureDate = sameDepartureWire,
             originalArrivalDate = DateTimeParsing.formatApiDateTime(arr),
             originalPickupDate = null,
             originalDeliveryDate = null,
             originalWeightKg = 10.0,
+            originalSpaceLiters = 50.0,
             originalNotes = "Same",
         )
         assertNull(request.departureDate)
         assertNull(request.arrivalDate)
         assertNull(request.pickupDate)
         assertNull(request.deliveryDate)
+        assertNull(request.availableWeightKg)
+        assertNull(request.availableSpaceLiters)
     }
 
     @Test
@@ -112,12 +119,13 @@ class EditTripSheetRequestTest {
             pickupAddress = "", dropoffAddress = "",
             departureMillis = null, arrivalMillis = null,
             sharedPickupMillis = null, sharedDeliveryMillis = null,
-            weightText = "10.0", notesText = "Same note",
+            weightText = "10.0", spaceText = "50", notesText = "Same note",
             originalDepartureDate = null,
             originalArrivalDate = null,
             originalPickupDate = null,
             originalDeliveryDate = null,
             originalWeightKg = 10.0,
+            originalSpaceLiters = 50.0,
             originalNotes = "Same note",
         )
 
@@ -129,7 +137,7 @@ class EditTripSheetRequestTest {
     }
 
     @Test
-    fun `wire body uses snake case for route and schedule keys`() {
+    fun `wire body uses snake case for route, schedule and capacity keys`() {
         val request = buildUpdateRequest(
             routeLocked = false,
             originCity = "Vancouver", originCountry = "CA",
@@ -137,12 +145,13 @@ class EditTripSheetRequestTest {
             pickupAddress = "1 Pacific Blvd", dropoffAddress = "9 Stampede Trail",
             departureMillis = dep, arrivalMillis = arr,
             sharedPickupMillis = sharedPickup, sharedDeliveryMillis = sharedDelivery,
-            weightText = "12.5", notesText = "Fragile",
+            weightText = "12.5", spaceText = "60", notesText = "Fragile",
             originalDepartureDate = null,
             originalArrivalDate = null,
             originalPickupDate = null,
             originalDeliveryDate = null,
             originalWeightKg = 10.0,
+            originalSpaceLiters = null,
             originalNotes = null,
         )
         val encoded = json.encodeToString(
@@ -154,6 +163,8 @@ class EditTripSheetRequestTest {
         assertTrue(encoded.contains("\"arrival_date\":"))
         assertTrue(encoded.contains("\"pickup_date\":"))
         assertTrue(encoded.contains("\"delivery_date\":"))
+        assertTrue(encoded.contains("\"available_weight_kg\":12.5"))
+        assertTrue(encoded.contains("\"available_space_liters\":60.0"))
         assertFalse(encoded.contains("\"departureDate\""))
     }
 }

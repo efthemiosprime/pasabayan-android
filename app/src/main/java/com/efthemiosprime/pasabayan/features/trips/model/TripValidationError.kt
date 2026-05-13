@@ -9,7 +9,11 @@ sealed interface TripValidationError {
     /** Drop-off address is required (iOS parity). */
     data object DropoffAddressRequired : TripValidationError
     data object WeightRequired : TripValidationError
+    /** Weight exceeds the iOS-parity upper bound of 2000 kg (`EditTripSheet.swift:1257`). */
+    data object WeightOutOfRange : TripValidationError
     data object SpaceInvalid : TripValidationError
+    /** Space exceeds the iOS-parity upper bound of 5000 L (`EditTripSheet.swift:1260`). */
+    data object SpaceOutOfRange : TripValidationError
     data object PriceRequired : TripValidationError
     data object TransportMethodRequired : TripValidationError
     data object DepartureRequired : TripValidationError

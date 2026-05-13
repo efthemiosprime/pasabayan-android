@@ -2,11 +2,8 @@ package com.efthemiosprime.pasabayan.features.payments.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.efthemiosprime.pasabayan.core.network.payments.StripeConnectStatusJson
 import com.efthemiosprime.pasabayan.features.payments.model.StripeConnectError
-import com.efthemiosprime.pasabayan.features.payments.model.canPayout
-import com.efthemiosprime.pasabayan.features.payments.model.hasAccount
-import com.efthemiosprime.pasabayan.features.payments.model.isOnboarded
+import com.efthemiosprime.pasabayan.features.payments.model.StripeConnectStatus
 import com.efthemiosprime.pasabayan.features.payments.services.StripeConnectRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +16,7 @@ import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 data class StripeConnectUiState(
-    val status: StripeConnectStatusJson? = null,
+    val status: StripeConnectStatus? = null,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val showOnboarding: Boolean = false,
@@ -137,15 +134,15 @@ class StripeConnectViewModel @Inject constructor(
     companion object {
         const val LOAD_STATUS_DEBOUNCE_MS: Long = 2_000L
 
-        fun shouldStartOnboarding(status: StripeConnectStatusJson?): Boolean =
+        fun shouldStartOnboarding(status: StripeConnectStatus?): Boolean =
             status?.isOnboarded != true
 
         @Suppress("unused")
-        internal fun statusCanPayout(status: StripeConnectStatusJson?): Boolean =
+        internal fun statusCanPayout(status: StripeConnectStatus?): Boolean =
             status?.canPayout == true
 
         @Suppress("unused")
-        internal fun statusHasAccount(status: StripeConnectStatusJson?): Boolean =
+        internal fun statusHasAccount(status: StripeConnectStatus?): Boolean =
             status?.hasAccount == true
     }
 }

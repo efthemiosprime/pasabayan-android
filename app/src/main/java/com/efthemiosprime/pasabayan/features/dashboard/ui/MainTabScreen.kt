@@ -161,6 +161,8 @@ fun MainTabScreen(
     var profilePaymentsOpen by remember { mutableStateOf(false) }
     var profilePayoutSetupOpen by remember { mutableStateOf(false) }
     var profilePaymentMethodsOpen by remember { mutableStateOf(false) }
+    var profileTransactionListOpen by remember { mutableStateOf(false) }
+    var profileTransactionDetailId by remember { mutableStateOf<Int?>(null) }
     var profileReceiptListOpen by remember { mutableStateOf(false) }
     var profileReceiptDetailId by remember { mutableStateOf<Int?>(null) }
     var showEditUserProfileSheet by remember { mutableStateOf(false) }
@@ -290,6 +292,8 @@ fun MainTabScreen(
             profilePaymentsOpen = false
             profilePayoutSetupOpen = false
             profilePaymentMethodsOpen = false
+            profileTransactionListOpen = false
+            profileTransactionDetailId = null
             profileReceiptListOpen = false
             profileReceiptDetailId = null
             settingsOpen = false
@@ -483,6 +487,27 @@ fun MainTabScreen(
                                 modifier = Modifier.fillMaxSize(),
                             )
                         }
+                        profileTransactionDetailId != null -> {
+                            com.efthemiosprime.pasabayan.features.payments.ui.TransactionDetailScreen(
+                                transactionId = profileTransactionDetailId!!,
+                                filter = com.efthemiosprime.pasabayan.features.payments.ui.TransactionFilter.ALL,
+                                onBack = { profileTransactionDetailId = null },
+                                onRequestRefund = {},
+                                onAddTip = {},
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
+                        profileTransactionListOpen -> {
+                            com.efthemiosprime.pasabayan.features.payments.ui.TransactionHistoryScreen(
+                                onBack = { profileTransactionListOpen = false },
+                                onOpenTransaction = { transaction, _ ->
+                                    if (profileTransactionDetailId == null) {
+                                        profileTransactionDetailId = transaction.id
+                                    }
+                                },
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
                         profileReceiptListOpen -> {
                             com.efthemiosprime.pasabayan.features.payments.ui.ReceiptListScreen(
                                 onBack = { profileReceiptListOpen = false },
@@ -553,6 +578,9 @@ fun MainTabScreen(
                             currentRole = state.currentRole,
                             onSwitchRole = { viewModel.switchRole() },
                             onLogout = onLogout,
+                            onOpenPaymentMethods = rememberDebouncedClick { profilePaymentMethodsOpen = true },
+                            onOpenTransactions = rememberDebouncedClick { profileTransactionListOpen = true },
+                            onOpenReceipts = rememberDebouncedClick { profileReceiptListOpen = true },
                             onOpenPaymentsHub = { profilePaymentsOpen = true },
                             onOpenPayoutSetup = { profilePayoutSetupOpen = true },
                             onOpenPersonalInfo = { showEditUserProfileSheet = true },

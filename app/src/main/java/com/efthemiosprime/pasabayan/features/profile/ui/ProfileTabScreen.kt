@@ -96,6 +96,9 @@ fun ProfileTabScreen(
     onSwitchRole: () -> Unit,
     onLogout: () -> Unit,
     onOpenPaymentsHub: () -> Unit,
+    onOpenPaymentMethods: () -> Unit = onOpenPaymentsHub,
+    onOpenTransactions: () -> Unit = onOpenPaymentsHub,
+    onOpenReceipts: () -> Unit = onOpenPaymentsHub,
     onOpenPayoutSetup: () -> Unit = onOpenPaymentsHub,
     onOpenPersonalInfo: () -> Unit = {},
     onOpenVehicleInfo: () -> Unit = {},
@@ -154,6 +157,9 @@ fun ProfileTabScreen(
         onSwitchRole = onSwitchRole,
         onLogout = onLogout,
         onOpenPaymentsHub = onOpenPaymentsHub,
+        onOpenPaymentMethods = onOpenPaymentMethods,
+        onOpenTransactions = onOpenTransactions,
+        onOpenReceipts = onOpenReceipts,
         onOpenPayoutSetup = onOpenPayoutSetup,
         onOpenPersonalInfo = onOpenPersonalInfo,
         onOpenVehicleInfo = onOpenVehicleInfo,
@@ -180,6 +186,9 @@ fun ProfileTabContent(
     onLogout: () -> Unit,
     onOpenPaymentsHub: () -> Unit,
     attention: AttentionSignalsJson = AttentionSignalsJson(),
+    onOpenPaymentMethods: () -> Unit = onOpenPaymentsHub,
+    onOpenTransactions: () -> Unit = onOpenPaymentsHub,
+    onOpenReceipts: () -> Unit = onOpenPaymentsHub,
     onOpenPayoutSetup: () -> Unit = onOpenPaymentsHub,
     onOpenPersonalInfo: () -> Unit = {},
     onOpenVehicleInfo: () -> Unit = {},
@@ -279,19 +288,19 @@ fun ProfileTabContent(
                 title = stringResource(R.string.profile_menu_payment_methods),
                 subtitle = stringResource(R.string.profile_menu_payment_methods_subtitle),
                 leadingIcon = Icons.Filled.CreditCard,
-                onClick = onOpenPaymentsHub,
+                onClick = onOpenPaymentMethods,
             )
             PMenuRow(
                 title = stringResource(R.string.profile_menu_transactions),
                 subtitle = stringResource(R.string.profile_menu_transactions_subtitle),
                 leadingIcon = Icons.AutoMirrored.Filled.ListAlt,
-                onClick = onOpenPaymentsHub,
+                onClick = onOpenTransactions,
             )
             PMenuRow(
                 title = stringResource(R.string.profile_menu_receipts),
                 subtitle = stringResource(R.string.profile_menu_receipts_subtitle),
                 leadingIcon = Icons.Filled.Receipt,
-                onClick = onOpenPaymentsHub,
+                onClick = onOpenReceipts,
             )
             if (shouldShowPayoutSetup(currentRole)) {
                 PMenuRow(

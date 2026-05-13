@@ -110,6 +110,19 @@ class TripFormValidatorTest {
     }
 
     @Test
+    fun `weight above 2000 kg returns out-of-range`() {
+        val errors = TripFormValidator.validate(validForm().copy(weightCapacityKg = 2001.0))
+        assertTrue(errors.any { it is TripValidationError.WeightOutOfRange })
+        assertTrue(errors.none { it is TripValidationError.WeightRequired })
+    }
+
+    @Test
+    fun `weight at 2000 kg is ok`() {
+        val errors = TripFormValidator.validate(validForm().copy(weightCapacityKg = 2000.0))
+        assertTrue(errors.none { it is TripValidationError.WeightOutOfRange })
+    }
+
+    @Test
     fun `zero space returns error when provided`() {
         val errors = TripFormValidator.validate(validForm().copy(spaceCapacityLiters = 0.0))
         assertTrue(errors.any { it is TripValidationError.SpaceInvalid })
@@ -119,6 +132,19 @@ class TripFormValidatorTest {
     fun `null space is ok`() {
         val errors = TripFormValidator.validate(validForm().copy(spaceCapacityLiters = null))
         assertTrue(errors.none { it is TripValidationError.SpaceInvalid })
+    }
+
+    @Test
+    fun `space above 5000 liters returns out-of-range`() {
+        val errors = TripFormValidator.validate(validForm().copy(spaceCapacityLiters = 5001.0))
+        assertTrue(errors.any { it is TripValidationError.SpaceOutOfRange })
+        assertTrue(errors.none { it is TripValidationError.SpaceInvalid })
+    }
+
+    @Test
+    fun `space at 5000 liters is ok`() {
+        val errors = TripFormValidator.validate(validForm().copy(spaceCapacityLiters = 5000.0))
+        assertTrue(errors.none { it is TripValidationError.SpaceOutOfRange })
     }
 
     @Test

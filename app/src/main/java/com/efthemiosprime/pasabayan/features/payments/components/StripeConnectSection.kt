@@ -25,9 +25,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
-import com.efthemiosprime.pasabayan.core.network.payments.StripeConnectStatusJson
-import com.efthemiosprime.pasabayan.features.payments.model.canPayout
-import com.efthemiosprime.pasabayan.features.payments.model.hasAccount
+import com.efthemiosprime.pasabayan.features.payments.model.StripeConnectStatus
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.StripeConnectUiState
 
 /**
@@ -72,25 +70,25 @@ fun StripeConnectSection(
     }
 }
 
-private fun statusIcon(status: StripeConnectStatusJson?) = when {
+private fun statusIcon(status: StripeConnectStatus?) = when {
     status?.canPayout == true -> Icons.Filled.CheckCircle
     status?.hasAccount == true -> Icons.Filled.Schedule
     else -> Icons.Filled.CreditCard
 }
 
-private fun statusColor(status: StripeConnectStatusJson?) = when {
+private fun statusColor(status: StripeConnectStatus?) = when {
     status?.canPayout == true -> PasabayanColors.Success
     status?.hasAccount == true -> PasabayanColors.Warning
     else -> PasabayanColors.Info
 }
 
-private fun statusLabel(status: StripeConnectStatusJson?) = when {
+private fun statusLabel(status: StripeConnectStatus?) = when {
     status?.canPayout == true -> R.string.payments_payout_status_active
     status?.hasAccount == true -> R.string.payments_payout_status_incomplete
     else -> R.string.payments_profile_connect_not_ready
 }
 
-private fun ctaLabel(status: StripeConnectStatusJson?) = when {
+private fun ctaLabel(status: StripeConnectStatus?) = when {
     status?.canPayout == true -> R.string.payments_payout_view_dashboard
     status?.hasAccount == true -> R.string.payments_payout_continue_setup
     else -> R.string.payments_payout_setup
@@ -102,7 +100,7 @@ private fun ctaLabel(status: StripeConnectStatusJson?) = when {
 private fun StripeConnectSectionNotSetupPreview() {
     PasabayanTheme {
         StripeConnectSection(
-            connectState = StripeConnectUiState(status = StripeConnectStatusJson()),
+            connectState = StripeConnectUiState(status = StripeConnectStatus()),
             onOpenPayoutSetup = {},
         )
     }
@@ -115,7 +113,7 @@ private fun StripeConnectSectionActivePreview() {
     PasabayanTheme {
         StripeConnectSection(
             connectState = StripeConnectUiState(
-                status = StripeConnectStatusJson(
+                status = StripeConnectStatus(
                     hasStripeAccount = true,
                     onboardingComplete = true,
                     chargesEnabled = true,

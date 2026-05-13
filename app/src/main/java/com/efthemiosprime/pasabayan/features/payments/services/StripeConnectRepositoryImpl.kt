@@ -4,8 +4,9 @@ import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.network.ApiErrorMapper
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.network.payments.StripeConnectApi
-import com.efthemiosprime.pasabayan.core.network.payments.StripeConnectStatusJson
 import com.efthemiosprime.pasabayan.features.payments.model.StripeConnectError
+import com.efthemiosprime.pasabayan.features.payments.model.StripeConnectStatus
+import com.efthemiosprime.pasabayan.features.payments.model.toDomain
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -26,12 +27,12 @@ class StripeConnectRepositoryImpl @Inject constructor(
         url
     }
 
-    override suspend fun checkStatus(): Result<StripeConnectStatusJson> = runCatchingNetwork {
+    override suspend fun checkStatus(): Result<StripeConnectStatus> = runCatchingNetwork {
         val res = connectApi.getStatus()
         if (!res.isSuccessful) throw mapHttpError(res.code(), res.errorBody()?.bytes())
         val body = res.body() ?: throw StripeConnectError.InvalidResponse
         if (!body.success) throw StripeConnectError.fromServerMessage(body.message)
-        body.data ?: throw StripeConnectError.InvalidResponse
+        (body.data ?: throw StripeConnectError.InvalidResponse).toDomain()
     }
 
     override suspend fun getDashboardUrl(): Result<String> = runCatchingNetwork {

@@ -166,6 +166,7 @@ Semantic aliases: `button` = sm (8), `card` = md (12), `modal` = lg (16), `badge
 | `red` | `#C13515` | `redLight` |
 | `gold` | `#FFD700` | `goldLight` |
 | `gray` | `#8E8E93` | `grayLight` |
+| `pink` | `#FF2D55` | `pinkLight` — iOS `Color.pink` parity, used by `features/payments/components/TipBadge` |
 
 ### Button colors
 

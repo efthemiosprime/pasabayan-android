@@ -1,7 +1,7 @@
 package com.efthemiosprime.pasabayan.features.payments.viewmodel
 
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionStatus
-import com.efthemiosprime.pasabayan.core.network.payments.StripeConnectStatusJson
+import com.efthemiosprime.pasabayan.features.payments.model.StripeConnectStatus
 import com.efthemiosprime.pasabayan.features.payments.model.PaymentReceipt
 import com.efthemiosprime.pasabayan.features.payments.model.Transaction
 import com.efthemiosprime.pasabayan.features.payments.services.ReceiptRepository
@@ -255,7 +255,7 @@ class RemainingViewModelsTest {
     @Test
     fun `loadStatus sets status on success`() = runTest {
         fakeConnectRepo.statusResult = Result.success(
-            StripeConnectStatusJson(
+            StripeConnectStatus(
                 hasStripeAccount = true,
                 onboardingComplete = true,
                 chargesEnabled = true,
@@ -296,7 +296,7 @@ class RemainingViewModelsTest {
     @Test
     fun `handleOnboardingReturn clears onboarding and reloads status`() = runTest {
         fakeConnectRepo.statusResult = Result.success(
-            StripeConnectStatusJson(onboardingComplete = true),
+            StripeConnectStatus(onboardingComplete = true),
         )
         val vm = StripeConnectViewModel(fakeConnectRepo)
         fakeConnectRepo.onboardResult = Result.success("https://connect.stripe.com/onboard")
@@ -329,7 +329,7 @@ class RemainingViewModelsTest {
     @Test
     fun `loadStatus debounces within 2 seconds`() = runTest {
         var calls = 0
-        fakeConnectRepo.statusResult = Result.success(StripeConnectStatusJson())
+        fakeConnectRepo.statusResult = Result.success(StripeConnectStatus())
         fakeConnectRepo.beforeStatusCheck = { calls++ }
         val clock = FakeClock(startMs = 1_000L)
         val vm = StripeConnectViewModel(fakeConnectRepo, clock)
@@ -354,7 +354,7 @@ class RemainingViewModelsTest {
     @Test
     fun `loadStatus forceRefresh bypasses debounce`() = runTest {
         var calls = 0
-        fakeConnectRepo.statusResult = Result.success(StripeConnectStatusJson())
+        fakeConnectRepo.statusResult = Result.success(StripeConnectStatus())
         fakeConnectRepo.beforeStatusCheck = { calls++ }
         val clock = FakeClock(startMs = 1_000L)
         val vm = StripeConnectViewModel(fakeConnectRepo, clock)
@@ -373,7 +373,7 @@ class RemainingViewModelsTest {
         val vm = StripeConnectViewModel(fakeConnectRepo)
         // Seed with onboarded status
         fakeConnectRepo.statusResult = Result.success(
-            StripeConnectStatusJson(
+            StripeConnectStatus(
                 hasStripeAccount = true,
                 onboardingComplete = true,
                 chargesEnabled = true,
@@ -397,12 +397,12 @@ class RemainingViewModelsTest {
 
     @Test
     fun `shouldStartOnboarding returns false when isOnboarded`() {
-        val onboarded = StripeConnectStatusJson(onboardingComplete = true)
+        val onboarded = StripeConnectStatus(onboardingComplete = true)
         assertFalse(com.efthemiosprime.pasabayan.features.payments.viewmodel.StripeConnectViewModel.shouldStartOnboarding(onboarded))
         assertTrue(com.efthemiosprime.pasabayan.features.payments.viewmodel.StripeConnectViewModel.shouldStartOnboarding(null))
         assertTrue(
             com.efthemiosprime.pasabayan.features.payments.viewmodel.StripeConnectViewModel.shouldStartOnboarding(
-                StripeConnectStatusJson(onboardingComplete = false),
+                StripeConnectStatus(onboardingComplete = false),
             ),
         )
     }
@@ -524,7 +524,7 @@ class RemainingViewModelsTest {
 
 class FakeStripeConnectRepository : StripeConnectRepository {
     var onboardResult: Result<String> = Result.failure(Exception("Not set"))
-    var statusResult: Result<StripeConnectStatusJson> = Result.failure(Exception("Not set"))
+    var statusResult: Result<StripeConnectStatus> = Result.failure(Exception("Not set"))
     var dashboardResult: Result<String> = Result.failure(Exception("Not set"))
     var beforeStatusCheck: () -> Unit = {}
     var beforeOnboard: () -> Unit = {}
@@ -534,7 +534,7 @@ class FakeStripeConnectRepository : StripeConnectRepository {
         return onboardResult
     }
 
-    override suspend fun checkStatus(): Result<StripeConnectStatusJson> {
+    override suspend fun checkStatus(): Result<StripeConnectStatus> {
         beforeStatusCheck()
         return statusResult
     }

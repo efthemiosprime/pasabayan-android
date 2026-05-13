@@ -14,7 +14,6 @@ import com.efthemiosprime.pasabayan.features.payments.services.PaymentRepository
 import com.efthemiosprime.pasabayan.features.payments.services.ReceiptRepository
 import com.efthemiosprime.pasabayan.features.payments.services.StripeConfigRepository
 import com.efthemiosprime.pasabayan.features.payments.services.StripeConnectRepository
-import com.efthemiosprime.pasabayan.core.network.payments.StripeConnectStatusJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher

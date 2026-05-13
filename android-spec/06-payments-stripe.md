@@ -51,20 +51,20 @@ features/payments/
 ├── services/
 │   ├── PaymentRepository.kt          (interface)
 │   ├── PaymentRepositoryImpl.kt
-│   ├── PaymentApi.kt                 (Retrofit)
 │   ├── StripeConfigRepository.kt     (interface)
 │   ├── StripeConfigRepositoryImpl.kt
-│   ├── StripeConfigApi.kt            (Retrofit)
 │   ├── StripeConnectRepository.kt    (interface)
 │   ├── StripeConnectRepositoryImpl.kt
-│   ├── StripeConnectApi.kt           (Retrofit)
 │   ├── ReceiptRepository.kt          (interface)
 │   ├── ReceiptRepositoryImpl.kt
-│   ├── ReceiptApi.kt                 (Retrofit)
 │   ├── PaymentMethodsRepository.kt   (interface)
 │   ├── PaymentMethodsRepositoryImpl.kt
-│   ├── PaymentMethodsApi.kt          (Retrofit)
+│   ├── PaymentSheetConfigFactory.kt  (shared sheet config builder, B2)
 │   └── PaymentsModule.kt             (Hilt)
+│
+│   # Retrofit interfaces (PaymentApi, StripeConfigApi, StripeConnectApi,
+│   # ReceiptApi, PaymentMethodsApi) live in `:core:network/payments/`
+│   # per `00-architecture.md` — not under `features/payments/services/`.
 ├── viewmodel/
 │   ├── PaymentViewModel.kt
 │   ├── PaymentMethodsViewModel.kt
@@ -115,7 +115,7 @@ Wire format is snake_case. Maps to iOS `Transaction` struct in `PaymentModels.sw
 | `stripe` | `StripeInfo?` | `stripe` | Nested |
 | `status` | `String` | `status` | Raw; maps to `TransactionStatus` |
 | `description` | `String?` | `description` | |
-| `metadata` | `Map<String, Any>?` | `metadata` | Dynamic JSON — use `JsonElement` or `AnyCodable` equivalent |
+| `metadata` | `Map<String, JsonElement>?` | `metadata` | Dynamic JSON — Android uses `kotlinx.serialization.json.JsonElement` (iOS uses `AnyCodable`) |
 | `refund` | `RefundInfo?` | `refund` | Nested |
 | `timestamps` | `TransactionTimestamps?` | `timestamps` | Nested |
 | `clientSecret` | `String?` | `client_secret` | From create-payment response |
@@ -143,7 +143,7 @@ Wire format is snake_case. Maps to iOS `Transaction` struct in `PaymentModels.sw
 | `currency` | `String` | `currency` | Default `"cad"` |
 | `tip` | `Double?` | `tip` | Flexible |
 | `tax` | `Double?` | `tax` | Flexible |
-| `taxBreakdown` | `Map<String, Any>?` | `tax_breakdown` | Dynamic |
+| `taxBreakdown` | `String?` | `tax_breakdown` | iOS treats this as a free-form string (server hint); Android mirrors |
 | `carrierTotal` | `Double?` | `carrier_total` | Flexible |
 | `baseAmount` | `Double?` | `base_amount` | Flexible |
 
@@ -631,7 +631,7 @@ Map colors to `PasabayanColors` / `MaterialTheme.colorScheme` tokens — never h
 | `INVALID_RESPONSE` | Unexpected response format |
 | `API_ERROR(message: String)` | Server error with message |
 | `PERMISSION_DENIED` | HTTP 403 |
-| `STRIPE_ERROR(message: String)` | Stripe SDK error |
+| `STRIPE_ERROR(message: String)` | Stripe SDK error — Android: surface `StripeException.localizedMessage` (or `result.error.localizedMessage` from `PaymentSheetResult.Failed`) directly via `PaymentViewModel.onStripeSDKError(message)`; do **not** wrap in `DomainError` |
 | `REQUIRES_AUTHENTICATION(clientSecret: String)` | 3DS / authentication needed |
 | `CANCELLED` | User cancelled |
 | `INVALID_AMOUNT` | Invalid payment amount |
@@ -852,7 +852,7 @@ data class PaymentUiState(
 **Key methods:**
 - `initiatePayment(deliveryMatch: DeliveryMatch)` — entry point; calls `loadPaymentSheet`
 - `loadPaymentSheet(deliveryMatch: DeliveryMatch)` — validates not already paid (`isPaidTransactionStatus`), POST `/payments`, extracts `clientSecret` (top-level or nested), skips for mock (`mock_pi_*`), updates Stripe key from response, configures `PaymentSheet`
-- `presentPaymentSheet(activity: Activity)` — present Stripe PaymentSheet (Android uses Activity instead of UIViewController)
+- **Android Compose pattern:** use `val paymentSheet = rememberPaymentSheet { result -> handle(result) }` inside the composable that triggers payment, then call `paymentSheet.presentWithPaymentIntent(clientSecret, configuration)` from a click handler. Do **not** thread an `Activity` through the VM — `rememberPaymentSheet` registers an activity-result launcher during composition setup. The shared config is built via `PaymentSheetConfigFactory.build(...)` (see `features/payments/services/`).
 - `handlePaymentSheetCompleted()` — POST `/payments/confirm-capture`, update transaction, set `paymentSuccess = true`
 - `cancelPayment(transactionId: Int)` — POST `/payments/{id}/cancel`
 
@@ -990,7 +990,7 @@ data class TransactionDetailUiState(
 
 **Methods:**
 - `loadTransaction(id: Int)` — GET `/payments/{id}`
-- `cancelTransaction(transaction: Transaction)` — POST `/payments/{id}/cancel` → `cancelSuccess = true`
+- `cancelTransaction(id: Int, reason: String? = null)` — POST `/payments/{id}/cancel` → `cancelSuccess = true`. Android takes the id (not the whole transaction) because the detail screen calls it as `vm.cancelTransaction(state.transaction!!.id)`; iOS passes the struct but Kotlin avoids the indirection.
 
 ### `StripeConnectViewModel`
 
@@ -1060,6 +1060,10 @@ data class ReceiptDetailUiState(
 ---
 
 ## UI screens
+
+**Sheet vs. full-screen back-stack convention (Android):**
+- `AddPaymentMethodSheet` and `RefundSheet` are `PModalBottomSheet`s — dismissing the sheet does **not** pop the underlying screen. Host the sheet state at the route level (e.g. `refundSheetForTransaction: Transaction?` on `PaymentsProfileScreen`) and overlay conditionally.
+- `PaymentMethodsScreen`, `TipSelectionScreen`, `ReceiptListScreen`, `ReceiptDetailScreen` are full screens — push/pop via the host's route enum (mirrors `TRANSACTION_DETAIL`).
 
 ### `PaymentMethodsScreen`
 
@@ -1324,7 +1328,7 @@ POST /payments { delivery_match_id, amount, currency }
   ↓ skip for mock_pi_* OR:
 Configure PaymentSheet (customer, Google Pay, saved cards)
   ↓
-presentPaymentSheet(activity)
+paymentSheet.presentWithPaymentIntent(clientSecret, configuration) // Compose: `paymentSheet` from `rememberPaymentSheet { … }`
   ↓ user completes payment in Stripe UI
 PaymentSheet result → handlePaymentSheetCompleted()
   ↓

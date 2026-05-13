@@ -2,12 +2,16 @@ package com.efthemiosprime.pasabayan.features.payments.model
 
 import com.efthemiosprime.pasabayan.core.network.payments.StripeConnectStatusJson
 
-/** iOS parity: computed flags on `StripeConnectStatus`. */
-val StripeConnectStatusJson.isOnboarded: Boolean
-    get() = onboardingComplete
-
-val StripeConnectStatusJson.canPayout: Boolean
-    get() = payoutsEnabled && canReceivePayouts
-
-val StripeConnectStatusJson.hasAccount: Boolean
-    get() = hasStripeAccount
+/**
+ * Maps the wire-level [StripeConnectStatusJson] into the domain [StripeConnectStatus].
+ * iOS-parity computeds (`isOnboarded`, `hasAccount`, `canPayout`) live on the domain class.
+ */
+fun StripeConnectStatusJson.toDomain(): StripeConnectStatus = StripeConnectStatus(
+    hasStripeAccount = hasStripeAccount,
+    stripeAccountId = stripeAccountId,
+    onboardingComplete = onboardingComplete,
+    onboardedAt = onboardedAt,
+    chargesEnabled = chargesEnabled,
+    payoutsEnabled = payoutsEnabled,
+    canReceivePayouts = canReceivePayouts,
+)
