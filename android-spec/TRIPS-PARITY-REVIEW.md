@@ -13,6 +13,8 @@
 
 Trips is the **healthiest of the three reviewed features so far** (vs. [Bookings](BOOKINGS-PARITY-REVIEW.md), [Packages](PACKAGES-PARITY-REVIEW.md)). Models, services, ViewModels, and most screens reach 85–100% parity. Android out-decomposes iOS: 30 model files (vs. iOS' 3) split out form state, validators, mappers, sort/filter/template DTOs, and earnings — a healthy DRY pattern. File counts: **iOS 28 / Android 61** (Android leads on count; iOS leads on LOC because iOS bundles enormous SwiftUI bodies into single files).
 
+**Update 2026-05-13:** Slices A, B (B1–B6), C, and D have landed. Carriers can activate planning trips through the sanctioned endpoint; `EditTripSheet` now edits route, schedule, capacity, pricing (with land/non-land branch), exposes Activate, and cancels with 409 blocking-match detection; the create-from-package screen surfaces the iOS-parity request-to-carry alert. §5 (passenger-mode UI) was verified closed — neither iOS nor Android renders those dormant model fields. Remaining work: Slice E (`TripStatusUpdateSheet` audit) and Slice F (visualization polish).
+
 Three real gaps and one architectural divergence:
 
 1. **❌ `POST /trips/{id}/activate` endpoint missing on Android.** iOS has a dedicated method with a comment that reads "the only sanctioned way to activate." Android's `TripsApi.kt` exposes no `activate` route, and `TripsRepositoryImpl.kt` does not send a `trip_status` field via `PUT /trips/{id}` as a workaround. **Carriers cannot activate planning trips on Android.** Verified by reading `TripsApi.kt` and grepping the repo.
@@ -197,7 +199,7 @@ This is **the largest gap of the three reviewed features**. Likely intentional M
 | 2 | **`EditTripSheet` route/dates/capacity/pricing editing + activate + cancel-with-blocking-matches** | HIGH | `ui/EditTripSheet.kt` (extend ~10×); reuse `TripFormState`, `TripFormValidator`, `components/TripCreationBaseScaffold.kt` | Multi-slice. Sections in order: route → dates → capacity → pricing → status picker → activate action → cancel action with blocking-match detection. |
 | 3 | **`populateFormFromTemplate` behavior in `CreateTripFromPackageScreen`** | MEDIUM | `viewmodel/CreateTripFromPackageViewModel.kt`, `model/TripTemplateData.kt`, `ui/CreateTripFromPackageScreen.kt` | Verify all template fields (dates, capacity, prices, addresses) populate `TripFormState` on load. Add tests. |
 | 4 | **`shouldShowRequestToCarryAlert` — alert gating logic** | MEDIUM | `viewmodel/CreateTripFromPackageViewModel.kt` | Port iOS gating rule + UI alert; tests. |
-| 5 | **`TripCreationScreen` passenger-mode conditional UI** | MEDIUM | `ui/TripCreationScreen.kt` | iOS conditionally shows passenger fields (capacity, price-per-passenger, requirements, amenities, age restrictions) when transport method = passenger-capable. Verify Android matches; add if missing. |
+| 5 | ~~**`TripCreationScreen` passenger-mode conditional UI**~~ — **CLOSED 2026-05-13.** Verified via exhaustive iOS search: `Trip.swift` decodes `passengerCapacity` / `pricePerPassenger` / `passengerRequirements` / `ageRestrictions` / `passengerAmenities`, but no iOS UI (`TripCreationView`, `EditTripSheet`, `CreateTripFromPackageView`, `TripDetailsView`, `BrowseTripsView`, `TripCard`) renders or binds them, and `CreateTripRequest` / `TripUpdateRequest` omit them entirely. The fields are dormant model plumbing (likely API response future-proofing). No Android work required for parity. | — | — |
 | 6 | **`TripStatusUpdateSheet` parity check** | MEDIUM | `ui/TripStatusUpdateSheet.kt` | 56% LOC ratio — confirm all status options + transitions match iOS; add missing transitions/error states. |
 | 7 | **`TripDetailsScreen` pricing-breakdown visualization** | LOW | `ui/TripDetailsScreen.kt` or `components/` | iOS shows distance multiplier + base price + calculated price; Android shows raw values. Polish. |
 | 8 | **`clearFormData` semantic gap** | LOW | `viewmodel/CreateTripFromPackageViewModel.kt` | Confirm `clearCreatedTrip()` clears all form state, not just the success/result field. |
@@ -233,11 +235,9 @@ Per [`PHASES-AND-FEATURES.md`](PHASES-AND-FEATURES.md) and the project's slice-b
    - Tests
    - `feat(trips): port template population and request-to-carry alert from iOS`
 
-4. **Slice D — `TripCreationScreen` passenger-mode conditional UI**
-   - Audit transport-method enum cases on Android vs. iOS
-   - Add passenger fields + conditional rendering
-   - `TripFormValidator` extension for passenger fields
-   - `feat(trips): conditionally render passenger-mode fields in trip creation`
+4. **Slice D — `TripCreationScreen` passenger-mode conditional UI** — **CLOSED 2026-05-13.**
+   - Verification via exhaustive iOS search showed no UI renders or edits the passenger fields on iOS either; `Trip.swift` decodes them but `TripCreationView` / `EditTripSheet` / `CreateTripFromPackageView` / `TripDetailsView` / `BrowseTripsView` never bind them, and `CreateTripRequest` / `TripUpdateRequest` omit them entirely. The Android decoded model already carries the same dormant fields (see `core/network/.../trips/TripJsonModels.kt:60-65`), so parity is already met.
+   - No commit; this entry remains in §5 for historical reference.
 
 5. **Slice E — `TripStatusUpdateSheet` audit**
    - Diff iOS status options + transitions vs. Android
