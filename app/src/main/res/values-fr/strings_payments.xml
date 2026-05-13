@@ -62,6 +62,13 @@
     <string name="payments_transaction_detail_request_refund">Demander un remboursement</string>
     <string name="payments_transaction_detail_add_tip">Ajouter un pourboire</string>
     <string name="payments_transaction_detail_cancel_payment">Annuler le paiement</string>
+    <string name="payments_transaction_detail_authorized_at">Autorisé: %1$s</string>
+    <string name="payments_transaction_detail_captured_at">Capturé: %1$s</string>
+    <string name="payments_transaction_detail_completed_at">Terminé: %1$s</string>
+    <string name="payments_transaction_detail_failed_at">Échec: %1$s</string>
+    <string name="payments_transaction_detail_payout_completed_at">Virement: %1$s</string>
+    <string name="payments_transaction_detail_payout_section">Statut du virement</string>
+    <string name="payments_transaction_detail_payout_notes">Notes: %1$s</string>
     <string name="payments_transaction_status_pending">En attente</string>
     <string name="payments_transaction_status_authorized">Autorisé</string>
     <string name="payments_transaction_status_captured">Capturé</string>
@@ -97,6 +104,52 @@
     <string name="payments_payout_disabled">Désactivé</string>
     <string name="payments_payout_connected_on">Connecté le %1$s</string>
 
+    <!-- Tip selection screen -->
+    <string name="payments_tip_title">Donner un pourboire</string>
+    <string name="payments_tip_subtitle">Remerciez %1$s pour une excellente livraison. 100%% va au transporteur.</string>
+    <string name="payments_tip_preset_label">Choisissez un montant</string>
+    <string name="payments_tip_custom_label">Montant personnalisé</string>
+    <string name="payments_tip_custom_placeholder">0,00</string>
+    <string name="payments_tip_submit">Ajouter %1$s</string>
+    <string name="payments_tip_skip">Ignorer</string>
+    <string name="payments_tip_invalid">Saisissez un pourboire entre %1$s et %2$s</string>
+    <string name="payments_tip_success">Merci pour le pourboire!</string>
+
+    <!-- Refund sheet -->
+    <string name="payments_refund_title">Demander un remboursement</string>
+    <string name="payments_refund_subtitle">Les remboursements apparaissent généralement sur votre relevé sous 5 à 10 jours ouvrables.</string>
+    <string name="payments_refund_transaction_info">Transaction #%1$d · %2$s</string>
+    <string name="payments_refund_type_label">Type de remboursement</string>
+    <string name="payments_refund_type_full">Complet</string>
+    <string name="payments_refund_type_partial">Partiel</string>
+    <string name="payments_refund_partial_amount_label">Montant du remboursement</string>
+    <string name="payments_refund_partial_amount_placeholder">0,00</string>
+    <string name="payments_refund_reason_label">Raison</string>
+    <string name="payments_refund_custom_reason_label">Expliquez ce qui s\'est passé</string>
+    <string name="payments_refund_reason_char_count">%1$d / %2$d caractères</string>
+    <string name="payments_refund_reason_too_short">Veuillez écrire au moins %1$d caractères</string>
+    <string name="payments_refund_additional_details_label">Détails supplémentaires (facultatif)</string>
+    <string name="payments_refund_disclaimer">En soumettant, vous confirmez les détails ci-dessus. Notre équipe examinera votre demande et reviendra vers vous par courriel.</string>
+    <string name="payments_refund_submit">Soumettre la demande</string>
+    <string name="payments_refund_partial_invalid">Saisissez un montant valide</string>
+
+    <!-- Receipt detail + WebView -->
+    <string name="payments_receipt_detail_title">Reçu</string>
+    <string name="payments_receipt_share">Partager le reçu</string>
+    <string name="payments_receipt_share_chooser_title">Partager le reçu via</string>
+    <string name="payments_receipt_webview_loading">Chargement du reçu…</string>
+    <string name="payments_receipt_webview_error">Impossible de charger le reçu. Vérifiez votre connexion et réessayez.</string>
+    <string name="payments_receipt_unavailable">Reçu non disponible pour cette transaction.</string>
+
+    <!-- Receipts list -->
+    <string name="payments_receipts_title">Reçus</string>
+    <string name="payments_receipts_empty_title">Aucun reçu</string>
+    <string name="payments_receipts_empty_description">Vos transactions terminées apparaîtront ici.</string>
+    <string name="payments_receipts_load_more">Charger plus</string>
+    <string name="payments_receipts_loading">Chargement des reçus…</string>
+    <string name="payments_receipts_retry">Réessayer</string>
+    <string name="payments_receipts_count">%1$d sur %2$d</string>
+
     <!-- Refund status card -->
     <string name="payments_refund_status_title">Demande de remboursement</string>
     <string name="payments_refund_status_amount_label">Montant</string>
@@ -119,6 +172,28 @@
     <string name="payments_summary_service_fee">Frais de service</string>
     <string name="payments_summary_total">Total</string>
     <string name="payments_summary_carrier_receives">Le transporteur reçoit %1$s</string>
+
+    <!-- Payment methods screen -->
+    <string name="payments_methods_title">Modes de paiement</string>
+    <string name="payments_methods_secure_notice">Vos informations de carte sont chiffrées et stockées en toute sécurité par Stripe.</string>
+    <string name="payments_methods_empty_title">Aucun mode de paiement</string>
+    <string name="payments_methods_empty_description">Ajoutez une carte pour commencer à envoyer des paiements.</string>
+    <string name="payments_methods_add_card">Ajouter une carte</string>
+    <string name="payments_methods_view_transactions">Voir les transactions</string>
+    <string name="payments_methods_retry">Réessayer</string>
+    <string name="payments_methods_loading">Chargement des modes de paiement…</string>
+
+    <!-- Add payment method sheet -->
+    <string name="payments_add_card_title">Ajouter une carte</string>
+    <string name="payments_add_card_subtitle">Les cartes sont tokenisées par Stripe et ne transitent jamais par nos serveurs.</string>
+    <string name="payments_add_card_requirements_title">Avant de continuer</string>
+    <string name="payments_add_card_step_1">Votre numéro de carte, sa date d\'expiration et son CVC</string>
+    <string name="payments_add_card_step_2">Le code postal de facturation si votre banque le demande</string>
+    <string name="payments_add_card_step_3">Un réseau de confiance (Visa, Mastercard, Amex, Discover)</string>
+    <string name="payments_add_card_step_4">Quelques secondes — Stripe s\'occupe du reste</string>
+    <string name="payments_add_card_continue">Continuer avec Stripe</string>
+    <string name="payments_add_card_powered_by">Propulsé par Stripe</string>
+    <string name="payments_add_card_preparing">Préparation du formulaire sécurisé…</string>
 
     <!-- Payment-method card menu + remove confirm dialog -->
     <string name="payments_methods_default_badge">Par défaut</string>
