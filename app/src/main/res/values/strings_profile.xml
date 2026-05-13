@@ -58,6 +58,15 @@
     <string name="profile_premium_status_label">Status: Under Review</string>
     <string name="profile_premium_review_time_label">Estimated Review Time: 24-48 hours</string>
     <string name="profile_premium_application_id">Application ID #%1$d</string>
+    <!-- Carrier preferences read-only card (carrier role) -->
+    <string name="profile_carrier_preferences_title">Trip defaults</string>
+    <string name="profile_carrier_preferences_pickup_city">Preferred Pickup City</string>
+    <string name="profile_carrier_preferences_max_weight">Max Weight Capacity</string>
+    <string name="profile_carrier_preferences_max_space">Max Space Capacity</string>
+    <string name="profile_carrier_preferences_max_weight_value">%1$.0f kg</string>
+    <string name="profile_carrier_preferences_max_space_value">%1$.0f L</string>
+    <string name="profile_carrier_preferences_not_set">Not set</string>
+    <string name="profile_carrier_preferences_edit">Edit</string>
     <string name="profile_menu_account">Account</string>
     <string name="profile_menu_personal_info">Personal info</string>
     <string name="profile_menu_personal_info_subtitle">Update your personal information</string>

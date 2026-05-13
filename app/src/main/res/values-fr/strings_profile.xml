@@ -59,6 +59,15 @@
     <string name="profile_premium_status_label">Statut : En cours d’examen</string>
     <string name="profile_premium_review_time_label">Temps d’examen estimé : 24-48 heures</string>
     <string name="profile_premium_application_id">Demande n° %1$d</string>
+    <!-- Carrier preferences read-only card (carrier role) -->
+    <string name="profile_carrier_preferences_title">Par défaut des trajets</string>
+    <string name="profile_carrier_preferences_pickup_city">Ville de ramassage préférée</string>
+    <string name="profile_carrier_preferences_max_weight">Capacité poids max</string>
+    <string name="profile_carrier_preferences_max_space">Capacité volumétrique max</string>
+    <string name="profile_carrier_preferences_max_weight_value">%1$.0f kg</string>
+    <string name="profile_carrier_preferences_max_space_value">%1$.0f L</string>
+    <string name="profile_carrier_preferences_not_set">Non défini</string>
+    <string name="profile_carrier_preferences_edit">Modifier</string>
     <string name="profile_menu_account">Compte</string>
     <string name="profile_menu_personal_info">Renseignements personnels</string>
     <string name="profile_menu_personal_info_subtitle">Mettez à jour vos informations personnelles</string>

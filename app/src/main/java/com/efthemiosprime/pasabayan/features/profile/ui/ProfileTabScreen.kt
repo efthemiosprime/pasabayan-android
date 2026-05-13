@@ -81,6 +81,7 @@ import com.efthemiosprime.pasabayan.features.profile.model.shouldShowVerificatio
 import com.efthemiosprime.pasabayan.features.dashboard.components.CarrierActiveBadge
 import com.efthemiosprime.pasabayan.features.dashboard.components.RoleChip
 import com.efthemiosprime.pasabayan.features.dashboard.components.VerificationBadge
+import com.efthemiosprime.pasabayan.features.profile.components.CarrierPreferencesCard
 import com.efthemiosprime.pasabayan.features.profile.viewmodel.ProfileTabViewModel
 import com.efthemiosprime.pasabayan.features.verification.model.PremiumApplicationStatus
 
@@ -208,6 +209,12 @@ fun ProfileTabContent(
                 .testTag(ProfileTestTags.Header),
         )
         ProfileStatsBlock(currentRole, state, Modifier.fillMaxWidth().testTag(ProfileTestTags.Stats))
+        if (currentRole == UserRole.CARRIER) {
+            CarrierPreferencesCard(
+                carrierProfile = state.carrierProfile,
+                onEdit = onOpenVehicleInfo,
+            )
+        }
         if (showVerify) {
             VerificationCallout(
                 verificationLevel = VerificationLevel.normalized(verificationLevel),
