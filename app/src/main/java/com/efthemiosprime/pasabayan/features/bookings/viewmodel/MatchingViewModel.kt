@@ -3,9 +3,12 @@ package com.efthemiosprime.pasabayan.features.bookings.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
+import com.efthemiosprime.pasabayan.core.domain.error.DomainError
+import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.session.AuthRepository
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.NegotiationMetadata
+import com.efthemiosprime.pasabayan.features.bookings.model.OverageConfirmationData
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.RefundResult
 import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepository
 import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
@@ -46,6 +49,22 @@ data class MatchingUiState(
      * when the viewer is the counter-offerer.
      */
     val currentUserId: Long? = null,
+    /**
+     * Non-null when an accept is awaiting user confirmation because the
+     * package weight exceeds the carrier's stated capacity. Populated by
+     * the pre-flight check on [MatchingViewModel.acceptMatch] or by the
+     * 422 fallback when the server returns
+     * [DomainError.CapacityAcknowledgmentRequired]. The UI binds the
+     * "Accept Anyway?" sheet to this and calls
+     * [MatchingViewModel.confirmOverageAcceptance] / [MatchingViewModel.dismissOverageConfirmation].
+     */
+    val pendingOverageConfirmation: OverageConfirmationData? = null,
+    /**
+     * Non-null when the server has clamped the carrier's trip to zero
+     * remaining capacity (HTTP 409 "trip overcommitted"). UI surfaces a
+     * distinct "trip is full" state rather than a generic conflict error.
+     */
+    val tripOvercommitted: String? = null,
 ) {
     val filteredMatches: List<DeliveryMatch>
         get() = when (statusFilter) {
@@ -108,24 +127,111 @@ class MatchingViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Accept a match. Runs a local pre-flight check first: if the package
+     * weight exceeds the carrier's stated available capacity, surfaces
+     * [MatchingUiState.pendingOverageConfirmation] instead of calling the API.
+     * UI is expected to show an "Accept Anyway?" sheet bound to that state.
+     *
+     * The same sheet is re-surfaced from the failure path when the server
+     * returns [DomainError.CapacityAcknowledgmentRequired] — defense in
+     * depth for stale local capacity values.
+     */
     fun acceptMatch(matchId: Int, isCarrier: Boolean) {
-        viewModelScope.launch {
-            val result = if (isCarrier) {
-                bookingsRepository.carrierAcceptShipperRequest(matchId)
-            } else {
-                bookingsRepository.shipperAcceptCarrierRequest(matchId)
-            }
-            result.fold(
-                onSuccess = { updatedMatch ->
-                    _uiState.update { state ->
-                        state.copy(matches = state.matches.map { if (it.id == matchId) updatedMatch else it })
-                    }
-                },
-                onFailure = { e ->
-                    _uiState.update { it.copy(errorMessage = e.message ?: "Failed to accept") }
-                },
-            )
+        val match = _uiState.value.matches.firstOrNull { it.id == matchId }
+        val pending = match?.let { buildLocalOverageConfirmation(it, isCarrier) }
+        if (pending != null) {
+            _uiState.update { it.copy(pendingOverageConfirmation = pending) }
+            return
         }
+        viewModelScope.launch {
+            performAccept(matchId, isCarrier, acknowledgeOverage = null)
+        }
+    }
+
+    /** Confirm "Accept Anyway" — retries the accept call with `acknowledge_overage = true`. */
+    fun confirmOverageAcceptance() {
+        val pending = _uiState.value.pendingOverageConfirmation ?: return
+        _uiState.update { it.copy(pendingOverageConfirmation = null) }
+        viewModelScope.launch {
+            performAccept(pending.matchId, pending.isCarrierAccepting, acknowledgeOverage = true)
+        }
+    }
+
+    /** Dismiss the overage sheet without accepting. */
+    fun dismissOverageConfirmation() {
+        _uiState.update { it.copy(pendingOverageConfirmation = null) }
+    }
+
+    /** Clear the one-shot "trip is full" state after the UI surfaces it. */
+    fun clearTripOvercommitted() {
+        _uiState.update { it.copy(tripOvercommitted = null) }
+    }
+
+    private suspend fun performAccept(matchId: Int, isCarrier: Boolean, acknowledgeOverage: Boolean?) {
+        val result = if (isCarrier) {
+            bookingsRepository.carrierAcceptShipperRequest(matchId, acknowledgeOverage)
+        } else {
+            bookingsRepository.shipperAcceptCarrierRequest(matchId, acknowledgeOverage)
+        }
+        result.fold(
+            onSuccess = { updatedMatch ->
+                _uiState.update { state ->
+                    state.copy(matches = state.matches.map { if (it.id == matchId) updatedMatch else it })
+                }
+            },
+            onFailure = { e -> handleAcceptFailure(matchId, isCarrier, e) },
+        )
+    }
+
+    private fun handleAcceptFailure(matchId: Int, isCarrier: Boolean, error: Throwable) {
+        when (val domain = (error as? DomainErrorMapperException)?.domainError) {
+            is DomainError.CapacityAcknowledgmentRequired -> {
+                val pending = buildServerOverageConfirmation(matchId, isCarrier, domain)
+                if (pending != null) {
+                    _uiState.update { it.copy(pendingOverageConfirmation = pending) }
+                } else {
+                    _uiState.update { it.copy(errorMessage = error.message ?: "Failed to accept") }
+                }
+            }
+            is DomainError.TripOvercommitted -> {
+                _uiState.update { it.copy(tripOvercommitted = domain.message ?: "Trip is full") }
+            }
+            else -> {
+                _uiState.update { it.copy(errorMessage = error.message ?: "Failed to accept") }
+            }
+        }
+    }
+
+    private fun buildLocalOverageConfirmation(match: DeliveryMatch, isCarrier: Boolean): OverageConfirmationData? {
+        val pkg = match.packageRequest?.weightKg ?: return null
+        val avail = match.carrierTrip?.availableWeightKg ?: return null
+        if (pkg <= avail) return null
+        return OverageConfirmationData(
+            matchId = match.id,
+            isCarrierAccepting = isCarrier,
+            packageWeightKg = pkg,
+            availableWeightKg = avail,
+            overageKg = pkg - avail,
+        )
+    }
+
+    private fun buildServerOverageConfirmation(
+        matchId: Int,
+        isCarrier: Boolean,
+        error: DomainError.CapacityAcknowledgmentRequired,
+    ): OverageConfirmationData? {
+        val match = _uiState.value.matches.firstOrNull { it.id == matchId }
+        val pkg = error.packageWeightKg ?: match?.packageRequest?.weightKg ?: return null
+        val avail = error.tripAvailableWeightKg ?: match?.carrierTrip?.availableWeightKg ?: return null
+        val over = error.overageKg ?: (pkg - avail)
+        return OverageConfirmationData(
+            matchId = matchId,
+            isCarrierAccepting = isCarrier,
+            packageWeightKg = pkg,
+            availableWeightKg = avail,
+            overageKg = over,
+        )
     }
 
     fun declineMatch(matchId: Int, isCarrier: Boolean) {

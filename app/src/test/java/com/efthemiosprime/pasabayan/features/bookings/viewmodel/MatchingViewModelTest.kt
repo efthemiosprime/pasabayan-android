@@ -149,6 +149,121 @@ class MatchingViewModelTest {
         advanceUntilIdle()
 
         assertEquals(MatchStatus.CONFIRMED, viewModel.uiState.value.matches[0].matchStatus)
+        // No overage, so acknowledgeOverage stays null on the request payload.
+        assertNull(fakeRepo.lastShipperAcceptAcknowledge)
+    }
+
+    // -- Overage orchestration (advisory-weight policy, slice 4) --
+
+    @Test
+    fun `acceptMatch (carrier) defers to overage confirmation when match is over capacity`() = runTest {
+        val over = overCapacityMatch(matchId = 1, packageKg = 2.0, availableKg = 1.0, status = MatchStatus.SHIPPER_REQUESTED)
+        fakeRepo.loadResult = Result.success(listOf(over))
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+
+        viewModel.acceptMatch(1, isCarrier = true)
+        advanceUntilIdle()
+
+        val pending = viewModel.uiState.value.pendingOverageConfirmation
+        assertNotNull(pending)
+        assertEquals(1, pending!!.matchId)
+        assertTrue(pending.isCarrierAccepting)
+        assertEquals(2.0, pending.packageWeightKg, 0.001)
+        assertEquals(1.0, pending.availableWeightKg, 0.001)
+        assertEquals(1.0, pending.overageKg, 0.001)
+        // Pre-flight should NOT have hit the network yet.
+        assertNull(fakeRepo.lastCarrierAcceptAcknowledge)
+    }
+
+    @Test
+    fun `confirmOverageAcceptance retries accept with acknowledge true`() = runTest {
+        val over = overCapacityMatch(matchId = 1, packageKg = 2.0, availableKg = 1.0, status = MatchStatus.SHIPPER_REQUESTED)
+        val accepted = testMatch(1, MatchStatus.CARRIER_ACCEPTED)
+        fakeRepo.loadResult = Result.success(listOf(over))
+        fakeRepo.carrierAcceptResult = Result.success(accepted)
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+
+        viewModel.acceptMatch(1, isCarrier = true)
+        advanceUntilIdle()
+        viewModel.confirmOverageAcceptance()
+        advanceUntilIdle()
+
+        assertEquals(true, fakeRepo.lastCarrierAcceptAcknowledge)
+        assertNull(viewModel.uiState.value.pendingOverageConfirmation)
+        assertEquals(MatchStatus.CARRIER_ACCEPTED, viewModel.uiState.value.matches[0].matchStatus)
+    }
+
+    @Test
+    fun `dismissOverageConfirmation clears state without calling the API`() = runTest {
+        val over = overCapacityMatch(matchId = 1, packageKg = 2.0, availableKg = 1.0, status = MatchStatus.SHIPPER_REQUESTED)
+        fakeRepo.loadResult = Result.success(listOf(over))
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+
+        viewModel.acceptMatch(1, isCarrier = true)
+        advanceUntilIdle()
+        assertNotNull(viewModel.uiState.value.pendingOverageConfirmation)
+
+        viewModel.dismissOverageConfirmation()
+
+        assertNull(viewModel.uiState.value.pendingOverageConfirmation)
+        assertNull(fakeRepo.lastCarrierAcceptAcknowledge)
+    }
+
+    @Test
+    fun `acceptMatch falls back to overage dialog on 422 CapacityAcknowledgmentRequired`() = runTest {
+        // Match lacks the local kg values (stale or missing) — server tells us we need ack.
+        val match = testMatch(1, MatchStatus.SHIPPER_REQUESTED)
+        fakeRepo.loadResult = Result.success(listOf(match))
+        fakeRepo.carrierAcceptResult = Result.failure(
+            com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException(
+                com.efthemiosprime.pasabayan.core.domain.error.DomainError.CapacityAcknowledgmentRequired(
+                    message = "Package weight exceeds capacity",
+                    packageWeightKg = 3.0,
+                    tripAvailableWeightKg = 2.0,
+                    overageKg = 1.0,
+                ),
+            ),
+        )
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+
+        viewModel.acceptMatch(1, isCarrier = true)
+        advanceUntilIdle()
+
+        val pending = viewModel.uiState.value.pendingOverageConfirmation
+        assertNotNull("server-side fallback should still surface confirmation", pending)
+        assertEquals(3.0, pending!!.packageWeightKg, 0.001)
+        assertEquals(2.0, pending.availableWeightKg, 0.001)
+        assertEquals(1.0, pending.overageKg, 0.001)
+        assertTrue(pending.isCarrierAccepting)
+        assertNull(viewModel.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `acceptMatch surfaces tripOvercommitted state on 409 TripOvercommitted`() = runTest {
+        val match = testMatch(1, MatchStatus.SHIPPER_REQUESTED)
+        fakeRepo.loadResult = Result.success(listOf(match))
+        fakeRepo.carrierAcceptResult = Result.failure(
+            com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException(
+                com.efthemiosprime.pasabayan.core.domain.error.DomainError.TripOvercommitted(
+                    message = "Trip is fully booked; no remaining capacity to accept matches.",
+                ),
+            ),
+        )
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+
+        viewModel.acceptMatch(1, isCarrier = true)
+        advanceUntilIdle()
+
+        assertEquals(
+            "Trip is fully booked; no remaining capacity to accept matches.",
+            viewModel.uiState.value.tripOvercommitted,
+        )
+        assertNull(viewModel.uiState.value.pendingOverageConfirmation)
     }
 
     @Test
@@ -519,6 +634,24 @@ class MatchingViewModelTest {
         pickupConfirmationCode = null, codeExpiresAt = null,
         deliveryVerificationCode = null, deliveryCodeExpiresAt = null,
     )
+
+    private fun overCapacityMatch(
+        matchId: Int,
+        packageKg: Double,
+        availableKg: Double,
+        status: MatchStatus = MatchStatus.SHIPPER_REQUESTED,
+    ): DeliveryMatch = testMatch(matchId, status).copy(
+        carrierTrip = com.efthemiosprime.pasabayan.features.bookings.model.nested.CarrierTripInfo(
+            id = 1,
+            originCity = "A",
+            destinationCity = "B",
+            availableWeightKg = availableKg,
+        ),
+        packageRequest = com.efthemiosprime.pasabayan.features.bookings.model.nested.PackageRequestInfo(
+            id = 10,
+            weightKg = packageKg,
+        ),
+    )
 }
 
 class FakeBookingsRepository : BookingsRepository {
@@ -540,11 +673,18 @@ class FakeBookingsRepository : BookingsRepository {
     override suspend fun markPickedUp(matchId: Int) = confirmResult ?: Result.failure(Exception("Not set"))
     override suspend fun markInTransit(matchId: Int) = confirmResult ?: Result.failure(Exception("Not set"))
     override suspend fun markDelivered(matchId: Int) = confirmResult ?: Result.failure(Exception("Not set"))
-    override suspend fun shipperAcceptCarrierRequest(matchId: Int, acknowledgeOverage: Boolean?) =
-        shipperAcceptResult ?: Result.failure(Exception("Not set"))
+    var lastShipperAcceptAcknowledge: Boolean? = null
+    var lastCarrierAcceptAcknowledge: Boolean? = null
+
+    override suspend fun shipperAcceptCarrierRequest(matchId: Int, acknowledgeOverage: Boolean?): Result<DeliveryMatch> {
+        lastShipperAcceptAcknowledge = acknowledgeOverage
+        return shipperAcceptResult ?: Result.failure(Exception("Not set"))
+    }
     override suspend fun shipperDecline(matchId: Int) = shipperDeclineResult ?: Result.failure(Exception("Not set"))
-    override suspend fun carrierAcceptShipperRequest(matchId: Int, acknowledgeOverage: Boolean?) =
-        carrierAcceptResult ?: Result.failure(Exception("Not set"))
+    override suspend fun carrierAcceptShipperRequest(matchId: Int, acknowledgeOverage: Boolean?): Result<DeliveryMatch> {
+        lastCarrierAcceptAcknowledge = acknowledgeOverage
+        return carrierAcceptResult ?: Result.failure(Exception("Not set"))
+    }
     override suspend fun carrierDeclineShipperRequest(matchId: Int) = carrierDeclineResult ?: Result.failure(Exception("Not set"))
     override suspend fun generatePickupCode(matchId: Int) = Result.success("123456")
     override suspend fun generateDeliveryCode(matchId: Int) = Result.success("654321")
