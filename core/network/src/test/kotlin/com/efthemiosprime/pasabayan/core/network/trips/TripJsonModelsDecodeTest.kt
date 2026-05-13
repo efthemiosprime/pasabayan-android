@@ -441,6 +441,43 @@ class TripJsonModelsDecodeTest {
         assertEquals(MatchStatus.CONFIRMED, response.matches.first().matchStatus)
     }
 
+    // iOS parity: `/trips/{id}/matches` returns the array under `packages` and each
+    // entry's identifier under `match_id` (`TripMatchesResponse` / `TripMatchPackage`
+    // in `TripModels.swift`). This decode is what feeds the "X of Y delivered" count
+    // on `TripCard`; without it the widget falls through to the Empty state.
+    @Test
+    fun `TripMatchesResponseJson decodes iOS-shape payload with packages and match_id`() {
+        val raw = """
+            {
+              "trip": { "id": 501, "trip_status": "active", "transportation_method": "car" },
+              "packages": [
+                {
+                  "match_id": 901,
+                  "match_status": "delivered",
+                  "agreed_price": 80.5,
+                  "package": { "id": 77, "description": "Books", "weight_kg": 10 },
+                  "shipper": { "id": 12, "name": "Jane Shipper" },
+                  "delivered_at": "2026-05-02T10:00:00Z"
+                },
+                {
+                  "match_id": 902,
+                  "match_status": "in_transit",
+                  "agreed_price": 25,
+                  "package": { "id": 78, "description": "Laptop", "weight_kg": 3 },
+                  "shipper": { "id": 13, "name": "John Shipper" }
+                }
+              ]
+            }
+        """.trimIndent()
+        val response = json.decodeFromString<TripMatchesResponseJson>(raw)
+
+        assertEquals(2, response.matches.size)
+        assertEquals(901, response.matches[0].id)
+        assertEquals(MatchStatus.DELIVERED, response.matches[0].matchStatus)
+        assertEquals(902, response.matches[1].id)
+        assertEquals(MatchStatus.IN_TRANSIT, response.matches[1].matchStatus)
+    }
+
     @Test
     fun `PopularRoutesResponseJson decodes routes payload`() {
         val raw = fixture("popular_routes.json")

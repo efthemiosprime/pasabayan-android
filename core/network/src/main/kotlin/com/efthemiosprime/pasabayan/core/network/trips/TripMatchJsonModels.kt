@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+
 package com.efthemiosprime.pasabayan.core.network.trips
 
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
@@ -5,15 +7,24 @@ import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.core.domain.util.FlexibleDoubleSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 data class TripMatchesResponseJson(
     val trip: TripJson? = null,
+    // iOS parity: `/trips/{id}/matches` returns the array under `packages`
+    // (`TripMatchesResponse.swift:15`). `@JsonNames` keeps backwards-compat with
+    // any path that still emits `matches`, so the progress widget renders
+    // "X of Y delivered" instead of falling through to the Empty state.
+    @JsonNames("packages")
     val matches: List<TripMatchPackageJson> = emptyList(),
 )
 
 @Serializable
 data class TripMatchPackageJson(
+    // iOS uses `match_id` (`TripMatchPackage.id` = `match_id`, `TripModels.swift:31`).
+    // Accept both so legacy `id`-keyed fixtures keep decoding.
+    @JsonNames("match_id")
     val id: Int,
     @SerialName("match_status") val matchStatus: MatchStatus = MatchStatus.PENDING,
     @SerialName("agreed_price") @Serializable(with = FlexibleDoubleSerializer::class) val agreedPrice: Double? = null,
