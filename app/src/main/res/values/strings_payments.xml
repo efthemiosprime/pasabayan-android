@@ -97,6 +97,10 @@
     <string name="payments_payout_disabled">Disabled</string>
     <string name="payments_payout_connected_on">Connected on %1$s</string>
 
+    <!-- Pay CTA + already-paid badge -->
+    <string name="payments_pay_button">Pay %1$s</string>
+    <string name="payments_paid_badge">Paid</string>
+
     <!-- Payment summary card (pre- and post-payment) -->
     <string name="payments_summary_base_amount">Base amount</string>
     <string name="payments_summary_service_fee">Service fee</string>

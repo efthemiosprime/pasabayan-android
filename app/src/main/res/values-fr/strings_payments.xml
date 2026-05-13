@@ -97,6 +97,10 @@
     <string name="payments_payout_disabled">Désactivé</string>
     <string name="payments_payout_connected_on">Connecté le %1$s</string>
 
+    <!-- Pay CTA + already-paid badge -->
+    <string name="payments_pay_button">Payer %1$s</string>
+    <string name="payments_paid_badge">Payé</string>
+
     <!-- Payment summary card (pre- and post-payment) -->
     <string name="payments_summary_base_amount">Montant de base</string>
     <string name="payments_summary_service_fee">Frais de service</string>
