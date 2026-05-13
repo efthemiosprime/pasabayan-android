@@ -97,6 +97,12 @@
     <string name="payments_payout_disabled">Désactivé</string>
     <string name="payments_payout_connected_on">Connecté le %1$s</string>
 
+    <!-- Payment summary card (pre- and post-payment) -->
+    <string name="payments_summary_base_amount">Montant de base</string>
+    <string name="payments_summary_service_fee">Frais de service</string>
+    <string name="payments_summary_total">Total</string>
+    <string name="payments_summary_carrier_receives">Le transporteur reçoit %1$s</string>
+
     <!-- Payment-method card menu + remove confirm dialog -->
     <string name="payments_methods_default_badge">Par défaut</string>
     <string name="payments_methods_set_default">Définir par défaut</string>
