@@ -28,14 +28,19 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomShee
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
+import androidx.compose.runtime.rememberCoroutineScope
+import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.domain.util.DateTimeParsing
+import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripCapacitySection
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripPricingSection
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripRouteSection
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripScheduleSection
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripStatusSection
+import com.efthemiosprime.pasabayan.features.trips.model.CarrierTripActionPolicy
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
+import kotlinx.coroutines.launch
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,7 +49,9 @@ fun EditTripSheet(
     onDismiss: () -> Unit,
     onSave: (TripUpdateRequestJson) -> Unit,
     onActivate: () -> Unit = {},
+    onCancelTrip: suspend () -> Result<Unit> = { Result.success(Unit) },
 ) {
+    val scope = rememberCoroutineScope()
     // iOS parity: route + capacity edits are gated by trip status — only PLANNING trips can
     // change route/dates/capacity/pricing. Notes stay editable regardless. See
     // `EditTripSheet.swift:15` (`TripEditSheetEditingPolicy.allowsFullEdit(for:)`).
@@ -76,6 +83,61 @@ fun EditTripSheet(
     }
     var notesText by remember { mutableStateOf(trip.specialNotes.orEmpty()) }
     var showActivateConfirm by remember { mutableStateOf(false) }
+    var showCancelConfirm by remember { mutableStateOf(false) }
+    var cancelErrorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Localized hint appended to the server's 409 message — iOS EditTripSheet.swift:1104-1108.
+    val blockingMatchHint = stringResource(R.string.trips_details_cancel_error_match_in_progress_hint)
+    val genericCancelError = stringResource(R.string.trips_edit_cancel_error_generic)
+
+    // Cancel confirmation — iOS EditTripSheet.swift:179. Destructive role; copy says the action
+    // can't be undone. On confirm, runs the suspend `onCancelTrip`; success dismisses, failure
+    // surfaces the blocking-match-aware error alert.
+    if (showCancelConfirm) {
+        AlertDialog(
+            onDismissRequest = { showCancelConfirm = false },
+            title = { Text(stringResource(R.string.trips_cancel_trip)) },
+            text = { Text(stringResource(R.string.trips_action_cancel_trip_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showCancelConfirm = false
+                    scope.launch {
+                        onCancelTrip().fold(
+                            onSuccess = { onDismiss() },
+                            onFailure = { throwable ->
+                                val domainError = (throwable as? DomainErrorMapperException)?.domainError
+                                cancelErrorMessage = when (domainError) {
+                                    is DomainError.TripHasBlockingMatch ->
+                                        listOfNotNull(domainError.message, blockingMatchHint)
+                                            .joinToString(separator = "\n\n")
+                                    else -> genericCancelError
+                                }
+                            },
+                        )
+                    }
+                }) { Text(stringResource(R.string.trips_cancel_trip)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCancelConfirm = false }) {
+                    Text(stringResource(R.string.trips_action_keep_trip))
+                }
+            },
+        )
+    }
+
+    // Cancel error alert — surfaces the blocking-match-aware message inline.
+    cancelErrorMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { cancelErrorMessage = null },
+            title = { Text(stringResource(R.string.trips_cancel_trip)) },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = { cancelErrorMessage = null }) {
+                    Text(stringResource(R.string.common_buttons_ok))
+                }
+            },
+        )
+    }
 
     // Activate confirmation — iOS EditTripSheet.swift:212. Routes through the sanctioned
     // POST /trips/{id}/activate via the caller's `onActivate` (Slice A).
@@ -204,11 +266,22 @@ fun EditTripSheet(
                         modifier = Modifier.fillMaxWidth(),
                     )
                     PButton(
-                        text = stringResource(R.string.trips_cancel_trip),
+                        text = stringResource(R.string.common_buttons_cancel),
                         onClick = onDismiss,
                         style = PButtonStyle.Tertiary,
                         modifier = Modifier.fillMaxWidth(),
                     )
+                    // iOS parity (`EditTripSheet.swift:179`): destructive Cancel Trip action
+                    // only when policy allows it (planning or active). The actual deletion
+                    // routes through DELETE /trips/{id}; HTTP 409 maps to TripHasBlockingMatch.
+                    if (CarrierTripActionPolicy.shouldOfferCancelTrip(trip.tripStatus)) {
+                        PButton(
+                            text = stringResource(R.string.trips_cancel_trip),
+                            onClick = { showCancelConfirm = true },
+                            style = PButtonStyle.Tertiary,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
             }
         }

@@ -179,4 +179,69 @@ class PaymentJsonModelsDecodeTest {
         )
         assertEquals(5.0, decoded.amount, 0.001)
     }
+
+    // -- TransactionListResponseJson dual-shape decoder --
+
+    @Test
+    fun `TransactionListResponseJson decodes legacy flat shape`() {
+        val raw = """
+            {
+              "success": true,
+              "data": [
+                {"id": 1, "status": "completed"},
+                {"id": 2, "status": "pending"}
+              ]
+            }
+        """.trimIndent()
+        val parsed = json.decodeFromString<TransactionListResponseJson>(raw)
+        assertEquals(true, parsed.success)
+        assertEquals(2, parsed.data.size)
+        assertEquals(1, parsed.data[0].id)
+    }
+
+    @Test
+    fun `TransactionListResponseJson decodes Laravel paginated envelope`() {
+        val raw = """
+            {
+              "success": true,
+              "message": "retrieved successfully",
+              "data": {
+                "current_page": 1,
+                "data": [
+                  {"id": 10, "status": "captured"},
+                  {"id": 11, "status": "completed"}
+                ],
+                "last_page": 1,
+                "per_page": 15,
+                "total": 2
+              }
+            }
+        """.trimIndent()
+        val parsed = json.decodeFromString<TransactionListResponseJson>(raw)
+        assertEquals(true, parsed.success)
+        assertEquals(2, parsed.data.size)
+        assertEquals(10, parsed.data[0].id)
+    }
+
+    @Test
+    fun `TransactionListResponseJson decodes empty paginated envelope`() {
+        val raw = """
+            {
+              "success": true,
+              "data": {"current_page": 1, "data": [], "total": 0}
+            }
+        """.trimIndent()
+        val parsed = json.decodeFromString<TransactionListResponseJson>(raw)
+        assertEquals(true, parsed.success)
+        assertEquals(0, parsed.data.size)
+    }
+
+    @Test
+    fun `TransactionListResponseJson tolerates missing success flag`() {
+        val raw = """{"data": []}"""
+        val parsed = json.decodeFromString<TransactionListResponseJson>(raw)
+        // Default to true when the server omits `success` (matches the legacy lenient path).
+        assertEquals(true, parsed.success)
+        assertEquals(0, parsed.data.size)
+    }
 }

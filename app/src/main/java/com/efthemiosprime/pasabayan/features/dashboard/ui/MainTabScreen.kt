@@ -1060,6 +1060,12 @@ fun MainTabScreen(
                 carrierTripsViewModel.activateTrip(trip.id)
                 dismissActiveSheetRoute()
             },
+            // iOS parity (`EditTripSheet.swift:179, 1104-1108`): cancel from the sheet hits
+            // DELETE /trips/{id}; HTTP 409 surfaces TripHasBlockingMatch and the sheet renders
+            // its own error alert. We just propagate the Result.
+            onCancelTrip = {
+                carrierTripsViewModel.suspendCancelTrip(trip.id)
+            },
         )
     }
 

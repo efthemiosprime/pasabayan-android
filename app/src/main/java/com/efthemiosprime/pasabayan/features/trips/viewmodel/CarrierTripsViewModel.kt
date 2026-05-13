@@ -209,6 +209,30 @@ class CarrierTripsViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Suspend cancel used by `EditTripSheet`: hits `DELETE /trips/{id}` directly so the server's
+     * HTTP 409 (mapped to `DomainError.TripHasBlockingMatch`) is the source of truth. On success
+     * the trip is patched to `CANCELLED` in the local list. The caller gets the `Result` so it
+     * can decide whether to dismiss the sheet or surface a blocking-match-aware error alert.
+     */
+    suspend fun suspendCancelTrip(tripId: Int): Result<Unit> {
+        val currentTrip = _uiState.value.trips.firstOrNull { it.id == tripId }
+            ?: return Result.failure(IllegalStateException("Trip not found"))
+        if (!canTransition(currentTrip.tripStatus, TripStatus.CANCELLED)) {
+            return Result.failure(IllegalStateException("Invalid status transition"))
+        }
+        return tripsRepository.deleteTrip(tripId).onSuccess {
+            _uiState.update { state ->
+                state.copy(
+                    trips = state.trips.map { existing ->
+                        if (existing.id == tripId) existing.copy(tripStatus = TripStatus.CANCELLED) else existing
+                    },
+                    errorMessage = null,
+                )
+            }
+        }
+    }
+
     fun updateTripStatus(tripId: Int, targetStatus: TripStatus) {
         val currentTrip = _uiState.value.trips.firstOrNull { it.id == tripId } ?: return
         if (!canTransition(currentTrip.tripStatus, targetStatus)) {

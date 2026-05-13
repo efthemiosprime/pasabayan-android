@@ -28,6 +28,8 @@ fun DomainError.userMessage(): String = when (this) {
     is DomainError.NoTransportTypeSpecified -> "Trip must specify either cargo transport or passenger transport"
     is DomainError.Conflict -> message ?: "This action cannot be completed"
     is DomainError.TripOvercommitted -> message ?: "This trip is full and cannot accept more matches."
+    is DomainError.TripHasBlockingMatch -> message
+        ?: "Cannot cancel: a package on this trip is already in progress."
     is DomainError.CapacityAcknowledgmentRequired -> message
         ?: "Confirmation needed: this match exceeds the carrier's stated capacity."
     is DomainError.RateLimited -> "Too many requests. Please wait a moment and try again."

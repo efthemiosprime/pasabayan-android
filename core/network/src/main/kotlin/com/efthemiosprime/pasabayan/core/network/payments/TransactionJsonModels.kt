@@ -8,8 +8,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonObject
 
 @Serializable
@@ -175,11 +179,61 @@ object CreatePaymentResponseJsonSerializer : KSerializer<CreatePaymentResponseJs
     }
 }
 
-@Serializable
+/**
+ * Dual-shape decoder for `/payments`:
+ * - **Paginated envelope (new contract):** `{success, message, data: {current_page, data: [...], ...}}`
+ *   (Laravel paginator). Strip the envelope and surface the inner array.
+ * - **Legacy flat shape:** `{success, data: [...]}`. Use as-is.
+ *
+ * Mirrors iOS `TransactionListResponse` in `PaymentModels.swift` — keep both branches
+ * until the backend cut-over is finalised, then drop the legacy fall-back.
+ */
+@Serializable(with = TransactionListResponseJsonSerializer::class)
 data class TransactionListResponseJson(
     val success: Boolean = false,
     val data: List<TransactionJson> = emptyList(),
 )
+
+@Serializable
+private data class TransactionListResponseJsonSurrogate(
+    val success: Boolean = false,
+    val data: List<TransactionJson> = emptyList(),
+)
+
+object TransactionListResponseJsonSerializer : KSerializer<TransactionListResponseJson> {
+    override val descriptor: SerialDescriptor =
+        TransactionListResponseJsonSurrogate.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): TransactionListResponseJson {
+        val jsonDecoder = decoder as? JsonDecoder
+            ?: throw SerializationException("TransactionListResponseJson supports JSON only")
+        val root = jsonDecoder.decodeJsonElement().jsonObject
+        val success = (root["success"] as? JsonPrimitive)?.booleanOrNull ?: true
+        val dataElement = root["data"]
+
+        // Paginated envelope: `data` is an object containing a nested `data` array.
+        if (dataElement is JsonObject) {
+            val inner = dataElement["data"] as? JsonArray ?: JsonArray(emptyList())
+            val items = inner.map {
+                jsonDecoder.json.decodeFromJsonElement(TransactionJson.serializer(), it)
+            }
+            return TransactionListResponseJson(success = success, data = items)
+        }
+
+        // Legacy flat shape: `data` is the array itself (or missing).
+        val items = (dataElement as? JsonArray)?.map {
+            jsonDecoder.json.decodeFromJsonElement(TransactionJson.serializer(), it)
+        } ?: emptyList()
+        return TransactionListResponseJson(success = success, data = items)
+    }
+
+    override fun serialize(encoder: Encoder, value: TransactionListResponseJson) {
+        encoder.encodeSerializableValue(
+            TransactionListResponseJsonSurrogate.serializer(),
+            TransactionListResponseJsonSurrogate(value.success, value.data),
+        )
+    }
+}
 
 @Serializable
 data class TransactionResponseJson(

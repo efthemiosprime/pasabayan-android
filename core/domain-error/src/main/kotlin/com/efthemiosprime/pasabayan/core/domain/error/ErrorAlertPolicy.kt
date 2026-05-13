@@ -40,6 +40,7 @@ object ErrorAlertPolicy {
         is DomainError.TripNotFound,
         is DomainError.Conflict,
         is DomainError.TripOvercommitted,
+        is DomainError.TripHasBlockingMatch,
         is DomainError.CapacityAcknowledgmentRequired,
         is DomainError.RateLimited,
         DomainError.UserNotCarrier,

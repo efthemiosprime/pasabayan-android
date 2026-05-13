@@ -286,6 +286,62 @@ class CarrierTripsViewModelTest {
         assertTrue(viewModel.uiState.value.errorMessage != null)
     }
 
+    // -- suspendCancelTrip (Slice B6) --
+
+    @Test
+    fun `suspendCancelTrip marks planning trip as cancelled on success`() = runTest {
+        fakeRepo.carrierTripsResult = Result.success(listOf(testTrip(1, TripStatus.PLANNING)))
+        fakeRepo.deleteResult = Result.success(Unit)
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        val result = viewModel.suspendCancelTrip(1)
+        advanceUntilIdle()
+
+        assertTrue(result.isSuccess)
+        assertEquals(TripStatus.CANCELLED, viewModel.uiState.value.trips.first().tripStatus)
+        assertEquals(listOf(1), fakeRepo.deletedTripIds)
+    }
+
+    @Test
+    fun `suspendCancelTrip skips local pre-flight match check`() = runTest {
+        // iOS parity: server is the source of truth for cancel; we no longer pre-load matches.
+        fakeRepo.carrierTripsResult = Result.success(listOf(testTrip(1, TripStatus.ACTIVE)))
+        fakeRepo.deleteResult = Result.success(Unit)
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        viewModel.suspendCancelTrip(1)
+        advanceUntilIdle()
+
+        assertTrue(fakeRepo.loadedTripMatchIds.isEmpty())
+        assertEquals(listOf(1), fakeRepo.deletedTripIds)
+    }
+
+    @Test
+    fun `suspendCancelTrip returns failure when transition is invalid`() = runTest {
+        fakeRepo.carrierTripsResult = Result.success(listOf(testTrip(1, TripStatus.COMPLETED)))
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        val result = viewModel.suspendCancelTrip(1)
+        assertTrue(result.isFailure)
+        assertTrue(fakeRepo.deletedTripIds.isEmpty())
+    }
+
+    @Test
+    fun `suspendCancelTrip surfaces repository failure to caller without writing state`() = runTest {
+        fakeRepo.carrierTripsResult = Result.success(listOf(testTrip(1, TripStatus.PLANNING)))
+        fakeRepo.deleteResult = Result.failure(Exception("boom"))
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        val result = viewModel.suspendCancelTrip(1)
+        assertTrue(result.isFailure)
+        // Local trip not flipped to cancelled when the server rejects.
+        assertEquals(TripStatus.PLANNING, viewModel.uiState.value.trips.first().tripStatus)
+    }
+
     @Test
     fun `cancelTrip is blocked for completed trip before loading matches`() = runTest {
         fakeRepo.carrierTripsResult = Result.success(listOf(testTrip(1, TripStatus.COMPLETED)))

@@ -309,13 +309,36 @@ class TripsRepositoryImpl @Inject constructor(
         return try {
             val res = tripsApi.deleteTrip(id)
             if (!res.isSuccessful) {
+                val errorBytes = res.errorBody()?.bytes()
+                // iOS parity (`EditTripSheet.swift:1104-1108`): HTTP 409 on cancel means a
+                // confirmed / picked-up / in-transit match is blocking the trip. Surface a
+                // distinct domain error so the UI can append the localized hint.
+                if (res.code() == 409) {
+                    val serverMessage = extractServerMessage(errorBytes)
+                    return Result.failure(
+                        DomainErrorMapperException(DomainError.TripHasBlockingMatch(serverMessage)),
+                    )
+                }
                 return Result.failure(
-                    DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
+                    DomainErrorMapperException(ApiErrorMapper.map(res.code(), errorBytes, json)),
                 )
             }
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    private fun extractServerMessage(body: ByteArray?): String? {
+        val raw = body?.decodeToString().orEmpty()
+        if (raw.isBlank()) return null
+        return try {
+            val element = json.parseToJsonElement(raw)
+            val jsonObject = element as? kotlinx.serialization.json.JsonObject ?: return null
+            val message = jsonObject["message"] ?: jsonObject["error"]
+            (message as? kotlinx.serialization.json.JsonPrimitive)?.content
+        } catch (_: Exception) {
+            null
         }
     }
 }

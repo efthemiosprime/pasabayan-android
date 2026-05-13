@@ -39,6 +39,14 @@ sealed class DomainError {
     data class TripOvercommitted(val message: String?) : DomainError()
 
     /**
+     * HTTP 409 returned by `DELETE /trips/{id}` when the trip has a confirmed,
+     * picked-up, or in-transit match blocking cancellation. iOS parity:
+     * `EditTripSheet.swift:1104-1108` — the UI surfaces the server message
+     * followed by `trips_details_cancel_error_match_in_progress_hint`.
+     */
+    data class TripHasBlockingMatch(val message: String?) : DomainError()
+
+    /**
      * HTTP 422 with `error: "capacity_acknowledgment_required"` — server-side
      * fallback when the accept call didn't carry `acknowledge_overage: true`
      * on an over-capacity match. UI should re-surface the same confirmation

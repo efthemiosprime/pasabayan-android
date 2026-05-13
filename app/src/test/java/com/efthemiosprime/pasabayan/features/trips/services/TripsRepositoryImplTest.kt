@@ -535,6 +535,21 @@ class TripsRepositoryImplTest {
     }
 
     @Test
+    fun `deleteTrip maps 409 to TripHasBlockingMatch with server message`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(409).setBody(
+                """{"message": "Cannot cancel: package picked up"}""",
+            ),
+        )
+
+        val result = repo.deleteTrip(7)
+        assertTrue(result.isFailure)
+        val error = (result.exceptionOrNull() as DomainErrorMapperException).domainError
+        assertTrue(error is DomainError.TripHasBlockingMatch)
+        assertEquals("Cannot cancel: package picked up", (error as DomainError.TripHasBlockingMatch).message)
+    }
+
+    @Test
     fun `deleteTrip returns failure on 403`() = runBlocking {
         server.enqueue(
             MockResponse().setResponseCode(403).setBody(
