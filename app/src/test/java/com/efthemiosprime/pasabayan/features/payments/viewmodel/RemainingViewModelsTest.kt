@@ -101,6 +101,155 @@ class RemainingViewModelsTest {
         assertFalse(vm.uiState.value.cancelSuccess)
     }
 
+    // -- B5: role-aware computed flags --
+
+    @Test
+    fun `loadTransaction with viewer role sets state`() = runTest {
+        fakePaymentRepo.getResult = Result.success(testTransaction(500))
+        val vm = TransactionDetailViewModel(fakePaymentRepo)
+        vm.loadTransaction(500, com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER)
+        advanceUntilIdle()
+
+        assertEquals(
+            com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER,
+            vm.uiState.value.viewerRole,
+        )
+    }
+
+    @Test
+    fun `setViewerRole updates role without reloading transaction`() = runTest {
+        fakePaymentRepo.getResult = Result.success(testTransaction(500))
+        val vm = TransactionDetailViewModel(fakePaymentRepo)
+        vm.loadTransaction(500)
+        advanceUntilIdle()
+
+        vm.setViewerRole(com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.CARRIER)
+        assertEquals(
+            com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.CARRIER,
+            vm.uiState.value.viewerRole,
+        )
+    }
+
+    @Test
+    fun `showEarningsCard is true only for carrier viewer with amounts`() {
+        val withAmounts = stateFor(tx = txWithAmounts(), role = com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.CARRIER)
+        assertTrue(withAmounts.showEarningsCard)
+
+        val shipper = withAmounts.copy(viewerRole = com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER)
+        assertFalse(shipper.showEarningsCard)
+
+        val noAmounts = stateFor(tx = txNoAmounts(), role = com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.CARRIER)
+        assertFalse(noAmounts.showEarningsCard)
+    }
+
+    @Test
+    fun `showAmountBreakdown is true only for shipper viewer with amounts`() {
+        val shipper = stateFor(tx = txWithAmounts(), role = com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER)
+        assertTrue(shipper.showAmountBreakdown)
+
+        val carrier = shipper.copy(viewerRole = com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.CARRIER)
+        assertFalse(carrier.showAmountBreakdown)
+    }
+
+    @Test
+    fun `canRequestRefund matrix (shipper x status x refund)`() {
+        data class Case(
+            val role: com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole?,
+            val status: TransactionStatus,
+            val hasRefund: Boolean,
+            val expected: Boolean,
+        )
+        val cases = listOf(
+            Case(com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER, TransactionStatus.CAPTURED, false, true),
+            Case(com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER, TransactionStatus.COMPLETED, false, true),
+            Case(com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER, TransactionStatus.PENDING, false, false),
+            Case(com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER, TransactionStatus.COMPLETED, true, false),
+            Case(com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.CARRIER, TransactionStatus.COMPLETED, false, false),
+            Case(null, TransactionStatus.COMPLETED, false, false),
+        )
+        cases.forEach { c ->
+            val tx = txWithAmounts(status = c.status, refund = if (c.hasRefund) com.efthemiosprime.pasabayan.features.payments.model.RefundInfo(amount = 10.0) else null)
+            val state = stateFor(tx = tx, role = c.role)
+            assertEquals(
+                "case role=${c.role} status=${c.status} hasRefund=${c.hasRefund}",
+                c.expected,
+                state.canRequestRefund,
+            )
+        }
+    }
+
+    @Test
+    fun `canAddTip matrix (shipper x status x tip presence)`() {
+        data class Case(
+            val role: com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole?,
+            val status: TransactionStatus,
+            val hasTip: Boolean,
+            val expected: Boolean,
+        )
+        val cases = listOf(
+            Case(com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER, TransactionStatus.COMPLETED, false, true),
+            Case(com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER, TransactionStatus.COMPLETED, true, false),
+            Case(com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER, TransactionStatus.CAPTURED, false, false),
+            Case(com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER, TransactionStatus.PENDING, false, false),
+            Case(com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.CARRIER, TransactionStatus.COMPLETED, false, false),
+        )
+        cases.forEach { c ->
+            val tx = txWithAmounts(
+                status = c.status,
+                tip = if (c.hasTip) com.efthemiosprime.pasabayan.features.payments.model.TipInfo(amount = 5.0) else null,
+            )
+            val state = stateFor(tx = tx, role = c.role)
+            assertEquals(
+                "case role=${c.role} status=${c.status} hasTip=${c.hasTip}",
+                c.expected,
+                state.canAddTip,
+            )
+        }
+    }
+
+    @Test
+    fun `showRefundStatusCard is true when refund present regardless of viewer`() {
+        val tx = txWithAmounts(refund = com.efthemiosprime.pasabayan.features.payments.model.RefundInfo(amount = 10.0))
+        assertTrue(stateFor(tx, com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER).showRefundStatusCard)
+        assertTrue(stateFor(tx, com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.CARRIER).showRefundStatusCard)
+        assertTrue(stateFor(tx, null).showRefundStatusCard)
+
+        assertFalse(stateFor(txWithAmounts(refund = null), com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER).showRefundStatusCard)
+    }
+
+    @Test
+    fun `showPayoutStatusCard is true only for carrier viewer with payout status`() {
+        val tx = txWithAmounts(payoutStatus = com.efthemiosprime.pasabayan.core.domain.`enum`.PayoutStatus.COMPLETED)
+        assertTrue(stateFor(tx, com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.CARRIER).showPayoutStatusCard)
+        assertFalse(stateFor(tx, com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.SHIPPER).showPayoutStatusCard)
+        assertFalse(stateFor(txWithAmounts(payoutStatus = null), com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole.CARRIER).showPayoutStatusCard)
+    }
+
+    private fun stateFor(
+        tx: com.efthemiosprime.pasabayan.features.payments.model.Transaction?,
+        role: com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionRole?,
+    ) = TransactionDetailUiState(transaction = tx, viewerRole = role)
+
+    private fun txWithAmounts(
+        status: TransactionStatus = TransactionStatus.COMPLETED,
+        refund: com.efthemiosprime.pasabayan.features.payments.model.RefundInfo? = null,
+        tip: com.efthemiosprime.pasabayan.features.payments.model.TipInfo? = null,
+        payoutStatus: com.efthemiosprime.pasabayan.core.domain.`enum`.PayoutStatus? = null,
+    ) = com.efthemiosprime.pasabayan.features.payments.model.Transaction(
+        id = 1,
+        transactionStatus = status,
+        amounts = com.efthemiosprime.pasabayan.features.payments.model.TransactionAmounts(total = 100.0),
+        refund = refund,
+        tip = tip,
+        payoutStatus = payoutStatus,
+    )
+
+    private fun txNoAmounts() = com.efthemiosprime.pasabayan.features.payments.model.Transaction(
+        id = 1,
+        transactionStatus = TransactionStatus.COMPLETED,
+        amounts = null,
+    )
+
     // -- StripeConnectViewModel --
 
     @Test
