@@ -1,6 +1,8 @@
 package com.efthemiosprime.pasabayan.features.payments.model
 
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PayoutStatus
+import com.efthemiosprime.pasabayan.core.domain.`enum`.RefundReason
+import com.efthemiosprime.pasabayan.core.domain.`enum`.RefundStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionStatus
 import com.efthemiosprime.pasabayan.core.network.payments.OtherPartyJson
 import com.efthemiosprime.pasabayan.core.network.payments.PayoutJson
@@ -9,6 +11,7 @@ import com.efthemiosprime.pasabayan.core.network.payments.PaymentReceiptJson
 import com.efthemiosprime.pasabayan.core.network.payments.ReceiptAmountJson
 import com.efthemiosprime.pasabayan.core.network.payments.ReceiptDeliveryJson
 import com.efthemiosprime.pasabayan.core.network.payments.RefundInfoJson
+import com.efthemiosprime.pasabayan.core.network.payments.RefundRequestDataJson
 import com.efthemiosprime.pasabayan.core.network.payments.StripeConfigJson
 import com.efthemiosprime.pasabayan.core.network.payments.StripeInfoJson
 import com.efthemiosprime.pasabayan.core.network.payments.TipInfoJson
@@ -172,3 +175,30 @@ fun ReceiptDeliveryJson.toDomain() = PaymentReceiptDelivery(
     deliveryCity = deliveryCity,
     packageTitle = packageTitle,
 )
+
+fun RefundRequestDataJson.toDomain(): RefundRequest = RefundRequest(
+    id = id,
+    transactionId = transactionId,
+    status = status.toRefundStatusOrDefault(),
+    amount = amount,
+    reason = reason.toRefundReasonOrNull(),
+    reasonText = reason,
+    description = description,
+    adminNotes = adminNotes,
+    reviewedAt = reviewedAt,
+    processedAt = processedAt,
+    createdAt = createdAt,
+)
+
+/**
+ * iOS sends the preset reason's *display text* as the wire string (e.g.
+ * "Package was damaged during delivery"). Match by displayText to recover the enum;
+ * unmatched text (OTHER, custom) returns null and the caller keeps `reasonText`.
+ */
+private fun String?.toRefundReasonOrNull(): RefundReason? = this?.let { raw ->
+    RefundReason.entries.firstOrNull { it.displayText == raw }
+}
+
+private fun String.toRefundStatusOrDefault(): RefundStatus = runCatching {
+    RefundStatus.valueOf(uppercase())
+}.getOrDefault(RefundStatus.PENDING)
