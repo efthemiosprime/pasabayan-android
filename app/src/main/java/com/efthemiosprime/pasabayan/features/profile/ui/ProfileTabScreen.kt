@@ -22,8 +22,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.ListAlt
+import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.ManageAccounts
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -51,6 +63,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCardVariant
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
+import com.efthemiosprime.pasabayan.core.designsystem.component.PMenuRow
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.profile.model.ProfileTabUiState
@@ -216,40 +229,64 @@ fun ProfileTabContent(
             title = stringResource(R.string.profile_menu_account),
             testTag = ProfileTestTags.MenuAccount,
         ) {
-            MenuRow(
-                stringResource(R.string.profile_menu_personal_info),
-            ) { onOpenPersonalInfo() }
+            PMenuRow(
+                title = stringResource(R.string.profile_menu_personal_info),
+                subtitle = stringResource(R.string.profile_menu_personal_info_subtitle),
+                leadingIcon = Icons.Filled.Person,
+                onClick = onOpenPersonalInfo,
+            )
             if (shouldShowVehicleInfo(currentRole)) {
-                MenuRow(
-                    stringResource(R.string.profile_menu_vehicle_info),
-                ) { onOpenVehicleInfo() }
+                PMenuRow(
+                    title = stringResource(R.string.profile_menu_vehicle_info),
+                    subtitle = stringResource(R.string.profile_menu_vehicle_info_subtitle),
+                    leadingIcon = Icons.Filled.DirectionsCar,
+                    onClick = onOpenVehicleInfo,
+                )
             }
             if (currentRole == UserRole.SHIPPER) {
-                MenuRow(
-                    stringResource(R.string.profile_menu_shipping_addresses),
-                ) { onOpenPlaceholder("shipping") }
+                PMenuRow(
+                    title = stringResource(R.string.profile_menu_shipping_addresses),
+                    subtitle = stringResource(R.string.profile_menu_shipping_addresses_subtitle),
+                    leadingIcon = Icons.Filled.LocationOn,
+                    onClick = { onOpenPlaceholder("shipping") },
+                )
             }
-            MenuRow(
-                stringResource(R.string.profile_account_menu_label),
-            ) { onOpenAccountManagement() }
+            PMenuRow(
+                title = stringResource(R.string.profile_account_menu_label),
+                subtitle = stringResource(R.string.profile_menu_account_management_subtitle),
+                leadingIcon = Icons.Filled.ManageAccounts,
+                onClick = onOpenAccountManagement,
+            )
         }
         ProfileMenuSection(
             title = stringResource(R.string.profile_menu_payments),
             testTag = ProfileTestTags.MenuPayments,
         ) {
-            MenuRow(
-                stringResource(R.string.profile_menu_payment_methods),
-            ) { onOpenPaymentsHub() }
-            MenuRow(
-                stringResource(R.string.profile_menu_transactions),
-            ) { onOpenPaymentsHub() }
-            MenuRow(
-                stringResource(R.string.profile_menu_receipts),
-            ) { onOpenPaymentsHub() }
+            PMenuRow(
+                title = stringResource(R.string.profile_menu_payment_methods),
+                subtitle = stringResource(R.string.profile_menu_payment_methods_subtitle),
+                leadingIcon = Icons.Filled.CreditCard,
+                onClick = onOpenPaymentsHub,
+            )
+            PMenuRow(
+                title = stringResource(R.string.profile_menu_transactions),
+                subtitle = stringResource(R.string.profile_menu_transactions_subtitle),
+                leadingIcon = Icons.AutoMirrored.Filled.ListAlt,
+                onClick = onOpenPaymentsHub,
+            )
+            PMenuRow(
+                title = stringResource(R.string.profile_menu_receipts),
+                subtitle = stringResource(R.string.profile_menu_receipts_subtitle),
+                leadingIcon = Icons.Filled.Receipt,
+                onClick = onOpenPaymentsHub,
+            )
             if (shouldShowPayoutSetup(currentRole)) {
-                MenuRow(
-                    stringResource(R.string.profile_menu_payout),
-                ) { onOpenPayoutSetup() }
+                PMenuRow(
+                    title = stringResource(R.string.profile_menu_payout),
+                    subtitle = stringResource(R.string.profile_menu_payout_subtitle),
+                    leadingIcon = Icons.Filled.AccountBalance,
+                    onClick = onOpenPayoutSetup,
+                )
             }
         }
         ProfileMenuSection(
@@ -257,14 +294,20 @@ fun ProfileTabContent(
             testTag = ProfileTestTags.MenuBookings,
         ) {
             if (shouldShowDeliveryHistoryMenu(currentRole)) {
-                MenuRow(
-                    stringResource(R.string.profile_menu_delivery_history),
-                ) { onOpenPlaceholder("delivery_history") }
+                PMenuRow(
+                    title = stringResource(R.string.profile_menu_delivery_history),
+                    subtitle = stringResource(R.string.profile_menu_delivery_history_subtitle),
+                    leadingIcon = Icons.Filled.History,
+                    onClick = { onOpenPlaceholder("delivery_history") },
+                )
             }
             if (shouldShowPackageHistoryMenu(currentRole)) {
-                MenuRow(
-                    stringResource(R.string.profile_menu_package_history),
-                ) { onOpenPlaceholder("package_history") }
+                PMenuRow(
+                    title = stringResource(R.string.profile_menu_package_history),
+                    subtitle = stringResource(R.string.profile_menu_package_history_subtitle),
+                    leadingIcon = Icons.Filled.History,
+                    onClick = { onOpenPlaceholder("package_history") },
+                )
             }
         }
         if (shouldShowFavoritesMenu(currentRole)) {
@@ -272,32 +315,46 @@ fun ProfileTabContent(
                 title = stringResource(R.string.profile_menu_favorites),
                 testTag = ProfileTestTags.MenuFavorites,
             ) {
-                MenuRow(
-                    stringResource(R.string.profile_menu_favorites),
-                ) { onOpenFavorites() }
+                PMenuRow(
+                    title = stringResource(R.string.profile_menu_favorites),
+                    subtitle = stringResource(R.string.profile_menu_favorites_subtitle),
+                    leadingIcon = Icons.Filled.Star,
+                    onClick = onOpenFavorites,
+                )
             }
         }
         ProfileMenuSection(
             title = stringResource(R.string.profile_menu_feedback),
             testTag = ProfileTestTags.MenuFeedback,
         ) {
-            MenuRow(
-                stringResource(R.string.profile_menu_reviews),
-            ) { onOpenRatings() }
+            PMenuRow(
+                title = stringResource(R.string.profile_menu_reviews),
+                leadingIcon = Icons.Filled.Star,
+                onClick = onOpenRatings,
+            )
         }
         ProfileMenuSection(
             title = stringResource(R.string.profile_menu_support),
             testTag = ProfileTestTags.MenuSupport,
         ) {
-            MenuRow(
-                stringResource(R.string.profile_menu_help),
-            ) { onOpenHelpCenter() }
-            MenuRow(
-                stringResource(R.string.profile_menu_settings),
-            ) { onOpenSettings() }
-            MenuRow(
-                stringResource(R.string.profile_menu_terms),
-            ) { onOpenLegal() }
+            PMenuRow(
+                title = stringResource(R.string.profile_menu_help),
+                subtitle = stringResource(R.string.profile_menu_help_subtitle),
+                leadingIcon = Icons.AutoMirrored.Filled.HelpOutline,
+                onClick = onOpenHelpCenter,
+            )
+            PMenuRow(
+                title = stringResource(R.string.profile_menu_settings),
+                subtitle = stringResource(R.string.profile_menu_settings_subtitle),
+                leadingIcon = Icons.Filled.Settings,
+                onClick = onOpenSettings,
+            )
+            PMenuRow(
+                title = stringResource(R.string.profile_menu_terms),
+                subtitle = stringResource(R.string.profile_menu_terms_subtitle),
+                leadingIcon = Icons.Filled.Description,
+                onClick = onOpenLegal,
+            )
         }
         PButton(
             text = stringResource(R.string.profile_actions_logout),
@@ -542,31 +599,6 @@ private fun ProfileMenuSection(
             Text(text = title, style = PasabayanTextStyles.Heading.h4)
             content()
         }
-    }
-}
-
-@Composable
-private fun MenuRow(
-    label: String,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = PasabayanSpacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = label,
-            style = PasabayanTextStyles.Body.medium,
-            modifier = Modifier.weight(1f),
-        )
-        Icon(
-            imageVector = Icons.Filled.ChevronRight,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 
