@@ -97,6 +97,21 @@
     <string name="payments_payout_disabled">Disabled</string>
     <string name="payments_payout_connected_on">Connected on %1$s</string>
 
+    <!-- Payout state labels — mirror PayoutStatus enum cases (distinct from payments_payout_status_*
+         which are Stripe-Connect screen states). -->
+    <string name="payments_payout_state_pending">Pending</string>
+    <string name="payments_payout_state_processing">Processing</string>
+    <string name="payments_payout_state_on_hold">On hold</string>
+    <string name="payments_payout_state_scheduled">Scheduled</string>
+    <string name="payments_payout_state_completed">Completed</string>
+    <string name="payments_payout_state_failed">Failed</string>
+
+    <!-- Refund state labels — mirror RefundStatus enum cases. -->
+    <string name="payments_refund_state_pending">Pending</string>
+    <string name="payments_refund_state_approved">Approved</string>
+    <string name="payments_refund_state_rejected">Rejected</string>
+    <string name="payments_refund_state_processed">Processed</string>
+
     <!-- Refund reason presets — keys mirror RefundReason enum cases. -->
     <string name="payments_refund_reason_damaged">Package was damaged during delivery</string>
     <string name="payments_refund_reason_not_delivered">Package was never delivered</string>

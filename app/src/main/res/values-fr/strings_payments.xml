@@ -97,6 +97,20 @@
     <string name="payments_payout_disabled">Désactivé</string>
     <string name="payments_payout_connected_on">Connecté le %1$s</string>
 
+    <!-- Payout state labels — mirror PayoutStatus enum cases. -->
+    <string name="payments_payout_state_pending">En attente</string>
+    <string name="payments_payout_state_processing">En cours</string>
+    <string name="payments_payout_state_on_hold">Suspendu</string>
+    <string name="payments_payout_state_scheduled">Planifié</string>
+    <string name="payments_payout_state_completed">Terminé</string>
+    <string name="payments_payout_state_failed">Échec</string>
+
+    <!-- Refund state labels — mirror RefundStatus enum cases. -->
+    <string name="payments_refund_state_pending">En attente</string>
+    <string name="payments_refund_state_approved">Approuvé</string>
+    <string name="payments_refund_state_rejected">Rejeté</string>
+    <string name="payments_refund_state_processed">Traité</string>
+
     <!-- Refund reason presets — keys mirror RefundReason enum cases. -->
     <string name="payments_refund_reason_damaged">Le colis a été endommagé pendant la livraison</string>
     <string name="payments_refund_reason_not_delivered">Le colis n\'a jamais été livré</string>

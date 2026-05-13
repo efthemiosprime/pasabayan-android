@@ -136,6 +136,17 @@ class TripJsonModelsDecodeTest {
         assertNull(pkg.packageType)
     }
 
+    // iOS parity: the embedded `package` object on `/trips/{id}/matches` sends
+    // weight under `weight_kg` (`TripPackageInfo`), not `package_weight_kg`.
+    // Both keys must decode so the per-match card renders weight against the
+    // live backend.
+    @Test
+    fun `PackageSummaryJson decodes iOS-shape weight_kg key`() {
+        val raw = """{"id": 60, "description": "Books", "weight_kg": "2.5"}"""
+        val pkg = json.decodeFromString<PackageSummaryJson>(raw)
+        assertEquals(2.5, pkg.weightKg!!, 0.001)
+    }
+
     @Test
     fun `TripJson decodes with missing optional fields`() {
         val raw = """{"id": 99, "trip_status": "cancelled", "transportation_method": "other"}"""

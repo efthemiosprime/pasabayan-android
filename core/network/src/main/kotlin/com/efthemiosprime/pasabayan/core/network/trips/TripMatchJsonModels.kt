@@ -42,7 +42,12 @@ data class TripMatchPackageJson(
 data class PackageSummaryJson(
     val id: Int = 0,
     val description: String? = null,
-    @SerialName("package_weight_kg") @Serializable(with = FlexibleDoubleSerializer::class) val weightKg: Double? = null,
+    // iOS `TripPackageInfo` (`TripModels.swift:55`) sends weight under `weight_kg`.
+    // `package_weight_kg` is the Android-internal alias; accept both so the
+    // per-match card row renders weight against the iOS-parity backend.
+    @SerialName("package_weight_kg")
+    @JsonNames("weight_kg")
+    @Serializable(with = FlexibleDoubleSerializer::class) val weightKg: Double? = null,
     @SerialName("package_dimensions") val dimensions: String? = null,
     // iOS parity (`TripPackageInfo`): the trip-matches endpoint hangs pickup/delivery cities,
     // fragility, and package type under the embedded `package` object. iOS keys are `pickup_city`,
