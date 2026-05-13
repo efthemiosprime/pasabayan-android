@@ -86,4 +86,12 @@ interface ProfileApi {
 
     @GET("user/stats")
     suspend fun getUserStats(): Response<UserStatsResponseJson>
+
+    /**
+     * Profile-tab "needs attention" signals — phone verification needed, payout
+     * setup needed, pending-reviews count, total, degraded flag, server timestamp.
+     * iOS: `GET /api/me/attention` consumed by `ProfileAttentionViewModel`.
+     */
+    @GET("me/attention")
+    suspend fun getAttention(): Response<AttentionSignalsJson>
 }

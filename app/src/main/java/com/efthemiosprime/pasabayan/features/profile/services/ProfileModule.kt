@@ -25,6 +25,12 @@ abstract class ProfileBindingsModule {
 
     @Binds
     @Singleton
+    abstract fun bindProfileAttentionRepository(
+        impl: ProfileAttentionRepositoryImpl,
+    ): ProfileAttentionRepository
+
+    @Binds
+    @Singleton
     abstract fun bindImageCompressor(impl: BitmapImageCompressor): ImageCompressor
 }
 
