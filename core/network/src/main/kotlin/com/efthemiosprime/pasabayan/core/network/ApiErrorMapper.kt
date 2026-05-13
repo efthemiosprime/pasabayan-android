@@ -6,6 +6,7 @@ import com.efthemiosprime.pasabayan.core.network.dto.GenericJsonObjectDto
 import com.efthemiosprime.pasabayan.core.network.dto.PaymentRequiredBodyDto
 import com.efthemiosprime.pasabayan.core.network.dto.ValidationErrorResponseDto
 import com.efthemiosprime.pasabayan.core.network.dto.booleanAt
+import com.efthemiosprime.pasabayan.core.network.dto.doubleAt
 import com.efthemiosprime.pasabayan.core.network.dto.stringAt
 import com.efthemiosprime.pasabayan.core.network.dto.toFieldErrorsMap
 import kotlinx.serialization.json.Json
@@ -69,13 +70,22 @@ object ApiErrorMapper {
         }
         return try {
             val dto = json.decodeFromString(GenericJsonObjectDto.serializer(), raw)
-            DomainError.Conflict(
-                message = dto.message ?: "This action cannot be completed",
-                expiresAt = dto.expiresAt,
-            )
+            val msg = dto.message
+            when {
+                msg != null && isTripOvercommittedMessage(msg) -> DomainError.TripOvercommitted(msg)
+                else -> DomainError.Conflict(
+                    message = msg ?: "This action cannot be completed",
+                    expiresAt = dto.expiresAt,
+                )
+            }
         } catch (_: Exception) {
             DomainError.Conflict(message = "This action cannot be completed", expiresAt = null)
         }
+    }
+
+    private fun isTripOvercommittedMessage(msg: String): Boolean {
+        val n = msg.lowercase()
+        return n.contains("fully booked") || n.contains("no remaining capacity")
     }
 
     private fun map400(raw: String, json: Json): DomainError {
@@ -88,6 +98,15 @@ object ApiErrorMapper {
         if (raw.isNotBlank()) {
             try {
                 val root = json.parseToJsonElement(raw).jsonObject
+                if (root.stringAt("error") == "capacity_acknowledgment_required") {
+                    val compat = root["compatibility"] as? JsonObject
+                    return DomainError.CapacityAcknowledgmentRequired(
+                        message = root.stringAt("message"),
+                        packageWeightKg = compat?.doubleAt("package_weight_kg"),
+                        tripAvailableWeightKg = compat?.doubleAt("trip_available_weight_kg"),
+                        overageKg = compat?.doubleAt("overage_kg"),
+                    )
+                }
                 if (root.booleanAt("carrier_onboarding_required") == true) {
                     val msg = root.stringAt("message") ?: "Carrier onboarding required"
                     return DomainError.CarrierOnboardingRequired(msg)

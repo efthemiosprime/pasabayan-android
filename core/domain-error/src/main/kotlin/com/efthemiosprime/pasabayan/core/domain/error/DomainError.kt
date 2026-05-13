@@ -31,6 +31,26 @@ sealed class DomainError {
 
     data class Conflict(val message: String?, val expiresAt: String?) : DomainError()
 
+    /**
+     * HTTP 409 returned when the carrier's trip has been clamped to zero
+     * remaining capacity after a successful over-capacity accept. Surface
+     * a distinct "trip is full" UI rather than the generic conflict copy.
+     */
+    data class TripOvercommitted(val message: String?) : DomainError()
+
+    /**
+     * HTTP 422 with `error: "capacity_acknowledgment_required"` — server-side
+     * fallback when the accept call didn't carry `acknowledge_overage: true`
+     * on an over-capacity match. UI should re-surface the same confirmation
+     * sheet as the local pre-flight check and retry on confirm.
+     */
+    data class CapacityAcknowledgmentRequired(
+        val message: String?,
+        val packageWeightKg: Double?,
+        val tripAvailableWeightKg: Double?,
+        val overageKg: Double?,
+    ) : DomainError()
+
     data class RateLimited(val retryAfterSeconds: Long?) : DomainError()
 
     data class CarrierOnboardingRequired(val message: String?) : DomainError()

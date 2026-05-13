@@ -8,6 +8,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.doubleOrNull
 
 /** Mirrors iOS `APIErrorResponse`. */
 @Serializable
@@ -51,3 +52,6 @@ fun JsonObject.booleanAt(key: String): Boolean? =
 
 fun JsonObject.stringAt(key: String): String? =
     (get(key) as? JsonPrimitive)?.contentOrNull
+
+fun JsonObject.doubleAt(key: String): Double? =
+    (get(key) as? JsonPrimitive)?.doubleOrNull

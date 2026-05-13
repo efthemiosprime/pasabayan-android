@@ -31,4 +31,11 @@
     <string name="error_carrier_onboarding_message">%1$s</string>
     <string name="error_consent_required">Un consentement supplémentaire est requis pour continuer</string>
     <string name="error_consent_message">%1$s</string>
+
+    <!-- Politique de poids indicatif : ces erreurs alimentent généralement des fiches de confirmation,
+         pas des toasts. Ce libellé sert de repli si l’erreur atterrit dans un canal générique. -->
+    <string name="error_capacity_ack_required">Confirmation requise : ce trajet dépasse la capacité indiquée par le transporteur.</string>
+    <string name="error_capacity_ack_required_message">%1$s</string>
+    <string name="error_trip_overcommitted">Ce trajet est complet et ne peut plus accepter de correspondances.</string>
+    <string name="error_trip_overcommitted_message">%1$s</string>
 </resources>

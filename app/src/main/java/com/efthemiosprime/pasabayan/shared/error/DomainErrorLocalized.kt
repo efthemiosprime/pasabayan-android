@@ -48,6 +48,16 @@ fun DomainError.localizedMessage(context: Context): String {
             if (m != null) c.getString(R.string.error_conflict_message, m)
             else c.getString(R.string.error_conflict)
         }
+        is DomainError.TripOvercommitted -> {
+            val m = message?.takeIf { it.isNotBlank() }
+            if (m != null) c.getString(R.string.error_trip_overcommitted_message, m)
+            else c.getString(R.string.error_trip_overcommitted)
+        }
+        is DomainError.CapacityAcknowledgmentRequired -> {
+            val m = message?.takeIf { it.isNotBlank() }
+            if (m != null) c.getString(R.string.error_capacity_ack_required_message, m)
+            else c.getString(R.string.error_capacity_ack_required)
+        }
         is DomainError.RateLimited -> c.getString(R.string.error_rate_limited)
         is DomainError.CarrierOnboardingRequired -> {
             val m = message?.takeIf { it.isNotBlank() }

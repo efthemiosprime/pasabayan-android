@@ -39,6 +39,8 @@ object ErrorAlertPolicy {
         DomainError.NotFound,
         is DomainError.TripNotFound,
         is DomainError.Conflict,
+        is DomainError.TripOvercommitted,
+        is DomainError.CapacityAcknowledgmentRequired,
         is DomainError.RateLimited,
         DomainError.UserNotCarrier,
         DomainError.MixedTransportTypes,
