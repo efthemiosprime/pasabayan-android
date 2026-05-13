@@ -659,6 +659,7 @@ private fun TripValidationError.toStringRes(): Int = when (this) {
     TripValidationError.SpaceInvalid -> R.string.trips_create_validation_space_invalid
     TripValidationError.SpaceOutOfRange -> R.string.trips_create_validation_space_out_of_range
     TripValidationError.PriceRequired -> R.string.trips_create_validation_price_required
+    TripValidationError.PricePerKgOutOfRange -> R.string.trips_create_validation_price_per_kg_out_of_range
     TripValidationError.TransportMethodRequired -> R.string.trips_create_validation_transport_required
     TripValidationError.DepartureRequired -> R.string.trips_create_validation_departure_required
     TripValidationError.DepartureTooSoon -> R.string.trips_create_validation_departure_soon

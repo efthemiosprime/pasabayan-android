@@ -210,6 +210,8 @@
     <string name="trips_edit_shared_delivery">Fen\u00eatre de livraison partag\u00e9e</string>
     <string name="trips_edit_capacity_section">Capacit\u00e9</string>
     <string name="trips_edit_pricing_section">Tarification</string>
+    <string name="trips_edit_status_section">Statut du trajet</string>
+    <string name="trips_edit_status_locked_note">Utilisez Mettre à jour le statut pour aller au-delà d\'Actif.</string>
 
     <!-- Browse -->
     <string name="trips_browse_title">Parcourir les trajets</string>

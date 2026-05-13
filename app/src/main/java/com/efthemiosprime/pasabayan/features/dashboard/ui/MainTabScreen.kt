@@ -1053,6 +1053,13 @@ fun MainTabScreen(
                 carrierTripsViewModel.editTrip(tripId = trip.id, request = request)
                 dismissActiveSheetRoute()
             },
+            // iOS parity: activation from the edit sheet routes through the sanctioned
+            // POST /trips/{id}/activate (Slice A). Dismissing afterwards mirrors the iOS
+            // behavior of closing the sheet so the carrier list reflects the new status.
+            onActivate = {
+                carrierTripsViewModel.activateTrip(trip.id)
+                dismissActiveSheetRoute()
+            },
         )
     }
 

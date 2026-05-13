@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +34,7 @@ import com.efthemiosprime.pasabayan.features.trips.components.EditTripCapacitySe
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripPricingSection
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripRouteSection
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripScheduleSection
+import com.efthemiosprime.pasabayan.features.trips.components.EditTripStatusSection
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 
 @Composable
@@ -40,6 +43,7 @@ fun EditTripSheet(
     trip: Trip,
     onDismiss: () -> Unit,
     onSave: (TripUpdateRequestJson) -> Unit,
+    onActivate: () -> Unit = {},
 ) {
     // iOS parity: route + capacity edits are gated by trip status — only PLANNING trips can
     // change route/dates/capacity/pricing. Notes stay editable regardless. See
@@ -71,6 +75,28 @@ fun EditTripSheet(
         )
     }
     var notesText by remember { mutableStateOf(trip.specialNotes.orEmpty()) }
+    var showActivateConfirm by remember { mutableStateOf(false) }
+
+    // Activate confirmation — iOS EditTripSheet.swift:212. Routes through the sanctioned
+    // POST /trips/{id}/activate via the caller's `onActivate` (Slice A).
+    if (showActivateConfirm) {
+        AlertDialog(
+            onDismissRequest = { showActivateConfirm = false },
+            title = { Text(stringResource(R.string.trips_action_activate_trip_confirm_title)) },
+            text = { Text(stringResource(R.string.trips_action_activate_trip_confirm_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showActivateConfirm = false
+                    onActivate()
+                }) { Text(stringResource(R.string.trips_action_activate_trip)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showActivateConfirm = false }) {
+                    Text(stringResource(R.string.common_buttons_cancel))
+                }
+            },
+        )
+    }
 
     PModalBottomSheet(onDismissRequest = onDismiss) {
         PDetailSheetScaffold(
@@ -125,6 +151,11 @@ fun EditTripSheet(
                     priceText = priceText,
                     onPriceChange = { priceText = it },
                     locked = routeLocked,
+                )
+
+                EditTripStatusSection(
+                    status = trip.tripStatus,
+                    onActivateClick = { showActivateConfirm = true },
                 )
 
                 POutlinedTextField(

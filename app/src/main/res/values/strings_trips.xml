@@ -211,6 +211,8 @@
     <string name="trips_edit_shared_delivery">Shared delivery window</string>
     <string name="trips_edit_capacity_section">Capacity</string>
     <string name="trips_edit_pricing_section">Pricing</string>
+    <string name="trips_edit_status_section">Trip Status</string>
+    <string name="trips_edit_status_locked_note">Use Update Status to move past Active.</string>
 
     <!-- Browse -->
     <string name="trips_browse_title">Browse Trips</string>
