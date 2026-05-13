@@ -97,6 +97,14 @@ data class TripTemplateJson(
     @SerialName("suggested_arrival_date") val suggestedArrivalDate: String? = null,
     @SerialName("suggested_weight_kg") @Serializable(with = FlexibleDoubleSerializer::class) val suggestedWeightKg: Double? = null,
     @SerialName("suggested_space_liters") @Serializable(with = FlexibleDoubleSerializer::class) val suggestedSpaceLiters: Double? = null,
+    /**
+     * Suggested transportation method for the new trip, parsed from the server's template. iOS
+     * parity (`TripTemplate.transportationMethod` in `TripModels.swift:304`) — iOS' shape uses
+     * the bare `transportation_method` key; the Android contract expects `suggested_*` for
+     * symmetry with the other suggestion fields. Optional so older server responses stay
+     * decodable; consumers fall back to a sensible default when null.
+     */
+    @SerialName("suggested_transportation_method") val suggestedTransportationMethod: String? = null,
     @SerialName("package_details") val packageDetails: PackageTemplateDetailsJson? = null,
 )
 

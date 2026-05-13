@@ -136,6 +136,7 @@ fun TripTemplateJson.toDomain(packageId: Int): TripTemplateData = TripTemplateDa
     suggestedArrivalDate = suggestedArrivalDate,
     suggestedWeightKg = suggestedWeightKg,
     suggestedSpaceLiters = suggestedSpaceLiters,
+    suggestedTransportationMethod = suggestedTransportationMethod?.takeIf { it.isNotBlank() },
     packageDescription = packageDetails?.description,
     packageWeightKg = packageDetails?.weightKg,
     packageUrgencyLevel = packageDetails?.urgencyLevel,

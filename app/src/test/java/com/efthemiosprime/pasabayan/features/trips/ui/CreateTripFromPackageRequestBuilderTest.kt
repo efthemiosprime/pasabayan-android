@@ -87,6 +87,66 @@ class CreateTripFromPackageRequestBuilderTest {
         assertNull(request.flatTripPrice)
     }
 
+    // iOS parity (`populateFormFromTemplate` :202-217 + `syncCarrierLegFromSharedSchedule`):
+    // shared pickup/delivery default to departure/arrival so the carrier doesn't have to
+    // re-enter the schedule when creating a trip from a package.
+    @Test
+    fun `shared pickup and delivery default to departure and arrival`() {
+        val request = buildRequestFromState(
+            packageId = 88,
+            template = template,
+            departureDate = "2026-07-01T08:00:00Z",
+            arrivalDate = "2026-07-01T16:00:00Z",
+            availableWeightKg = "5",
+            availableSpaceLiters = "25",
+            transportationMethod = TransportationMethod.CAR,
+            price = "",
+            pickupAddress = "",
+            dropoffAddress = "",
+            specialNotes = "",
+            proposedPrice = "",
+            requestMessage = "",
+        )
+        assertEquals("2026-07-01T08:00:00Z", request.sharedPickupDate)
+        assertEquals("2026-07-01T16:00:00Z", request.sharedDeliveryDate)
+    }
+
+    @Test
+    fun `blank departure or arrival leaves shared schedule null`() {
+        val request = buildRequestFromState(
+            packageId = 88,
+            template = template,
+            departureDate = "",
+            arrivalDate = "",
+            availableWeightKg = "5",
+            availableSpaceLiters = "25",
+            transportationMethod = TransportationMethod.CAR,
+            price = "",
+            pickupAddress = "",
+            dropoffAddress = "",
+            specialNotes = "",
+            proposedPrice = "",
+            requestMessage = "",
+        )
+        assertNull(request.sharedPickupDate)
+        assertNull(request.sharedDeliveryDate)
+    }
+
+    @Test
+    fun `parseTransportationMethod maps server lowercase strings to enum`() {
+        assertEquals(TransportationMethod.CAR, parseTransportationMethod("car"))
+        assertEquals(TransportationMethod.FLIGHT, parseTransportationMethod("flight"))
+        // Case-insensitive: server may upper-case or mix case.
+        assertEquals(TransportationMethod.SHIP, parseTransportationMethod("Ship"))
+    }
+
+    @Test
+    fun `parseTransportationMethod returns null for blank or unknown values`() {
+        assertNull(parseTransportationMethod(""))
+        assertNull(parseTransportationMethod("   "))
+        assertNull(parseTransportationMethod("teleport"))
+    }
+
     @Test
     fun `transportation method serializes to lowercase wire value`() {
         listOf(

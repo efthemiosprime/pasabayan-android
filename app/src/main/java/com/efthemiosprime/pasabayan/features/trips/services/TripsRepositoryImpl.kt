@@ -269,6 +269,11 @@ class TripsRepositoryImpl @Inject constructor(
             autoRequestPackageId = request.packageId,
             proposedPrice = request.proposedPrice,
             requestMessage = request.requestMessage,
+            // iOS parity: shared pickup/delivery dates derived from departure/arrival in the
+            // form. The wire DTO already carries `pickup_date` / `delivery_date`; only emit
+            // them when the screen actually supplied a value.
+            pickupDate = request.sharedPickupDate,
+            deliveryDate = request.sharedDeliveryDate,
         )
         return createTrip(payload)
     }

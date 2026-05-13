@@ -10,6 +10,13 @@ data class TripTemplateData(
     val suggestedArrivalDate: String?,
     val suggestedWeightKg: Double?,
     val suggestedSpaceLiters: Double?,
+    /**
+     * Suggested transportation method (server lowercase string, e.g. `"car"`, `"flight"`).
+     * iOS parity: `TripTemplate.transportationMethod` (Swift :304) — when present, the form
+     * preselects this; otherwise the screen keeps its own default. Optional so we don't depend
+     * on the server returning it.
+     */
+    val suggestedTransportationMethod: String? = null,
     val packageDescription: String?,
     val packageWeightKg: Double?,
     val packageUrgencyLevel: String?,
@@ -36,4 +43,12 @@ data class CreateTripFromPackageRequest(
     val dropoffAddress: String?,
     val proposedPrice: Double?,
     val requestMessage: String?,
+    /**
+     * Optional shared pickup window at origin (ISO 8601). iOS auto-derives this from
+     * [departureDate] at template-load time; Android does the same so the carrier doesn't
+     * have to re-enter the shared schedule manually.
+     */
+    val sharedPickupDate: String? = null,
+    /** Optional shared delivery / handoff window at destination, derived from [arrivalDate]. */
+    val sharedDeliveryDate: String? = null,
 )

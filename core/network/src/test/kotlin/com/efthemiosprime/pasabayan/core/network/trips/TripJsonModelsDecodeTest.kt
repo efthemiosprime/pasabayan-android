@@ -414,6 +414,27 @@ class TripJsonModelsDecodeTest {
         assertTrue(packageDetails.isFragile)
     }
 
+    @Test
+    fun `TripTemplateJson decodes suggested_transportation_method`() {
+        val raw = """
+            {
+              "origin_city": "Toronto",
+              "destination_city": "Montreal",
+              "suggested_departure_date": "2026-05-01T10:00:00Z",
+              "suggested_transportation_method": "car"
+            }
+        """.trimIndent()
+        val template = json.decodeFromString<TripTemplateJson>(raw)
+        assertEquals("car", template.suggestedTransportationMethod)
+    }
+
+    @Test
+    fun `TripTemplateJson leaves suggested_transportation_method null when server omits it`() {
+        val raw = """{"origin_city":"Toronto","destination_city":"Montreal"}"""
+        val template = json.decodeFromString<TripTemplateJson>(raw)
+        assertNull(template.suggestedTransportationMethod)
+    }
+
     // iOS parity: trip template package_details also carries `package_type` for the
     // create-from-package card.
     @Test

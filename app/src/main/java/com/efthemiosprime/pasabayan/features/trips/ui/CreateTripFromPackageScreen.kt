@@ -96,6 +96,12 @@ fun CreateTripFromPackageScreen(
         arrivalMillis = DateTimeParsing.parseApiDateTime(template.suggestedArrivalDate)
         availableWeightKg = template.suggestedWeightKg?.toString().orEmpty()
         availableSpaceLiters = template.suggestedSpaceLiters?.toString().orEmpty()
+        // iOS parity (`CreateTripFromPackageViewModel.populateFormFromTemplate` :231-234):
+        // preselect the suggested transportation method when the server returns one. Falls
+        // through to the screen's default (CAR) when null or unrecognized.
+        template.suggestedTransportationMethod
+            ?.let { raw -> parseTransportationMethod(raw) }
+            ?.let { transportationMethod = it }
     }
 
     LaunchedEffect(state.createdTrip?.id) {
@@ -296,6 +302,12 @@ internal fun buildRequestFromState(
         dropoffAddress = dropoffAddress.ifBlank { null },
         proposedPrice = proposedPrice.toDoubleOrNull(),
         requestMessage = requestMessage.ifBlank { null },
+        // iOS parity (`populateFormFromTemplate` :202-217 + `syncCarrierLegFromSharedSchedule`):
+        // shared pickup / delivery default to the departure / arrival wire timestamps so the
+        // carrier doesn't have to re-enter the schedule. Empty when the carrier hasn't set a
+        // departure/arrival yet.
+        sharedPickupDate = departureDate.ifBlank { null },
+        sharedDeliveryDate = arrivalDate.ifBlank { null },
     )
 }
 
@@ -434,6 +446,17 @@ private fun TransportMethodSelector(
             }
         }
     }
+}
+
+/**
+ * Maps the server's lowercase transport-method string (`"car"`, `"flight"`, ...) to the
+ * domain enum. Returns null when the value is blank or doesn't match a known case so the
+ * caller can keep its existing default. Exposed `internal` so the tests can pin parity with
+ * iOS' `TransportationMethod(rawValue:)` lookup.
+ */
+internal fun parseTransportationMethod(raw: String): TransportationMethod? {
+    if (raw.isBlank()) return null
+    return TransportationMethod.entries.firstOrNull { it.name.equals(raw, ignoreCase = true) }
 }
 
 private val TRANSPORT_OPTIONS = listOf(

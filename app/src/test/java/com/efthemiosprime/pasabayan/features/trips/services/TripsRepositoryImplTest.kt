@@ -430,6 +430,83 @@ class TripsRepositoryImplTest {
     }
 
     @Test
+    fun `createTripFromPackage forwards shared schedule onto wire pickup_date and delivery_date`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "message":"Created",
+                    "data":{"id": 20, "origin_city":"Toronto", "destination_city":"Ottawa",
+                            "trip_status":"planning", "transportation_method":"car"}
+                }""",
+            ),
+        )
+        repo.createTripFromPackage(
+            com.efthemiosprime.pasabayan.features.trips.model.CreateTripFromPackageRequest(
+                packageId = 77,
+                originCity = "Toronto",
+                originCountry = "Canada",
+                destinationCity = "Ottawa",
+                destinationCountry = "Canada",
+                departureDate = "2026-04-01T08:00:00Z",
+                arrivalDate = "2026-04-01T12:00:00Z",
+                availableWeightKg = 10.0,
+                availableSpaceLiters = 20.0,
+                transportationMethod = "car",
+                pricePerKg = null,
+                flatTripPrice = 30.0,
+                specialNotes = null,
+                pickupAddress = null,
+                dropoffAddress = null,
+                proposedPrice = null,
+                requestMessage = null,
+                sharedPickupDate = "2026-04-01T08:00:00Z",
+                sharedDeliveryDate = "2026-04-01T12:00:00Z",
+            ),
+        )
+        val request = server.takeRequest()
+        val body = request.body.readUtf8()
+        assertTrue("body should carry pickup_date, got $body", body.contains("\"pickup_date\":\"2026-04-01T08:00:00Z\""))
+        assertTrue("body should carry delivery_date, got $body", body.contains("\"delivery_date\":\"2026-04-01T12:00:00Z\""))
+    }
+
+    @Test
+    fun `createTripFromPackage omits pickup_date and delivery_date when shared schedule is null`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "message":"Created",
+                    "data":{"id": 21, "origin_city":"Toronto", "destination_city":"Ottawa",
+                            "trip_status":"planning", "transportation_method":"car"}
+                }""",
+            ),
+        )
+        repo.createTripFromPackage(
+            com.efthemiosprime.pasabayan.features.trips.model.CreateTripFromPackageRequest(
+                packageId = 77,
+                originCity = "Toronto",
+                originCountry = "Canada",
+                destinationCity = "Ottawa",
+                destinationCountry = "Canada",
+                departureDate = "2026-04-01T08:00:00Z",
+                arrivalDate = "2026-04-01T12:00:00Z",
+                availableWeightKg = 10.0,
+                availableSpaceLiters = 20.0,
+                transportationMethod = "car",
+                pricePerKg = null,
+                flatTripPrice = 30.0,
+                specialNotes = null,
+                pickupAddress = null,
+                dropoffAddress = null,
+                proposedPrice = null,
+                requestMessage = null,
+            ),
+        )
+        val body = server.takeRequest().body.readUtf8()
+        assertFalse("pickup_date should be omitted, got $body", body.contains("pickup_date"))
+        assertFalse("delivery_date should be omitted, got $body", body.contains("delivery_date"))
+    }
+
+    @Test
     fun `createTripFromPackage injects auto request fields`() = runBlocking {
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(

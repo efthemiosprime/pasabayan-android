@@ -127,6 +127,31 @@ class CreateTripFromPackageViewModelTest {
     }
 
     @Test
+    fun `loadTemplate preserves suggestedTransportationMethod when server returns it`() = runTest {
+        // iOS parity (Slice G): the form preselects the suggested transport when present.
+        fakeRepo.tripTemplateResult = Result.success(
+            TripTemplateData(
+                packageId = 4,
+                originCity = "Toronto",
+                originCountry = "Canada",
+                destinationCity = "Montreal",
+                destinationCountry = "Canada",
+                suggestedDepartureDate = null,
+                suggestedArrivalDate = null,
+                suggestedWeightKg = 12.0,
+                suggestedSpaceLiters = 50.0,
+                suggestedTransportationMethod = "car",
+                packageDescription = null,
+                packageWeightKg = null,
+                packageUrgencyLevel = null,
+            ),
+        )
+        viewModel.loadTemplate(4)
+        advanceUntilIdle()
+        assertEquals("car", viewModel.uiState.value.template?.suggestedTransportationMethod)
+    }
+
+    @Test
     fun `loadTemplate stores returned template`() = runTest {
         fakeRepo.tripTemplateResult = Result.success(
             TripTemplateData(
