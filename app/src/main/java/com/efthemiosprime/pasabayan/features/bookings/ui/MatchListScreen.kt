@@ -38,6 +38,8 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.features.bookings.components.CounterOfferSnackbar
 import com.efthemiosprime.pasabayan.features.bookings.components.IncomingRequestSnackbar
 import com.efthemiosprime.pasabayan.features.bookings.components.MatchCard
+import com.efthemiosprime.pasabayan.features.bookings.components.OverageConfirmationDialog
+import com.efthemiosprime.pasabayan.core.designsystem.component.PAlertDialog
 import com.efthemiosprime.pasabayan.features.bookings.model.CounterOfferContext
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.BookingAction
@@ -333,6 +335,27 @@ fun MatchListScreen(
             },
             onDismiss = { counterOfferTarget = null },
             isSubmitting = state.isSubmittingCounterOffer,
+        )
+    }
+
+    // "Accept Anyway?" — advisory-weight policy. Surfaces from pre-flight on
+    // the local match or from the 422 fallback when the server insists.
+    state.pendingOverageConfirmation?.let { pending ->
+        OverageConfirmationDialog(
+            data = pending,
+            onConfirm = { viewModel.confirmOverageAcceptance() },
+            onDismiss = { viewModel.dismissOverageConfirmation() },
+        )
+    }
+
+    // "Trip is full" — 409 trip-overcommitted state, distinct from generic conflict.
+    state.tripOvercommitted?.let { message ->
+        PAlertDialog(
+            title = stringResource(R.string.matching_trip_overcommitted_title),
+            message = message,
+            confirmText = stringResource(R.string.matching_trip_overcommitted_dismiss),
+            onConfirm = { viewModel.clearTripOvercommitted() },
+            onDismiss = { viewModel.clearTripOvercommitted() },
         )
     }
 }

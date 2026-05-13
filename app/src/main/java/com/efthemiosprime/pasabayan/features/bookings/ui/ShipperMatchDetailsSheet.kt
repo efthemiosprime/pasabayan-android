@@ -40,6 +40,7 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.features.bookings.components.CounterOfferBanner
 import com.efthemiosprime.pasabayan.features.bookings.components.MatchStatusBadgeConfig
+import com.efthemiosprime.pasabayan.features.bookings.components.OverCapacityBanner
 import com.efthemiosprime.pasabayan.features.bookings.model.BookingAction
 import com.efthemiosprime.pasabayan.features.bookings.model.CounterOfferContext
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
@@ -84,6 +85,19 @@ fun ShipperMatchDetailsSheetContent(
                 context = ctx,
                 currentUserId = currentUserId,
                 onDismiss = {},
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        // Over-capacity banner — advisory-weight policy. Persists across
+        // every detail re-open, computed locally from the match record
+        // (matches iOS — the 201 `compatibility` is informational only).
+        val pkgKg = match.packageRequest?.weightKg
+        val availableKg = match.carrierTrip?.availableWeightKg
+        if (pkgKg != null && availableKg != null && pkgKg > availableKg) {
+            OverCapacityBanner(
+                packageWeightKg = pkgKg,
+                availableWeightKg = availableKg,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

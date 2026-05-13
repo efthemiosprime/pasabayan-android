@@ -154,4 +154,16 @@
     <string name="bookings_incoming_snackbar_title_carrier_to_shipper">Nouvelle offre de transport de %1$s</string>
     <string name="bookings_incoming_snackbar_dismiss">Ignorer la demande</string>
     <string name="bookings_incoming_snackbar_more">+%1$d en attente</string>
+
+    <!-- Politique de poids indicatif : bannière en fil de discussion + fiche « Accepter quand même » -->
+    <string name="matching_overage_banner_title">Plus lourd que la capacité indiquée par le transporteur</string>
+    <string name="matching_overage_banner_body">Ce colis pèse %1$s, le transporteur a %2$s disponibles. Il peut refuser.</string>
+    <string name="matching_overage_confirm_title">Accepter quand même ?</string>
+    <string name="matching_overage_confirm_body_carrier">Ce colis pèse %1$s. Vous avez indiqué %2$s de capacité disponible sur ce trajet — soit %3$s de dépassement. Accepter signifie que vous vous engagez à transporter le surplus. Le prix convenu reste le prix convenu ; le poids n\'est donné qu\'à titre indicatif.</string>
+    <string name="matching_overage_confirm_body_shipper">Votre colis pèse %1$s mais le transporteur a indiqué %2$s disponibles — soit %3$s de dépassement. Accepter confirme que vous poursuivez malgré la limite indiquée par le transporteur. Le prix convenu reste le prix convenu ; le poids n\'est donné qu\'à titre indicatif.</string>
+    <string name="matching_overage_confirm_accept">Accepter quand même</string>
+    <string name="matching_overage_confirm_cancel">Annuler</string>
+    <string name="matching_overage_kg_format">%1$.1f kg</string>
+    <string name="matching_trip_overcommitted_title">Trajet complet</string>
+    <string name="matching_trip_overcommitted_dismiss">OK</string>
 </resources>

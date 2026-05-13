@@ -154,4 +154,16 @@
     <string name="bookings_incoming_snackbar_title_carrier_to_shipper">New carrier offer from %1$s</string>
     <string name="bookings_incoming_snackbar_dismiss">Dismiss request</string>
     <string name="bookings_incoming_snackbar_more">+%1$d more pending</string>
+
+    <!-- Advisory-weight policy: in-thread banner + Accept-Anyway dialog -->
+    <string name="matching_overage_banner_title">Heavier than carrier\'s stated capacity</string>
+    <string name="matching_overage_banner_body">This is %1$s, the carrier has %2$s available. They may decline.</string>
+    <string name="matching_overage_confirm_title">Accept Anyway?</string>
+    <string name="matching_overage_confirm_body_carrier">This package is %1$s. You stated %2$s available capacity on this trip — that\'s %3$s over. Accepting means you\'re committing to carry the overage. The price is the price you\'ve agreed; weight is for your reference only.</string>
+    <string name="matching_overage_confirm_body_shipper">Your package is %1$s but the carrier has stated %2$s available — %3$s over. Accepting confirms you\'re proceeding despite the carrier\'s stated limit. The price is the price you\'ve agreed; weight is for reference only.</string>
+    <string name="matching_overage_confirm_accept">Accept Anyway</string>
+    <string name="matching_overage_confirm_cancel">Cancel</string>
+    <string name="matching_overage_kg_format">%1$.1f kg</string>
+    <string name="matching_trip_overcommitted_title">Trip is full</string>
+    <string name="matching_trip_overcommitted_dismiss">OK</string>
 </resources>
