@@ -152,6 +152,8 @@ class CreateTripFromPackageUseCaseTest {
         override suspend fun updateTrip(id: Int, request: TripUpdateRequestJson): Result<Trip> =
             Result.failure(UnsupportedOperationException())
 
+        override suspend fun activateTrip(id: Int): Result<Trip> = Result.failure(UnsupportedOperationException())
+
         override suspend fun deleteTrip(id: Int): Result<Unit> = Result.failure(UnsupportedOperationException())
     }
 

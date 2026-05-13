@@ -44,6 +44,13 @@ interface TripsRepository {
 
     suspend fun updateTrip(id: Int, request: com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson): Result<Trip>
 
+    /**
+     * Transitions a planning trip to active via `POST /trips/{id}/activate`.
+     * iOS parity: this is the only sanctioned activation path — `updateTrip` with `trip_status`
+     * is dropped server-side.
+     */
+    suspend fun activateTrip(id: Int): Result<Trip>
+
     suspend fun deleteTrip(id: Int): Result<Unit>
 
     companion object {

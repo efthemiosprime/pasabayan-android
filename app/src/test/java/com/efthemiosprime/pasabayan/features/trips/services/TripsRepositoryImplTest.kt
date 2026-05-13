@@ -468,6 +468,58 @@ class TripsRepositoryImplTest {
         assertTrue(body.contains("\"proposed_price\":100.0"))
     }
 
+    // -- activateTrip --
+
+    @Test
+    fun `activateTrip posts to activate endpoint with empty body`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "message":"Trip activated",
+                    "data":{"id": 21, "origin_city":"Toronto", "destination_city":"Montreal",
+                            "trip_status":"active", "transportation_method":"car"}
+                }""",
+            ),
+        )
+
+        val result = repo.activateTrip(21)
+
+        assertTrue(result.isSuccess)
+        assertEquals(21, result.getOrThrow().id)
+        assertEquals(
+            com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.ACTIVE,
+            result.getOrThrow().tripStatus,
+        )
+
+        val request = server.takeRequest()
+        assertEquals("POST", request.method)
+        assertTrue(
+            "expected /trips/{id}/activate path, got ${request.path}",
+            request.path!!.endsWith("/trips/21/activate"),
+        )
+        assertEquals(0L, request.bodySize)
+    }
+
+    @Test
+    fun `activateTrip returns failure on 4xx`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(400).setBody(
+                """{"message":"Trip cannot be activated in this state"}""",
+            ),
+        )
+        val result = repo.activateTrip(21)
+        assertTrue(result.isFailure)
+    }
+
+    @Test
+    fun `activateTrip wraps network failure as NetworkError`() = runBlocking {
+        server.shutdown()
+        val result = repo.activateTrip(21)
+        assertTrue(result.isFailure)
+        val error = (result.exceptionOrNull() as DomainErrorMapperException).domainError
+        assertTrue(error is DomainError.NetworkError)
+    }
+
     // -- deleteTrip --
 
     @Test

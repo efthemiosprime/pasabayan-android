@@ -131,6 +131,9 @@ private class StubTripsRepository : TripsRepository {
     override suspend fun updateTrip(id: Int, request: TripUpdateRequestJson): Result<Trip> =
         Result.failure(NotImplementedError("not exercised in this screen test"))
 
+    override suspend fun activateTrip(id: Int): Result<Trip> =
+        Result.failure(NotImplementedError("not exercised in this screen test"))
+
     override suspend fun deleteTrip(id: Int): Result<Unit> =
         Result.success(Unit)
 }

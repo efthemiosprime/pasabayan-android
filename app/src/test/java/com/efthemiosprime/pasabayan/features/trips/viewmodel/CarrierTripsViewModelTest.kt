@@ -335,6 +335,83 @@ class CarrierTripsViewModelTest {
         assertEquals(1, cached?.size)
     }
 
+    // -- activateTrip --
+
+    @Test
+    fun `activateTrip routes through activate endpoint not update`() = runTest {
+        val existing = testTrip(1, TripStatus.PLANNING)
+        val updated = existing.copy(tripStatus = TripStatus.ACTIVE)
+        fakeRepo.carrierTripsResult = Result.success(listOf(existing))
+        fakeRepo.activateResult = Result.success(updated)
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        viewModel.activateTrip(1)
+        advanceUntilIdle()
+
+        assertEquals(listOf(1), fakeRepo.activatedTripIds)
+        assertNull(fakeRepo.lastUpdateStatus)
+        assertEquals(TripStatus.ACTIVE, viewModel.uiState.value.trips.first().tripStatus)
+        assertNull(viewModel.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `activateTrip is blocked for non planning trips`() = runTest {
+        fakeRepo.carrierTripsResult = Result.success(listOf(testTrip(1, TripStatus.ACTIVE)))
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        viewModel.activateTrip(1)
+        advanceUntilIdle()
+
+        assertTrue(fakeRepo.activatedTripIds.isEmpty())
+        assertTrue(viewModel.uiState.value.errorMessage != null)
+    }
+
+    @Test
+    fun `activateTrip surfaces repository failure`() = runTest {
+        val existing = testTrip(1, TripStatus.PLANNING)
+        fakeRepo.carrierTripsResult = Result.success(listOf(existing))
+        fakeRepo.activateResult = Result.failure(Exception("Backend exploded"))
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        viewModel.activateTrip(1)
+        advanceUntilIdle()
+
+        assertEquals(TripStatus.PLANNING, viewModel.uiState.value.trips.first().tripStatus)
+        assertEquals("Backend exploded", viewModel.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `suspendActivateTrip returns success and mirrors trip into state`() = runTest {
+        val existing = testTrip(1, TripStatus.PLANNING)
+        val updated = existing.copy(tripStatus = TripStatus.ACTIVE)
+        fakeRepo.carrierTripsResult = Result.success(listOf(existing))
+        fakeRepo.activateResult = Result.success(updated)
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        val result = viewModel.suspendActivateTrip(1)
+        advanceUntilIdle()
+
+        assertTrue(result.isSuccess)
+        assertEquals(TripStatus.ACTIVE, result.getOrNull()!!.tripStatus)
+        assertEquals(TripStatus.ACTIVE, viewModel.uiState.value.trips.first().tripStatus)
+    }
+
+    @Test
+    fun `suspendActivateTrip returns failure for non planning trip`() = runTest {
+        fakeRepo.carrierTripsResult = Result.success(listOf(testTrip(1, TripStatus.ACTIVE)))
+        viewModel.loadTrips()
+        advanceUntilIdle()
+
+        val result = viewModel.suspendActivateTrip(1)
+
+        assertTrue(result.isFailure)
+        assertTrue(fakeRepo.activatedTripIds.isEmpty())
+    }
+
     @Test
     fun `updateTripDetails sends weight and notes and updates state`() = runTest {
         val existing = testTrip(7, TripStatus.ACTIVE).copy(availableWeightKg = 20.0, specialNotes = "Old")
@@ -405,7 +482,9 @@ class FakeTripsRepository : TripsRepository {
     var getTripResult: Result<Trip>? = null
     var createResult: Result<Trip>? = null
     var updateResult: Result<Trip>? = null
+    var activateResult: Result<Trip>? = null
     var deleteResult: Result<Unit> = Result.success(Unit)
+    var activatedTripIds: MutableList<Int> = mutableListOf()
     var popularRoutesResult: Result<List<PopularRoute>> = Result.success(emptyList())
     var routeActivitySummaryResult: Result<RouteActivitySummary> = Result.success(
         RouteActivitySummary(0, 0, 0, null, null),
@@ -470,6 +549,10 @@ class FakeTripsRepository : TripsRepository {
         lastUpdateWeight = request.availableWeightKg
         lastUpdateNotes = request.specialNotes
         return updateResult ?: Result.failure(Exception("Not set"))
+    }
+    override suspend fun activateTrip(id: Int): Result<Trip> {
+        activatedTripIds.add(id)
+        return activateResult ?: Result.failure(Exception("Not set"))
     }
     override suspend fun deleteTrip(id: Int): Result<Unit> {
         deletedTripIds.add(id)

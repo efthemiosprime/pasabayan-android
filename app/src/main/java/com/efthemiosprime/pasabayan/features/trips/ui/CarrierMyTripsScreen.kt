@@ -147,8 +147,11 @@ fun CarrierMyTripsScreen(
             confirmButton = {
                 TextButton(onClick = {
                     tripPendingActivate = null
+                    // iOS parity: activation routes through `POST /trips/{id}/activate`. Going
+                    // through `updateTripStatus` (`PUT /trips/{id}` with `trip_status = active`)
+                    // is silently dropped server-side, so the trip never actually moves to ACTIVE.
                     scope.launch {
-                        viewModel.suspendUpdateTripStatus(trip.id, TripStatus.ACTIVE)
+                        viewModel.suspendActivateTrip(trip.id)
                             .onSuccess { activateSuccess = true }
                     }
                 }) { Text(stringResource(R.string.trips_action_activate_trip)) }

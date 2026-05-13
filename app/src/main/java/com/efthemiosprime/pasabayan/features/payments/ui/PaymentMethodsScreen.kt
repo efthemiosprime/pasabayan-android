@@ -78,7 +78,7 @@ fun PaymentMethodsScreen(
 }
 
 @Composable
-private fun PaymentMethodsContent(
+internal fun PaymentMethodsContent(
     state: PaymentMethodsUiState,
     onBack: () -> Unit,
     onAddCard: () -> Unit,

@@ -289,6 +289,22 @@ class TripsRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun activateTrip(id: Int): Result<Trip> {
+        return try {
+            val res = tripsApi.activateTrip(id)
+            if (!res.isSuccessful) {
+                return Result.failure(
+                    DomainErrorMapperException(ApiErrorMapper.map(res.code(), res.errorBody()?.bytes(), json)),
+                )
+            }
+            val trip = res.body()?.data?.toDomain()
+                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            Result.success(trip)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
     override suspend fun deleteTrip(id: Int): Result<Unit> {
         return try {
             val res = tripsApi.deleteTrip(id)

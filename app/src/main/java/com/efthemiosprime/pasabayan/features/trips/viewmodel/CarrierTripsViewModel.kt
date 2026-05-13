@@ -153,6 +153,62 @@ class CarrierTripsViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Transitions a planning trip to active via the sanctioned `POST /trips/{id}/activate`
+     * endpoint. iOS parity: `updateTrip` with `trip_status = "active"` is dropped server-side,
+     * so this is the only path that actually flips the status. On success the local list is
+     * patched with the server-confirmed trip so the row reflects ACTIVE without a refresh.
+     */
+    fun activateTrip(tripId: Int) {
+        val currentTrip = _uiState.value.trips.firstOrNull { it.id == tripId } ?: return
+        if (currentTrip.tripStatus != TripStatus.PLANNING) {
+            _uiState.update { it.copy(errorMessage = "Only planning trips can be activated") }
+            return
+        }
+        viewModelScope.launch {
+            tripsRepository.activateTrip(tripId).fold(
+                onSuccess = { updated ->
+                    _uiState.update { state ->
+                        state.copy(
+                            trips = state.trips.map { existing ->
+                                if (existing.id == updated.id) updated else existing
+                            },
+                            errorMessage = null,
+                        )
+                    }
+                },
+                onFailure = { e ->
+                    _uiState.update {
+                        it.copy(errorMessage = e.message ?: "Failed to activate trip")
+                    }
+                },
+            )
+        }
+    }
+
+    /**
+     * Suspend variant of [activateTrip] used by sheets that drive their own progress UI
+     * (e.g. `TripStatusUpdateSheet`'s 15s timeout coordinator). Mirrors the local-list patch
+     * behavior of [activateTrip] on success.
+     */
+    suspend fun suspendActivateTrip(tripId: Int): Result<Trip> {
+        val currentTrip = _uiState.value.trips.firstOrNull { it.id == tripId }
+            ?: return Result.failure(IllegalStateException("Trip not found"))
+        if (currentTrip.tripStatus != TripStatus.PLANNING) {
+            return Result.failure(IllegalStateException("Only planning trips can be activated"))
+        }
+        return tripsRepository.activateTrip(tripId).onSuccess { updated ->
+            _uiState.update { state ->
+                state.copy(
+                    trips = state.trips.map { existing ->
+                        if (existing.id == updated.id) updated else existing
+                    },
+                    errorMessage = null,
+                )
+            }
+        }
+    }
+
     fun updateTripStatus(tripId: Int, targetStatus: TripStatus) {
         val currentTrip = _uiState.value.trips.firstOrNull { it.id == tripId } ?: return
         if (!canTransition(currentTrip.tripStatus, targetStatus)) {

@@ -182,4 +182,73 @@ class TransactionMapperTest {
         assertEquals(100.0, amounts.carrierReceives, 0.001)
         assertEquals(0.0, amounts.tip, 0.001)
     }
+
+    @Test
+    fun `null amounts JSON yields null amounts domain`() {
+        val tx = TransactionJson(id = 1, amounts = null).toDomain()
+        assertNull(tx.amounts)
+    }
+
+    @Test
+    fun `refund-only mapping preserves refund and leaves payout and tip null`() {
+        val json = TransactionJson(
+            id = 1,
+            status = "refunded",
+            refund = RefundInfoJson(amount = 50.0, reason = "duplicate", refundedAt = "2026-05-10T12:00:00Z"),
+        )
+        val tx = json.toDomain()
+        assertNotNull(tx.refund)
+        assertEquals(50.0, tx.refund!!.amount!!, 0.001)
+        assertEquals("duplicate", tx.refund!!.reason)
+        assertNull(tx.payout)
+        assertNull(tx.tip)
+    }
+
+    @Test
+    fun `payout-only mapping populates payout and leaves refund and tip null`() {
+        val json = TransactionJson(
+            id = 1,
+            status = "completed",
+            payout = PayoutJson(status = "completed", notes = "ACH", completedAt = "2026-05-09T10:00:00Z"),
+        )
+        val tx = json.toDomain()
+        assertNotNull(tx.payout)
+        assertEquals(PayoutStatus.COMPLETED, tx.payout!!.status)
+        assertEquals("ACH", tx.payout!!.notes)
+        assertNull(tx.refund)
+        assertNull(tx.tip)
+    }
+
+    @Test
+    fun `mixed mapping handles refund plus payout plus tip simultaneously`() {
+        val json = TransactionJson(
+            id = 1,
+            status = "completed",
+            refund = RefundInfoJson(amount = 10.0, reason = "partial"),
+            payout = PayoutJson(status = "scheduled", notes = "queued"),
+            tip = TipInfoJson(amount = 5.0, paidAt = "2026-05-08T18:00:00Z"),
+        )
+        val tx = json.toDomain()
+        assertNotNull(tx.refund)
+        assertNotNull(tx.payout)
+        assertNotNull(tx.tip)
+        assertEquals(10.0, tx.refund!!.amount!!, 0.001)
+        assertEquals(PayoutStatus.SCHEDULED, tx.payout!!.status)
+        assertEquals(5.0, tx.tip!!.amount, 0.001)
+        assertEquals(PayoutStatus.SCHEDULED, tx.effectivePayoutStatus)
+    }
+
+    @Test
+    fun `pending status with no nested blocks maps cleanly`() {
+        val json = TransactionJson(id = 7, status = "pending")
+        val tx = json.toDomain()
+        assertEquals(
+            com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionStatus.PENDING,
+            tx.transactionStatus,
+        )
+        assertNull(tx.amounts)
+        assertNull(tx.refund)
+        assertNull(tx.payout)
+        assertNull(tx.tip)
+    }
 }

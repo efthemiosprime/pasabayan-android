@@ -72,7 +72,7 @@ fun RefundSheet(
 }
 
 @Composable
-private fun RefundSheetContent(
+internal fun RefundSheetContent(
     state: RefundUiState,
     transactionId: Int,
     transactionTotal: String,
