@@ -2,6 +2,7 @@ package com.efthemiosprime.pasabayan.features.dashboard.ui
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,6 +54,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
+import com.efthemiosprime.pasabayan.core.designsystem.component.PChip
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDivider
 import com.efthemiosprime.pasabayan.core.designsystem.component.PEmptyState
@@ -204,15 +206,8 @@ fun ShipperExploreContent(
         }
 
         if (state.popularRoutes.isNotEmpty()) {
-            item("popular-routes-title") {
-                Text(
-                    text = stringResource(R.string.trips_popular_routes_title),
-                    style = PasabayanTextStyles.Body.medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-            items(state.popularRoutes.take(5), key = { "route-${it.originCity}-${it.destinationCity}" }) { route ->
-                PopularRouteCard(route = route)
+            item("popular-routes-section") {
+                PopularRoutesChipRow(routes = state.popularRoutes.take(5))
             }
             item("popular-routes-divider") { PDivider() }
         }
@@ -343,39 +338,37 @@ fun ShipperExploreContent(
 }
 
 @Composable
-private fun PopularRouteCard(route: PopularRoute) {
-    PCard {
+private fun PopularRoutesChipRow(routes: List<PopularRoute>) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+    ) {
+        Text(
+            text = stringResource(R.string.trips_popular_routes_title),
+            style = PasabayanTextStyles.Heading.h6,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Medium,
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(PasabayanSpacing.sm),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
         ) {
-            Column {
-                Text(
-                    text = stringResource(
+            for (route in routes) {
+                PChip(
+                    label = stringResource(
                         R.string.trips_popular_routes_path,
                         route.originCity,
                         route.destinationCity,
                     ),
-                    style = PasabayanTextStyles.Body.medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = stringResource(R.string.trips_popular_routes_count, route.packageCount),
-                    style = PasabayanTextStyles.Caption.regular,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    secondary = stringResource(
+                        R.string.trips_popular_routes_count,
+                        route.packageCount,
+                    ),
+                    onClick = { /* TODO: filter trips by this route */ },
                 )
             }
-            val priceText = route.averagePrice?.let { avg ->
-                stringResource(R.string.trips_popular_routes_average_price, avg)
-            } ?: stringResource(R.string.trips_popular_routes_average_price_unavailable)
-            Text(
-                text = priceText,
-                style = PasabayanTextStyles.Caption.large,
-                color = MaterialTheme.colorScheme.primary,
-            )
         }
     }
 }
