@@ -64,6 +64,12 @@
     <string name="trips_detail_available_space_value">%1$.1f L</string>
     <string name="trips_detail_price">Prix</string>
     <string name="trips_detail_pricing_title">Tarification</string>
+    <string name="trips_detail_pricing_base_label">Prix de base</string>
+    <string name="trips_detail_pricing_distance_label">Distance</string>
+    <string name="trips_detail_pricing_multiplier_label">Multiplicateur de distance</string>
+    <string name="trips_detail_pricing_calculated_label">Prix calculé</string>
+    <string name="trips_detail_distance_km_format">%1$.0f km</string>
+    <string name="trips_detail_multiplier_format">%1$.2f×</string>
     <string name="trips_detail_price_per_kg_label">Prix par kg</string>
     <string name="trips_detail_flat_rate_label">Tarif forfaitaire</string>
     <string name="trips_detail_weight">Poids</string>
@@ -112,6 +118,7 @@
     <string name="trips_status_update_hint_active">Le trajet est publié — les expéditeurs peuvent demander une réservation.</string>
     <string name="trips_status_update_hint_in_transit">Vous avez commencé le trajet et transportez des colis.</string>
     <string name="trips_status_update_hint_completed">Tous les colis ont été remis et le trajet est terminé.</string>
+    <string name="trips_status_update_hint_cancelled">Annuler ce trajet. Les colis déjà en cours empêcheront l\'annulation.</string>
     <!-- Parité iOS (TripUpdateTimeoutCoordinator) : repli de 15 s lorsque la mise à jour traîne. -->
     <string name="trips_status_update_in_progress">Mise à jour…</string>
     <string name="trips_status_update_error_timeout">La mise à jour prend plus de temps que prévu. Veuillez réessayer.</string>

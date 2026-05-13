@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,8 +43,10 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSectionTi
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailSheetScaffold
 import com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet
+import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
+import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -57,9 +61,20 @@ private const val STATUS_UPDATE_TIMEOUT_MS: Long = 15_000L
 /**
  * Status-only update sheet. iOS parity: `TripStatusUpdateSheet.swift` — the full iOS sheet
  * also edits capacity/pricing/notes, but Android already exposes those in [EditTripSheet];
- * this sheet stays focused on the transition.
+ * this sheet stays focused on the transition. The picker mirrors iOS' `statusPickerOptions`
+ * (Swift :228): planning offers active + cancelled, active offers in_transit + cancelled,
+ * in_transit progresses only to completed, terminal states show no options.
  *
- * The host wires [onUpdateStatus] to `CarrierTripsViewModel.suspendUpdateTripStatus(tripId, target)`.
+ * The sheet dispatches to one of three host callbacks depending on the selected target:
+ *   - **PLANNING → ACTIVE** uses [onActivate], which the host wires to the sanctioned
+ *     `POST /trips/{id}/activate` (Slice A). Confirmation alert before submit.
+ *   - **Any → CANCELLED** uses [onCancel], which goes through `DELETE /trips/{id}` and surfaces
+ *     the blocking-match-aware error message when the server returns HTTP 409 (Slice B6).
+ *     Destructive confirmation alert before submit.
+ *   - All other transitions use [onUpdateStatus] with the target status, routed through
+ *     `CarrierTripsViewModel.suspendUpdateTripStatus` exactly as before. No confirmation —
+ *     iOS only confirms activate / cancel.
+ *
  * The sheet drives its own isUpdating spinner + 15s timeout fallback (parity with iOS
  * `TripUpdateTimeoutCoordinator`) and dismisses only on a successful response.
  */
@@ -68,6 +83,8 @@ private const val STATUS_UPDATE_TIMEOUT_MS: Long = 15_000L
 fun TripStatusUpdateSheet(
     trip: Trip,
     onUpdateStatus: suspend (TripStatus) -> Result<Trip>,
+    onActivate: suspend () -> Result<Trip>,
+    onCancel: suspend () -> Result<Unit>,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -75,6 +92,8 @@ fun TripStatusUpdateSheet(
         TripStatusUpdateSheetContent(
             trip = trip,
             onUpdateStatus = onUpdateStatus,
+            onActivate = onActivate,
+            onCancel = onCancel,
             onDismiss = onDismiss,
             modifier = modifier,
         )
@@ -86,6 +105,8 @@ fun TripStatusUpdateSheet(
 internal fun TripStatusUpdateSheetContent(
     trip: Trip,
     onUpdateStatus: suspend (TripStatus) -> Result<Trip>,
+    onActivate: suspend () -> Result<Trip> = { Result.failure(IllegalStateException("activate not wired")) },
+    onCancel: suspend () -> Result<Unit> = { Result.failure(IllegalStateException("cancel not wired")) },
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -95,9 +116,46 @@ internal fun TripStatusUpdateSheetContent(
     }
     var isUpdating by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var pendingConfirmation by remember { mutableStateOf<TripStatus?>(null) }
     val scope = rememberCoroutineScope()
     val timeoutMessage = stringResource(R.string.trips_status_update_error_timeout)
     val genericErrorMessage = stringResource(R.string.trips_status_update_error_generic)
+    val blockingMatchHint = stringResource(R.string.trips_details_cancel_error_match_in_progress_hint)
+
+    // Dispatch a target status: routes activation through onActivate, cancellation through
+    // onCancel (with blocking-match-aware error formatting), everything else through
+    // onUpdateStatus. Shared isUpdating + timeout + dismiss-on-success behavior.
+    fun submitTarget(target: TripStatus) {
+        if (isUpdating) return
+        isUpdating = true
+        errorMessage = null
+        scope.launch {
+            val outcome: Throwable? = withTimeoutOrNull(STATUS_UPDATE_TIMEOUT_MS) {
+                when (target) {
+                    TripStatus.ACTIVE -> onActivate().exceptionOrNull()
+                    TripStatus.CANCELLED -> onCancel().exceptionOrNull()
+                    else -> onUpdateStatus(target).exceptionOrNull()
+                }
+            } ?: run {
+                errorMessage = timeoutMessage
+                isUpdating = false
+                return@launch
+            }
+            if (outcome == null) {
+                isUpdating = false
+                onDismiss()
+                return@launch
+            }
+            val domainError = (outcome as? DomainErrorMapperException)?.domainError
+            errorMessage = when (domainError) {
+                is DomainError.TripHasBlockingMatch ->
+                    listOfNotNull(domainError.message, blockingMatchHint)
+                        .joinToString(separator = "\n\n")
+                else -> outcome.message?.takeIf { it.isNotBlank() } ?: genericErrorMessage
+            }
+            isUpdating = false
+        }
+    }
     PDetailSheetScaffold(
         title = stringResource(R.string.trips_status_update_title),
         closeContentDescription = stringResource(R.string.trips_status_update_close),
@@ -180,35 +238,56 @@ internal fun TripStatusUpdateSheetContent(
                 onClick = onClick@{
                     val target = pendingTarget ?: return@onClick
                     if (isUpdating) return@onClick
-                    isUpdating = true
-                    errorMessage = null
-                    scope.launch {
-                        val outcome = withTimeoutOrNull(STATUS_UPDATE_TIMEOUT_MS) {
-                            onUpdateStatus(target)
-                        }
-                        if (outcome == null) {
-                            errorMessage = timeoutMessage
-                            isUpdating = false
-                        } else {
-                            outcome.fold(
-                                onSuccess = {
-                                    isUpdating = false
-                                    onDismiss()
-                                },
-                                onFailure = { e ->
-                                    errorMessage = e.message
-                                        ?.takeIf { it.isNotBlank() }
-                                        ?: genericErrorMessage
-                                    isUpdating = false
-                                },
-                            )
-                        }
+                    // iOS parity: activate + cancel require an explicit confirmation alert;
+                    // forward transitions (in_transit, completed) submit directly.
+                    if (target == TripStatus.ACTIVE || target == TripStatus.CANCELLED) {
+                        pendingConfirmation = target
+                    } else {
+                        submitTarget(target)
                     }
                 },
                 style = PButtonStyle.Primary,
                 enabled = pendingTarget != null && !isUpdating,
                 modifier = Modifier.weight(1f),
             )
+        }
+    }
+
+    pendingConfirmation?.let { target ->
+        when (target) {
+            TripStatus.ACTIVE -> AlertDialog(
+                onDismissRequest = { pendingConfirmation = null },
+                title = { Text(stringResource(R.string.trips_action_activate_trip_confirm_title)) },
+                text = { Text(stringResource(R.string.trips_action_activate_trip_confirm_message)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        pendingConfirmation = null
+                        submitTarget(TripStatus.ACTIVE)
+                    }) { Text(stringResource(R.string.trips_action_activate_trip)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { pendingConfirmation = null }) {
+                        Text(stringResource(R.string.common_buttons_cancel))
+                    }
+                },
+            )
+            TripStatus.CANCELLED -> AlertDialog(
+                onDismissRequest = { pendingConfirmation = null },
+                title = { Text(stringResource(R.string.trips_cancel_trip)) },
+                text = { Text(stringResource(R.string.trips_action_cancel_trip_message)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        pendingConfirmation = null
+                        submitTarget(TripStatus.CANCELLED)
+                    }) { Text(stringResource(R.string.trips_cancel_trip)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { pendingConfirmation = null }) {
+                        Text(stringResource(R.string.trips_action_keep_trip))
+                    }
+                },
+            )
+            else -> Unit
         }
     }
 }
@@ -289,6 +368,7 @@ private fun tripStatusOptionHint(status: TripStatus): String = when (status) {
     TripStatus.ACTIVE -> stringResource(R.string.trips_status_update_hint_active)
     TripStatus.IN_TRANSIT -> stringResource(R.string.trips_status_update_hint_in_transit)
     TripStatus.COMPLETED -> stringResource(R.string.trips_status_update_hint_completed)
+    TripStatus.CANCELLED -> stringResource(R.string.trips_status_update_hint_cancelled)
     else -> ""
 }
 

@@ -64,6 +64,12 @@
     <string name="trips_detail_available_space_value">%1$.1f L</string>
     <string name="trips_detail_price">Price</string>
     <string name="trips_detail_pricing_title">Pricing</string>
+    <string name="trips_detail_pricing_base_label">Base price</string>
+    <string name="trips_detail_pricing_distance_label">Distance</string>
+    <string name="trips_detail_pricing_multiplier_label">Distance multiplier</string>
+    <string name="trips_detail_pricing_calculated_label">Calculated price</string>
+    <string name="trips_detail_distance_km_format">%1$.0f km</string>
+    <string name="trips_detail_multiplier_format">%1$.2f×</string>
     <string name="trips_detail_price_per_kg_label">Price per kg</string>
     <string name="trips_detail_flat_rate_label">Flat rate</string>
     <string name="trips_detail_weight">Weight</string>
@@ -112,6 +118,7 @@
     <string name="trips_status_update_hint_active">Trip is published — shippers can request to book.</string>
     <string name="trips_status_update_hint_in_transit">You\'ve started the trip and are carrying packages.</string>
     <string name="trips_status_update_hint_completed">All packages handed off and the trip is done.</string>
+    <string name="trips_status_update_hint_cancelled">Cancel this trip. Packages already in progress will block cancellation.</string>
     <!-- iOS parity (`TripUpdateTimeoutCoordinator` + `trips.details.error.*`): 15-second fallback timeout while the status update is in flight. -->
     <string name="trips_status_update_in_progress">Updating…</string>
     <string name="trips_status_update_error_timeout">The update is taking longer than expected. Please try again.</string>

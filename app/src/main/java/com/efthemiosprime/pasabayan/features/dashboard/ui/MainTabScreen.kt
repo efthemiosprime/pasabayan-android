@@ -1036,6 +1036,8 @@ fun MainTabScreen(
                 onUpdateStatus = { targetStatus ->
                     carrierTripsViewModel.suspendUpdateTripStatus(trip.id, targetStatus)
                 },
+                onActivateTrip = { carrierTripsViewModel.suspendActivateTrip(trip.id) },
+                onCancelTripStatus = { carrierTripsViewModel.suspendCancelTrip(trip.id) },
                 tripMatches = carrierTripsState.tripMatchesByTripId[trip.id].orEmpty(),
             )
         }

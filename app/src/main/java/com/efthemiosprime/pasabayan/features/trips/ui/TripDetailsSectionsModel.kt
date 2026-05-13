@@ -55,13 +55,15 @@ internal fun allPackagesDelivered(matches: List<TripMatchPackage>): Boolean =
     matches.isNotEmpty() && matches.all { it.matchStatus == MatchStatus.DELIVERED }
 
 /**
- * Valid next statuses a carrier can advance the trip to from [current]. Mirrors iOS
- * `CarrierViewModel` transition rules (excludes [TripStatus.CANCELLED] — that's the cancel
- * button's responsibility). Returns an empty list for terminal states.
+ * Valid next statuses a carrier can move the trip to from [current]. Mirrors iOS
+ * `TripStatusUpdateSheet.statusPickerOptions` (Swift :228) — `CANCELLED` is now exposed from
+ * `PLANNING` and `ACTIVE` so the sheet can drive cancellation alongside other transitions; the
+ * destructive flow is gated by a confirmation alert in the sheet. Later forward states only
+ * progress linearly; terminal states stay empty.
  */
 internal fun nextStatusOptions(current: TripStatus): List<TripStatus> = when (current) {
-    TripStatus.PLANNING -> listOf(TripStatus.ACTIVE)
-    TripStatus.ACTIVE -> listOf(TripStatus.IN_TRANSIT)
+    TripStatus.PLANNING -> listOf(TripStatus.ACTIVE, TripStatus.CANCELLED)
+    TripStatus.ACTIVE -> listOf(TripStatus.IN_TRANSIT, TripStatus.CANCELLED)
     TripStatus.IN_TRANSIT -> listOf(TripStatus.COMPLETED)
     TripStatus.COMPLETED, TripStatus.CANCELLED -> emptyList()
 }

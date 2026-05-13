@@ -197,11 +197,15 @@ fun CarrierMyTripsScreen(
         )
     }
 
-    // Update Status sheet — iOS TripCard.swift:169-175.
+    // Update Status sheet — iOS TripCard.swift:169-175. Activate routes through the sanctioned
+    // POST /trips/{id}/activate (Slice A); cancel routes through DELETE /trips/{id} with the
+    // blocking-match-aware 409 mapping (Slice B6); forward transitions use the existing PUT.
     tripPendingStatusUpdate?.let { trip ->
         TripStatusUpdateSheet(
             trip = trip,
             onUpdateStatus = { target -> viewModel.suspendUpdateTripStatus(trip.id, target) },
+            onActivate = { viewModel.suspendActivateTrip(trip.id) },
+            onCancel = { viewModel.suspendCancelTrip(trip.id) },
             onDismiss = { tripPendingStatusUpdate = null },
         )
     }

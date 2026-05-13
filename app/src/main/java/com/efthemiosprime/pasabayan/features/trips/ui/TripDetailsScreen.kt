@@ -86,6 +86,18 @@ fun TripDetailsScreen(
      * "Update Status" toolbar entry + `TripUpdateTimeoutCoordinator` 15s fallback.
      */
     onUpdateStatus: (suspend (TripStatus) -> Result<Trip>)? = null,
+    /**
+     * Invoked when the user picks ACTIVE in [TripStatusUpdateSheet]. Wire to
+     * `CarrierTripsViewModel.suspendActivateTrip(tripId)` so the activation hits the sanctioned
+     * `POST /trips/{id}/activate` (Slice A) instead of being silently dropped by PUT.
+     */
+    onActivateTrip: (suspend () -> Result<Trip>)? = null,
+    /**
+     * Invoked when the user picks CANCELLED in [TripStatusUpdateSheet]. Wire to
+     * `CarrierTripsViewModel.suspendCancelTrip(tripId)` so the sheet can surface the
+     * blocking-match-aware HTTP 409 mapping (Slice B6).
+     */
+    onCancelTripStatus: (suspend () -> Result<Unit>)? = null,
     tripMatches: List<TripMatchPackage> = emptyList(),
     modifier: Modifier = Modifier,
 ) {
@@ -247,6 +259,19 @@ fun TripDetailsScreen(
                     value = trip.formattedPrice,
                     valueColor = PasabayanColors.Success,
                 )
+                // iOS parity: show how the calculated price was built when basePrice +
+                // distance + multiplier are present. Most useful for flat / distance-based
+                // pricing; renders nothing when the server didn't supply the breakdown.
+                com.efthemiosprime.pasabayan.features.trips.components.TripPricingBreakdown(
+                    basePriceText = trip.basePrice?.let { String.format("$%.2f", it) },
+                    distanceText = trip.distanceKm?.let {
+                        stringResource(R.string.trips_detail_distance_km_format, it)
+                    },
+                    multiplierText = trip.distanceMultiplier?.let {
+                        stringResource(R.string.trips_detail_multiplier_format, it)
+                    },
+                    calculatedPriceText = trip.calculatedPrice?.let { String.format("$%.2f", it) },
+                )
             }
         }
 
@@ -338,6 +363,10 @@ fun TripDetailsScreen(
                 TripStatusUpdateSheet(
                     trip = trip,
                     onUpdateStatus = onUpdateStatus,
+                    onActivate = onActivateTrip
+                        ?: { Result.failure(IllegalStateException("activate not wired")) },
+                    onCancel = onCancelTripStatus
+                        ?: { Result.failure(IllegalStateException("cancel not wired")) },
                     onDismiss = { showStatusSheet = false },
                 )
             }

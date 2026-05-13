@@ -86,23 +86,29 @@ class TripDetailsSectionsModelTest {
     // -- nextStatusOptions (TripStatusUpdateSheet) --
 
     @Test
-    fun `nextStatusOptions advances planning to active`() {
+    fun `nextStatusOptions offers active and cancelled from planning`() {
         assertEquals(
-            listOf(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.ACTIVE),
+            listOf(
+                com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.ACTIVE,
+                com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.CANCELLED,
+            ),
             nextStatusOptions(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.PLANNING),
         )
     }
 
     @Test
-    fun `nextStatusOptions advances active to in_transit`() {
+    fun `nextStatusOptions offers in_transit and cancelled from active`() {
         assertEquals(
-            listOf(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.IN_TRANSIT),
+            listOf(
+                com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.IN_TRANSIT,
+                com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.CANCELLED,
+            ),
             nextStatusOptions(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.ACTIVE),
         )
     }
 
     @Test
-    fun `nextStatusOptions advances in_transit to completed`() {
+    fun `nextStatusOptions advances in_transit only to completed`() {
         assertEquals(
             listOf(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.COMPLETED),
             nextStatusOptions(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.IN_TRANSIT),
@@ -120,12 +126,12 @@ class TripDetailsSectionsModelTest {
     }
 
     @Test
-    fun `nextStatusOptions never offers CANCELLED — that's the cancel button's job`() {
-        for (current in com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.entries) {
-            assertTrue(
-                nextStatusOptions(current).none { it == com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.CANCELLED },
-            )
-        }
+    fun `nextStatusOptions does not offer cancellation from in_transit`() {
+        assertTrue(
+            "in_transit should only allow forward progression to completed",
+            nextStatusOptions(com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.IN_TRANSIT)
+                .none { it == com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus.CANCELLED },
+        )
     }
 
     @Test
