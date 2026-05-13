@@ -114,8 +114,8 @@ fun BrowseTripsScreen(
             TripFilterContent(
                 filter = state.filter,
                 onSearchChange = { viewModel.updateSearchText(it) },
-                onOriginChange = { /* TODO: wire origin filter */ },
-                onDestinationChange = { /* TODO: wire destination filter */ },
+                onOriginChange = { viewModel.updateOrigin(it) },
+                onDestinationChange = { viewModel.updateDestination(it) },
                 onApply = {
                     viewModel.applyFilterAndFetch()
                     showFilterSheet = false
