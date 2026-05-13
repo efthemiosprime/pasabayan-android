@@ -313,4 +313,21 @@ class TripComputedPropertiesTest {
         )
         assertEquals(trip.formattedDuration, trip.tripCardRightValue)
     }
+
+    @Test
+    fun `shouldShowPackageProgress hidden for planning`() {
+        assertFalse(baseTrip(tripStatus = TripStatus.PLANNING).shouldShowPackageProgress)
+    }
+
+    @Test
+    fun `shouldShowPackageProgress hidden for cancelled`() {
+        assertFalse(baseTrip(tripStatus = TripStatus.CANCELLED).shouldShowPackageProgress)
+    }
+
+    @Test
+    fun `shouldShowPackageProgress visible for active in transit and completed`() {
+        assertTrue(baseTrip(tripStatus = TripStatus.ACTIVE).shouldShowPackageProgress)
+        assertTrue(baseTrip(tripStatus = TripStatus.IN_TRANSIT).shouldShowPackageProgress)
+        assertTrue(baseTrip(tripStatus = TripStatus.COMPLETED).shouldShowPackageProgress)
+    }
 }

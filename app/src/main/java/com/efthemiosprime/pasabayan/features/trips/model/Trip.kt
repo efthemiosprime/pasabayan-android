@@ -122,6 +122,11 @@ data class Trip(
         get() = DateTimeParsing.parseApiDateTime(arrivalDate)
             ?.let { DateTimeParsing.formatDateTime(it) } ?: ""
 
+    /** Date-only (e.g. "Mar 1, 2026") for the progress widget's "Arrives" line. */
+    val formattedArrivalDateShort: String
+        get() = DateTimeParsing.parseApiDateTime(arrivalDate)
+            ?.let { DateTimeParsing.formatDateOnly(it) } ?: ""
+
     /**
      * iOS parity (`TripDetailsView.scheduleInformationCard`): the shared collection window
      * `pickupDate` falls back to `departureDate` for display. Null when neither is set.
@@ -170,6 +175,10 @@ data class Trip(
 
     val tripCardRightValue: String
         get() = if (deliveryDate != null) formattedDeliveryOrArrivalDate ?: "" else formattedDuration
+
+    /** iOS parity (`TripCard.swift:284-291`): hide progress for planning/cancelled trips. */
+    val shouldShowPackageProgress: Boolean
+        get() = tripStatus != TripStatus.PLANNING && tripStatus != TripStatus.CANCELLED
 
     val routeDistanceKm: Double
         get() {

@@ -40,6 +40,11 @@ fun TripCard(
     onRequestBook: (() -> Unit)? = null,
     showDistanceFromUser: Boolean = false,
     showCarrierHeader: Boolean = true,
+    /**
+     * When true and the trip is past planning/cancelled, embeds
+     * [TripCardProgressSection]. iOS gate: `TripCard.swift:284-291`.
+     */
+    showPackageProgress: Boolean = false,
     renderSingleMenuActionDirectly: Boolean = false,
     /** When non-null, the carrier-header row is tappable and invokes this. iOS opens UserProfilePopover. */
     onOpenCarrierProfile: (() -> Unit)? = null,
@@ -91,6 +96,16 @@ fun TripCard(
                     modifier = Modifier.weight(1f),
                 )
                 PStatusBadge(config = TripStatusBadgeConfig(trip.tripStatus, statusLabel))
+            }
+
+            // Package progress — iOS TripCard.swift:92 packageProgressSection.
+            if (showPackageProgress && trip.shouldShowPackageProgress) {
+                TripCardProgressSection(
+                    tripId = trip.id,
+                    arrivalDateText = trip.formattedArrivalDateShort,
+                    onTap = onViewDetails,
+                    onDeliveredHistoryTap = onViewDetails,
+                )
             }
 
             // Route addresses

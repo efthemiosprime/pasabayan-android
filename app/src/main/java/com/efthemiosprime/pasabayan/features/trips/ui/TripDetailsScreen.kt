@@ -60,6 +60,7 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PricingType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
+import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
 import com.efthemiosprime.pasabayan.features.trips.components.TripPackageProgressWidget
 import com.efthemiosprime.pasabayan.features.trips.model.TripMatchPackage
 import com.efthemiosprime.pasabayan.features.trips.model.TripPackagesFilter
@@ -274,10 +275,9 @@ fun TripDetailsScreen(
             )
 
             if (tripMatches.isNotEmpty() && progressMetrics != null) {
-                TripPackageProgressWidget(
-                    metrics = progressMetrics,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                PCard(modifier = Modifier.fillMaxWidth()) {
+                    TripPackageProgressWidget(metrics = progressMetrics)
+                }
             }
 
             if (tripMatches.isNotEmpty()) {
