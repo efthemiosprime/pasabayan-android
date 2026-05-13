@@ -20,6 +20,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Search
@@ -67,8 +69,10 @@ import com.efthemiosprime.pasabayan.features.packages.components.NearbyFallbackB
 import com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter
 import com.efthemiosprime.pasabayan.features.packages.ui.PackageFilterSheet
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
+import com.efthemiosprime.pasabayan.features.dashboard.model.CarrierExploreContentMode
 import com.efthemiosprime.pasabayan.features.profile.ui.UserProfilePopover
 import com.efthemiosprime.pasabayan.features.trips.model.CarrierExploreDropdownState
+import com.efthemiosprime.pasabayan.features.trips.model.PopularRoute
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.BrowseTripsViewModel
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.RouteActivitySummaryViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -103,6 +107,21 @@ fun CarrierExploreContent(
     // Search-field focus drives the Recent/Popular dropdown visibility per iOS
     // `CarrierExploreDropdownState.shouldShowDropdown(focused, empty, recent, popular)`.
     var isSearchFocused by remember { mutableStateOf(false) }
+    // What the main content area shows — iOS parity with `CarrierExploreContentMode`.
+    // Default is Nearby (the package list); dropdown taps + popular-route taps switch
+    // the mode. "Back to Nearby" returns to the default and clears any search filter.
+    var contentMode by remember {
+        mutableStateOf<CarrierExploreContentMode>(CarrierExploreContentMode.Nearby)
+    }
+    val returnToNearby: () -> Unit = {
+        contentMode = CarrierExploreContentMode.Nearby
+        if (state.availablePackagesFilter.searchText.isNotBlank()) {
+            packageViewModel.setBrowseFilter(
+                state.availablePackagesFilter.copy(searchText = ""),
+            )
+            packageViewModel.applyBrowseFilter()
+        }
+    }
 
     LaunchedEffect(Unit) {
         packageViewModel.applyBrowseFilter()
@@ -187,12 +206,16 @@ fun CarrierExploreContent(
                     CarrierExploreSearchDropdown(
                         showRecent = showRecent,
                         showPopular = showPopular,
-                        // Mode-switching to a Recent / Popular content list (iOS
-                        // `exploreContentMode = .recent / .popularList`) is a separate
-                        // follow-up. For now we just dismiss focus so the dropdown
-                        // closes — matches the iOS unfocus side-effect either way.
-                        onSelectRecent = { isSearchFocused = false },
-                        onSelectPopular = { isSearchFocused = false },
+                        // iOS parity: tapping a dropdown row swaps the main content
+                        // area to the matching mode and unfocuses the search field.
+                        onSelectRecent = {
+                            contentMode = CarrierExploreContentMode.Recent
+                            isSearchFocused = false
+                        },
+                        onSelectPopular = {
+                            contentMode = CarrierExploreContentMode.PopularList
+                            isSearchFocused = false
+                        },
                     )
                 }
             }
@@ -213,38 +236,104 @@ fun CarrierExploreContent(
             item("nearby-fallback-banner") { NearbyFallbackBanner() }
         }
 
-        when {
-            state.isLoadingAvailablePackages && state.availablePackages.isEmpty() -> {
-                item("loading") {
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        PCircularProgress()
-                    }
+        // iOS parity: main content area branches on `exploreContentMode`. Nearby +
+        // PopularDestination + Search all render the package list (PopularDestination
+        // adds a "Showing packages for X" header). PopularList renders the popular
+        // routes list. Recent ships as a "coming soon" placeholder until the backend
+        // contract for the Recent feed is confirmed (tracked in IMPLEMENTATION-STATUS).
+        when (val mode = contentMode) {
+            CarrierExploreContentMode.PopularList -> {
+                item("popular-list-back") {
+                    BackToNearbyRow(onClick = returnToNearby)
                 }
-            }
-            state.hasLoadedAvailablePackages && state.visibleAvailablePackages.isEmpty() -> {
-                item("empty") {
-                    CarrierBrowseEmptyState(onPostTrip = onNavigateToMyTrips)
+                item("popular-list-title") {
+                    Text(
+                        text = stringResource(R.string.dashboard_carrier_explore_popular_list_title),
+                        style = PasabayanTextStyles.Heading.h6,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
-            }
-            else -> {
-                items(state.visibleAvailablePackages, key = { it.effectiveId }) { available ->
-                    CarrierExplorePackageCard(
-                        pkg = available,
-                        onViewDetails = { onViewPackageDetails(available.effectiveId) },
-                        onRequestToCarry = { onRequestToCarry(available.effectiveId) },
-                        onOpenShipperProfile = available.shipper?.let { shipper ->
-                            { profileSheetShipper = shipper }
+                items(browseTripsState.popularRoutes, key = { "${it.originCity}-${it.destinationCity}" }) { route ->
+                    PopularRouteRow(
+                        route = route,
+                        onClick = {
+                            contentMode = CarrierExploreContentMode
+                                .PopularDestination(route.destinationCity)
+                            packageViewModel.setBrowseFilter(
+                                state.availablePackagesFilter.copy(searchText = route.destinationCity),
+                            )
+                            packageViewModel.applyBrowseFilter()
                         },
                     )
                 }
-                // Footer: spinner, retry, or end-of-list.
-                item("pagination-footer") {
-                    PaginationFooter(
-                        isLoadingMore = state.availablePackagesIsLoadingMore,
-                        loadMoreError = state.availablePackagesLoadMoreError,
-                        hasMore = state.availablePackagesHasMore,
-                        onRetry = { packageViewModel.loadMoreAvailablePackages() },
-                    )
+            }
+            CarrierExploreContentMode.Recent -> {
+                item("recent-back") {
+                    BackToNearbyRow(onClick = returnToNearby)
+                }
+                item("recent-coming-soon") {
+                    PCard(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = stringResource(R.string.dashboard_carrier_explore_recent_coming_soon),
+                            style = PasabayanTextStyles.Body.medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(PasabayanSpacing.md),
+                        )
+                    }
+                }
+            }
+            else -> {
+                if (mode is CarrierExploreContentMode.PopularDestination) {
+                    item("destination-back") {
+                        BackToNearbyRow(onClick = returnToNearby)
+                    }
+                    item("destination-header") {
+                        Text(
+                            text = stringResource(
+                                R.string.dashboard_carrier_explore_showing_destination,
+                                mode.displayName,
+                            ),
+                            style = PasabayanTextStyles.Heading.h6,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+                when {
+                    state.isLoadingAvailablePackages && state.availablePackages.isEmpty() -> {
+                        item("loading") {
+                            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                PCircularProgress()
+                            }
+                        }
+                    }
+                    state.hasLoadedAvailablePackages && state.visibleAvailablePackages.isEmpty() -> {
+                        item("empty") {
+                            CarrierBrowseEmptyState(onPostTrip = onNavigateToMyTrips)
+                        }
+                    }
+                    else -> {
+                        items(state.visibleAvailablePackages, key = { it.effectiveId }) { available ->
+                            CarrierExplorePackageCard(
+                                pkg = available,
+                                onViewDetails = { onViewPackageDetails(available.effectiveId) },
+                                onRequestToCarry = { onRequestToCarry(available.effectiveId) },
+                                onOpenShipperProfile = available.shipper?.let { shipper ->
+                                    { profileSheetShipper = shipper }
+                                },
+                            )
+                        }
+                        // Footer: spinner, retry, or end-of-list.
+                        item("pagination-footer") {
+                            PaginationFooter(
+                                isLoadingMore = state.availablePackagesIsLoadingMore,
+                                loadMoreError = state.availablePackagesLoadMoreError,
+                                hasMore = state.availablePackagesHasMore,
+                                onRetry = { packageViewModel.loadMoreAvailablePackages() },
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -401,6 +490,90 @@ private fun DropdownOptionRow(
             style = PasabayanTextStyles.Body.small,
             color = MaterialTheme.colorScheme.onSurface,
         )
+    }
+}
+
+/**
+ * "← Back to Nearby" affordance shown above non-default content modes. Tapping
+ * returns the explore tab to its default Nearby package list. iOS parity with
+ * the back-link in `CarrierPopularRouteListView` and the recent/destination headers.
+ */
+@Composable
+private fun BackToNearbyRow(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = PasabayanSpacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+    ) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp),
+        )
+        Text(
+            text = stringResource(R.string.dashboard_carrier_explore_back_to_nearby),
+            style = PasabayanTextStyles.Body.small,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Medium,
+        )
+    }
+}
+
+/**
+ * Single row in the popular-routes list (carrier-explore `.popularList` mode).
+ * Mirrors iOS `CarrierPopularRouteListView` row layout — origin → destination
+ * + package count, full-width tappable card.
+ */
+@Composable
+private fun PopularRouteRow(
+    route: PopularRoute,
+    onClick: () -> Unit,
+) {
+    PCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(PasabayanSpacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.LocalFireDepartment,
+                contentDescription = null,
+                tint = PasabayanColors.BadgeGold,
+                modifier = Modifier.size(20.dp),
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(
+                        R.string.trips_popular_routes_path,
+                        route.originCity,
+                        route.destinationCity,
+                    ),
+                    style = PasabayanTextStyles.Body.medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = stringResource(R.string.trips_popular_routes_count, route.packageCount),
+                    style = PasabayanTextStyles.Caption.regular,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp),
+            )
+        }
     }
 }
 

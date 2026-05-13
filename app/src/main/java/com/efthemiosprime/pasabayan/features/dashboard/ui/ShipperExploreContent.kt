@@ -67,6 +67,8 @@ import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel
 import com.efthemiosprime.pasabayan.features.profile.ui.UserProfilePopover
 import com.efthemiosprime.pasabayan.features.shipper.components.NearbyCarriersSection
+import com.efthemiosprime.pasabayan.features.shipper.components.RecentSearchesSection
+import com.efthemiosprime.pasabayan.features.shipper.model.ShipperExploreSectionVisibility
 import com.efthemiosprime.pasabayan.features.shipper.viewmodel.NearbyCarriersViewModel
 import com.efthemiosprime.pasabayan.features.trips.ui.TripDetailsScreen
 import com.efthemiosprime.pasabayan.features.trips.viewmodel.BrowseTripsViewModel
@@ -93,10 +95,13 @@ fun ShipperExploreContent(
     browseTripsViewModel: BrowseTripsViewModel = hiltViewModel(),
     packageViewModel: PackageViewModel = hiltViewModel(),
     nearbyCarriersViewModel: NearbyCarriersViewModel = hiltViewModel(),
+    recentSearchesViewModel: com.efthemiosprime.pasabayan.features.shipper.viewmodel.ShipperRecentSearchesViewModel =
+        hiltViewModel(),
 ) {
     val state by browseTripsViewModel.uiState.collectAsStateWithLifecycle()
     val packageState by packageViewModel.uiState.collectAsStateWithLifecycle()
     val nearbyCarriersState by nearbyCarriersViewModel.uiState.collectAsStateWithLifecycle()
+    val recentSearches by recentSearchesViewModel.entries.collectAsStateWithLifecycle()
     var detailTrip by remember { mutableStateOf<Trip?>(null) }
     var requestBookTrip by remember { mutableStateOf<Trip?>(null) }
     // Profile popover state — non-null when the user tapped a trip card's carrier header
@@ -192,32 +197,72 @@ fun ShipperExploreContent(
         }
         item("search-divider") { PDivider() }
 
-        // Top Carriers section — only renders when at least one nearby carrier
-        // has a completed delivery (iOS `carriersWithCompletedTrips` filter).
+        // Top Carriers vs Recent Searches — iOS renders them as siblings: Top Carriers wins
+        // when there's at least one carrier with completed deliveries; otherwise Recent
+        // Searches surfaces if the user has saved any. Visibility logic mirrors iOS
+        // `ShipperExploreSectionVisibility.shouldShow{TopCarriers,RecentSearches}`.
         val topCarriers = nearbyCarriersState.carriersWithCompletedDeliveries
-        if (topCarriers.isNotEmpty()) {
-            item("nearby-carriers-section") {
-                NearbyCarriersSection(
-                    carriers = topCarriers,
-                    onCarrierTap = { carrier ->
-                        // iOS parity: ShipperHomeContent sets `selectedCarrierForProfile`
-                        // and renders the same UserProfilePopover used by trip-card carrier
-                        // headers. NearbyCarrier carries id/name/avatar; rating + verification
-                        // are fetched fresh by the popover's VM.
-                        profileSheetCarrier = UserSummary(
-                            id = carrier.id,
-                            name = carrier.name,
-                            avatar = carrier.avatar,
-                        )
-                    },
-                )
+        val showTopCarriers = ShipperExploreSectionVisibility.shouldShowTopCarriers(
+            searchText = state.filter.searchText,
+            selectedPopularDestination = null,
+            carriersWithCompletedTripsCount = topCarriers.size,
+        )
+        val showRecentSearches = ShipperExploreSectionVisibility.shouldShowRecentSearches(
+            searchText = state.filter.searchText,
+            selectedPopularDestination = null,
+            carriersWithCompletedTripsCount = topCarriers.size,
+            recentSearchesCount = recentSearches.size,
+        )
+        when {
+            showTopCarriers -> {
+                item("nearby-carriers-section") {
+                    NearbyCarriersSection(
+                        carriers = topCarriers,
+                        onCarrierTap = { carrier ->
+                            // iOS parity: ShipperHomeContent sets `selectedCarrierForProfile`
+                            // and renders the same UserProfilePopover used by trip-card carrier
+                            // headers. NearbyCarrier carries id/name/avatar; rating + verification
+                            // are fetched fresh by the popover's VM.
+                            profileSheetCarrier = UserSummary(
+                                id = carrier.id,
+                                name = carrier.name,
+                                avatar = carrier.avatar,
+                            )
+                        },
+                    )
+                }
+                item("nearby-carriers-divider") { PDivider() }
             }
-            item("nearby-carriers-divider") { PDivider() }
+            showRecentSearches -> {
+                item("recent-searches-section") {
+                    RecentSearchesSection(
+                        entries = recentSearches,
+                        onEntryTap = { entry ->
+                            browseTripsViewModel.updateSearchText(entry.displayName)
+                            browseTripsViewModel.updateDestination(entry.displayName)
+                            browseTripsViewModel.applyFilterAndFetch()
+                        },
+                    )
+                }
+                item("recent-searches-divider") { PDivider() }
+            }
         }
 
         if (state.popularRoutes.isNotEmpty()) {
             item("popular-routes-section") {
-                PopularRoutesChipRow(routes = state.popularRoutes.take(5))
+                PopularRoutesChipRow(
+                    routes = state.popularRoutes.take(5),
+                    // iOS parity: tapping a popular route persists it as a recent search
+                    // so it surfaces in the Recent fallback later. Free-form-search-text
+                    // saves are deferred — see the Shipper feature row in
+                    // android-spec/IMPLEMENTATION-STATUS.md.
+                    onRouteTap = { route ->
+                        recentSearchesViewModel.save(
+                            city = route.destinationCity,
+                            country = route.destinationCountry ?: "",
+                        )
+                    },
+                )
             }
             item("popular-routes-divider") { PDivider() }
         }
@@ -348,7 +393,10 @@ fun ShipperExploreContent(
 }
 
 @Composable
-private fun PopularRoutesChipRow(routes: List<PopularRoute>) {
+private fun PopularRoutesChipRow(
+    routes: List<PopularRoute>,
+    onRouteTap: (PopularRoute) -> Unit = {},
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
@@ -376,7 +424,7 @@ private fun PopularRoutesChipRow(routes: List<PopularRoute>) {
                         R.string.trips_popular_routes_count,
                         route.packageCount,
                     ),
-                    onClick = { /* TODO: filter trips by this route */ },
+                    onClick = { onRouteTap(route) },
                 )
             }
         }

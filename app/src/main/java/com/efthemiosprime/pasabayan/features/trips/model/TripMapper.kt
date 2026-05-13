@@ -103,6 +103,7 @@ fun PopularRouteJson.toDomain(): PopularRoute = PopularRoute(
     destinationCity = destinationCity,
     packageCount = packageCount ?: tripCount ?: 0,
     averagePrice = averagePrice,
+    destinationCountry = destinationCountry,
 )
 
 fun RouteActivitySummaryDataJson?.toDomainOrZero(): RouteActivitySummary {

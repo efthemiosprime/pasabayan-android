@@ -43,6 +43,10 @@
     <string name="dashboard_carrier_search_placeholder">Rechercher par ville ou description\u2026</string>
     <string name="dashboard_carrier_explore_recent">R\u00e9cents</string>
     <string name="dashboard_carrier_explore_popular">Populaires</string>
+    <string name="dashboard_carrier_explore_back_to_nearby">Retour aux environs</string>
+    <string name="dashboard_carrier_explore_popular_list_title">Itin\u00e9raires populaires</string>
+    <string name="dashboard_carrier_explore_showing_destination">Colis pour %1$s</string>
+    <string name="dashboard_carrier_explore_recent_coming_soon">Colis r\u00e9cents pr\u00e8s de vous \u2014 bient\u00f4t.</string>
     <string name="dashboard_carrier_available_packages">Colis disponibles</string>
     <string name="dashboard_carrier_not_nearby">Aucun colis \u00e0 proximit\u00e9 \u2014 affichage d\'autres r\u00e9gions</string>
     <string name="dashboard_carrier_post_trip">Publier un horaire de trajet</string>
@@ -86,6 +90,7 @@
     <string name="dashboard_shipper_top_carriers_title">Meilleurs transporteurs</string>
     <string name="dashboard_shipper_top_carriers_deliveries">%1$d livraisons</string>
     <string name="dashboard_shipper_top_carriers_distance">\u00c0 %1$.1f km</string>
+    <string name="dashboard_shipper_recent_searches_title">R\u00e9cents</string>
 
     <string name="dashboard_shipper_create_package_cta">Cr\u00e9er une demande de colis</string>
     <string name="dashboard_shipper_tip_demand_title">PRENEZ DE L\'AVANCE</string>
