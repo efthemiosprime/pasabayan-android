@@ -9,6 +9,7 @@ import com.efthemiosprime.pasabayan.core.network.bookings.CarrierCounterOfferReq
 import com.efthemiosprime.pasabayan.core.network.bookings.MatchResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.ShipperCounterOfferRequestJson
 import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
+import com.efthemiosprime.pasabayan.features.bookings.model.CarrierLocationSnapshot
 import com.efthemiosprime.pasabayan.features.bookings.model.ConfirmMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.RequestMatchResult
@@ -221,6 +222,18 @@ class BookingsRepositoryImpl @Inject constructor(
             val result = res.body()?.toDomain()
                 ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             Result.success(result)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun getCarrierLocation(matchId: Int): Result<CarrierLocationSnapshot> {
+        return try {
+            val res = bookingsApi.getCarrierLocation(matchId)
+            if (!res.isSuccessful) return Result.failure(mapError(res))
+            val snapshot = res.body()?.data?.toDomain()
+                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            Result.success(snapshot)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }

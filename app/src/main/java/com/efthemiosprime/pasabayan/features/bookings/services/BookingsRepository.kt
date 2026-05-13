@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.bookings.services
 
 import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
+import com.efthemiosprime.pasabayan.features.bookings.model.CarrierLocationSnapshot
 import com.efthemiosprime.pasabayan.features.bookings.model.ConfirmMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.RequestMatchResult
@@ -69,4 +70,10 @@ interface BookingsRepository {
         originalMatchId: Int? = null,
         originalPrice: Double? = null,
     ): Result<RequestMatchResult>
+
+    /**
+     * Fetch the carrier's current location snapshot for live tracking.
+     * Backed by `GET /matches/{matchId}/carrier-location`.
+     */
+    suspend fun getCarrierLocation(matchId: Int): Result<CarrierLocationSnapshot>
 }

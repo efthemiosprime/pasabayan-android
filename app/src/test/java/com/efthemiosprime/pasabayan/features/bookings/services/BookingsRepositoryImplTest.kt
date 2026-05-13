@@ -425,4 +425,64 @@ class BookingsRepositoryImplTest {
         assertEquals(listOf("pickup_address_outside_range"), payload.negotiation.warnings)
         assertFalse(payload.negotiation.isCounterOffer)
     }
+
+    // -- getCarrierLocation --
+
+    @Test
+    fun `getCarrierLocation maps current location plus String delivery coords`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "success": true,
+                    "data": {
+                        "match_id": 100,
+                        "carrier": {"id": 42, "name": "Carrie"},
+                        "current_location": {
+                            "latitude": 14.5995,
+                            "longitude": 120.9842,
+                            "last_updated_at": "2026-05-13T10:15:00Z",
+                            "is_stale": false
+                        },
+                        "delivery_address": {
+                            "address": "123 Main St",
+                            "city": "Manila",
+                            "latitude": "14.6760",
+                            "longitude": "121.0437"
+                        },
+                        "match_status": "in_transit"
+                    }
+                }""",
+            ),
+        )
+
+        val result = repo.getCarrierLocation(100)
+        assertTrue(result.isSuccess)
+        val snapshot = result.getOrThrow()
+        assertEquals(100, snapshot.matchId)
+        assertEquals(14.5995, snapshot.carrierLat!!, 0.0001)
+        assertEquals(120.9842, snapshot.carrierLng!!, 0.0001)
+        assertEquals(false, snapshot.isStale)
+        assertEquals(14.6760, snapshot.deliveryLat!!, 0.0001)
+        assertEquals(121.0437, snapshot.deliveryLng!!, 0.0001)
+        assertTrue(snapshot.hasCarrierLocation)
+        assertTrue(snapshot.hasDeliveryLocation)
+    }
+
+    @Test
+    fun `getCarrierLocation returns failure on 404`() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(404).setBody("""{"message":"Not found"}"""))
+
+        val result = repo.getCarrierLocation(404)
+        assertTrue(result.isFailure)
+    }
+
+    @Test
+    fun `getCarrierLocation returns InvalidResponse when data missing`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody("""{"success": true}"""),
+        )
+
+        val result = repo.getCarrierLocation(100)
+        assertTrue(result.isFailure)
+    }
 }

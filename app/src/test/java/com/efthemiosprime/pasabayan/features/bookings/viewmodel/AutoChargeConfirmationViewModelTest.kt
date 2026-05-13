@@ -312,6 +312,9 @@ private class FakeBookingsRepo : BookingsRepository {
         tripId: Int, packageId: Int, proposedPrice: Double, message: String?,
         isCounterOffer: Boolean, originalMatchId: Int?, originalPrice: Double?,
     ): Result<RequestMatchResult> = Result.failure(Exception("Not used"))
+
+    override suspend fun getCarrierLocation(matchId: Int) =
+        Result.failure<com.efthemiosprime.pasabayan.features.bookings.model.CarrierLocationSnapshot>(Exception("Not used"))
 }
 
 private class FakePaymentMethodsRepo : PaymentMethodsRepository {

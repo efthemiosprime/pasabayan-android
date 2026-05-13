@@ -44,6 +44,13 @@ android {
     }
     testOptions {
         unitTests.isReturnDefaultValues = true
+        unitTests.all { test ->
+            // Default Gradle test-worker heap (Xmx512m) is not enough for the
+            // full :app: suite — Hilt/Compose/Stripe deps push heap usage past
+            // the limit and the worker OOMs (sometimes silently — appears as a
+            // hang while the JVM thrashes GC).
+            test.maxHeapSize = "2g"
+        }
     }
     packaging {
         resources {

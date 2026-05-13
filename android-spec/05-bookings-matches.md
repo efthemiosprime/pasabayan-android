@@ -1891,8 +1891,8 @@ All display strings must use `stringResource(R.string.key)`. Add to `res/values/
 - [x] `IncomingRequestContext` — factory, snackbar items with max 3, dismissal set, badge count
 - [ ] Pickup/delivery code models decode with expiration logic
 - [ ] `ReceiverAccessToken` decode with PIN and access tracking
-- [ ] `CarrierLocationResponse` decode with String coordinates, `latitudeDouble`/`longitudeDouble` computed
-- [ ] `DeliveryAddressData` — String→Double coordinate conversion
+- [x] `CarrierLocationResponse` decode with String coordinates, `latitudeDouble`/`longitudeDouble` computed — `CarrierLocationDataResponseJson` (`current_location` + `delivery_address` nested, `is_stale`, MatchStatus enum); domain mapper in `CarrierLocationSnapshot.toDomain()` converts String → Double via `toDoubleOrNull`; tests: `CarrierLocationJsonDecodeTest`, `CarrierLocationSnapshotTest` (2026-05-13)
+- [x] `DeliveryAddressData` — String→Double coordinate conversion — `DeliveryAddressJson` + `CarrierLocationSnapshot.toDomain()` (`latitude.toDoubleOrNull()`, unparseable values → null); covered by `CarrierLocationSnapshotTest.toDomain treats unparseable String coords as null` (2026-05-13)
 - [ ] `AutoChargeInfo` decode — both shapes (chargeAmount/status and queued/shipperHasDefaultPaymentMethod)
 - [ ] `MatchTransaction` decode
 - [ ] `MatchConfirmResponse` — `auto_charge` at root level
@@ -1931,6 +1931,6 @@ All display strings must use `stringResource(R.string.key)`. Add to `res/values/
 - [ ] `MatchingViewModel`: load by role, accept/decline both roles, counter-offer flow, throttling
 - [ ] `MatchingViewModel`: receiver access CRUD, auto-charge retry
 - [ ] `MatchingViewModel`: badge count with dismissal set
-- [ ] `LiveTrackingViewModel`: distance calc, ETA (40 km/h), stale detection (>10 min)
-- [ ] `AutoChargeConfirmationViewModel`: all 6 state machine transitions
+- [x] `LiveTrackingViewModel`: distance calc (Haversine km), ETA (40 km/h, min 1 min), stale detection (server `is_stale` flag, local 10-min fallback) — `TrackingMath` + `TrackingMathTest`; `LiveTrackingViewModel.refreshLocation` wired via `BookingsRepository.getCarrierLocation` + `CarrierLocationDataResponseJson` (iOS-parity `current_location` + `delivery_address` nested), covered by `CarrierLocationJsonDecodeTest`, `CarrierLocationSnapshotTest`, `BookingsRepositoryImplTest.getCarrierLocation*`, and `LiveTrackingViewModelTest.refreshLocation*` (2026-05-13)
+- [x] `AutoChargeConfirmationViewModel`: 13 state-machine transitions across the 9-state FSM (Idle/CheckingPM/NeedsPM/NeedsPMAfterConfirm/ReadyToConfirm/AddingPM/Confirming/Success/Error) — `AutoChargeConfirmationViewModelTest` (2026-05-13)
 - [ ] Status transition tests: all valid transitions per diagram

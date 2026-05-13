@@ -670,6 +670,7 @@ class FakeBookingsRepository : BookingsRepository {
     var carrierDeclineResult: Result<DeliveryMatch>? = null
     var shipperRequestResult: Result<RequestMatchResult> = Result.failure(Exception("Not set"))
     var carrierRequestResult: Result<RequestMatchResult> = Result.failure(Exception("Not set"))
+    var carrierLocationResult: Result<com.efthemiosprime.pasabayan.features.bookings.model.CarrierLocationSnapshot>? = null
 
     override suspend fun loadMatches(role: String?, status: String?) = loadResult
     override suspend fun getMatch(matchId: Int) = getResult ?: Result.failure(Exception("Not set"))
@@ -715,4 +716,7 @@ class FakeBookingsRepository : BookingsRepository {
         originalMatchId: Int?,
         originalPrice: Double?,
     ) = carrierRequestResult
+
+    override suspend fun getCarrierLocation(matchId: Int) =
+        carrierLocationResult ?: Result.failure(Exception("Not set"))
 }

@@ -95,6 +95,7 @@ fun CarrierMyTripsScreen(
                             TripCard(
                                 trip = trip,
                                 onViewDetails = { onViewTripDetails(trip) },
+                                showCarrierHeader = false,
                                 menuActions = listOf(
                                     CardMenuAction(
                                         title = stringResource(R.string.trips_edit_trip),

@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.features.trips.model
 
+import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PricingType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
@@ -251,5 +252,65 @@ class TripComputedPropertiesTest {
             arrivalDate = "2026-04-01T14:30:00Z",
         )
         assertEquals("6h 30m", trip.formattedDuration)
+    }
+
+    // iOS parity (TripCard.swift:97-115 + Trip.swift:637-664):
+    // Left column shows Pickup/Departure, right column shows Delivery/Duration.
+
+    @Test
+    fun `tripCardLeftLabelRes is pickup when pickupDate present`() {
+        val trip = baseTrip().copy(pickupDate = "2026-04-01T07:30:00Z")
+        assertEquals(R.string.trips_detail_pickup, trip.tripCardLeftLabelRes)
+    }
+
+    @Test
+    fun `tripCardLeftLabelRes is departure when pickupDate null`() {
+        val trip = baseTrip().copy(pickupDate = null)
+        assertEquals(R.string.trips_detail_departure, trip.tripCardLeftLabelRes)
+    }
+
+    @Test
+    fun `tripCardLeftValue uses pickupDate when present`() {
+        val trip = baseTrip().copy(
+            pickupDate = "2026-04-01T07:30:00Z",
+            departureDate = "2026-04-01T08:00:00Z",
+        )
+        assertEquals(trip.formattedPickupOrDepartureDate, trip.tripCardLeftValue)
+        // Pickup is 30 min earlier — confirm we did not fall through to departure.
+        assertTrue(trip.tripCardLeftValue != trip.formattedDepartureDate)
+    }
+
+    @Test
+    fun `tripCardLeftValue falls back to formattedDepartureDate when pickupDate null`() {
+        val trip = baseTrip().copy(pickupDate = null)
+        assertEquals(trip.formattedDepartureDate, trip.tripCardLeftValue)
+    }
+
+    @Test
+    fun `tripCardRightLabelRes is delivery when deliveryDate present`() {
+        val trip = baseTrip().copy(deliveryDate = "2026-04-01T15:00:00Z")
+        assertEquals(R.string.trips_detail_delivery, trip.tripCardRightLabelRes)
+    }
+
+    @Test
+    fun `tripCardRightLabelRes is duration when deliveryDate null`() {
+        val trip = baseTrip().copy(deliveryDate = null)
+        assertEquals(R.string.trips_card_duration, trip.tripCardRightLabelRes)
+    }
+
+    @Test
+    fun `tripCardRightValue uses deliveryDate when present`() {
+        val trip = baseTrip().copy(deliveryDate = "2026-04-01T15:00:00Z")
+        assertEquals(trip.formattedDeliveryOrArrivalDate, trip.tripCardRightValue)
+    }
+
+    @Test
+    fun `tripCardRightValue falls back to formattedDuration when deliveryDate null`() {
+        val trip = baseTrip().copy(
+            deliveryDate = null,
+            departureDate = "2026-04-01T08:00:00Z",
+            arrivalDate = "2026-04-01T14:30:00Z",
+        )
+        assertEquals(trip.formattedDuration, trip.tripCardRightValue)
     }
 }

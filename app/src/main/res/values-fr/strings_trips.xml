@@ -202,6 +202,7 @@
     <string name="trips_browse_search">Rechercher des trajets\u2026</string>
     <string name="trips_browse_load_more">Charger plus de trajets</string>
     <string name="trips_card_distance_from_you">\u00c0 %1$.0f km de vous</string>
+    <string name="trips_card_duration">Dur\u00e9e</string>
     <string name="trips_popular_routes_title">Itin\u00e9raires populaires de colis</string>
     <string name="trips_popular_routes_path">%1$s vers %2$s</string>
     <string name="trips_popular_routes_count">%1$d colis</string>

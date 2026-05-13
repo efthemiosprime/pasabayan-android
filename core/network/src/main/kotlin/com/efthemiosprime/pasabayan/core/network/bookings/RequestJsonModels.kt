@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.core.network.bookings
 
+import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -78,6 +79,12 @@ data class UpdateLocationRequestJson(
     val accuracy: Double? = null,
 )
 
+/**
+ * Envelope for `GET /matches/{matchId}/carrier-location`. Mirrors iOS
+ * `CarrierLocationDataResponse` — `success` + nested [CarrierLocationDataJson]
+ * snapshot. The nested snapshot is iOS-parity exact: `current_location` and
+ * `delivery_address` are *separate* nested objects rather than flattened.
+ */
 @Serializable
 data class CarrierLocationDataResponseJson(
     val success: Boolean = false,
@@ -85,12 +92,38 @@ data class CarrierLocationDataResponseJson(
     val data: CarrierLocationDataJson? = null,
 )
 
+/**
+ * Carrier location snapshot. Mirrors iOS `CarrierLocationResponse` exactly:
+ *  - `matchId` plus optional `carrier` (UserSummary parity with `CarrierBasicInfo`)
+ *  - `currentLocation`: lat/lng/lastUpdatedAt/isStale (omitted before the
+ *    carrier has shared a location, hence the optional nesting)
+ *  - `deliveryAddress`: address/city + **String** lat/lng (server quirk —
+ *    the mapper converts them to Double).
+ */
 @Serializable
 data class CarrierLocationDataJson(
+    @SerialName("match_id") val matchId: Int? = null,
+    val carrier: UserSummary? = null,
+    @SerialName("current_location") val currentLocation: CurrentLocationJson? = null,
+    @SerialName("delivery_address") val deliveryAddress: DeliveryAddressJson? = null,
+    @SerialName("match_status") val matchStatus: MatchStatus? = null,
+)
+
+@Serializable
+data class CurrentLocationJson(
     val latitude: Double? = null,
     val longitude: Double? = null,
     @SerialName("last_updated_at") val lastUpdatedAt: String? = null,
-    val carrier: UserSummary? = null,
+    @SerialName("is_stale") val isStale: Boolean? = null,
+)
+
+@Serializable
+data class DeliveryAddressJson(
+    val address: String? = null,
+    val city: String? = null,
+    /** Server sends these as Strings; mapper converts via `toDoubleOrNull`. */
+    val latitude: String? = null,
+    val longitude: String? = null,
 )
 
 // -- Receiver access --

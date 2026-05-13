@@ -1,0 +1,176 @@
+---
+description: Scan changed/added Kotlin + Compose code for the common Android/Kotlin crash causes before reporting work done — companion to android-gotchas (which is write-time defenses; this is review-time triage).
+alwaysApply: true
+---
+
+# Crash-cause scan
+
+`android-gotchas.mdc` is the **writing-time** rule (how to avoid bugs as you type). This rule is the **review-time** rule: before reporting a slice as done, scan the diff for the crash signatures below. If you find any, flag them in the response and either fix or call them out explicitly — do not silently ship.
+
+## How to use this rule
+
+When you have written or edited Kotlin / Compose / Gradle code in a slice, before saying "done":
+
+1. Walk the **scan checklist** below against the files you touched (and any files you read that looked risky in passing).
+2. For each hit, decide: **fix now** (in-scope) or **flag for follow-up** (out-of-scope but the user must know).
+3. Cite hits inline using `path:line` so the user can jump straight there.
+
+Pasabayan repo grep idioms (use these to scan):
+
+```bash
+# Null-assertion & cast crashes (§1)
+grep -rn --include="*.kt" -E '!!|\bas [A-Z][A-Za-z0-9_<>?]+($|[^?])' app/src/main core/*/src/main
+
+# lateinit usage (§1)
+grep -rn --include="*.kt" "lateinit var" app/src/main core/*/src/main
+
+# GlobalScope / wrong scope (§2, §5)
+grep -rn --include="*.kt" -E "GlobalScope|runBlocking\(" app/src/main core/*/src/main
+
+# Main-thread I/O risk (§4)
+grep -rn --include="*.kt" -E "\.execute\(\)|HttpURLConnection|Thread\.sleep" app/src/main core/*/src/main
+
+# Hardcoded colors / hex — separate rule, but a frequent style/crash overlap in dark mode (§6)
+grep -rn --include="*.kt" -E 'Color\(0x[0-9A-Fa-f]{8}\)|Color\.(White|Black)' app/src/main
+```
+
+(Adjust the path scope to what your slice touched; don't grep the world.)
+
+---
+
+## Scan checklist
+
+### §1 — Kotlin fatal-error family
+
+Flag any of these in changed files:
+
+- **`!!` not-null assertion** outside `*Test.kt` / fakes. Always — there is almost no legitimate use of `!!` in production code in this repo. Suggest `?.let { }`, `?: error("…")`, `requireNotNull(x) { "…" }`, or fix the upstream nullability.
+- **Unsafe `as` cast** (`x as Foo`). Prefer `as?` + null handling, or `is` smart-cast. Allowed only when the type is provably correct at the cast site.
+- **`lateinit var`** in a class that is **not** an Android entry point (Activity / Fragment / Service / BroadcastReceiver / Worker). In ViewModels, repos, and use cases, prefer constructor injection or nullable + lazy init. If `lateinit` is justified, ensure the init point is the **first** thing that runs on the instance and is unconditional.
+- **`checkNotNull` / `requireNotNull` / `error()` / `check()` / `require()`** that can fire on data the server controls — these are crashes, not validation. Convert to `Result.failure(DomainError.X)` at API/repo boundaries; only use `check`/`require` on **internal** invariants that genuinely cannot fail.
+- **`String.toInt()` / `.toDouble()` / `.toLong()`** on any input that came from the user, the network, or a `String` field on a DTO. Use `.toIntOrNull()` etc.
+- **`list.first()` / `.single()` / `.last()`** on a collection whose emptiness isn't guaranteed by the call site. Use `firstOrNull()`.
+- **`list[i]` / `string[i]` / `array[i]`** without a bounds check or a `getOrNull(i)`.
+- **Integer division** `a / b` where `b` is derived from data — guard for zero.
+
+Pasabayan parity note: DTOs in `core/network/*` mark every server-optional field nullable. If you see a non-nullable DTO field that the server may omit, that's a latent NPE.
+
+### §2 — Memory & OOM
+
+- **Bitmap loads at full resolution** — must downsample with `inSampleSize` or use Coil/Glide with a target size. Forbidden: `BitmapFactory.decodeStream(...)` without options.
+- **Static / companion / object** fields holding `Context`, `Activity`, `View`, `Fragment`. Use `applicationContext` if a long-lived Context is required.
+- **Listeners / callbacks registered and never paired** — flag any `register*` / `addListener` / `observeForever` without a matching `unregister*` / `removeListener` / `removeObserver` in the lifecycle teardown.
+- **`Handler(Looper.getMainLooper()).postDelayed`** without `removeCallbacks` in `onStop` / `onDestroyView` — leaks the Runnable's enclosing reference.
+
+### §3 — Lifecycle / state
+
+- **Fragment binding access after `onDestroyView`** — `_binding!!` is a classic crash. Use `binding?.` or a `viewBinding {}` delegate.
+- **Dialog / Toast / Snackbar shown against an Activity that may be finishing** — guard with `!isFinishing && !isDestroyed`, or use Compose-native `Snackbar` inside the screen scope.
+- **`commit()` / `commitNow()` / `replace`** on a `FragmentTransaction` after `onSaveInstanceState`. Use `commitAllowingStateLoss` only when the loss is genuinely OK; otherwise gate on `isStateSaved`.
+- **Flow collection without `repeatOnLifecycle(STARTED)` / `flowWithLifecycle`** when the collector touches UI. In Compose, `collectAsStateWithLifecycle` is the right form — flag bare `collectAsState()` if the upstream is hot.
+- **`onSaveInstanceState` bundles** carrying `Parcelable` lists, `ByteArray`, or strings > a few KB → `TransactionTooLargeException`. Keep heavy state in the ViewModel / DataStore / disk, not in the Bundle.
+- **Process-death assumptions** — singletons must reconstruct their state from disk or the network on cold start. Flag `object Foo { var x = ... }` patterns where `x` is mutated at runtime and is load-bearing.
+
+### §4 — Threading / concurrency
+
+- **Network or disk I/O on `Dispatchers.Main`** — `Retrofit.execute()`, `File.readText()`, `SharedPreferences.commit()`, Room synchronous queries.
+- **View touched from a background thread** — anything inside `withContext(Dispatchers.IO) { … view.text = … }`.
+- **Collection mutated while iterated** — `list.forEach { list.remove(it) }` and friends. Use `iterator.remove()` or build a new collection.
+- **`MutableStateFlow.value = ...` read-then-write** from multiple coroutines — must use `.update { }`.
+- **`synchronized` nested with another lock** — flag any second `synchronized` inside an already-held one (potential deadlock).
+
+### §5 — Coroutines
+
+- **`GlobalScope.launch` / `GlobalScope.async`** — never. Use `viewModelScope`, `lifecycleScope`, or a scoped `CoroutineScope` owned by the class.
+- **`launch { … }` with no exception handling** in a `coroutineScope` where one child failure should not crash the whole tree — use `supervisorScope` or attach a `CoroutineExceptionHandler`.
+- **`runBlocking` on the main thread / inside Compose / in a ViewModel.** Allowed only in tests and `main()` of CLI tools.
+- **Long CPU loops without `yield()` / `ensureActive()`** — cancellation won't be honored.
+- **Updating UI state after `viewModelScope` cancel** — happens when an old coroutine completes after the ViewModel cleared. Use `isActive` checks or `collectLatest` upstream.
+- **`Flow.collect` inside composition** (not inside `LaunchedEffect`) — restarts every recomposition.
+
+### §6 — Compose & UI
+
+- **`mutableStateOf(...)` without `remember`** in a composable — resets every recomposition, often crashing downstream readers expecting stable identity.
+- **`LaunchedEffect(Unit) { vm.load() }`** where `vm.load()` is not idempotent — re-runs on config change unless `Unit` is replaced by a stable key the screen owns.
+- **`items(list)` in `LazyColumn` without `key = { it.id }`** — recomposition + scroll position bugs, sometimes IOOBE on a fast list mutation.
+- **`LazyColumn` driven by a `List` mutated off-thread** — atomic snapshot or use `StateFlow<List<…>>`.
+- **`stringResource(R.string.…)` called from a non-composable** — does not compile, but `getString` on a missing key throws `Resources.NotFoundException` at runtime. Make sure every new string id has an entry in **both** `values/` and `values-fr/`.
+
+### §7 — Framework landmines
+
+- **Missing runtime permission check** before `Camera`, `Location`, `Storage`, `Notifications` (API 33+), or `READ_MEDIA_*` (API 33+). `SecurityException` if missing.
+- **`Intent` resolution without `resolveActivity(packageManager)`** — `ActivityNotFoundException` on devices without the target app (gallery, dialer).
+- **`FileProvider` / `getUriForFile`** without an `authorities` entry in the manifest, or `file://` URI shared on API 24+.
+- **Room schema bump without a `Migration`** — set `fallbackToDestructiveMigration()` only in dev. Production schema changes need a real migration + a regression test.
+- **`registerReceiver` paired with no `unregisterReceiver`** — or vice versa (`unregister` called twice).
+- **`SQLiteConstraintException`** — UNIQUE / FOREIGN KEY constraints — guard at insert with upsert (`OnConflictStrategy.REPLACE` or `IGNORE` per intent) or pre-check.
+
+### §8 — Build / ProGuard / R8
+
+- **Reflection-accessed classes** (Gson / Moshi models, Hilt `@Inject` modules in some shapes, `Class.forName(...)`) — must have `@Keep` or proguard rules. Check `proguard-rules.pro` when adding such code.
+- **kotlinx.serialization models** — must be `@Serializable` and not need keep rules, but verify no DTO is silently relying on reflection.
+- **Library version mismatch** — when bumping a single dep, also check transitives (`./gradlew :app:dependencies | grep <lib>`).
+- **API level guards** — any call to a class/method newer than `minSdk` must be wrapped in `if (Build.VERSION.SDK_INT >= …)` or `@RequiresApi`.
+
+### §9 — Networking
+
+- **Retrofit `.execute()`** (sync) — never; use `suspend` and `withContext(Dispatchers.IO)`.
+- **`HttpException` / `IOException` not caught** at the repo boundary — every Retrofit call ends up in a `Result.success / failure` and maps to `DomainError`. Verify the new endpoint follows the existing pattern (`ApiErrorMapper` / `runCatching` + `mapError`).
+- **DTO non-nullable fields** that the server may omit — see §1 — `kotlinx.serialization` will throw `MissingFieldException` at runtime, not at compile time.
+- **Large response into memory** — paginate at the API level and never load > a few MB JSON in one go.
+- **`UnknownHostException` / `SocketTimeoutException`** caught and converted to a user-facing message via `DomainError` — check the error path, not just the happy path.
+
+### §10 — Data / persistence
+
+- **Room DAO returning `T` (non-null) for a query that may not find a row** — must be `T?` or return a `Flow<T?>` / `List<T>`.
+- **DataStore I/O without try / `catch IOException`** — corrupted preferences file → unhandled crash. Use `dataStore.data.catch { … emit(default) }`.
+- **`SharedPreferences` type mismatch on read** — same key read as Int after being written as String. Migrate carefully.
+- **File I/O on app-private paths** without checking `Context.filesDir`/`cacheDir` availability on low-storage devices.
+
+### §11 — DI (Hilt)
+
+- **Missing `@Provides` / `@Binds`** for a type that is `@Inject`-ed elsewhere — fails fast at app launch with a long Dagger error. Always run `./gradlew :app:assembleDebug` after a DI change.
+- **Scope leaks** — never `@Inject` an `@ActivityScoped` into a `@Singleton`.
+- **`@HiltViewModel` constructor with default args** — DI cannot pick a value; either remove the default or inject explicitly.
+
+### §12 — External / data-driven
+
+- **FCM push payload fields** — `data["foo"]` is `String?`; treat as nullable.
+- **Deep link parameters** — anything from `intent.data?.getQueryParameter(...)` is nullable + untrusted.
+- **`Bundle` extras from a third-party intent** — never `getString(...)!!`.
+
+---
+
+## Mental model (when in doubt)
+
+| Bug class | One-sentence test |
+|---|---|
+| `!!` / unsafe cast | "Am I asserting something I can't prove right here?" |
+| Memory | "Does this hold a `Context` or a big `Bitmap` for longer than its owner lives?" |
+| Lifecycle | "Will this still be running when the screen is gone?" |
+| Concurrency | "Could two callers reach this line at once?" |
+| ProGuard | "Does R8 know about this name?" |
+| Networking | "Is this nullable on the wire today?" |
+
+---
+
+## When you find something
+
+- **Inside the slice's scope:** fix it in the same slice, with a regression test if reasonable.
+- **Outside the slice's scope:** flag it explicitly in the end-of-slice message, with `path:line`. Do not silently expand the slice; do not silently skip.
+- **Speculative ("this *could* crash if X")**: state the assumption. If you can't tell, say so — don't assert safety you haven't verified.
+
+If a hit looks scary but you cannot verify (e.g., reflection-via-library, ProGuard interaction), recommend the user run:
+
+```bash
+./gradlew :app:assembleRelease   # exercises R8/minification
+./gradlew :app:lintDebug         # Android Lint surfaces many of these
+./gradlew :app:detekt            # if Detekt is configured
+```
+
+## Related rules
+
+- `android-gotchas.mdc` — write-time defenses (the *prevent* side; this rule is the *detect* side)
+- `lean-classes-separation.mdc` — small files / thin classes → fewer places for a crash to hide
+- `reuse-before-create.mdc` — duplicated logic = duplicated bugs; extending existing tested code is safer
+- `tdd-and-ui-conformance.mdc` — every fix here should land with a regression test where practical

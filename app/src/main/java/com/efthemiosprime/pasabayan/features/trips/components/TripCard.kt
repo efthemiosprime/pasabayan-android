@@ -9,10 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -20,19 +16,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.efthemiosprime.pasabayan.R
+import com.efthemiosprime.pasabayan.core.designsystem.PasabayanColors
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.CardMenuAction
+import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCardActionFooter
+import com.efthemiosprime.pasabayan.core.designsystem.component.PCardVariant
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailRow
-import com.efthemiosprime.pasabayan.core.designsystem.component.PExpandableCard
-import com.efthemiosprime.pasabayan.core.designsystem.component.PRouteSection
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDivider
+import com.efthemiosprime.pasabayan.core.designsystem.component.PRouteSection
 import com.efthemiosprime.pasabayan.core.designsystem.component.PStatusBadge
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
-import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.features.dashboard.components.UserCardHeader
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 
@@ -42,16 +39,15 @@ fun TripCard(
     onViewDetails: () -> Unit,
     onRequestBook: (() -> Unit)? = null,
     showDistanceFromUser: Boolean = false,
-    showCompactPriceInCollapsed: Boolean = false,
+    showCarrierHeader: Boolean = true,
     renderSingleMenuActionDirectly: Boolean = false,
     /** When non-null, the carrier-header row is tappable and invokes this. iOS opens UserProfilePopover. */
     onOpenCarrierProfile: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     menuActions: List<CardMenuAction> = emptyList(),
 ) {
-    val opacity = if (trip.tripStatus == TripStatus.CANCELLED) 0.5f else 1f
+    val opacity = if (trip.tripStatus == TripStatus.CANCELLED) 0.6f else 1f
     val statusLabel = tripStatusLabel(trip.tripStatus)
-    var expanded by rememberSaveable { mutableStateOf(false) }
     val cardMenuActions = if (trip.isBookable && onRequestBook != null) {
         menuActions + CardMenuAction(
             title = stringResource(R.string.trips_action_request_book),
@@ -67,163 +63,161 @@ fun TripCard(
     }
     val overflowActions = if (directTrailingAction != null) emptyList() else cardMenuActions
 
-    PExpandableCard(
-        expanded = expanded,
-        onExpandChange = { expanded = it },
+    PCard(
         modifier = modifier.alpha(opacity),
-        collapsedContent = {
-            // Summary view
-            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                // Carrier header — iOS TripCardView parity. Tappable when callback supplied.
+        variant = PCardVariant.Secondary,
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
+            // Carrier header — only when the viewer is not the trip owner.
+            if (showCarrierHeader) {
                 trip.carrier?.let { carrier ->
                     UserCardHeader(user = carrier, onClick = onOpenCarrierProfile)
                     PDivider()
                 }
+            }
 
-                // Header: route + transport + status badge
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "${trip.transportationMethod.icon} ${trip.route}",
-                        style = PasabayanTextStyles.Heading.h6,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
-                    )
-                    PStatusBadge(config = TripStatusBadgeConfig(trip.tripStatus, statusLabel))
-                }
-
-                // Route section
-                PRouteSection(
-                    origin = trip.originCity,
-                    destination = trip.destinationCity,
-                    originAddress = trip.pickupAddress,
-                    destinationAddress = trip.dropoffAddress,
+            // Header: route + transport icon + status badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "${trip.transportationMethod.icon} ${trip.route}",
+                    style = PasabayanTextStyles.Heading.h5,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
                 )
+                PStatusBadge(config = TripStatusBadgeConfig(trip.tripStatus, statusLabel))
+            }
 
-                if (showDistanceFromUser && trip.routeDistanceKm > 0) {
-                    Text(
-                        text = stringResource(R.string.trips_card_distance_from_you, trip.routeDistanceKm),
-                        style = PasabayanTextStyles.Caption.regular,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+            // Route addresses
+            PRouteSection(
+                origin = trip.originCity,
+                destination = trip.destinationCity,
+                originAddress = trip.pickupAddress,
+                destinationAddress = trip.dropoffAddress,
+                originLandmark = trip.pickupLandmark,
+                destinationLandmark = trip.dropoffLandmark,
+            )
 
-                // Schedule
-                if (trip.formattedDepartureDate.isNotEmpty()) {
-                    PDetailRow(
-                        label = stringResource(R.string.trips_detail_departure),
-                        value = trip.formattedDepartureDate,
-                    )
-                }
-
-                // Capacity & price
-                PDetailRow(
-                    label = stringResource(R.string.trips_detail_capacity),
-                    value = trip.formattedCapacity,
-                )
-                if (showCompactPriceInCollapsed) {
-                    PDetailRow(
-                        label = stringResource(R.string.trips_detail_price),
-                        value = trip.formattedPriceCompact,
-                    )
-                }
-
-                // Footer — "View Details" expands the card
-                PCardActionFooter(
-                    onViewDetails = onViewDetails,
-                    menuActions = overflowActions,
-                    directTrailingAction = directTrailingAction,
+            if (showDistanceFromUser && trip.routeDistanceKm > 0) {
+                Text(
+                    text = stringResource(R.string.trips_card_distance_from_you, trip.routeDistanceKm),
+                    style = PasabayanTextStyles.Caption.regular,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-        },
-        expandedContent = {
-            // Full detail view inside the expanded card
-            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
-                // Carrier header — iOS TripCardView parity. Same tap target as the collapsed view.
-                trip.carrier?.let { carrier ->
-                    UserCardHeader(user = carrier, onClick = onOpenCarrierProfile)
-                    PDivider()
-                }
 
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "${trip.transportationMethod.icon} ${trip.route}",
-                        style = PasabayanTextStyles.Heading.h4,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f),
-                    )
-                    PStatusBadge(config = TripStatusBadgeConfig(trip.tripStatus, statusLabel))
-                }
+            // Schedule (Pickup vs Delivery, or Departure vs Duration) — iOS TripCard.swift:97-115.
+            ScheduleColumns(trip)
 
-                // Route
-                PRouteSection(
-                    origin = trip.originCity,
-                    destination = trip.destinationCity,
-                    originAddress = trip.pickupAddress,
-                    destinationAddress = trip.dropoffAddress,
-                    originLandmark = trip.pickupLandmark,
-                    destinationLandmark = trip.dropoffLandmark,
-                )
+            PDivider()
 
-                // Schedule
-                if (trip.formattedDepartureDate.isNotEmpty()) {
-                    PDetailRow(
-                        label = stringResource(R.string.trips_detail_departure),
-                        value = trip.formattedDepartureDate,
-                    )
-                }
-                if (trip.formattedArrivalDate.isNotEmpty()) {
-                    PDetailRow(
-                        label = stringResource(R.string.trips_detail_arrival),
-                        value = trip.formattedArrivalDate,
-                    )
-                }
+            // Capacity + Price — iOS TripCard.swift:120-142, price tinted accent.
+            CapacityAndPriceRow(trip)
 
-                // Capacity & pricing
+            // Pending requests (carrier-owner context)
+            val pendingCount = trip.pendingRequestCount ?: 0
+            if (pendingCount > 0) {
                 PDetailRow(
-                    label = stringResource(R.string.trips_detail_capacity),
-                    value = trip.formattedCapacity,
+                    label = stringResource(R.string.trips_detail_pending_requests, pendingCount),
+                    value = "",
                 )
-                PDetailRow(
-                    label = stringResource(R.string.trips_detail_price),
-                    value = trip.formattedPrice,
-                )
-
-                // Pending requests
-                val pendingCount = trip.pendingRequestCount ?: 0
-                if (pendingCount > 0) {
-                    PDetailRow(
-                        label = stringResource(R.string.trips_detail_pending_requests, pendingCount),
-                        value = "",
-                    )
-                }
-
-                // Special notes
-                trip.specialNotes?.let { notes ->
-                    Text(
-                        text = stringResource(R.string.trips_detail_notes),
-                        style = PasabayanTextStyles.Heading.h6,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text = notes,
-                        style = PasabayanTextStyles.Body.regular,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
             }
-        },
-    )
+
+            // Special notes
+            trip.specialNotes?.takeIf { it.isNotBlank() }?.let { notes ->
+                Text(
+                    text = notes,
+                    style = PasabayanTextStyles.Caption.regular,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+            PCardActionFooter(
+                onViewDetails = onViewDetails,
+                menuActions = overflowActions,
+                directTrailingAction = directTrailingAction,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ScheduleColumns(trip: Trip) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
+            Text(
+                text = stringResource(trip.tripCardLeftLabelRes),
+                style = PasabayanTextStyles.Caption.regular,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = trip.tripCardLeftValue,
+                style = PasabayanTextStyles.Body.small,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+        ) {
+            Text(
+                text = stringResource(trip.tripCardRightLabelRes),
+                style = PasabayanTextStyles.Caption.regular,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = trip.tripCardRightValue,
+                style = PasabayanTextStyles.Body.small,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CapacityAndPriceRow(trip: Trip) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
+            Text(
+                text = stringResource(R.string.trips_detail_available_capacity),
+                style = PasabayanTextStyles.Caption.regular,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = trip.formattedCapacity,
+                style = PasabayanTextStyles.Body.small,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+        ) {
+            Text(
+                text = stringResource(R.string.trips_detail_price),
+                style = PasabayanTextStyles.Caption.regular,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = trip.formattedPrice,
+                style = PasabayanTextStyles.Body.small,
+                color = PasabayanColors.BadgeTeal,
+            )
+        }
+    }
 }
 
 @Composable
@@ -237,14 +231,30 @@ private fun tripStatusLabel(status: TripStatus): String = when (status) {
 
 // -- Previews --
 
-@Preview(showBackground = true, name = "TripCard — light")
-@Preview(showBackground = true, name = "TripCard — dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(showBackground = true, name = "TripCard — carrier, light")
+@Preview(showBackground = true, name = "TripCard — carrier, dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun TripCardPreview() {
+private fun TripCardCarrierPreview() {
     PasabayanTheme {
         TripCard(
             trip = previewTrip(),
             onViewDetails = {},
+            showCarrierHeader = false,
+            modifier = Modifier.padding(PasabayanSpacing.lg),
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "TripCard — shipper browse, light")
+@Preview(showBackground = true, name = "TripCard — shipper browse, dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun TripCardShipperPreview() {
+    PasabayanTheme {
+        TripCard(
+            trip = previewTrip(),
+            onViewDetails = {},
+            onRequestBook = {},
+            showDistanceFromUser = true,
             modifier = Modifier.padding(PasabayanSpacing.lg),
         )
     }
@@ -252,23 +262,23 @@ private fun TripCardPreview() {
 
 private fun previewTrip(status: TripStatus = TripStatus.ACTIVE) = Trip(
     id = 1, carrierId = 42,
-    originCity = "Toronto", originCountry = "Canada",
-    originLat = 43.65, originLng = -79.38,
-    destinationCity = "Vancouver", destinationCountry = "Canada",
-    destinationLat = 49.28, destinationLng = -123.12,
-    departureDate = "2026-04-01T08:00:00Z",
-    arrivalDate = "2026-04-01T14:00:00Z",
+    originCity = "Montreal", originCountry = "Canada",
+    originLat = 45.50, originLng = -73.57,
+    destinationCity = "Toronto", destinationCountry = "Canada",
+    destinationLat = 43.65, destinationLng = -79.38,
+    departureDate = "2026-02-27T13:40:00Z",
+    arrivalDate = "2026-03-01T13:40:00Z",
     availableWeightKg = 25.0, availableSpaceLiters = 50.0,
-    pricePerKg = 15.0, tripStatus = status,
-    transportationMethod = TransportationMethod.FLIGHT,
-    specialNotes = "Handle with care", carrier = null,
+    pricePerKg = 3.0, tripStatus = status,
+    transportationMethod = TransportationMethod.CAR,
+    specialNotes = "Test trip for in_transit status", carrier = null,
     createdAt = null, updatedAt = null,
     pricingType = null, pricingMethod = null,
     flatTripPrice = null, basePrice = null, calculatedPrice = null,
-    pickupAddress = "123 Main St", pickupLandmark = null,
-    dropoffAddress = "456 Oak Ave", dropoffLandmark = null,
+    pickupAddress = null, pickupLandmark = null,
+    dropoffAddress = null, dropoffLandmark = null,
     tripEarningsTotal = null, tripEarningsCurrency = null,
     tripEarningsBreakdown = null,
     hasPendingRequests = true, pendingRequestCount = 2,
-    pendingRequests = null, distanceKm = 3365.0,
+    pendingRequests = null, distanceKm = 540.0,
 )

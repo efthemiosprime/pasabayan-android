@@ -113,4 +113,9 @@ interface BookingsApi {
 
     @POST("payments/matches/{matchId}/auto-charge")
     suspend fun retryAutoCharge(@Path("matchId") matchId: Int): Response<MatchResponseJson>
+
+    // -- Live tracking --
+
+    @GET("matches/{matchId}/carrier-location")
+    suspend fun getCarrierLocation(@Path("matchId") matchId: Int): Response<CarrierLocationDataResponseJson>
 }

@@ -766,4 +766,8 @@ private class FakeBookingsRepository : BookingsRepository {
         originalPrice: Double?,
     ): Result<com.efthemiosprime.pasabayan.features.bookings.model.RequestMatchResult> =
         Result.failure(Exception("Not used"))
+
+    override suspend fun getCarrierLocation(matchId: Int):
+        Result<com.efthemiosprime.pasabayan.features.bookings.model.CarrierLocationSnapshot> =
+        Result.failure(Exception("Not used"))
 }

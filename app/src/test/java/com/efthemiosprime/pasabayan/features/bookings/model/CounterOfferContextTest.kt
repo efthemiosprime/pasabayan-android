@@ -102,9 +102,12 @@ class CounterOfferContextTest {
         )
 
         val ctx = CounterOfferContext.fromMatch(match)
-        // Regex-only fallback is intentionally rejected when isCounterOffer is true
-        // but originalPrice is null — we still need the structured field as a signal.
-        assertNull(ctx)
+        requireNotNull(ctx)
+        assertEquals(70.0, ctx.newPrice, 0.001)
+        assertEquals(100.0, ctx.originalPrice, 0.001)
+        assertEquals("Alice", ctx.counterOffererName)
+        assertEquals(7, ctx.counterOffererId)
+        assertTrue(ctx.isCounterOffer)
     }
 
     @Test

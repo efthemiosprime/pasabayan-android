@@ -203,6 +203,7 @@
     <string name="trips_browse_search">Search trips…</string>
     <string name="trips_browse_load_more">Load More Trips</string>
     <string name="trips_card_distance_from_you">%1$.0f km from you</string>
+    <string name="trips_card_duration">Duration</string>
     <string name="trips_popular_routes_title">Popular Package Routes</string>
     <string name="trips_popular_routes_path">%1$s to %2$s</string>
     <string name="trips_popular_routes_count">%1$d packages</string>

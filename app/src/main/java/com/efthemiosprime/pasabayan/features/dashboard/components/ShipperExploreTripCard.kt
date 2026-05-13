@@ -28,7 +28,6 @@ fun ShipperExploreTripCard(
         onViewDetails = onViewDetails,
         onRequestBook = onRequestBook,
         showDistanceFromUser = true,
-        showCompactPriceInCollapsed = true,
         renderSingleMenuActionDirectly = true,
         onOpenCarrierProfile = onOpenCarrierProfile,
         modifier = modifier,

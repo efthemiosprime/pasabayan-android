@@ -1,5 +1,7 @@
 package com.efthemiosprime.pasabayan.features.trips.model
 
+import androidx.annotation.StringRes
+import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PricingType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
@@ -149,6 +151,25 @@ data class Trip(
             val minutes = durationMinutes % 60
             return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
         }
+
+    // iOS parity: Carrier "My Trips" TripCard left/right schedule columns
+    // (TripCard.swift:97-115, Trip.swift:637-664). Left shows Pickup when the
+    // shared pickup window is set, else falls back to Departure. Right shows
+    // Delivery when the shared delivery window is set, else trip Duration.
+
+    @get:StringRes
+    val tripCardLeftLabelRes: Int
+        get() = if (pickupDate != null) R.string.trips_detail_pickup else R.string.trips_detail_departure
+
+    val tripCardLeftValue: String
+        get() = formattedPickupOrDepartureDate ?: ""
+
+    @get:StringRes
+    val tripCardRightLabelRes: Int
+        get() = if (deliveryDate != null) R.string.trips_detail_delivery else R.string.trips_card_duration
+
+    val tripCardRightValue: String
+        get() = if (deliveryDate != null) formattedDeliveryOrArrivalDate ?: "" else formattedDuration
 
     val routeDistanceKm: Double
         get() {
