@@ -118,11 +118,29 @@
     <string name="bookings_match_creation_choose_package">Choose package</string>
     <string name="bookings_match_creation_no_packages">No pending packages available. Create a package request first.</string>
 
-    <!-- Auto-charge -->
-    <string name="bookings_auto_charge_title">Confirm Payment</string>
-    <string name="bookings_auto_charge_description">Your default payment method will be charged upon confirmation.</string>
-    <string name="bookings_auto_charge_amount">Amount</string>
-    <string name="bookings_auto_charge_confirm">Confirm &amp; Pay</string>
+    <!-- Auto-charge confirm sheet (iOS-parity AutoChargeConfirmationViewModel state machine) -->
+    <string name="bookings_auto_charge_title">Confirm Match</string>
+    <string name="bookings_auto_charge_checking_pm">Checking payment method…</string>
+    <string name="bookings_auto_charge_no_pm_title">Payment Method Required</string>
+    <string name="bookings_auto_charge_no_pm_body">To confirm this match, you need to add a payment method. Your card will be charged automatically when the match is confirmed.</string>
+    <string name="bookings_auto_charge_add_pm">Add Payment Method</string>
+    <string name="bookings_auto_charge_ready_title">Ready to Confirm</string>
+    <string name="bookings_auto_charge_ready_body">Your payment will be processed automatically once you confirm the match.</string>
+    <string name="bookings_auto_charge_amount_label">You will be charged</string>
+    <string name="bookings_auto_charge_amount_format">$%1$.2f</string>
+    <string name="bookings_auto_charge_card_last4">Card ending in %1$s</string>
+    <string name="bookings_auto_charge_confirm_pay">Confirm &amp; Pay</string>
+    <string name="bookings_auto_charge_use_different_card">Use a different card</string>
+    <string name="bookings_auto_charge_confirming">Confirming…</string>
+    <string name="bookings_auto_charge_after_confirm_title">Add Payment Method</string>
+    <string name="bookings_auto_charge_after_confirm_body">We couldn\'t start auto-charge because no default card was found. Add a payment method to complete the charge for this match.</string>
+    <string name="bookings_auto_charge_success_title">Match Confirmed!</string>
+    <string name="bookings_auto_charge_success_queued">Payment is being processed.</string>
+    <string name="bookings_auto_charge_success_pending_charge">Match confirmed.</string>
+    <string name="bookings_auto_charge_error_title">Something went wrong</string>
+    <string name="bookings_auto_charge_retry">Try Again</string>
+    <string name="bookings_auto_charge_cancel">Cancel</string>
+    <string name="bookings_auto_charge_close">Close</string>
 
     <!-- Rating -->
     <string name="bookings_rate_title">Rate Delivery</string>
