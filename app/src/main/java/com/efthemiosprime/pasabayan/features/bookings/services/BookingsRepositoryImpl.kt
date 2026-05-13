@@ -9,6 +9,7 @@ import com.efthemiosprime.pasabayan.core.network.bookings.CarrierCounterOfferReq
 import com.efthemiosprime.pasabayan.core.network.bookings.MatchResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.ShipperCounterOfferRequestJson
 import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
+import com.efthemiosprime.pasabayan.features.bookings.model.ConfirmMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.RequestMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.toDomain
@@ -48,8 +49,17 @@ class BookingsRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun confirmMatch(matchId: Int): Result<DeliveryMatch> =
-        matchAction { bookingsApi.confirmMatch(matchId) }
+    override suspend fun confirmMatch(matchId: Int): Result<ConfirmMatchResult> {
+        return try {
+            val res = bookingsApi.confirmMatch(matchId)
+            if (!res.isSuccessful) return Result.failure(mapError(res))
+            val result = res.body()?.toDomain()
+                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            Result.success(result)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
 
     override suspend fun cancelMatch(matchId: Int): Result<CancelMatchResult> {
         return try {

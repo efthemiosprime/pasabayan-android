@@ -32,7 +32,7 @@ interface BookingsApi {
     suspend fun createMatch(@Body body: MatchCreationRequestJson): Response<MatchResponseJson>
 
     @PUT("matches/{matchId}/confirm")
-    suspend fun confirmMatch(@Path("matchId") matchId: Int): Response<MatchResponseJson>
+    suspend fun confirmMatch(@Path("matchId") matchId: Int): Response<MatchConfirmResponseJson>
 
     @PUT("matches/{matchId}/pickup")
     suspend fun markPickedUp(@Path("matchId") matchId: Int): Response<MatchResponseJson>

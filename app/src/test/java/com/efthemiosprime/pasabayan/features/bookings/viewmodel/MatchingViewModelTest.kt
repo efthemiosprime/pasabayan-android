@@ -5,6 +5,7 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.session.AuthRepository
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
+import com.efthemiosprime.pasabayan.features.bookings.model.ConfirmMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.NegotiationMetadata
 import com.efthemiosprime.pasabayan.features.bookings.model.RequestMatchResult
@@ -347,7 +348,9 @@ class MatchingViewModelTest {
     fun `confirmMatch updates match status`() = runTest {
         val confirmed = testMatch(1, MatchStatus.CONFIRMED)
         fakeRepo.loadResult = Result.success(listOf(testMatch(1, MatchStatus.PENDING)))
-        fakeRepo.confirmResult = Result.success(confirmed)
+        fakeRepo.confirmMatchResult = Result.success(
+            ConfirmMatchResult(match = confirmed, autoCharge = null, chatConversationId = null),
+        )
         viewModel.loadMatches("carrier")
         advanceUntilIdle()
 
@@ -657,7 +660,9 @@ class MatchingViewModelTest {
 class FakeBookingsRepository : BookingsRepository {
     var loadResult: Result<List<DeliveryMatch>> = Result.success(emptyList())
     var getResult: Result<DeliveryMatch>? = null
+    /** Used by markPickedUp / markInTransit / markDelivered / confirmPickupWithCode / confirmDeliveryWithCode. */
     var confirmResult: Result<DeliveryMatch>? = null
+    var confirmMatchResult: Result<ConfirmMatchResult>? = null
     var cancelResult: Result<CancelMatchResult> = Result.failure(Exception("Not set"))
     var shipperAcceptResult: Result<DeliveryMatch>? = null
     var shipperDeclineResult: Result<DeliveryMatch>? = null
@@ -668,7 +673,7 @@ class FakeBookingsRepository : BookingsRepository {
 
     override suspend fun loadMatches(role: String?, status: String?) = loadResult
     override suspend fun getMatch(matchId: Int) = getResult ?: Result.failure(Exception("Not set"))
-    override suspend fun confirmMatch(matchId: Int) = confirmResult ?: Result.failure(Exception("Not set"))
+    override suspend fun confirmMatch(matchId: Int) = confirmMatchResult ?: Result.failure(Exception("Not set"))
     override suspend fun cancelMatch(matchId: Int) = cancelResult
     override suspend fun markPickedUp(matchId: Int) = confirmResult ?: Result.failure(Exception("Not set"))
     override suspend fun markInTransit(matchId: Int) = confirmResult ?: Result.failure(Exception("Not set"))

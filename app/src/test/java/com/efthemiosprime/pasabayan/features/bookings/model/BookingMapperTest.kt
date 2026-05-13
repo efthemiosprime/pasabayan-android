@@ -3,7 +3,6 @@ package com.efthemiosprime.pasabayan.features.bookings.model
 import com.efthemiosprime.pasabayan.core.domain.`enum`.InitiatedBy
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
-import com.efthemiosprime.pasabayan.core.network.bookings.AutoChargeInfoJson
 import com.efthemiosprime.pasabayan.core.network.bookings.CancelMatchResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.CarrierRequestResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.DeliveryMatchJson

@@ -105,7 +105,7 @@ class BookingsRepositoryImplTest {
     // -- confirmMatch --
 
     @Test
-    fun `confirmMatch returns success`() = runBlocking {
+    fun `confirmMatch returns ConfirmMatchResult with match`() = runBlocking {
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(
                 """{"success": true, "message": "Confirmed", "data": {"id": 100, "match_status": "confirmed"}}""",
@@ -114,6 +114,50 @@ class BookingsRepositoryImplTest {
 
         val result = repo.confirmMatch(100)
         assertTrue(result.isSuccess)
+        val confirm = result.getOrThrow()
+        assertEquals(100, confirm.match.id)
+        assertNull(confirm.autoCharge)
+        assertNull(confirm.chatConversationId)
+    }
+
+    @Test
+    fun `confirmMatch decodes auto_charge and chat_conversation_id when present`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "success": true,
+                    "message": "Confirmed",
+                    "data": {"id": 100, "match_status": "confirmed"},
+                    "chat_conversation_id": 77,
+                    "auto_charge": {"queued": true, "shipper_has_default_payment_method": true}
+                }""",
+            ),
+        )
+
+        val confirm = repo.confirmMatch(100).getOrThrow()
+        assertEquals(77, confirm.chatConversationId)
+        assertNotNull(confirm.autoCharge)
+        assertTrue(confirm.autoCharge!!.queued)
+        assertTrue(confirm.autoCharge!!.shipperHasDefaultPaymentMethod)
+    }
+
+    @Test
+    fun `confirmMatch surfaces auto_charge with no default payment method`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "success": true,
+                    "message": "Confirmed",
+                    "data": {"id": 100, "match_status": "confirmed"},
+                    "auto_charge": {"queued": false, "shipper_has_default_payment_method": false}
+                }""",
+            ),
+        )
+
+        val confirm = repo.confirmMatch(100).getOrThrow()
+        assertNotNull(confirm.autoCharge)
+        assertFalse(confirm.autoCharge!!.queued)
+        assertFalse(confirm.autoCharge!!.shipperHasDefaultPaymentMethod)
     }
 
     // -- cancelMatch --

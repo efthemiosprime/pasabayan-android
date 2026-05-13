@@ -107,8 +107,8 @@
     <string name="profile_menu_help_subtitle">FAQ et contacter l’assistance</string>
     <string name="profile_menu_settings">Paramètres</string>
     <string name="profile_menu_settings_subtitle">Confidentialité, langue, compte</string>
-    <string name="profile_menu_terms">Conditions et confidentialité</string>
-    <string name="profile_menu_terms_subtitle">Documents légaux</string>
+    <string name="profile_menu_terms">Documents juridiques</string>
+    <string name="profile_menu_terms_subtitle">Conditions, Confidentialité, Accord de service et Responsabilité</string>
     <string name="profile_actions_logout">Se déconnecter</string>
     <string name="profile_footer_version">%1$s %2$s</string>
     <string name="profile_error_generic">Impossible de charger le profil</string>

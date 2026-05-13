@@ -58,8 +58,11 @@ fun LegalViewerSheet(
         )
         AssetArticleWebView(
             filename = selected.htmlFilename,
+            // weight(1f) is load-bearing: without it the WebView wraps to 0 height
+            // inside the Column and the sheet renders blank under the tabs.
             modifier = Modifier
                 .fillMaxWidth()
+                .weight(1f)
                 .padding(horizontal = PasabayanSpacing.screenPadding),
         )
     }

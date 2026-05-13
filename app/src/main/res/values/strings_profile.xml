@@ -106,8 +106,8 @@
     <string name="profile_menu_help_subtitle">FAQ and contact support</string>
     <string name="profile_menu_settings">Settings</string>
     <string name="profile_menu_settings_subtitle">Privacy, language, account</string>
-    <string name="profile_menu_terms">Terms and privacy</string>
-    <string name="profile_menu_terms_subtitle">Legal documents</string>
+    <string name="profile_menu_terms">Legal Documents</string>
+    <string name="profile_menu_terms_subtitle">Terms, Privacy, Service Agreement &amp; Liability</string>
     <string name="profile_actions_logout">Log out</string>
     <string name="profile_footer_version">%1$s %2$s</string>
     <string name="profile_error_generic">Could not load profile</string>

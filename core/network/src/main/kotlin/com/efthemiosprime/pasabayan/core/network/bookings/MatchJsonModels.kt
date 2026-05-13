@@ -55,8 +55,11 @@ data class DeliveryMatchJson(
     @SerialName("delivery_code_generated_at") val deliveryCodeGeneratedAt: String? = null,
     @SerialName("delivery_code_used_at") val deliveryCodeUsedAt: String? = null,
 
-    // Auto-charge & pricing
-    @SerialName("auto_charge") val autoCharge: AutoChargeInfoJson? = null,
+    // Pricing & transaction
+    // NOTE: `auto_charge` is a sibling of `data` on the confirm-match envelope
+    // (see [MatchConfirmResponseJson]), NOT a field on the match itself —
+    // matches iOS `MatchConfirmResponse` (commit f59cd1c). The earlier
+    // placement here was unused at the mapper boundary.
     @SerialName("transaction_status") val transactionStatus: String? = null,
     @SerialName("transaction") val transaction: MatchTransactionJson? = null,
     @SerialName("carrier_expected_price") @Serializable(with = FlexibleDoubleSerializer::class) val carrierExpectedPrice: Double? = null,
@@ -155,12 +158,17 @@ data class MatchTransactionJson(
     @SerialName("created_at") val createdAt: String? = null,
 )
 
+/**
+ * Auto-charge envelope-level payload returned by `PUT /matches/{id}/confirm`.
+ * Mirrors iOS `AutoChargeInfo` (MatchingModels.swift). `queued` is true when
+ * the backend has queued the charge against the shipper's default payment
+ * method; `shipperHasDefaultPaymentMethod` lets the client know it must
+ * prompt the user to add one before retry.
+ */
 @Serializable
 data class AutoChargeInfoJson(
-    val status: String? = null,
-    @Serializable(with = FlexibleDoubleSerializer::class) val amount: Double? = null,
-    val currency: String? = null,
-    @SerialName("payment_method_id") val paymentMethodId: String? = null,
+    val queued: Boolean = false,
+    @SerialName("shipper_has_default_payment_method") val shipperHasDefaultPaymentMethod: Boolean = false,
 )
 
 @Serializable
@@ -179,6 +187,19 @@ data class MatchResponseJson(
     val success: Boolean = false,
     val message: String = "",
     val data: DeliveryMatchJson? = null,
+)
+
+/**
+ * Response envelope for `PUT /matches/{id}/confirm` — carries the auto-charge
+ * payload at the root alongside the match (iOS `MatchConfirmResponse`).
+ */
+@Serializable
+data class MatchConfirmResponseJson(
+    val success: Boolean = false,
+    val message: String = "",
+    val data: DeliveryMatchJson? = null,
+    @SerialName("chat_conversation_id") val chatConversationId: Int? = null,
+    @SerialName("auto_charge") val autoCharge: AutoChargeInfoJson? = null,
 )
 
 @Serializable

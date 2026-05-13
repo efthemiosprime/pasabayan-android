@@ -29,7 +29,7 @@ class AutoChargeConfirmationViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isProcessing = true, errorMessage = null) }
             bookingsRepository.confirmMatch(matchId).fold(
-                onSuccess = {
+                onSuccess = { _ ->
                     _uiState.update { it.copy(isProcessing = false, isConfirmed = true) }
                 },
                 onFailure = { e ->

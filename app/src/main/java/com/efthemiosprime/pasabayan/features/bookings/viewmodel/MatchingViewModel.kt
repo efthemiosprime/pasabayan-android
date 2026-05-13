@@ -257,9 +257,9 @@ class MatchingViewModel @Inject constructor(
     fun confirmMatch(matchId: Int) {
         viewModelScope.launch {
             bookingsRepository.confirmMatch(matchId).fold(
-                onSuccess = { updatedMatch ->
+                onSuccess = { result ->
                     _uiState.update { state ->
-                        state.copy(matches = state.matches.map { if (it.id == matchId) updatedMatch else it })
+                        state.copy(matches = state.matches.map { if (it.id == matchId) result.match else it })
                     }
                 },
                 onFailure = { e ->

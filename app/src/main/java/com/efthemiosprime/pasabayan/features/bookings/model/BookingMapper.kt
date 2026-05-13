@@ -1,9 +1,11 @@
 package com.efthemiosprime.pasabayan.features.bookings.model
 
+import com.efthemiosprime.pasabayan.core.network.bookings.AutoChargeInfoJson
 import com.efthemiosprime.pasabayan.core.network.bookings.CancelMatchResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.CarrierRequestResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.DeliveryMatchJson
 import com.efthemiosprime.pasabayan.core.network.bookings.MatchCompatibilityJson
+import com.efthemiosprime.pasabayan.core.network.bookings.MatchConfirmResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.RefundResultJson
 import com.efthemiosprime.pasabayan.core.network.bookings.ShipperRequestResponseJson
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.CarrierTripInfo
@@ -81,6 +83,20 @@ fun ShipperRequestResponseJson.toDomain(): RequestMatchResult? {
         compatibility = compatibility?.toDomain(),
     )
 }
+
+fun MatchConfirmResponseJson.toDomain(): ConfirmMatchResult? {
+    val match = data?.toDomain() ?: return null
+    return ConfirmMatchResult(
+        match = match,
+        autoCharge = autoCharge?.toDomain(),
+        chatConversationId = chatConversationId,
+    )
+}
+
+fun AutoChargeInfoJson.toDomain(): AutoChargeInfo = AutoChargeInfo(
+    queued = queued,
+    shipperHasDefaultPaymentMethod = shipperHasDefaultPaymentMethod,
+)
 
 fun MatchCompatibilityJson.toDomain(): MatchCompatibility = MatchCompatibility(
     weightOverCapacity = weightOverCapacity,
