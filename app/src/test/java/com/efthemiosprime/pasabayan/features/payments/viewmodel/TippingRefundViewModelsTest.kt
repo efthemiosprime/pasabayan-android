@@ -1,9 +1,10 @@
 package com.efthemiosprime.pasabayan.features.payments.viewmodel
 
 import com.efthemiosprime.pasabayan.core.domain.`enum`.RefundReason
-import com.efthemiosprime.pasabayan.core.network.payments.RefundRequestDataJson
+import com.efthemiosprime.pasabayan.core.domain.`enum`.RefundStatus
 import com.efthemiosprime.pasabayan.core.network.payments.TipResponseJson
 import com.efthemiosprime.pasabayan.core.network.payments.TransactionJson
+import com.efthemiosprime.pasabayan.features.payments.model.RefundRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -285,7 +286,7 @@ class TippingRefundViewModelsTest {
     @Test
     fun `submitRefund success`() = runTest {
         fakePaymentRepo.refundResult = Result.success(
-            RefundRequestDataJson(id = 1, status = "pending", reason = "Damaged"),
+            RefundRequest(id = 1, transactionId = 500, status = RefundStatus.PENDING, reasonText = "Damaged"),
         )
         val vm = RefundViewModel(fakePaymentRepo)
         vm.selectReason(RefundReason.DAMAGED)
@@ -293,6 +294,8 @@ class TippingRefundViewModelsTest {
         advanceUntilIdle()
 
         assertTrue(vm.uiState.value.refundSuccess)
+        assertEquals(1, vm.uiState.value.refundRequest?.id)
+        assertEquals(RefundStatus.PENDING, vm.uiState.value.refundRequest?.status)
         assertFalse(vm.uiState.value.isProcessing)
     }
 
@@ -328,5 +331,61 @@ class TippingRefundViewModelsTest {
         vm.reset()
         assertNull(vm.uiState.value.selectedReason)
         assertFalse(vm.uiState.value.refundSuccess)
+    }
+
+    // -- B4: checkRefundStatus (silent-failure polling) --
+
+    @Test
+    fun `checkRefundStatus success overwrites refundRequest`() = runTest {
+        // Seed an initial value via submitRefundRequest to verify the overwrite later.
+        fakePaymentRepo.refundResult = Result.success(
+            RefundRequest(id = 5, transactionId = 500, status = RefundStatus.PENDING),
+        )
+        val vm = RefundViewModel(fakePaymentRepo)
+        vm.selectReason(RefundReason.DAMAGED)
+        vm.submitRefundRequest(500)
+        advanceUntilIdle()
+        assertEquals(RefundStatus.PENDING, vm.uiState.value.refundRequest?.status)
+
+        // Now status changes to APPROVED on the server.
+        fakePaymentRepo.refundStatusQueue.add(
+            Result.success(RefundRequest(id = 5, transactionId = 500, status = RefundStatus.APPROVED)),
+        )
+        vm.checkRefundStatus(500)
+        advanceUntilIdle()
+
+        assertEquals(RefundStatus.APPROVED, vm.uiState.value.refundRequest?.status)
+    }
+
+    @Test
+    fun `checkRefundStatus silent failure preserves prior refundRequest`() = runTest {
+        fakePaymentRepo.refundResult = Result.success(
+            RefundRequest(id = 9, transactionId = 500, status = RefundStatus.PENDING),
+        )
+        val vm = RefundViewModel(fakePaymentRepo)
+        vm.selectReason(RefundReason.DAMAGED)
+        vm.submitRefundRequest(500)
+        advanceUntilIdle()
+        val beforeRefundRequest = vm.uiState.value.refundRequest
+        val beforeError = vm.uiState.value.errorMessage
+
+        fakePaymentRepo.refundStatusQueue.add(Result.failure(Exception("transient network")))
+        vm.checkRefundStatus(500)
+        advanceUntilIdle()
+
+        // Prior state untouched — no error surfaced, no nulling of the existing request.
+        assertEquals(beforeRefundRequest, vm.uiState.value.refundRequest)
+        assertEquals(beforeError, vm.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `checkRefundStatus does not surface error when state is empty`() = runTest {
+        fakePaymentRepo.refundStatusQueue.add(Result.failure(Exception("auth required")))
+        val vm = RefundViewModel(fakePaymentRepo)
+        vm.checkRefundStatus(500)
+        advanceUntilIdle()
+
+        assertNull(vm.uiState.value.errorMessage)
+        assertNull(vm.uiState.value.refundRequest)
     }
 }

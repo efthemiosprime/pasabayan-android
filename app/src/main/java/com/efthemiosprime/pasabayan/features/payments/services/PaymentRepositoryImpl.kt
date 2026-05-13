@@ -9,9 +9,9 @@ import com.efthemiosprime.pasabayan.core.network.payments.CreatePaymentRequestJs
 import com.efthemiosprime.pasabayan.core.network.payments.CreatePaymentResponseJson
 import com.efthemiosprime.pasabayan.core.network.payments.PaymentApi
 import com.efthemiosprime.pasabayan.core.network.payments.RefundRequestBodyJson
-import com.efthemiosprime.pasabayan.core.network.payments.RefundRequestDataJson
 import com.efthemiosprime.pasabayan.core.network.payments.TipRequestJson
 import com.efthemiosprime.pasabayan.core.network.payments.TipResponseJson
+import com.efthemiosprime.pasabayan.features.payments.model.RefundRequest
 import com.efthemiosprime.pasabayan.features.payments.model.Transaction
 import com.efthemiosprime.pasabayan.features.payments.model.toDomain
 import kotlinx.serialization.json.Json
@@ -69,27 +69,27 @@ class PaymentRepositoryImpl @Inject constructor(
 
     override suspend fun releaseTransaction(id: Int): Result<Transaction> = txAction { paymentApi.releaseTransaction(id) }
 
-    override suspend fun requestRefund(transactionId: Int, amount: Double?, reason: String, description: String?): Result<RefundRequestDataJson> {
+    override suspend fun requestRefund(transactionId: Int, amount: Double?, reason: String, description: String?): Result<RefundRequest> {
         return try {
             val res = paymentApi.requestRefund(transactionId, RefundRequestBodyJson(reason, amount, description))
             if (!res.isSuccessful) return Result.failure(mapError(res))
             val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             if (!body.success) return Result.failure(mapBusinessError(body.message))
             val data = body.data ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
-            Result.success(data)
+            Result.success(data.toDomain())
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }
     }
 
-    override suspend fun getRefundStatus(transactionId: Int): Result<RefundRequestDataJson> {
+    override suspend fun getRefundStatus(transactionId: Int): Result<RefundRequest> {
         return try {
             val res = paymentApi.getRefundStatus(transactionId)
             if (!res.isSuccessful) return Result.failure(mapError(res))
             val body = res.body() ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             if (!body.success) return Result.failure(mapBusinessError(body.message))
             val data = body.data ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
-            Result.success(data)
+            Result.success(data.toDomain())
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }

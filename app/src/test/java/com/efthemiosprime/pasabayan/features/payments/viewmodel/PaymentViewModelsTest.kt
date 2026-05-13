@@ -1,7 +1,6 @@
 package com.efthemiosprime.pasabayan.features.payments.viewmodel
 
 import com.efthemiosprime.pasabayan.core.network.payments.CreatePaymentResponseJson
-import com.efthemiosprime.pasabayan.core.network.payments.RefundRequestDataJson
 import com.efthemiosprime.pasabayan.core.network.payments.SetupIntentDataJson
 import com.efthemiosprime.pasabayan.core.network.payments.TipResponseJson
 import com.efthemiosprime.pasabayan.core.network.payments.TransactionJson
@@ -523,9 +522,16 @@ class FakePaymentRepository : PaymentRepository {
         return confirmCaptureResult ?: Result.failure(Exception("Not set"))
     }
     override suspend fun releaseTransaction(id: Int) = getResult ?: Result.failure(Exception("Not set"))
-    var refundResult: Result<RefundRequestDataJson> = Result.failure(Exception("Not set"))
+    var refundResult: Result<com.efthemiosprime.pasabayan.features.payments.model.RefundRequest> = Result.failure(Exception("Not set"))
+    /** When non-empty, each `getRefundStatus` call pops the next result. Use for status-polling tests. */
+    val refundStatusQueue: ArrayDeque<Result<com.efthemiosprime.pasabayan.features.payments.model.RefundRequest>> = ArrayDeque()
+    var refundStatusCallCount: Int = 0
     override suspend fun requestRefund(transactionId: Int, amount: Double?, reason: String, description: String?) = refundResult
-    override suspend fun getRefundStatus(transactionId: Int) = refundResult
+    override suspend fun getRefundStatus(transactionId: Int): Result<com.efthemiosprime.pasabayan.features.payments.model.RefundRequest> {
+        refundStatusCallCount++
+        refundStatusQueue.removeFirstOrNull()?.let { return it }
+        return refundResult
+    }
     override suspend fun cancelTransaction(id: Int, reason: String?) = cancelResult ?: Result.failure(Exception("Not set"))
     override suspend fun addTip(transactionId: Int, amount: Double) = tipResult
 }

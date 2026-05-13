@@ -3,21 +3,21 @@ package com.efthemiosprime.pasabayan.features.payments.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.core.domain.`enum`.RefundReason
-import com.efthemiosprime.pasabayan.core.network.payments.RefundRequestDataJson
+import com.efthemiosprime.pasabayan.features.payments.model.RefundRequest
 import com.efthemiosprime.pasabayan.features.payments.services.PaymentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class RefundUiState(
     val isProcessing: Boolean = false,
     val errorMessage: String? = null,
     val refundSuccess: Boolean = false,
-    val refundRequest: RefundRequestDataJson? = null,
+    val refundRequest: RefundRequest? = null,
     val selectedReason: RefundReason? = null,
     val customReason: String = "",
     val additionalDetails: String = "",
@@ -105,6 +105,19 @@ class RefundViewModel @Inject constructor(
                     }
                 },
             )
+        }
+    }
+
+    /**
+     * Polls the refund status endpoint. Per spec §955 the failure path is **silent** —
+     * we never surface an error and the previous [RefundUiState.refundRequest] / [RefundUiState.errorMessage]
+     * remain untouched.
+     */
+    fun checkRefundStatus(transactionId: Int) {
+        viewModelScope.launch {
+            paymentRepository.getRefundStatus(transactionId).onSuccess { data ->
+                _uiState.update { it.copy(refundRequest = data) }
+            }
         }
     }
 
