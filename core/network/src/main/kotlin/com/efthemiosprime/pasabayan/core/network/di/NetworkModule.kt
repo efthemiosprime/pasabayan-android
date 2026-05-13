@@ -1,6 +1,9 @@
 package com.efthemiosprime.pasabayan.core.network.di
 
+import com.efthemiosprime.pasabayan.core.network.AndroidDeprecationLogger
 import com.efthemiosprime.pasabayan.core.network.AuthInterceptor
+import com.efthemiosprime.pasabayan.core.network.DeprecationLogger
+import com.efthemiosprime.pasabayan.core.network.DeprecationLoggingInterceptor
 import com.efthemiosprime.pasabayan.core.network.UnauthorizedClearingInterceptor
 import com.efthemiosprime.pasabayan.core.network.BuildConfig
 import com.efthemiosprime.pasabayan.core.network.SupplementalApi
@@ -63,9 +66,14 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideDeprecationLogger(impl: AndroidDeprecationLogger): DeprecationLogger = impl
+
+    @Provides
+    @Singleton
     fun provideOkHttpClient(
         authInterceptor: AuthInterceptor,
         unauthorizedClearingInterceptor: UnauthorizedClearingInterceptor,
+        deprecationLoggingInterceptor: DeprecationLoggingInterceptor,
         loggingInterceptor: HttpLoggingInterceptor,
     ): OkHttpClient {
         return OkHttpClient.Builder()
@@ -74,6 +82,7 @@ object NetworkModule {
             .writeTimeout(30, TimeUnit.SECONDS)
             .addInterceptor(authInterceptor)
             .addInterceptor(unauthorizedClearingInterceptor)
+            .addInterceptor(deprecationLoggingInterceptor)
             .addInterceptor(loggingInterceptor)
             .build()
     }

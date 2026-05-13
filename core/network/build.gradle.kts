@@ -36,6 +36,7 @@ android {
 
 dependencies {
     testImplementation(libs.junit)
+    testImplementation(libs.okhttp.mockwebserver)
 
     implementation(project(":core:domain"))
     implementation(project(":core:domain-error"))
