@@ -5,10 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepository
 import com.efthemiosprime.pasabayan.features.payments.services.PaymentMethodsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,6 +34,15 @@ class AutoChargeConfirmationViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<AutoChargeConfirmationState>(AutoChargeConfirmationState.Idle)
     val uiState: StateFlow<AutoChargeConfirmationState> = _uiState.asStateFlow()
+
+    /**
+     * One-shot signal carrying the Stripe SetupIntent client secret the host
+     * composable must present via `paymentSheet.presentWithSetupIntent(...)`.
+     * Emitted whenever the user taps "Add Payment Method" and the server
+     * issues a fresh setup intent.
+     */
+    private val _launchPaymentSheet = Channel<String>(capacity = Channel.BUFFERED)
+    val launchPaymentSheet = _launchPaymentSheet.receiveAsFlow()
 
     private var matchId: Int? = null
     private var price: Double = 0.0
@@ -68,6 +78,18 @@ class AutoChargeConfirmationViewModel @Inject constructor(
     fun startAddingPaymentMethod() {
         val afterConfirm = _uiState.value is AutoChargeConfirmationState.NeedsPaymentMethodAfterConfirm
         _uiState.value = AutoChargeConfirmationState.AddingPaymentMethod(afterConfirm = afterConfirm)
+        viewModelScope.launch {
+            paymentMethodsRepository.createSetupIntent().fold(
+                onSuccess = { intent ->
+                    _launchPaymentSheet.trySend(intent.clientSecret)
+                },
+                onFailure = { e ->
+                    _uiState.value = AutoChargeConfirmationState.Error(
+                        e.message ?: "Failed to start add-card flow",
+                    )
+                },
+            )
+        }
     }
 
     fun onPaymentMethodAdded() {

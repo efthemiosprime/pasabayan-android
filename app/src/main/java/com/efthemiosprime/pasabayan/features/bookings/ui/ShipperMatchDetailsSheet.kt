@@ -364,6 +364,7 @@ private fun actionLabel(action: BookingAction): String = when (action) {
     BookingAction.TrackLive -> stringResource(R.string.bookings_action_track_live)
     BookingAction.EnterPickupCode -> stringResource(R.string.bookings_action_generate_code)
     BookingAction.EnterDeliveryCode -> stringResource(R.string.bookings_action_enter_code)
+    BookingAction.ConfirmMatch -> stringResource(R.string.bookings_action_confirm_match)
 }
 
 private fun actionStyle(action: BookingAction): PButtonStyle = when (action) {

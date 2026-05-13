@@ -11,6 +11,7 @@ import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepositor
 import com.efthemiosprime.pasabayan.features.payments.model.PaymentMethodDisplay
 import com.efthemiosprime.pasabayan.features.payments.services.PaymentMethodsRepository
 import com.efthemiosprime.pasabayan.core.network.payments.SetupIntentDataJson
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -156,6 +157,34 @@ class AutoChargeConfirmationViewModelTest {
     }
 
     @Test
+    fun `startAddingPaymentMethod emits client secret on setup-intent success`() = runTest {
+        paymentMethods.methodsResult = Result.success(emptyList())
+        paymentMethods.setupIntentResult = Result.success(SetupIntentDataJson(clientSecret = "seti_secret_abc"))
+        viewModel.prepareConfirmation(matchId = 100, price = 150.0)
+        advanceUntilIdle()
+
+        viewModel.startAddingPaymentMethod()
+        advanceUntilIdle()
+
+        // Collect once — Channel-backed flow holds the emission until consumed.
+        val secret = viewModel.launchPaymentSheet.first()
+        assertEquals("seti_secret_abc", secret)
+    }
+
+    @Test
+    fun `startAddingPaymentMethod transitions to Error when setup-intent fails`() = runTest {
+        paymentMethods.methodsResult = Result.success(emptyList())
+        paymentMethods.setupIntentResult = Result.failure(Exception("stripe is down"))
+        viewModel.prepareConfirmation(matchId = 100, price = 150.0)
+        advanceUntilIdle()
+
+        viewModel.startAddingPaymentMethod()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value is AutoChargeConfirmationState.Error)
+    }
+
+    @Test
     fun `onPaymentMethodAdded pre-confirm re-checks and transitions to ReadyToConfirm`() = runTest {
         paymentMethods.methodsResult = Result.success(emptyList())
         viewModel.prepareConfirmation(matchId = 100, price = 150.0)
@@ -288,9 +317,12 @@ private class FakeBookingsRepo : BookingsRepository {
 private class FakePaymentMethodsRepo : PaymentMethodsRepository {
     var methodsResult: Result<List<PaymentMethodDisplay>> = Result.success(emptyList())
 
+    var setupIntentResult: Result<SetupIntentDataJson> =
+        Result.success(SetupIntentDataJson(clientSecret = "seti_secret_default"))
+
     override suspend fun loadPaymentMethods(): Result<List<PaymentMethodDisplay>> = methodsResult
     override suspend fun loadDefaultPaymentMethod(): Result<String?> = Result.failure(Exception("Not used"))
-    override suspend fun createSetupIntent(): Result<SetupIntentDataJson> = Result.failure(Exception("Not used"))
+    override suspend fun createSetupIntent(): Result<SetupIntentDataJson> = setupIntentResult
     override suspend fun removePaymentMethod(methodId: String): Result<Unit> = Result.failure(Exception("Not used"))
     override suspend fun setDefaultPaymentMethod(methodId: String): Result<Unit> = Result.failure(Exception("Not used"))
 }

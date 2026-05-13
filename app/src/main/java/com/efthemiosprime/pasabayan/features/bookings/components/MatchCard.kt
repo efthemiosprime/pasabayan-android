@@ -146,6 +146,7 @@ private fun bookingActionLabel(action: BookingAction): String = when (action) {
     BookingAction.TrackLive -> stringResource(R.string.bookings_action_track_live)
     BookingAction.EnterPickupCode -> stringResource(R.string.bookings_action_generate_code)
     BookingAction.EnterDeliveryCode -> stringResource(R.string.bookings_action_enter_code)
+    BookingAction.ConfirmMatch -> stringResource(R.string.bookings_action_confirm_match)
 }
 
 @Composable
@@ -166,6 +167,7 @@ private fun MatchActionButtons(
                 BookingAction.TrackLive -> Pair(R.string.bookings_action_track_live, PButtonStyle.Secondary)
                 BookingAction.EnterPickupCode -> Pair(R.string.bookings_action_generate_code, PButtonStyle.Secondary)
                 BookingAction.EnterDeliveryCode -> Pair(R.string.bookings_action_enter_code, PButtonStyle.Secondary)
+                BookingAction.ConfirmMatch -> Pair(R.string.bookings_action_confirm_match, PButtonStyle.Primary)
             }
             PButton(
                 text = stringResource(text),

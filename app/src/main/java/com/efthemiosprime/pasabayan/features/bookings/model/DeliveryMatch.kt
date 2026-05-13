@@ -120,7 +120,9 @@ data class DeliveryMatch(
                 // No actions
             }
             MatchStatus.PENDING -> {
-                // Waiting
+                // Shipper sees the auto-charge confirm sheet on a pending match
+                // (iOS parity: `ShipperMatchDetailsView` confirm button).
+                if (!isCarrier) add(BookingAction.ConfirmMatch)
             }
         }
 

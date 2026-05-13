@@ -44,8 +44,14 @@ import com.efthemiosprime.pasabayan.features.bookings.model.CounterOfferContext
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.BookingAction
 import com.efthemiosprime.pasabayan.features.bookings.model.IncomingRequestContext
+import com.efthemiosprime.pasabayan.features.bookings.ui.AutoChargeConfirmationSheet
+import com.efthemiosprime.pasabayan.features.bookings.viewmodel.AutoChargeConfirmationState
+import com.efthemiosprime.pasabayan.features.bookings.viewmodel.AutoChargeConfirmationViewModel
 import com.efthemiosprime.pasabayan.features.bookings.viewmodel.MatchingViewModel
 import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReason
+import com.stripe.android.paymentsheet.PaymentSheet
+import com.stripe.android.paymentsheet.PaymentSheetResult
+import com.stripe.android.paymentsheet.rememberPaymentSheet
 
 /**
  * Unified match list screen — single screen for both carrier and shipper.
@@ -58,6 +64,7 @@ fun MatchListScreen(
     onAction: (BookingAction, matchId: Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MatchingViewModel = hiltViewModel(),
+    autoChargeViewModel: AutoChargeConfirmationViewModel = hiltViewModel(),
     /**
      * When set (e.g. from a push-tap or in-app notification card routing through the dashboard),
      * the matching match is selected as soon as the list has loaded and the details sheet opens
@@ -82,7 +89,36 @@ fun MatchListScreen(
     onContactSupport: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val autoChargeState by autoChargeViewModel.uiState.collectAsStateWithLifecycle()
     val role = if (isCarrier) "carrier" else "shipper"
+
+    // PaymentSheet host for the add-card path (setup intent). Reuses the
+    // pattern from PaymentsProfileScreen — rememberPaymentSheet registers
+    // the activity-result launcher during composition setup, so it must
+    // sit outside any conditional.
+    val paymentSheet = rememberPaymentSheet { result ->
+        when (result) {
+            is PaymentSheetResult.Completed -> autoChargeViewModel.onPaymentMethodAdded()
+            is PaymentSheetResult.Canceled -> autoChargeViewModel.onPaymentMethodCancelled()
+            is PaymentSheetResult.Failed -> autoChargeViewModel.onPaymentMethodCancelled()
+        }
+    }
+    LaunchedEffect(autoChargeViewModel) {
+        autoChargeViewModel.launchPaymentSheet.collect { secret ->
+            paymentSheet.presentWithSetupIntent(
+                setupIntentClientSecret = secret,
+                configuration = PaymentSheet.Configuration("Pasabayan"),
+            )
+        }
+    }
+    // After a successful auto-charge confirm, pull the latest match list so
+    // the row reflects the new CONFIRMED status. AutoChargeConfirmationViewModel
+    // owns its own confirm call independent of MatchingViewModel.
+    LaunchedEffect(autoChargeState) {
+        if (autoChargeState is AutoChargeConfirmationState.Success) {
+            viewModel.refreshMatches(role)
+        }
+    }
 
     LaunchedEffect(state.requiresPhoneVerification) {
         state.requiresPhoneVerification?.let { reason ->
@@ -258,6 +294,9 @@ fun MatchListScreen(
                                     BookingAction.CounterOffer -> {
                                         counterOfferTarget = match
                                     }
+                                    BookingAction.ConfirmMatch -> {
+                                        autoChargeViewModel.prepareConfirmation(match.id, match.agreedPrice)
+                                    }
                                     BookingAction.TrackLive,
                                     BookingAction.EnterPickupCode,
                                     BookingAction.EnterDeliveryCode -> {
@@ -297,6 +336,10 @@ fun MatchListScreen(
                             // staring at the details sheet with no follow-up affordance.
                             selectedMatch = null
                             counterOfferTarget = match
+                        }
+                        BookingAction.ConfirmMatch -> {
+                            selectedMatch = null
+                            autoChargeViewModel.prepareConfirmation(match.id, match.agreedPrice)
                         }
                         else -> {
                             handleMatchAction(
@@ -358,6 +401,17 @@ fun MatchListScreen(
             onDismiss = { viewModel.clearTripOvercommitted() },
         )
     }
+
+    // Auto-charge confirm sheet (shipper confirms a PENDING match).
+    if (autoChargeState !is AutoChargeConfirmationState.Idle) {
+        AutoChargeConfirmationSheet(
+            state = autoChargeState,
+            onConfirm = { autoChargeViewModel.confirmMatch() },
+            onAddPaymentMethod = { autoChargeViewModel.startAddingPaymentMethod() },
+            onRetry = { autoChargeViewModel.retryConfirmation() },
+            onDismiss = { autoChargeViewModel.dismiss() },
+        )
+    }
 }
 
 /** Visible-for-test: how long the counter-offer success snackbar stays up. */
@@ -376,6 +430,7 @@ private fun handleMatchAction(
         BookingAction.MarkInTransit -> viewModel.updateMatchStatus(matchId = matchId, newStatus = MatchStatus.IN_TRANSIT)
         BookingAction.MarkDelivered -> viewModel.updateMatchStatus(matchId = matchId, newStatus = MatchStatus.DELIVERED)
         BookingAction.CancelBooking -> viewModel.cancelMatch(matchId = matchId)
+        BookingAction.ConfirmMatch,
         BookingAction.CounterOffer,
         BookingAction.TrackLive,
         BookingAction.EnterPickupCode,
