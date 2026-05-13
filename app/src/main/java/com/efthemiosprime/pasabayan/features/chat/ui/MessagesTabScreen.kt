@@ -15,6 +15,12 @@ fun MessagesTabScreen(
 ) {
     var selectedConversation by rememberSaveable { mutableStateOf<Int?>(null) }
     var selectedStatus by rememberSaveable { mutableStateOf("active") }
+    // Captured alongside the conversation id so ChatThreadScreen can gate the
+    // receipt upload (carrier) and the shipper-side inline receipt card.
+    // Stays null on push-deep-link entries that don't carry a ConversationSummary
+    // — receipt UI is hidden in that case until the user re-opens via the list.
+    var selectedMatchId by rememberSaveable { mutableStateOf<Int?>(null) }
+    var selectedIsShipperViewer by rememberSaveable { mutableStateOf(false) }
 
     // iOS parity: when the host requests a specific conversation (e.g. user tapped the chat
     // pill inside trip details), open it directly. Status defaults to "active" since the host
@@ -32,6 +38,8 @@ fun MessagesTabScreen(
             onOpenConversation = { conversation: ConversationSummary ->
                 selectedConversation = conversation.id
                 selectedStatus = conversation.status
+                selectedMatchId = conversation.matchId
+                selectedIsShipperViewer = conversation.userRole.equals("shipper", ignoreCase = true)
             },
         )
     } else {
@@ -40,6 +48,8 @@ fun MessagesTabScreen(
             currentUserId = currentUserId,
             status = selectedStatus,
             onBack = { selectedConversation = null },
+            matchId = selectedMatchId,
+            isShipperViewer = selectedIsShipperViewer,
         )
     }
 }
