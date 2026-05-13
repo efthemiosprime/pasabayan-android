@@ -24,17 +24,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.R
-import com.efthemiosprime.pasabayan.core.domain.`enum`.RefundReason
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionStatus
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.features.payments.components.PaymentMethodsSection
-import com.efthemiosprime.pasabayan.features.payments.components.PaymentProcessingSection
 import com.efthemiosprime.pasabayan.features.payments.components.PaymentsActivitySection
 import com.efthemiosprime.pasabayan.features.payments.components.StripeConnectSection
-import com.efthemiosprime.pasabayan.features.payments.components.TippingRefundSection
 import com.efthemiosprime.pasabayan.features.payments.model.PaymentMethodDisplay
 import com.efthemiosprime.pasabayan.features.payments.model.PaymentReceipt
 import com.efthemiosprime.pasabayan.features.payments.model.Transaction
@@ -63,7 +60,11 @@ private enum class PaymentsRoute {
     PROFILE,
     TRANSACTIONS,
     TRANSACTION_DETAIL,
+    TIP_SELECTION,
 }
+
+/** Context captured at the moment the user chooses to tip — used by the [TipSelectionScreen] route. */
+private data class TipFlowContext(val transactionId: Int, val carrierName: String)
 
 @Composable
 fun PaymentsProfileScreen(
@@ -101,6 +102,10 @@ fun PaymentsProfileScreen(
     var selectedTransactionFilter by remember { mutableStateOf(TransactionFilter.ALL) }
     // Set only when entering the detail surface via deep-link (no `selectedTransaction`).
     var deepLinkedTransactionId by remember { mutableStateOf<Int?>(null) }
+    // Overlay state — when non-null, a RefundSheet renders on top of the current route.
+    var refundSheetForTransaction by remember { mutableStateOf<Transaction?>(null) }
+    // Captured when entering TIP_SELECTION; carries id + carrier name for header copy.
+    var tipFlowContext by remember { mutableStateOf<TipFlowContext?>(null) }
 
     LaunchedEffect(initialTransactionId) {
         val target = initialTransactionId ?: return@LaunchedEffect
@@ -141,42 +146,10 @@ fun PaymentsProfileScreen(
     when (route) {
         PaymentsRoute.PROFILE -> {
             PaymentsProfileContent(
-                paymentState = paymentState,
                 methodsState = methodsState,
-                tippingState = tippingState,
-                refundState = refundState,
                 historyState = historyState,
                 receiptState = receiptState,
                 connectState = connectState,
-                onCreatePayment = { id, amount ->
-                    currentDeliveryMatchId = id
-                    paymentViewModel.createPayment(id, amount)
-                },
-                onConfirmCapture = { id -> paymentViewModel.confirmCapture(id) },
-                onPresentPaymentSheet = {
-                    val secret = paymentState.clientSecret ?: return@PaymentsProfileContent
-                    if (paymentViewModel.isMockClientSecret(secret)) {
-                        val deliveryMatchId = currentDeliveryMatchId ?: return@PaymentsProfileContent
-                        paymentViewModel.confirmCapture(deliveryMatchId)
-                        return@PaymentsProfileContent
-                    }
-                    val configuration = PaymentSheetConfigFactory.build(
-                        customerId = paymentState.customerId,
-                        ephemeralKey = paymentState.ephemeralKey,
-                        stripeIsSandbox = paymentState.stripeIsSandbox,
-                        currencyCode = paymentState.stripeCurrencyCode,
-                    )
-                    paymentSheet.presentWithPaymentIntent(secret, configuration)
-                },
-                onAddTip = { transactionId, amount ->
-                    tippingViewModel.setCustomTipAmount(amount.toString())
-                    tippingViewModel.addTip(transactionId)
-                },
-                onRequestRefund = { transactionId, reason ->
-                    refundViewModel.selectReason(RefundReason.OTHER)
-                    refundViewModel.setCustomReason(reason)
-                    refundViewModel.submitRefundRequest(transactionId)
-                },
                 onSetDefaultMethod = { methodId -> paymentMethodsViewModel.setDefaultPaymentMethod(methodId) },
                 onRemoveMethod = { methodId -> paymentMethodsViewModel.removePaymentMethod(methodId) },
                 onManagePaymentMethods = onOpenPaymentMethods,
@@ -227,36 +200,74 @@ fun PaymentsProfileScreen(
                         route = PaymentsRoute.TRANSACTIONS
                     },
                     onRequestRefund = { transactionId ->
-                        refundViewModel.selectReason(RefundReason.OTHER)
-                        refundViewModel.setCustomReason("Requesting refund for transaction issue")
-                        refundViewModel.submitRefundRequest(transactionId)
+                        refundViewModel.reset()
+                        refundSheetForTransaction = selectedTransaction?.takeIf { it.id == transactionId }
+                            ?: Transaction(id = transactionId)
                     },
                     onAddTip = { transactionId ->
-                        tippingViewModel.selectPresetTip(TippingUiState.PRESET_TIPS[1])
-                        tippingViewModel.addTip(transactionId)
+                        val carrierName = selectedTransaction?.takeIf { it.id == transactionId }
+                            ?.carrier?.name.orEmpty()
+                        tippingViewModel.reset()
+                        tipFlowContext = TipFlowContext(transactionId, carrierName)
+                        route = PaymentsRoute.TIP_SELECTION
                     },
                     modifier = modifier,
                 )
             }
         }
 
+        PaymentsRoute.TIP_SELECTION -> {
+            val ctx = tipFlowContext
+            if (ctx == null) {
+                route = PaymentsRoute.TRANSACTION_DETAIL
+            } else {
+                TipSelectionScreen(
+                    state = tippingState,
+                    carrierName = ctx.carrierName,
+                    onPresetTip = { tippingViewModel.selectPresetTip(it) },
+                    onCustomTip = { tippingViewModel.setCustomTipAmount(it) },
+                    onSubmit = { tippingViewModel.addTip(ctx.transactionId) },
+                    onSkip = {
+                        tipFlowContext = null
+                        route = PaymentsRoute.TRANSACTION_DETAIL
+                    },
+                    onBack = {
+                        tipFlowContext = null
+                        route = PaymentsRoute.TRANSACTION_DETAIL
+                    },
+                    modifier = modifier,
+                )
+            }
+        }
+    }
+
+    // Refund sheet overlays whatever route is currently rendered (typically TRANSACTION_DETAIL).
+    refundSheetForTransaction?.let { tx ->
+        RefundSheet(
+            state = refundState,
+            transactionId = tx.id,
+            transactionTotal = tx.formattedTotal,
+            onSelectReason = { refundViewModel.selectReason(it) },
+            onCustomReasonChange = { refundViewModel.setCustomReason(it) },
+            onAdditionalDetailsChange = { refundViewModel.setAdditionalDetails(it) },
+            onPartialToggle = { refundViewModel.setPartialRefund(it) },
+            onPartialAmountChange = { refundViewModel.setPartialAmount(it) },
+            onSubmit = { refundViewModel.submitRefundRequest(tx.id) },
+            onDismiss = { refundSheetForTransaction = null },
+        )
+    }
+    // Close the sheet on successful submission.
+    LaunchedEffect(refundState.refundSuccess) {
+        if (refundState.refundSuccess) refundSheetForTransaction = null
     }
 }
 
 @Composable
 private fun PaymentsProfileContent(
-    paymentState: PaymentUiState,
     methodsState: PaymentMethodsUiState,
-    tippingState: TippingUiState,
-    refundState: RefundUiState,
     historyState: TransactionHistoryUiState,
     receiptState: ReceiptListUiState,
     connectState: StripeConnectUiState,
-    onCreatePayment: (Int, Double) -> Unit,
-    onConfirmCapture: (Int) -> Unit,
-    onPresentPaymentSheet: () -> Unit,
-    onAddTip: (Int, Double) -> Unit,
-    onRequestRefund: (Int, String) -> Unit,
     onSetDefaultMethod: (String) -> Unit,
     onRemoveMethod: (String) -> Unit,
     onManagePaymentMethods: () -> Unit,
@@ -268,8 +279,6 @@ private fun PaymentsProfileContent(
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val paymentStatusText = paymentStatusText(paymentState)
-
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
@@ -294,24 +303,11 @@ private fun PaymentsProfileContent(
             )
         }
 
-        PaymentProcessingSection(
-            paymentState = paymentState,
-            statusText = paymentStatusText,
-            onCreatePayment = onCreatePayment,
-            onPresentPaymentSheet = onPresentPaymentSheet,
-            onConfirmCapture = onConfirmCapture,
-        )
         PaymentMethodsSection(
             methodsState = methodsState,
             onSetDefaultMethod = onSetDefaultMethod,
             onRemoveMethod = onRemoveMethod,
             onManagePaymentMethods = onManagePaymentMethods,
-        )
-        TippingRefundSection(
-            tippingState = tippingState,
-            refundState = refundState,
-            onAddTip = onAddTip,
-            onRequestRefund = onRequestRefund,
         )
         PaymentsActivitySection(
             historyState = historyState,
@@ -333,7 +329,6 @@ private fun PaymentsProfileContent(
 private fun PaymentsProfilePreview() {
     PasabayanTheme {
         PaymentsProfileContent(
-            paymentState = PaymentUiState(paymentSuccess = true),
             methodsState = PaymentMethodsUiState(
                 paymentMethods = listOf(
                     PaymentMethodDisplay("pm_1", "visa", "4242", 12, 2028, true),
@@ -341,8 +336,6 @@ private fun PaymentsProfilePreview() {
                 ),
                 defaultPaymentMethodId = "pm_1",
             ),
-            tippingState = TippingUiState(),
-            refundState = RefundUiState(),
             historyState = TransactionHistoryUiState(
                 transactions = listOf(
                     Transaction(
@@ -374,11 +367,6 @@ private fun PaymentsProfilePreview() {
                 totalCount = 10,
             ),
             connectState = StripeConnectUiState(),
-            onCreatePayment = { _, _ -> },
-            onConfirmCapture = {},
-            onPresentPaymentSheet = {},
-            onAddTip = { _, _ -> },
-            onRequestRefund = { _, _ -> },
             onSetDefaultMethod = {},
             onRemoveMethod = {},
             onManagePaymentMethods = {},
@@ -393,15 +381,4 @@ private fun PaymentsProfilePreview() {
     }
 }
 
-@Composable
-private fun paymentStatusText(paymentState: PaymentUiState): String {
-    return when {
-        paymentState.isProcessing -> stringResource(R.string.payments_profile_status_processing)
-        paymentState.flowStatus == PaymentFlowStatus.SHEET_READY -> stringResource(R.string.payments_profile_status_sheet_ready)
-        paymentState.flowStatus == PaymentFlowStatus.PAYMENT_CANCELED -> stringResource(R.string.payments_profile_status_canceled)
-        paymentState.flowStatus == PaymentFlowStatus.PAYMENT_SUCCESS -> stringResource(R.string.payments_profile_status_paid)
-        paymentState.flowStatus == PaymentFlowStatus.ALREADY_PAID -> stringResource(R.string.payments_profile_status_already_paid)
-        else -> stringResource(R.string.payments_profile_idle)
-    }
-}
 

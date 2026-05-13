@@ -26,8 +26,10 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomShee
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
+import com.efthemiosprime.pasabayan.core.domain.util.DateTimeParsing
 import com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson
 import com.efthemiosprime.pasabayan.features.trips.components.EditTripRouteSection
+import com.efthemiosprime.pasabayan.features.trips.components.EditTripScheduleSection
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
 
 @Composable
@@ -48,6 +50,10 @@ fun EditTripSheet(
     var destinationCountry by remember { mutableStateOf(trip.destinationCountry) }
     var pickupAddress by remember { mutableStateOf(trip.pickupAddress.orEmpty()) }
     var dropoffAddress by remember { mutableStateOf(trip.dropoffAddress.orEmpty()) }
+    var departureMillis by remember { mutableStateOf(DateTimeParsing.parseApiDateTime(trip.departureDate)) }
+    var arrivalMillis by remember { mutableStateOf(DateTimeParsing.parseApiDateTime(trip.arrivalDate)) }
+    var sharedPickupMillis by remember { mutableStateOf(DateTimeParsing.parseApiDateTime(trip.pickupDate)) }
+    var sharedDeliveryMillis by remember { mutableStateOf(DateTimeParsing.parseApiDateTime(trip.deliveryDate)) }
     var weightText by remember { mutableStateOf(trip.availableWeightKg?.toString().orEmpty()) }
     var notesText by remember { mutableStateOf(trip.specialNotes.orEmpty()) }
 
@@ -76,6 +82,18 @@ fun EditTripSheet(
                     onPickupAddressChange = { pickupAddress = it },
                     dropoffAddress = dropoffAddress,
                     onDropoffAddressChange = { dropoffAddress = it },
+                    locked = routeLocked,
+                )
+
+                EditTripScheduleSection(
+                    departureMillis = departureMillis,
+                    onDepartureChange = { departureMillis = it },
+                    arrivalMillis = arrivalMillis,
+                    onArrivalChange = { arrivalMillis = it },
+                    sharedPickupMillis = sharedPickupMillis,
+                    onSharedPickupChange = { sharedPickupMillis = it },
+                    sharedDeliveryMillis = sharedDeliveryMillis,
+                    onSharedDeliveryChange = { sharedDeliveryMillis = it },
                     locked = routeLocked,
                 )
 
@@ -110,8 +128,16 @@ fun EditTripSheet(
                                     destinationCountry = destinationCountry,
                                     pickupAddress = pickupAddress,
                                     dropoffAddress = dropoffAddress,
+                                    departureMillis = departureMillis,
+                                    arrivalMillis = arrivalMillis,
+                                    sharedPickupMillis = sharedPickupMillis,
+                                    sharedDeliveryMillis = sharedDeliveryMillis,
                                     weightText = weightText,
                                     notesText = notesText,
+                                    originalDepartureDate = trip.departureDate,
+                                    originalArrivalDate = trip.arrivalDate,
+                                    originalPickupDate = trip.pickupDate,
+                                    originalDeliveryDate = trip.deliveryDate,
                                     originalWeightKg = trip.availableWeightKg,
                                     originalNotes = trip.specialNotes,
                                 ),
@@ -146,13 +172,29 @@ internal fun buildUpdateRequest(
     destinationCountry: String,
     pickupAddress: String,
     dropoffAddress: String,
+    departureMillis: Long?,
+    arrivalMillis: Long?,
+    sharedPickupMillis: Long?,
+    sharedDeliveryMillis: Long?,
     weightText: String,
     notesText: String,
+    originalDepartureDate: String?,
+    originalArrivalDate: String?,
+    originalPickupDate: String?,
+    originalDeliveryDate: String?,
     originalWeightKg: Double?,
     originalNotes: String?,
 ): TripUpdateRequestJson {
     val parsedWeight = weightText.toDoubleOrNull()
     val notesNormalized = notesText.ifBlank { null }
+
+    // Schedule fields use the same lock as route: only PLANNING trips can change them
+    // (iOS `EditTripSheet.swift:148-150`, `canEditRoute`). Notes are always editable.
+    val newDeparture = if (routeLocked) null else departureMillis?.let(DateTimeParsing::formatApiDateTime)
+    val newArrival = if (routeLocked) null else arrivalMillis?.let(DateTimeParsing::formatApiDateTime)
+    val newSharedPickup = if (routeLocked) null else sharedPickupMillis?.let(DateTimeParsing::formatApiDateTime)
+    val newSharedDelivery = if (routeLocked) null else sharedDeliveryMillis?.let(DateTimeParsing::formatApiDateTime)
+
     return TripUpdateRequestJson(
         originCity = if (routeLocked) null else originCity.ifBlank { null },
         originCountry = if (routeLocked) null else originCountry.ifBlank { null },
@@ -160,6 +202,10 @@ internal fun buildUpdateRequest(
         destinationCountry = if (routeLocked) null else destinationCountry.ifBlank { null },
         pickupAddress = if (routeLocked) null else pickupAddress.ifBlank { null },
         dropoffAddress = if (routeLocked) null else dropoffAddress.ifBlank { null },
+        departureDate = newDeparture?.takeIf { it != originalDepartureDate },
+        arrivalDate = newArrival?.takeIf { it != originalArrivalDate },
+        pickupDate = newSharedPickup?.takeIf { it != originalPickupDate },
+        deliveryDate = newSharedDelivery?.takeIf { it != originalDeliveryDate },
         availableWeightKg = parsedWeight?.takeIf { it != originalWeightKg },
         specialNotes = notesNormalized?.takeIf { it != originalNotes },
     )
@@ -198,6 +244,7 @@ private fun previewTrip(status: TripStatus) = Trip(
     destinationCity = "Montreal", destinationCountry = "CA",
     destinationLat = null, destinationLng = null,
     departureDate = "2026-04-01T08:00:00Z", arrivalDate = "2026-04-01T14:00:00Z",
+    pickupDate = "2026-04-01T06:30:00Z", deliveryDate = "2026-04-01T15:00:00Z",
     availableWeightKg = 10.0, availableSpaceLiters = 20.0,
     pricePerKg = 8.0, tripStatus = status,
     transportationMethod = TransportationMethod.CAR,

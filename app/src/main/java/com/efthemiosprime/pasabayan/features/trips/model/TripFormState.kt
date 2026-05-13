@@ -18,5 +18,9 @@ data class TripFormState(
     val transportationMethod: TransportationMethod = TransportationMethod.NONE,
     val departureDateMillis: Long? = null,
     val arrivalDateMillis: Long? = null,
+    /** Optional shared pickup window at origin. iOS parity (`EditTripSheet.swift:621-627`). */
+    val sharedPickupDateMillis: Long? = null,
+    /** Optional shared delivery / handoff window at destination. iOS parity. */
+    val sharedDeliveryDateMillis: Long? = null,
     val specialNotes: String? = null,
 )

@@ -203,6 +203,8 @@
     <string name="trips_filter_sheet_title">Filtrer les trajets</string>
     <string name="trips_filter_open">Ouvrir les filtres de trajets</string>
     <string name="trips_edit_route_locked_note">L\'itin\u00e9raire et l\'horaire sont verrouill\u00e9s d\u00e8s que le trajet quitte l\'\u00e9tat planifi\u00e9.</string>
+    <string name="trips_edit_shared_pickup">Fen\u00eatre de ramassage partag\u00e9e</string>
+    <string name="trips_edit_shared_delivery">Fen\u00eatre de livraison partag\u00e9e</string>
 
     <!-- Browse -->
     <string name="trips_browse_title">Parcourir les trajets</string>

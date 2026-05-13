@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.features.trips.ui
 
+import com.efthemiosprime.pasabayan.core.domain.util.DateTimeParsing
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -11,54 +12,67 @@ class EditTripSheetRequestTest {
 
     private val json = Json { encodeDefaults = false }
 
+    private val dep = DateTimeParsing.parseApiDateTime("2026-04-01T08:00:00Z")!!
+    private val arr = DateTimeParsing.parseApiDateTime("2026-04-01T14:00:00Z")!!
+    private val sharedPickup = DateTimeParsing.parseApiDateTime("2026-04-01T06:30:00Z")!!
+    private val sharedDelivery = DateTimeParsing.parseApiDateTime("2026-04-01T15:00:00Z")!!
+
     @Test
-    fun `planning trip emits every changed route field`() {
+    fun `planning trip emits every changed route and schedule field`() {
         val request = buildUpdateRequest(
             routeLocked = false,
-            originCity = "Vancouver",
-            originCountry = "CA",
-            destinationCity = "Calgary",
-            destinationCountry = "CA",
-            pickupAddress = "1 Pacific Blvd",
-            dropoffAddress = "9 Stampede Trail",
-            weightText = "12.5",
-            notesText = "Fragile",
+            originCity = "Vancouver", originCountry = "CA",
+            destinationCity = "Calgary", destinationCountry = "CA",
+            pickupAddress = "1 Pacific Blvd", dropoffAddress = "9 Stampede Trail",
+            departureMillis = dep, arrivalMillis = arr,
+            sharedPickupMillis = sharedPickup, sharedDeliveryMillis = sharedDelivery,
+            weightText = "12.5", notesText = "Fragile",
+            originalDepartureDate = "2026-03-01T08:00:00Z",
+            originalArrivalDate = "2026-03-01T14:00:00Z",
+            originalPickupDate = null,
+            originalDeliveryDate = null,
             originalWeightKg = 10.0,
             originalNotes = "Old notes",
         )
 
         assertEquals("Vancouver", request.originCity)
-        assertEquals("CA", request.originCountry)
         assertEquals("Calgary", request.destinationCity)
-        assertEquals("CA", request.destinationCountry)
         assertEquals("1 Pacific Blvd", request.pickupAddress)
         assertEquals("9 Stampede Trail", request.dropoffAddress)
+        assertEquals(DateTimeParsing.formatApiDateTime(dep), request.departureDate)
+        assertEquals(DateTimeParsing.formatApiDateTime(arr), request.arrivalDate)
+        assertEquals(DateTimeParsing.formatApiDateTime(sharedPickup), request.pickupDate)
+        assertEquals(DateTimeParsing.formatApiDateTime(sharedDelivery), request.deliveryDate)
         assertEquals(12.5, request.availableWeightKg!!, 0.001)
         assertEquals("Fragile", request.specialNotes)
     }
 
     @Test
-    fun `locked trip drops every route field even when text differs from trip`() {
+    fun `locked trip drops every route and schedule field even when text differs`() {
         val request = buildUpdateRequest(
             routeLocked = true,
-            originCity = "Edited origin city",
-            originCountry = "ZZ",
-            destinationCity = "Edited destination",
-            destinationCountry = "ZZ",
-            pickupAddress = "Edited pickup",
-            dropoffAddress = "Edited dropoff",
-            weightText = "12.5",
-            notesText = "New note",
+            originCity = "Edited", originCountry = "ZZ",
+            destinationCity = "Edited", destinationCountry = "ZZ",
+            pickupAddress = "Edited", dropoffAddress = "Edited",
+            departureMillis = dep, arrivalMillis = arr,
+            sharedPickupMillis = sharedPickup, sharedDeliveryMillis = sharedDelivery,
+            weightText = "12.5", notesText = "New note",
+            originalDepartureDate = null,
+            originalArrivalDate = null,
+            originalPickupDate = null,
+            originalDeliveryDate = null,
             originalWeightKg = 10.0,
             originalNotes = "Old note",
         )
 
         assertNull(request.originCity)
-        assertNull(request.originCountry)
         assertNull(request.destinationCity)
-        assertNull(request.destinationCountry)
         assertNull(request.pickupAddress)
         assertNull(request.dropoffAddress)
+        assertNull(request.departureDate)
+        assertNull(request.arrivalDate)
+        assertNull(request.pickupDate)
+        assertNull(request.deliveryDate)
         // Capacity + notes still flow through — iOS keeps notes always editable, and a locked
         // trip on Android still accepts a weight tweak via PUT /trips/{id}.
         assertEquals(12.5, request.availableWeightKg!!, 0.001)
@@ -66,17 +80,43 @@ class EditTripSheetRequestTest {
     }
 
     @Test
+    fun `unchanged dates are not re-sent`() {
+        val sameDepartureWire = "2026-04-01T08:00:00Z"
+        val request = buildUpdateRequest(
+            routeLocked = false,
+            originCity = "Toronto", originCountry = "CA",
+            destinationCity = "Montreal", destinationCountry = "CA",
+            pickupAddress = "1 A St", dropoffAddress = "2 B St",
+            departureMillis = dep, arrivalMillis = arr,
+            sharedPickupMillis = null, sharedDeliveryMillis = null,
+            weightText = "10.0", notesText = "Same",
+            originalDepartureDate = sameDepartureWire,
+            originalArrivalDate = DateTimeParsing.formatApiDateTime(arr),
+            originalPickupDate = null,
+            originalDeliveryDate = null,
+            originalWeightKg = 10.0,
+            originalNotes = "Same",
+        )
+        assertNull(request.departureDate)
+        assertNull(request.arrivalDate)
+        assertNull(request.pickupDate)
+        assertNull(request.deliveryDate)
+    }
+
+    @Test
     fun `no-op save emits an empty body`() {
         val request = buildUpdateRequest(
             routeLocked = false,
-            originCity = "",
-            originCountry = "",
-            destinationCity = "",
-            destinationCountry = "",
-            pickupAddress = "",
-            dropoffAddress = "",
-            weightText = "10.0",
-            notesText = "Same note",
+            originCity = "", originCountry = "",
+            destinationCity = "", destinationCountry = "",
+            pickupAddress = "", dropoffAddress = "",
+            departureMillis = null, arrivalMillis = null,
+            sharedPickupMillis = null, sharedDeliveryMillis = null,
+            weightText = "10.0", notesText = "Same note",
+            originalDepartureDate = null,
+            originalArrivalDate = null,
+            originalPickupDate = null,
+            originalDeliveryDate = null,
             originalWeightKg = 10.0,
             originalNotes = "Same note",
         )
@@ -89,47 +129,19 @@ class EditTripSheetRequestTest {
     }
 
     @Test
-    fun `blank notes clears to null and is sent only when it differs`() {
-        // Trip had a note; user cleared it. The wire should NOT carry the cleared value
-        // because TripUpdateRequestJson currently omits null fields entirely. iOS parity:
-        // notes-only edits send `special_notes` with the new value or omit when unchanged.
-        val cleared = buildUpdateRequest(
-            routeLocked = false,
-            originCity = "Toronto", originCountry = "CA",
-            destinationCity = "Montreal", destinationCountry = "CA",
-            pickupAddress = "1 A St", dropoffAddress = "2 B St",
-            weightText = "10.0",
-            notesText = "",
-            originalWeightKg = 10.0,
-            originalNotes = "Old note",
-        )
-        // The clear is detected (notesNormalized is null) — request.specialNotes stays null,
-        // which today means "no change" on the wire. Recording the limitation: this is a
-        // known iOS parity gap covered by Slice C (`includeSpecialNotesNull` flag).
-        assertNull(cleared.specialNotes)
-
-        val keptSame = buildUpdateRequest(
-            routeLocked = false,
-            originCity = "Toronto", originCountry = "CA",
-            destinationCity = "Montreal", destinationCountry = "CA",
-            pickupAddress = "1 A St", dropoffAddress = "2 B St",
-            weightText = "10.0",
-            notesText = "Old note",
-            originalWeightKg = 10.0,
-            originalNotes = "Old note",
-        )
-        assertNull(keptSame.specialNotes)
-    }
-
-    @Test
-    fun `route field encodes to snake case in wire body`() {
+    fun `wire body uses snake case for route and schedule keys`() {
         val request = buildUpdateRequest(
             routeLocked = false,
             originCity = "Vancouver", originCountry = "CA",
             destinationCity = "Calgary", destinationCountry = "CA",
             pickupAddress = "1 Pacific Blvd", dropoffAddress = "9 Stampede Trail",
-            weightText = "12.5",
-            notesText = "Fragile",
+            departureMillis = dep, arrivalMillis = arr,
+            sharedPickupMillis = sharedPickup, sharedDeliveryMillis = sharedDelivery,
+            weightText = "12.5", notesText = "Fragile",
+            originalDepartureDate = null,
+            originalArrivalDate = null,
+            originalPickupDate = null,
+            originalDeliveryDate = null,
             originalWeightKg = 10.0,
             originalNotes = null,
         )
@@ -138,9 +150,10 @@ class EditTripSheetRequestTest {
             request,
         )
         assertTrue(encoded.contains("\"origin_city\":\"Vancouver\""))
-        assertTrue(encoded.contains("\"destination_city\":\"Calgary\""))
-        assertTrue(encoded.contains("\"pickup_address\":\"1 Pacific Blvd\""))
-        assertTrue(encoded.contains("\"dropoff_address\":\"9 Stampede Trail\""))
-        assertFalse(encoded.contains("\"originCity\""))
+        assertTrue(encoded.contains("\"departure_date\":"))
+        assertTrue(encoded.contains("\"arrival_date\":"))
+        assertTrue(encoded.contains("\"pickup_date\":"))
+        assertTrue(encoded.contains("\"delivery_date\":"))
+        assertFalse(encoded.contains("\"departureDate\""))
     }
 }

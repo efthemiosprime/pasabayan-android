@@ -204,6 +204,8 @@
     <string name="trips_filter_sheet_title">Filter Trips</string>
     <string name="trips_filter_open">Open trip filters</string>
     <string name="trips_edit_route_locked_note">Route and schedule are locked once trip leaves planning.</string>
+    <string name="trips_edit_shared_pickup">Shared pickup window</string>
+    <string name="trips_edit_shared_delivery">Shared delivery window</string>
 
     <!-- Browse -->
     <string name="trips_browse_title">Browse Trips</string>
