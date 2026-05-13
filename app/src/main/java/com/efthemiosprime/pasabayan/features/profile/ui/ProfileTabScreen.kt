@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +35,8 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VerifiedUser
@@ -65,6 +68,8 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PCardVariant
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
 import com.efthemiosprime.pasabayan.core.designsystem.component.PMenuRow
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
+import com.efthemiosprime.pasabayan.core.domain.`enum`.VerificationLevel
+import com.efthemiosprime.pasabayan.core.network.verification.PremiumVerificationStatusDataJson
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.profile.model.ProfileTabUiState
 import com.efthemiosprime.pasabayan.features.profile.model.shouldShowDeliveryHistoryMenu
@@ -73,8 +78,11 @@ import com.efthemiosprime.pasabayan.features.profile.model.shouldShowPackageHist
 import com.efthemiosprime.pasabayan.features.profile.model.shouldShowPayoutSetup
 import com.efthemiosprime.pasabayan.features.profile.model.shouldShowVehicleInfo
 import com.efthemiosprime.pasabayan.features.profile.model.shouldShowVerificationCard
+import com.efthemiosprime.pasabayan.features.dashboard.components.CarrierActiveBadge
 import com.efthemiosprime.pasabayan.features.dashboard.components.RoleChip
+import com.efthemiosprime.pasabayan.features.dashboard.components.VerificationBadge
 import com.efthemiosprime.pasabayan.features.profile.viewmodel.ProfileTabViewModel
+import com.efthemiosprime.pasabayan.features.verification.model.PremiumApplicationStatus
 
 @Composable
 fun ProfileTabScreen(
@@ -87,6 +95,7 @@ fun ProfileTabScreen(
     onOpenPersonalInfo: () -> Unit = {},
     onOpenVehicleInfo: () -> Unit = {},
     onOpenVerification: () -> Unit = {},
+    onOpenPremiumVerification: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
     onOpenAccountManagement: () -> Unit = {},
     onOpenFavorites: () -> Unit = {},
@@ -139,6 +148,7 @@ fun ProfileTabScreen(
         onOpenPersonalInfo = onOpenPersonalInfo,
         onOpenVehicleInfo = onOpenVehicleInfo,
         onOpenVerification = onOpenVerification,
+        onOpenPremiumVerification = onOpenPremiumVerification,
         onOpenSettings = onOpenSettings,
         onOpenAccountManagement = onOpenAccountManagement,
         onOpenFavorites = onOpenFavorites,
@@ -163,6 +173,7 @@ fun ProfileTabContent(
     onOpenPersonalInfo: () -> Unit = {},
     onOpenVehicleInfo: () -> Unit = {},
     onOpenVerification: () -> Unit = {},
+    onOpenPremiumVerification: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
     onOpenAccountManagement: () -> Unit = {},
     onOpenFavorites: () -> Unit = {},
@@ -185,41 +196,24 @@ fun ProfileTabContent(
             .then(modifier),
         verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xl),
     ) {
+        val carrierActive = (state.carrierProfile?.carrierStatus == "active") || user.isActiveCarrier
         ProfileUserHeader(
             name = state.userProfile?.fullName?.takeIf { it.isNotBlank() } ?: user.name,
             email = user.email,
             currentRole = currentRole,
+            verificationLevel = VerificationLevel.normalized(verificationLevel),
+            isCarrierActive = carrierActive,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag(ProfileTestTags.Header),
         )
         ProfileStatsBlock(currentRole, state, Modifier.fillMaxWidth().testTag(ProfileTestTags.Stats))
-        if (currentRole == UserRole.CARRIER) {
-            PCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag(ProfileTestTags.CarrierStatus),
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
-                    Text(
-                        text = stringResource(R.string.profile_carrier_status_title),
-                        style = PasabayanTextStyles.Heading.h4,
-                    )
-                    val active = (state.carrierProfile?.carrierStatus == "active") || user.isActiveCarrier
-                    Text(
-                        text = if (active) {
-                            stringResource(R.string.profile_carrier_status_active)
-                        } else {
-                            stringResource(R.string.profile_carrier_status_inactive)
-                        },
-                        style = PasabayanTextStyles.Body.medium,
-                    )
-                }
-            }
-        }
         if (showVerify) {
             VerificationCallout(
+                verificationLevel = VerificationLevel.normalized(verificationLevel),
+                premiumStatus = state.premiumStatus,
                 onVerify = onOpenVerification,
+                onUpgradeToPremium = onOpenPremiumVerification,
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag(ProfileTestTags.Verification),
@@ -385,31 +379,49 @@ private fun ProfileUserHeader(
     name: String,
     email: String,
     currentRole: UserRole,
+    verificationLevel: VerificationLevel,
+    isCarrierActive: Boolean,
     modifier: Modifier = Modifier,
 ) {
     PCard(modifier = modifier, variant = PCardVariant.Large) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Top,
-        ) {
-            ProfileLetterAvatar(name = name)
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = PasabayanSpacing.md),
-                verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
             ) {
-                Text(text = name, style = PasabayanTextStyles.Heading.h3)
-                Text(
-                    text = email,
-                    style = PasabayanTextStyles.Body.small,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                // Role switching lives in DashboardTopBar's SwapHoriz icon (single source
-                // of truth). Render a static chip here for identification only.
-                RoleChip(
-                    role = currentRole,
-                    modifier = Modifier.testTag(ProfileTestTags.Role),
+                ProfileLetterAvatar(name = name)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = PasabayanSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+                    ) {
+                        Text(text = name, style = PasabayanTextStyles.Heading.h3)
+                        VerificationBadge(level = verificationLevel, size = 18.dp)
+                    }
+                    Text(
+                        text = email,
+                        style = PasabayanTextStyles.Body.small,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    // Role switching lives in DashboardTopBar's SwapHoriz icon (single source
+                    // of truth). Render a static chip here for identification only.
+                    RoleChip(
+                        role = currentRole,
+                        modifier = Modifier.testTag(ProfileTestTags.Role),
+                    )
+                }
+            }
+            if (currentRole == UserRole.CARRIER) {
+                CarrierActiveBadge(
+                    isActive = isCarrierActive,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .testTag(ProfileTestTags.CarrierStatus),
                 )
             }
         }
@@ -486,15 +498,158 @@ private fun StatLine(stringRes: Int, value: String) {
 }
 
 /**
- * Attention-grabbing verification call-to-action — iOS parity with the basic-state
- * `statusCard` + `benefitsCard` combo in `VerificationStatusView.swift`. Tinted info
- * background with a colored border distinguishes this from the neutral menu cards
- * around it; "Why verify?" benefits + a full-width CTA make the action obvious.
+ * Verification call-to-action — iOS parity with `VerificationStatusView.swift`.
+ * Three branches based on [verificationLevel] + [premiumStatus]:
+ *  - BASIC → "Verify Now" pitch with phone-verification CTA.
+ *  - VERIFIED, no pending premium app → "Complete Your Verification" upgrade pitch.
+ *  - VERIFIED with pending premium app → "Premium Application Submitted" status card.
+ *  - PREMIUM → renders nothing (caller's `shouldShowVerificationCard` already filters).
  */
 @Composable
 private fun VerificationCallout(
+    verificationLevel: VerificationLevel,
+    premiumStatus: PremiumVerificationStatusDataJson?,
+    onVerify: () -> Unit,
+    onUpgradeToPremium: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    when (verificationLevel) {
+        VerificationLevel.BASIC -> BasicVerificationCard(onVerify = onVerify, modifier = modifier)
+        VerificationLevel.VERIFIED -> {
+            val pendingRequest = premiumStatus?.requests?.firstOrNull()
+            val pendingStatus = pendingRequest?.status?.let { PremiumApplicationStatus.fromRaw(it) }
+            val isPending = pendingStatus == PremiumApplicationStatus.PENDING ||
+                pendingStatus == PremiumApplicationStatus.UNDER_REVIEW
+            if (isPending) {
+                PremiumPendingCard(applicationId = pendingRequest?.id, modifier = modifier)
+            } else {
+                PremiumUpgradeCard(onUpgradeToPremium = onUpgradeToPremium, modifier = modifier)
+            }
+        }
+        VerificationLevel.PREMIUM -> Unit
+    }
+}
+
+@Composable
+private fun BasicVerificationCard(
     onVerify: () -> Unit,
     modifier: Modifier = Modifier,
+) {
+    VerificationCalloutSurface(modifier = modifier) {
+        VerificationCalloutHeader(
+            icon = Icons.Filled.VerifiedUser,
+            iconTint = PasabayanColors.Info,
+            iconBackground = PasabayanColors.Info.copy(alpha = 0.15f),
+            title = stringResource(R.string.profile_verification_title),
+            description = stringResource(R.string.profile_verification_description_basic),
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
+            Text(
+                text = stringResource(R.string.profile_verification_why_verify),
+                style = PasabayanTextStyles.Body.medium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            VerificationBenefitRow(
+                icon = Icons.Filled.Check,
+                tint = PasabayanColors.Info,
+                text = stringResource(R.string.profile_verification_benefit_trust),
+            )
+            VerificationBenefitRow(
+                icon = Icons.Filled.Check,
+                tint = PasabayanColors.Info,
+                text = stringResource(R.string.profile_verification_benefit_priority),
+            )
+            VerificationBenefitRow(
+                icon = Icons.Filled.Check,
+                tint = PasabayanColors.Info,
+                text = stringResource(R.string.profile_verification_benefit_features),
+            )
+        }
+        PButton(
+            text = stringResource(R.string.profile_verification_action_verify),
+            onClick = onVerify,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
+private fun PremiumUpgradeCard(
+    onUpgradeToPremium: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    VerificationCalloutSurface(modifier = modifier) {
+        VerificationCalloutHeader(
+            icon = Icons.Filled.VerifiedUser,
+            iconTint = PasabayanColors.Info,
+            iconBackground = PasabayanColors.Info.copy(alpha = 0.15f),
+            title = stringResource(R.string.profile_premium_upgrade_title),
+            description = stringResource(R.string.profile_premium_upgrade_description),
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
+            VerificationBenefitRow(
+                icon = Icons.Filled.Star,
+                tint = PasabayanColors.BadgeGold,
+                text = stringResource(R.string.profile_premium_benefit_gold_badge),
+            )
+            VerificationBenefitRow(
+                icon = Icons.Filled.Search,
+                tint = PasabayanColors.Info,
+                text = stringResource(R.string.profile_premium_benefit_search_priority),
+            )
+            VerificationBenefitRow(
+                icon = Icons.Filled.VerifiedUser,
+                tint = PasabayanColors.Success,
+                text = stringResource(R.string.profile_premium_benefit_verified_id),
+            )
+        }
+        PButton(
+            text = stringResource(R.string.profile_premium_action_apply),
+            onClick = onUpgradeToPremium,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
+private fun PremiumPendingCard(
+    applicationId: Int?,
+    modifier: Modifier = Modifier,
+) {
+    VerificationCalloutSurface(modifier = modifier) {
+        VerificationCalloutHeader(
+            icon = Icons.Filled.Schedule,
+            iconTint = PasabayanColors.Info,
+            iconBackground = PasabayanColors.Info.copy(alpha = 0.2f),
+            title = stringResource(R.string.profile_premium_submitted_title),
+            description = stringResource(R.string.profile_premium_submitted_description),
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
+            VerificationBenefitRow(
+                icon = Icons.Filled.Schedule,
+                tint = PasabayanColors.Warning,
+                text = stringResource(R.string.profile_premium_status_label),
+            )
+            VerificationBenefitRow(
+                icon = Icons.Filled.Schedule,
+                tint = PasabayanColors.Info,
+                text = stringResource(R.string.profile_premium_review_time_label),
+            )
+            if (applicationId != null) {
+                VerificationBenefitRow(
+                    icon = Icons.Filled.Description,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = stringResource(R.string.profile_premium_application_id, applicationId),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun VerificationCalloutSurface(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Surface(
         modifier = modifier,
@@ -505,75 +660,65 @@ private fun VerificationCallout(
         Column(
             modifier = Modifier.padding(PasabayanSpacing.md),
             verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
+            content = content,
+        )
+    }
+}
+
+@Composable
+private fun VerificationCalloutHeader(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconTint: androidx.compose.ui.graphics.Color,
+    iconBackground: androidx.compose.ui.graphics.Color,
+    title: String,
+    description: String,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(VerificationIconCircleSize)
+                .clip(CircleShape)
+                .background(iconBackground),
+            contentAlignment = Alignment.Center,
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(VerificationIconCircleSize)
-                        .clip(CircleShape)
-                        .background(PasabayanColors.Info.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.VerifiedUser,
-                        contentDescription = null,
-                        tint = PasabayanColors.Info,
-                        modifier = Modifier.size(VerificationIconGlyphSize),
-                    )
-                }
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
-                ) {
-                    Text(
-                        text = stringResource(R.string.profile_verification_title),
-                        style = PasabayanTextStyles.Heading.h4,
-                    )
-                    Text(
-                        text = stringResource(R.string.profile_verification_description_basic),
-                        style = PasabayanTextStyles.Body.small,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
-                Text(
-                    text = stringResource(R.string.profile_verification_why_verify),
-                    style = PasabayanTextStyles.Body.medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                VerificationBenefitRow(
-                    text = stringResource(R.string.profile_verification_benefit_trust),
-                )
-                VerificationBenefitRow(
-                    text = stringResource(R.string.profile_verification_benefit_priority),
-                )
-                VerificationBenefitRow(
-                    text = stringResource(R.string.profile_verification_benefit_features),
-                )
-            }
-            PButton(
-                text = stringResource(R.string.profile_verification_action_verify),
-                onClick = onVerify,
-                modifier = Modifier.fillMaxWidth(),
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(VerificationIconGlyphSize),
+            )
+        }
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+        ) {
+            Text(text = title, style = PasabayanTextStyles.Heading.h4)
+            Text(
+                text = description,
+                style = PasabayanTextStyles.Body.small,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
 }
 
 @Composable
-private fun VerificationBenefitRow(text: String) {
+private fun VerificationBenefitRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    tint: androidx.compose.ui.graphics.Color,
+    text: String,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
     ) {
         Icon(
-            imageVector = Icons.Filled.Check,
+            imageVector = icon,
             contentDescription = null,
-            tint = PasabayanColors.Info,
+            tint = tint,
             modifier = Modifier.size(VerificationBenefitIconSize),
         )
         Text(
@@ -627,11 +772,23 @@ private fun rememberVersionName(): String {
 @Composable
 private fun ProfileTabScreenPreview() {
     PasabayanTheme {
-        ProfileUserHeader(
-            name = "Alex",
-            email = "a@b.c",
-            currentRole = UserRole.SHIPPER,
-            modifier = Modifier.padding(PasabayanSpacing.md),
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
+            ProfileUserHeader(
+                name = "Alex",
+                email = "a@b.c",
+                currentRole = UserRole.SHIPPER,
+                verificationLevel = VerificationLevel.VERIFIED,
+                isCarrierActive = false,
+                modifier = Modifier.padding(PasabayanSpacing.md),
+            )
+            ProfileUserHeader(
+                name = "Maria Santos",
+                email = "maria@example.com",
+                currentRole = UserRole.CARRIER,
+                verificationLevel = VerificationLevel.PREMIUM,
+                isCarrierActive = true,
+                modifier = Modifier.padding(PasabayanSpacing.md),
+            )
+        }
     }
 }

@@ -45,6 +45,19 @@
     <string name="profile_verification_benefit_priority">Get priority in search results</string>
     <string name="profile_verification_benefit_features">Unlock booking and payout features</string>
     <string name="profile_verification_action_verify">Verify Now</string>
+    <!-- Premium upgrade callout (verified → premium) -->
+    <string name="profile_premium_upgrade_title">Complete Your Verification</string>
+    <string name="profile_premium_upgrade_description">Add government ID verification to build trust and get greater visibility.</string>
+    <string name="profile_premium_benefit_gold_badge">Gold star premium badge</string>
+    <string name="profile_premium_benefit_search_priority">Priority in search results</string>
+    <string name="profile_premium_benefit_verified_id">Verified government ID on file</string>
+    <string name="profile_premium_action_apply">Verify My Identity</string>
+    <!-- Pending premium application status card -->
+    <string name="profile_premium_submitted_title">Premium Application Submitted</string>
+    <string name="profile_premium_submitted_description">Your application is under review</string>
+    <string name="profile_premium_status_label">Status: Under Review</string>
+    <string name="profile_premium_review_time_label">Estimated Review Time: 24-48 hours</string>
+    <string name="profile_premium_application_id">Application ID #%1$d</string>
     <string name="profile_menu_account">Account</string>
     <string name="profile_menu_personal_info">Personal info</string>
     <string name="profile_menu_personal_info_subtitle">Update your personal information</string>

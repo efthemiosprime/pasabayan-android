@@ -9,6 +9,7 @@ import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.profile.model.ProfileTabUiState
 import com.efthemiosprime.pasabayan.features.profile.services.ProfileRepository
+import com.efthemiosprime.pasabayan.features.verification.services.VerificationRepository
 import com.efthemiosprime.pasabayan.shared.error.localizedMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -24,6 +25,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class ProfileTabViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
+    private val verificationRepository: VerificationRepository,
     @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
 
@@ -60,6 +62,18 @@ class ProfileTabViewModel @Inject constructor(
                 )
                 if (profileResult.isFailure) {
                     return@launch
+                }
+                // Premium application status — only relevant at `verified` level (basic users
+                // haven't applied; premium users already passed). iOS parity with the
+                // `onAppear { if normalizedVerificationLevel == "verified" ... }` branch in
+                // `VerificationStatusView`.
+                val verificationLevel = _uiState.value.userProfile?.verificationLevel?.lowercase()
+                if (verificationLevel == "verified") {
+                    verificationRepository.fetchPremiumStatus().onSuccess { data ->
+                        _uiState.update { st -> st.copy(premiumStatus = data) }
+                    }
+                } else {
+                    _uiState.update { st -> st.copy(premiumStatus = null) }
                 }
                 when (role) {
                     UserRole.CARRIER -> {

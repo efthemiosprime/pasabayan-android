@@ -46,6 +46,19 @@
     <string name="profile_verification_benefit_priority">Soyez prioritaire dans les résultats</string>
     <string name="profile_verification_benefit_features">Débloquez les réservations et paiements</string>
     <string name="profile_verification_action_verify">Vérifier maintenant</string>
+    <!-- Premium upgrade callout (verified → premium) -->
+    <string name="profile_premium_upgrade_title">Complétez votre vérification</string>
+    <string name="profile_premium_upgrade_description">Ajoutez la vérification de pièce d’identité pour bâtir la confiance et gagner en visibilité.</string>
+    <string name="profile_premium_benefit_gold_badge">Badge premium étoile dorée</string>
+    <string name="profile_premium_benefit_search_priority">Priorité dans les résultats de recherche</string>
+    <string name="profile_premium_benefit_verified_id">Pièce d’identité gouvernementale vérifiée</string>
+    <string name="profile_premium_action_apply">Vérifier mon identité</string>
+    <!-- Pending premium application status card -->
+    <string name="profile_premium_submitted_title">Demande Premium soumise</string>
+    <string name="profile_premium_submitted_description">Votre demande est en cours d’examen</string>
+    <string name="profile_premium_status_label">Statut : En cours d’examen</string>
+    <string name="profile_premium_review_time_label">Temps d’examen estimé : 24-48 heures</string>
+    <string name="profile_premium_application_id">Demande n° %1$d</string>
     <string name="profile_menu_account">Compte</string>
     <string name="profile_menu_personal_info">Renseignements personnels</string>
     <string name="profile_menu_personal_info_subtitle">Mettez à jour vos informations personnelles</string>

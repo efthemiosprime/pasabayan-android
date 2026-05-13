@@ -503,6 +503,7 @@ fun MainTabScreen(
                             onOpenPersonalInfo = { showEditUserProfileSheet = true },
                             onOpenVehicleInfo = { showEditCarrierProfileSheet = true },
                             onOpenVerification = { showPhoneVerificationSheet = true },
+                            onOpenPremiumVerification = { showPremiumVerificationSheet = true },
                             onOpenSettings = { settingsOpen = true },
                             onOpenAccountManagement = { showAccountManagementSheet = true },
                             onOpenFavorites = { favoritesOpen = true },
