@@ -3,8 +3,8 @@ package com.efthemiosprime.pasabayan.features.payments.components
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -15,14 +15,22 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
+import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
 import com.efthemiosprime.pasabayan.features.payments.model.PaymentMethodDisplay
 import com.efthemiosprime.pasabayan.features.payments.viewmodel.PaymentMethodsUiState
 
+/**
+ * Profile-hub summary section. Shows up to 3 saved cards via [PaymentMethodCard]
+ * and links to the full [com.efthemiosprime.pasabayan.features.payments.ui.PaymentMethodsScreen]
+ * for management.
+ */
 @Composable
 fun PaymentMethodsSection(
     methodsState: PaymentMethodsUiState,
     onSetDefaultMethod: (String) -> Unit,
+    onRemoveMethod: (String) -> Unit,
+    onManagePaymentMethods: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     PCard(modifier = modifier) {
@@ -31,28 +39,27 @@ fun PaymentMethodsSection(
                 text = stringResource(R.string.payments_profile_methods_section),
                 style = PasabayanTextStyles.Heading.h5,
             )
-            methodsState.paymentMethods.take(3).forEach { method ->
-                Row(horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-                    Text(
-                        text = method.displayName,
-                        modifier = Modifier.weight(1f),
-                        style = PasabayanTextStyles.Body.medium,
-                    )
-                    if (!method.isDefault) {
-                        PButton(
-                            text = stringResource(R.string.payments_profile_set_default),
-                            onClick = { onSetDefaultMethod(method.id) },
-                        )
-                    }
-                }
-            }
             if (methodsState.paymentMethods.isEmpty()) {
                 Text(
-                    text = stringResource(R.string.payments_profile_idle),
-                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.payments_profile_methods_empty),
                     style = PasabayanTextStyles.Body.small,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            } else {
+                methodsState.paymentMethods.take(3).forEach { method ->
+                    PaymentMethodCard(
+                        method = method,
+                        onSetDefault = { onSetDefaultMethod(method.id) },
+                        onRemove = { onRemoveMethod(method.id) },
+                    )
+                }
             }
+            PButton(
+                text = stringResource(R.string.payments_profile_methods_manage),
+                onClick = onManagePaymentMethods,
+                style = PButtonStyle.Secondary,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }
@@ -70,6 +77,21 @@ private fun PaymentMethodsSectionPreview() {
                 ),
             ),
             onSetDefaultMethod = {},
+            onRemoveMethod = {},
+            onManagePaymentMethods = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "PaymentMethods empty")
+@Composable
+private fun PaymentMethodsSectionEmptyPreview() {
+    PasabayanTheme {
+        PaymentMethodsSection(
+            methodsState = PaymentMethodsUiState(),
+            onSetDefaultMethod = {},
+            onRemoveMethod = {},
+            onManagePaymentMethods = {},
         )
     }
 }

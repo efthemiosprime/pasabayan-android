@@ -33,6 +33,15 @@ interface TripsApi {
         @Body body: TripUpdateRequestJson,
     ): Response<TripResponseJson>
 
+    /**
+     * Transitions a planning trip to active. iOS parity:
+     * `TripsAPIService.activateTrip(id:)` posts to this endpoint with an empty body — it is "the
+     * only sanctioned way to activate." A `PUT /trips/{id}` with `trip_status = "active"` is
+     * silently dropped server-side.
+     */
+    @POST("trips/{id}/activate")
+    suspend fun activateTrip(@Path("id") id: Int): Response<TripResponseJson>
+
     @DELETE("trips/{id}")
     suspend fun deleteTrip(@Path("id") id: Int): Response<TripDeleteResponseJson>
 

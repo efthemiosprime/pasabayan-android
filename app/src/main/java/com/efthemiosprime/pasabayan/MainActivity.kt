@@ -71,6 +71,30 @@ class MainActivity : androidx.activity.ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         handleNotificationDataExtra(intent)
+        handleStripeRedirect(intent)
+    }
+
+    /**
+     * Stripe 3DS return path. The manifest declares an intent-filter for `pasabayan://stripe-redirect`
+     * (see [AndroidManifest.xml]) so the OS routes the browser callback back to this activity. The
+     * Stripe SDK's `PaymentLauncher` / `PaymentSheet.Configuration(returnUrl = …)` flows own the
+     * substantive state-machine via [androidx.activity.result.contract.ActivityResultContracts],
+     * which surface results to their composables independently of this method.
+     *
+     * This hook exists so a stray redirect (e.g. cold-start from a 3DS browser tab) doesn't bounce
+     * silently — we clear the data so a configuration change doesn't re-fire and let the SDK
+     * launchers complete naturally on resume.
+     */
+    private fun handleStripeRedirect(intent: Intent?) {
+        val uri = intent?.data ?: return
+        if (uri.scheme != STRIPE_REDIRECT_SCHEME || uri.host != STRIPE_REDIRECT_HOST) return
+        // Defensive clear; Stripe launchers don't read intent.data for callback completion.
+        intent.data = null
+    }
+
+    private companion object {
+        const val STRIPE_REDIRECT_SCHEME = "pasabayan"
+        const val STRIPE_REDIRECT_HOST = "stripe-redirect"
     }
 
     @Suppress("UNCHECKED_CAST")

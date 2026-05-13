@@ -12,6 +12,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -159,6 +160,9 @@ fun MainTabScreen(
     var pendingTransactionId by remember { mutableStateOf<Int?>(null) }
     var profilePaymentsOpen by remember { mutableStateOf(false) }
     var profilePayoutSetupOpen by remember { mutableStateOf(false) }
+    var profilePaymentMethodsOpen by remember { mutableStateOf(false) }
+    var profileReceiptListOpen by remember { mutableStateOf(false) }
+    var profileReceiptDetailId by remember { mutableStateOf<Int?>(null) }
     var showEditUserProfileSheet by remember { mutableStateOf(false) }
     var showEditCarrierProfileSheet by remember { mutableStateOf(false) }
     var showPrivacyPreferencesSheet by remember { mutableStateOf(false) }
@@ -285,6 +289,9 @@ fun MainTabScreen(
         if (tab?.route != "profile") {
             profilePaymentsOpen = false
             profilePayoutSetupOpen = false
+            profilePaymentMethodsOpen = false
+            profileReceiptListOpen = false
+            profileReceiptDetailId = null
             settingsOpen = false
             favoritesOpen = false
             ratingsOpen = false
@@ -469,6 +476,37 @@ fun MainTabScreen(
                                 )
                             }
                         }
+                        profileReceiptDetailId != null -> {
+                            com.efthemiosprime.pasabayan.features.payments.ui.ReceiptDetailScreen(
+                                transactionId = profileReceiptDetailId!!,
+                                onBack = { profileReceiptDetailId = null },
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
+                        profileReceiptListOpen -> {
+                            com.efthemiosprime.pasabayan.features.payments.ui.ReceiptListScreen(
+                                onBack = { profileReceiptListOpen = false },
+                                onOpenReceipt = { transactionId ->
+                                    // State gate doubles as a debounce: subsequent taps within
+                                    // the same composition can't overwrite a non-null id without
+                                    // the detail screen first dismissing.
+                                    if (profileReceiptDetailId == null) {
+                                        profileReceiptDetailId = transactionId
+                                    }
+                                },
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
+                        profilePaymentMethodsOpen -> {
+                            com.efthemiosprime.pasabayan.features.payments.ui.PaymentMethodsScreen(
+                                onBack = { profilePaymentMethodsOpen = false },
+                                onViewTransactions = {
+                                    profilePaymentMethodsOpen = false
+                                    profilePaymentsOpen = true
+                                },
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
                         profilePayoutSetupOpen -> {
                             com.efthemiosprime.pasabayan.features.payments.ui.PayoutSetupScreen(
                                 onClose = { profilePayoutSetupOpen = false },
@@ -493,9 +531,17 @@ fun MainTabScreen(
                                 PaymentsProfileScreen(
                                     onLogout = onLogout,
                                     modifier = Modifier.fillMaxSize(),
-                                    onOpenPayoutSetup = {
+                                    onOpenPayoutSetup = rememberDebouncedClick {
                                         profilePaymentsOpen = false
                                         profilePayoutSetupOpen = true
+                                    },
+                                    onOpenPaymentMethods = rememberDebouncedClick {
+                                        profilePaymentsOpen = false
+                                        profilePaymentMethodsOpen = true
+                                    },
+                                    onOpenReceipts = rememberDebouncedClick {
+                                        profilePaymentsOpen = false
+                                        profileReceiptListOpen = true
                                     },
                                     initialTransactionId = pendingTransactionId,
                                     onInitialTransactionConsumed = { pendingTransactionId = null },
@@ -1132,6 +1178,26 @@ private fun handleActionableItemTap(
         }
         ActionableItemIds.VERIFY_NUMBER -> onOpenPhoneVerification()
         ActionableItemIds.UPGRADE_PREMIUM -> onOpenPremiumVerification()
+    }
+}
+
+/**
+ * Debounces an `onClick` so a double-tap can't fire two navigations / two sheets within the
+ * window. Default 300 ms matches the platform tap-recognition threshold. Returns a stable
+ * lambda; safe to pass directly to nav callbacks that mutate state.
+ */
+@Composable
+private fun rememberDebouncedClick(
+    debounceMillis: Long = 300L,
+    onClick: () -> Unit,
+): () -> Unit {
+    var lastClickMs by remember { mutableLongStateOf(0L) }
+    return {
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (now - lastClickMs >= debounceMillis) {
+            lastClickMs = now
+            onClick()
+        }
     }
 }
 

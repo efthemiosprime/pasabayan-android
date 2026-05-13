@@ -70,6 +70,8 @@ fun PaymentsProfileScreen(
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenPayoutSetup: () -> Unit = {},
+    onOpenPaymentMethods: () -> Unit = {},
+    onOpenReceipts: () -> Unit = {},
     /**
      * When set (typically from notifications routing — `OpenTransactionDetail(id)`), the screen
      * mounts directly on the transaction detail surface for the given id. iOS parity:
@@ -176,12 +178,14 @@ fun PaymentsProfileScreen(
                     refundViewModel.submitRefundRequest(transactionId)
                 },
                 onSetDefaultMethod = { methodId -> paymentMethodsViewModel.setDefaultPaymentMethod(methodId) },
-                onLoadMoreReceipts = { receiptListViewModel.loadMore() },
+                onRemoveMethod = { methodId -> paymentMethodsViewModel.removePaymentMethod(methodId) },
+                onManagePaymentMethods = onOpenPaymentMethods,
                 onOpenTransactionList = { route = PaymentsRoute.TRANSACTIONS },
                 onOpenTransaction = { transaction ->
                     selectedTransaction = transaction
                     route = PaymentsRoute.TRANSACTION_DETAIL
                 },
+                onOpenReceipts = onOpenReceipts,
                 onOpenPayoutSetup = onOpenPayoutSetup,
                 onRefresh = {
                     paymentMethodsViewModel.loadPaymentMethods()
@@ -254,9 +258,11 @@ private fun PaymentsProfileContent(
     onAddTip: (Int, Double) -> Unit,
     onRequestRefund: (Int, String) -> Unit,
     onSetDefaultMethod: (String) -> Unit,
-    onLoadMoreReceipts: () -> Unit,
+    onRemoveMethod: (String) -> Unit,
+    onManagePaymentMethods: () -> Unit,
     onOpenTransactionList: () -> Unit,
     onOpenTransaction: (Transaction) -> Unit,
+    onOpenReceipts: () -> Unit,
     onOpenPayoutSetup: () -> Unit,
     onRefresh: () -> Unit,
     onLogout: () -> Unit,
@@ -298,6 +304,8 @@ private fun PaymentsProfileContent(
         PaymentMethodsSection(
             methodsState = methodsState,
             onSetDefaultMethod = onSetDefaultMethod,
+            onRemoveMethod = onRemoveMethod,
+            onManagePaymentMethods = onManagePaymentMethods,
         )
         TippingRefundSection(
             tippingState = tippingState,
@@ -310,7 +318,7 @@ private fun PaymentsProfileContent(
             receiptState = receiptState,
             onOpenTransactionList = onOpenTransactionList,
             onOpenTransaction = onOpenTransaction,
-            onLoadMoreReceipts = onLoadMoreReceipts,
+            onOpenReceipts = onOpenReceipts,
         )
         StripeConnectSection(
             connectState = connectState,
@@ -372,9 +380,11 @@ private fun PaymentsProfilePreview() {
             onAddTip = { _, _ -> },
             onRequestRefund = { _, _ -> },
             onSetDefaultMethod = {},
-            onLoadMoreReceipts = {},
+            onRemoveMethod = {},
+            onManagePaymentMethods = {},
             onOpenTransactionList = {},
             onOpenTransaction = {},
+            onOpenReceipts = {},
             onOpenPayoutSetup = {},
             onRefresh = {},
             onLogout = {},

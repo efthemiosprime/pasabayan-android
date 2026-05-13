@@ -52,7 +52,6 @@ import com.efthemiosprime.pasabayan.features.payments.viewmodel.PaymentMethodsVi
 @Composable
 fun PaymentMethodsScreen(
     onBack: () -> Unit,
-    onAddCard: () -> Unit,
     onViewTransactions: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PaymentMethodsViewModel = hiltViewModel(),
@@ -62,13 +61,20 @@ fun PaymentMethodsScreen(
     PaymentMethodsContent(
         state = state,
         onBack = onBack,
-        onAddCard = onAddCard,
+        onAddCard = { viewModel.showAddCardSheet(true) },
         onSetDefault = { viewModel.setDefaultPaymentMethod(it) },
         onRemove = { viewModel.removePaymentMethod(it) },
         onViewTransactions = onViewTransactions,
         onRetry = { viewModel.loadPaymentMethods() },
         modifier = modifier,
     )
+    if (state.showAddCardSheet) {
+        AddPaymentMethodSheet(
+            flowState = state.addCardFlowState,
+            onContinue = { viewModel.prepareAddPaymentMethod() },
+            onDismiss = { viewModel.onAddCardCanceled() },
+        )
+    }
 }
 
 @Composable

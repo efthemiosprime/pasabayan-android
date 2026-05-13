@@ -173,6 +173,10 @@
     <string name="payments_summary_total">Total</string>
     <string name="payments_summary_carrier_receives">Carrier receives %1$s</string>
 
+    <!-- Manage payment methods CTA (rendered inside the profile-hub section) -->
+    <string name="payments_profile_methods_manage">Manage payment methods</string>
+    <string name="payments_profile_methods_empty">No saved cards yet.</string>
+
     <!-- Payment methods screen -->
     <string name="payments_methods_title">Payment methods</string>
     <string name="payments_methods_secure_notice">Your card information is encrypted and stored securely with Stripe.</string>

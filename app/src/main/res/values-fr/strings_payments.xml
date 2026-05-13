@@ -173,6 +173,10 @@
     <string name="payments_summary_total">Total</string>
     <string name="payments_summary_carrier_receives">Le transporteur reçoit %1$s</string>
 
+    <!-- Manage payment methods CTA (rendered inside the profile-hub section) -->
+    <string name="payments_profile_methods_manage">Gérer les modes de paiement</string>
+    <string name="payments_profile_methods_empty">Aucune carte enregistrée.</string>
+
     <!-- Payment methods screen -->
     <string name="payments_methods_title">Modes de paiement</string>
     <string name="payments_methods_secure_notice">Vos informations de carte sont chiffrées et stockées en toute sécurité par Stripe.</string>
