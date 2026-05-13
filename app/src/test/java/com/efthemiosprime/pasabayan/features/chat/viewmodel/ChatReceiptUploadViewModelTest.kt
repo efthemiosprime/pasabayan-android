@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -86,8 +87,60 @@ class ChatReceiptUploadViewModelTest {
         assertEquals(listOf<Byte>(0x0A, 0x0B, 0x0C), fakeRepo.lastBytes?.toList())
     }
 
+    @Test
+    fun `loadReceipt populates receipt flow on success`() = runTest {
+        val expected = MatchReceipt(receiptPhoto = "r.jpg", receiptUrl = "https://r", uploadedAt = "2026-04-01T12:00:00Z")
+        fakeRepo.fetchResult = Result.success(expected)
+
+        viewModel.loadReceipt(100)
+        advanceUntilIdle()
+
+        assertEquals(expected, viewModel.receipt.value)
+    }
+
+    @Test
+    fun `loadReceipt leaves receipt null when repo returns null (no receipt yet)`() = runTest {
+        fakeRepo.fetchResult = Result.success(null)
+
+        viewModel.loadReceipt(100)
+        advanceUntilIdle()
+
+        assertNull(viewModel.receipt.value)
+    }
+
+    @Test
+    fun `loadReceipt is silent on failure`() = runTest {
+        fakeRepo.fetchResult = Result.failure(Exception("boom"))
+
+        viewModel.loadReceipt(100)
+        advanceUntilIdle()
+
+        // No state change, no exception thrown.
+        assertNull(viewModel.receipt.value)
+        assertEquals(ChatReceiptUploadState.Idle, viewModel.uiState.value)
+    }
+
+    @Test
+    fun `successful upload also refreshes receipt for inline display`() = runTest {
+        fakeRepo.uploadResult = Result.success(
+            MatchReceipt(receiptPhoto = "uploaded.jpg", receiptUrl = "https://u", uploadedAt = null),
+        )
+        // Fetch returns the persisted version with uploaded_at.
+        fakeRepo.fetchResult = Result.success(
+            MatchReceipt(receiptPhoto = "uploaded.jpg", receiptUrl = "https://u", uploadedAt = "2026-04-01T12:00:00Z"),
+        )
+
+        viewModel.uploadReceipt(matchId = 100, photoBytes = byteArrayOf(0x01))
+        advanceUntilIdle()
+
+        assertEquals(ChatReceiptUploadState.Success, viewModel.uiState.value)
+        val receipt = viewModel.receipt.value
+        assertEquals("2026-04-01T12:00:00Z", receipt?.uploadedAt)
+    }
+
     private class FakeRepo : MatchReceiptRepository {
         var uploadResult: Result<MatchReceipt> = Result.failure(Exception("Not set"))
+        var fetchResult: Result<MatchReceipt?> = Result.success(null)
         var lastMatchId: Int = -1
         var lastBytes: ByteArray? = null
 
@@ -97,7 +150,6 @@ class ChatReceiptUploadViewModelTest {
             return uploadResult
         }
 
-        override suspend fun fetchReceipt(matchId: Int): Result<MatchReceipt?> =
-            Result.failure(Exception("Not used"))
+        override suspend fun fetchReceipt(matchId: Int): Result<MatchReceipt?> = fetchResult
     }
 }

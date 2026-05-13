@@ -44,4 +44,10 @@
     <string name="chat_receipt_upload_success">Reçu téléversé</string>
     <string name="chat_receipt_upload_error_generic">Impossible de téléverser le reçu</string>
     <string name="chat_receipt_upload_retry">Réessayer</string>
+
+    <!-- Carte « reçu » côté expéditeur rendue dans le fil de discussion. -->
+    <string name="chat_receipt_card_title">Reçu</string>
+    <string name="chat_receipt_card_uploaded_at">Téléversé le %1$s</string>
+    <string name="chat_receipt_card_uploaded_unknown">Téléversé</string>
+    <string name="chat_receipt_card_image_description">Photo du reçu envoyée par le transporteur</string>
 </resources>

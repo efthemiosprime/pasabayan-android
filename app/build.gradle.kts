@@ -92,6 +92,11 @@ dependencies {
     // Stripe — PaymentSheet, SetupIntent, Google Pay
     implementation(libs.stripe.android)
 
+    // Coil 3 — used by feature composables (e.g. ShipperServiceReceiptCard); core:designsystem
+    // also depends on it but as `implementation` so the dependency isn't transitive.
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
     // Chrome Custom Tabs — Stripe Connect onboarding / dashboard
     implementation(libs.androidx.browser)
 

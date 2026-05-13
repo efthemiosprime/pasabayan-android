@@ -44,4 +44,10 @@
     <string name="chat_receipt_upload_success">Receipt uploaded</string>
     <string name="chat_receipt_upload_error_generic">Could not upload receipt</string>
     <string name="chat_receipt_upload_retry">Try again</string>
+
+    <!-- Shipper-side inline receipt card rendered in the chat thread. -->
+    <string name="chat_receipt_card_title">Receipt</string>
+    <string name="chat_receipt_card_uploaded_at">Uploaded %1$s</string>
+    <string name="chat_receipt_card_uploaded_unknown">Uploaded</string>
+    <string name="chat_receipt_card_image_description">Receipt photo from the carrier</string>
 </resources>

@@ -40,6 +40,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextFie
 import com.efthemiosprime.pasabayan.core.designsystem.component.PScaffold
 import com.efthemiosprime.pasabayan.core.designsystem.component.PTopBar
 import com.efthemiosprime.pasabayan.features.chat.components.ChatMessageBubble
+import com.efthemiosprime.pasabayan.features.chat.components.ShipperServiceReceiptCard
 import com.efthemiosprime.pasabayan.features.chat.model.MessageItem
 import com.efthemiosprime.pasabayan.features.chat.model.Sender
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ChatReceiptUploadState
@@ -67,6 +68,13 @@ fun ChatThreadScreen(
      * has this from `ConversationSummary.matchId`.
      */
     matchId: Int? = null,
+    /**
+     * When true the shipper-side receipt card is fetched and rendered
+     * inline above the message list once the carrier uploads. Pass true
+     * only when the viewer is the shipper on a service match — iOS
+     * `ConversationDetailView` gates `ShipperServiceReceiptCard` the same way.
+     */
+    isShipperViewer: Boolean = false,
     viewModel: ChatThreadViewModel = hiltViewModel(),
     receiptUploadViewModel: ChatReceiptUploadViewModel = hiltViewModel(),
 ) {
@@ -103,6 +111,17 @@ fun ChatThreadScreen(
         }
     }
 
+    // Shipper-side: pull the existing receipt once the thread mounts so the
+    // inline card renders the moment the carrier uploads (or on cold open
+    // for an already-uploaded receipt).
+    val viewerReceipt by receiptUploadViewModel.receipt.collectAsStateWithLifecycle()
+    LaunchedEffect(matchId, isShipperViewer) {
+        val id = matchId
+        if (id != null && isShipperViewer) {
+            receiptUploadViewModel.loadReceipt(id)
+        }
+    }
+
     LaunchedEffect(conversationId) {
         viewModel.openConversation(conversationId, status)
     }
@@ -128,6 +147,7 @@ fun ChatThreadScreen(
         onMessageVisible = viewModel::markMessageRead,
         onReceiptUploadClick = { showReceiptUploadSheet = true },
         currentUserId = currentUserId,
+        receiptForViewer = if (isShipperViewer) viewerReceipt else null,
         modifier = modifier,
     )
     if (showReceiptUploadSheet) {
@@ -169,6 +189,9 @@ fun ChatThreadContent(
     onReceiptUploadClick: () -> Unit,
     currentUserId: Long,
     modifier: Modifier = Modifier,
+    /** Optional receipt rendered above the message stream for shipper viewers. */
+    receiptForViewer: com.efthemiosprime.pasabayan.features.bookings.model.MatchReceipt? = null,
+    onReceiptExpand: () -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     LaunchedEffect(listState, state.nextPage, state.isPaging) {
@@ -210,6 +233,14 @@ fun ChatThreadContent(
                     .padding(horizontal = PasabayanSpacing.lg),
                 verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
             ) {
+                if (receiptForViewer != null) {
+                    item(key = "receipt-${receiptForViewer.receiptPhoto}") {
+                        ShipperServiceReceiptCard(
+                            receipt = receiptForViewer,
+                            onExpand = onReceiptExpand,
+                        )
+                    }
+                }
                 items(state.messages, key = { it.id }) { message ->
                     // Prefer the server-authoritative `sender.isMe`; fall back to
                     // optimistic-id / sender-id / canDelete heuristics for temp
