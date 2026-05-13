@@ -38,7 +38,10 @@
 
     <string name="chat_receipt_upload_title">Téléverser un reçu</string>
     <string name="chat_receipt_upload_close">Fermer le téléversement du reçu</string>
-    <string name="chat_receipt_upload_description">Choisissez comment téléverser la photo de votre reçu.</string>
-    <string name="chat_receipt_upload_camera">Prendre une photo</string>
-    <string name="chat_receipt_upload_gallery">Choisir depuis la galerie</string>
+    <string name="chat_receipt_upload_description">Choisissez une photo de reçu dans votre galerie. Le transporteur l\'envoie ; l\'expéditeur la voit directement dans le fil.</string>
+    <string name="chat_receipt_upload_choose">Choisir une photo</string>
+    <string name="chat_receipt_upload_uploading">Téléversement du reçu…</string>
+    <string name="chat_receipt_upload_success">Reçu téléversé</string>
+    <string name="chat_receipt_upload_error_generic">Impossible de téléverser le reçu</string>
+    <string name="chat_receipt_upload_retry">Réessayer</string>
 </resources>

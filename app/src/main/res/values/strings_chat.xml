@@ -38,7 +38,10 @@
 
     <string name="chat_receipt_upload_title">Upload receipt</string>
     <string name="chat_receipt_upload_close">Close receipt upload</string>
-    <string name="chat_receipt_upload_description">Choose how you want to upload your receipt photo.</string>
-    <string name="chat_receipt_upload_camera">Take photo</string>
-    <string name="chat_receipt_upload_gallery">Choose from gallery</string>
+    <string name="chat_receipt_upload_description">Pick a receipt photo from your gallery. The carrier sends it; the shipper sees it inline in the chat.</string>
+    <string name="chat_receipt_upload_choose">Choose photo</string>
+    <string name="chat_receipt_upload_uploading">Uploading receipt…</string>
+    <string name="chat_receipt_upload_success">Receipt uploaded</string>
+    <string name="chat_receipt_upload_error_generic">Could not upload receipt</string>
+    <string name="chat_receipt_upload_retry">Try again</string>
 </resources>

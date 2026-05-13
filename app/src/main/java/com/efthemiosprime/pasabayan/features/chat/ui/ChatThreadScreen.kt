@@ -42,8 +42,14 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PTopBar
 import com.efthemiosprime.pasabayan.features.chat.components.ChatMessageBubble
 import com.efthemiosprime.pasabayan.features.chat.model.MessageItem
 import com.efthemiosprime.pasabayan.features.chat.model.Sender
+import com.efthemiosprime.pasabayan.features.chat.viewmodel.ChatReceiptUploadState
+import com.efthemiosprime.pasabayan.features.chat.viewmodel.ChatReceiptUploadViewModel
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ChatThreadUiState
 import com.efthemiosprime.pasabayan.features.chat.viewmodel.ChatThreadViewModel
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,11 +60,48 @@ fun ChatThreadScreen(
     status: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Service-match id needed to upload a receipt. Required for the
+     * carrier-side receipt CTA; null disables the picker launch (sheet
+     * still opens but the choose-photo button no-ops). The host already
+     * has this from `ConversationSummary.matchId`.
+     */
+    matchId: Int? = null,
     viewModel: ChatThreadViewModel = hiltViewModel(),
+    receiptUploadViewModel: ChatReceiptUploadViewModel = hiltViewModel(),
 ) {
     val state = viewModel.uiState.collectAsStateWithLifecycle().value
+    val receiptUploadState by receiptUploadViewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     var composerText by remember { mutableStateOf("") }
     var showReceiptUploadSheet by remember { mutableStateOf(false) }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+    ) { uri ->
+        val id = matchId
+        if (uri != null && id != null) {
+            // ContentResolver read is cheap (<5 MB image); for larger payloads
+            // move to Dispatchers.IO inside the VM. Keeping it inline avoids
+            // a Hilt-context dance for testability.
+            val bytes = runCatching {
+                context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+            }.getOrNull()
+            if (bytes != null) {
+                receiptUploadViewModel.uploadReceipt(matchId = id, photoBytes = bytes)
+            }
+        }
+    }
+
+    // Auto-dismiss the sheet and refresh the conversation once the upload
+    // resolves — matches iOS `onUploadSuccess` → `refreshConversationContextAndReceipt`.
+    LaunchedEffect(receiptUploadState) {
+        if (receiptUploadState is ChatReceiptUploadState.Success) {
+            showReceiptUploadSheet = false
+            viewModel.refreshConversation()
+            receiptUploadViewModel.reset()
+        }
+    }
 
     LaunchedEffect(conversationId) {
         viewModel.openConversation(conversationId, status)
@@ -88,17 +131,23 @@ fun ChatThreadScreen(
         modifier = modifier,
     )
     if (showReceiptUploadSheet) {
-        PModalBottomSheet(onDismissRequest = { showReceiptUploadSheet = false }) {
+        PModalBottomSheet(
+            onDismissRequest = {
+                showReceiptUploadSheet = false
+                receiptUploadViewModel.reset()
+            },
+        ) {
             ChatReceiptUploadSheet(
-                onUploadFromCamera = {
-                    showReceiptUploadSheet = false
-                    viewModel.refreshConversation()
+                state = receiptUploadState,
+                onPickPhoto = {
+                    photoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                    )
                 },
-                onUploadFromGallery = {
+                onClose = {
                     showReceiptUploadSheet = false
-                    viewModel.refreshConversation()
+                    receiptUploadViewModel.reset()
                 },
-                onClose = { showReceiptUploadSheet = false },
             )
         }
     }
