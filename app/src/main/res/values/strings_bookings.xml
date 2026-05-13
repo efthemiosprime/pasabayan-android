@@ -143,12 +143,6 @@
     <string name="bookings_auto_charge_cancel">Cancel</string>
     <string name="bookings_auto_charge_close">Close</string>
 
-    <!-- Rating -->
-    <string name="bookings_rate_title">Rate Delivery</string>
-    <string name="bookings_rate_description">How was your experience with %1$s?</string>
-    <string name="bookings_rate_comment">Comment (optional)</string>
-    <string name="bookings_rate_submit">Submit Rating</string>
-
     <!-- Success -->
     <string name="bookings_success_title">Success!</string>
     <string name="bookings_success_done">Done</string>

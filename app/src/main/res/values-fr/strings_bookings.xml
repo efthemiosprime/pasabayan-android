@@ -143,12 +143,6 @@
     <string name="bookings_auto_charge_cancel">Annuler</string>
     <string name="bookings_auto_charge_close">Fermer</string>
 
-    <!-- Rating -->
-    <string name="bookings_rate_title">\u00c9valuer la livraison</string>
-    <string name="bookings_rate_description">Comment \u00e9tait votre exp\u00e9rience avec %1$s ?</string>
-    <string name="bookings_rate_comment">Commentaire (optionnel)</string>
-    <string name="bookings_rate_submit">Soumettre l\'\u00e9valuation</string>
-
     <!-- Success -->
     <string name="bookings_success_title">Succ\u00e8s !</string>
     <string name="bookings_success_done">Termin\u00e9</string>
