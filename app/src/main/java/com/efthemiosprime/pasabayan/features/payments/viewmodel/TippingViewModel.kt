@@ -2,14 +2,18 @@ package com.efthemiosprime.pasabayan.features.payments.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.efthemiosprime.pasabayan.features.payments.model.Transaction
+import com.efthemiosprime.pasabayan.features.payments.model.toDomain
 import com.efthemiosprime.pasabayan.features.payments.services.PaymentRepository
+import com.efthemiosprime.pasabayan.features.payments.services.PaymentSheetConfigFactory
+import com.stripe.android.paymentsheet.PaymentSheet
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class TippingUiState(
     val selectedTipAmount: Double = 0.0,
@@ -19,6 +23,10 @@ data class TippingUiState(
     val showSuccess: Boolean = false,
     val showPaymentSheet: Boolean = false,
     val clientSecret: String? = null,
+    val paymentSheetConfig: PaymentSheet.Configuration? = null,
+    val paymentSheetReady: Boolean = false,
+    val paymentSheetResult: PaymentSheetResultKind? = null,
+    val updatedTransaction: Transaction? = null,
 ) {
     val effectiveTipAmount: Double
         get() = customTipAmount.toDoubleOrNull() ?: selectedTipAmount
@@ -67,20 +75,33 @@ class TippingViewModel @Inject constructor(
                     showSuccess = false,
                     showPaymentSheet = false,
                     clientSecret = null,
+                    paymentSheetConfig = null,
+                    paymentSheetReady = false,
+                    paymentSheetResult = null,
+                    updatedTransaction = null,
                 )
             }
             paymentRepository.addTip(transactionId, amount).fold(
                 onSuccess = { response ->
-                    if (response.clientSecret != null) {
+                    val updated = response.data?.toDomain()
+                    val secret = response.clientSecret
+                    if (secret != null) {
+                        setupPaymentSheet(secret)
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
                                 showPaymentSheet = true,
-                                clientSecret = response.clientSecret,
+                                updatedTransaction = updated,
                             )
                         }
                     } else {
-                        _uiState.update { it.copy(isLoading = false, showSuccess = true) }
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                showSuccess = true,
+                                updatedTransaction = updated,
+                            )
+                        }
                     }
                 },
                 onFailure = { e ->
@@ -89,6 +110,58 @@ class TippingViewModel @Inject constructor(
                     }
                 },
             )
+        }
+    }
+
+    /**
+     * Builds a PaymentSheet config for the tip secret. Tip responses don't carry customer
+     * credentials, so the factory returns the no-customer variant (no saved cards / Google Pay).
+     */
+    fun setupPaymentSheet(clientSecret: String) {
+        val config = PaymentSheetConfigFactory.build(
+            customerId = null,
+            ephemeralKey = null,
+            stripeIsSandbox = true,
+            currencyCode = "CAD",
+        )
+        _uiState.update {
+            it.copy(
+                clientSecret = clientSecret,
+                paymentSheetConfig = config,
+                paymentSheetReady = true,
+            )
+        }
+    }
+
+    /** Translates Stripe's PaymentSheetResult into VM state. */
+    fun handlePaymentResult(kind: PaymentSheetResultKind, message: String? = null) {
+        when (kind) {
+            PaymentSheetResultKind.COMPLETED -> _uiState.update {
+                it.copy(
+                    paymentSheetResult = kind,
+                    showSuccess = true,
+                    showPaymentSheet = false,
+                    paymentSheetReady = false,
+                    errorMessage = null,
+                )
+            }
+            PaymentSheetResultKind.CANCELED -> _uiState.update {
+                it.copy(
+                    paymentSheetResult = kind,
+                    showPaymentSheet = false,
+                    paymentSheetReady = false,
+                )
+            }
+            PaymentSheetResultKind.FAILED -> _uiState.update {
+                it.copy(
+                    paymentSheetResult = kind,
+                    showPaymentSheet = false,
+                    paymentSheetReady = false,
+                    clientSecret = null,
+                    paymentSheetConfig = null,
+                    errorMessage = message ?: "Tip payment failed",
+                )
+            }
         }
     }
 

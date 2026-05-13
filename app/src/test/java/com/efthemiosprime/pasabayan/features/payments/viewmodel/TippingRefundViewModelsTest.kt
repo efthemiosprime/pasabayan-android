@@ -127,6 +127,122 @@ class TippingRefundViewModelsTest {
         assertFalse(vm.uiState.value.isLoading)
     }
 
+    // -- B3: PaymentSheet bridge --
+
+    @Test
+    fun `setupPaymentSheet stores secret and config and marks ready`() {
+        val vm = TippingViewModel(fakePaymentRepo)
+        vm.setupPaymentSheet("pi_tip_secret")
+
+        assertEquals("pi_tip_secret", vm.uiState.value.clientSecret)
+        assertTrue(vm.uiState.value.paymentSheetReady)
+        assertTrue(vm.uiState.value.paymentSheetConfig != null)
+    }
+
+    @Test
+    fun `addTip with clientSecret auto-invokes setupPaymentSheet`() = runTest {
+        fakePaymentRepo.tipResult = Result.success(
+            TipResponseJson(success = true, clientSecret = "pi_tip_xyz"),
+        )
+        val vm = TippingViewModel(fakePaymentRepo)
+        vm.selectPresetTip(5.0)
+        vm.addTip(500)
+        advanceUntilIdle()
+
+        assertEquals("pi_tip_xyz", vm.uiState.value.clientSecret)
+        assertTrue(vm.uiState.value.paymentSheetReady)
+        assertTrue(vm.uiState.value.paymentSheetConfig != null)
+        assertTrue(vm.uiState.value.showPaymentSheet)
+    }
+
+    @Test
+    fun `addTip preserves updatedTransaction from response data`() = runTest {
+        fakePaymentRepo.tipResult = Result.success(
+            TipResponseJson(
+                success = true,
+                data = TransactionJson(id = 42, status = "completed"),
+            ),
+        )
+        val vm = TippingViewModel(fakePaymentRepo)
+        vm.selectPresetTip(5.0)
+        vm.addTip(500)
+        advanceUntilIdle()
+
+        assertEquals(42, vm.uiState.value.updatedTransaction?.id)
+    }
+
+    @Test
+    fun `handlePaymentResult COMPLETED sets showSuccess and clears sheet`() = runTest {
+        fakePaymentRepo.tipResult = Result.success(
+            TipResponseJson(success = true, clientSecret = "pi_tip_ok"),
+        )
+        val vm = TippingViewModel(fakePaymentRepo)
+        vm.selectPresetTip(5.0)
+        vm.addTip(500)
+        advanceUntilIdle()
+
+        vm.handlePaymentResult(PaymentSheetResultKind.COMPLETED)
+
+        assertEquals(PaymentSheetResultKind.COMPLETED, vm.uiState.value.paymentSheetResult)
+        assertTrue(vm.uiState.value.showSuccess)
+        assertFalse(vm.uiState.value.showPaymentSheet)
+        assertFalse(vm.uiState.value.paymentSheetReady)
+        assertNull(vm.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `handlePaymentResult CANCELED clears sheet without success`() = runTest {
+        fakePaymentRepo.tipResult = Result.success(
+            TipResponseJson(success = true, clientSecret = "pi_tip_cancel"),
+        )
+        val vm = TippingViewModel(fakePaymentRepo)
+        vm.selectPresetTip(5.0)
+        vm.addTip(500)
+        advanceUntilIdle()
+
+        vm.handlePaymentResult(PaymentSheetResultKind.CANCELED)
+
+        assertEquals(PaymentSheetResultKind.CANCELED, vm.uiState.value.paymentSheetResult)
+        assertFalse(vm.uiState.value.showSuccess)
+        assertFalse(vm.uiState.value.showPaymentSheet)
+    }
+
+    @Test
+    fun `handlePaymentResult FAILED clears secret and surfaces error`() = runTest {
+        fakePaymentRepo.tipResult = Result.success(
+            TipResponseJson(success = true, clientSecret = "pi_tip_fail"),
+        )
+        val vm = TippingViewModel(fakePaymentRepo)
+        vm.selectPresetTip(5.0)
+        vm.addTip(500)
+        advanceUntilIdle()
+
+        vm.handlePaymentResult(PaymentSheetResultKind.FAILED, "Card declined")
+
+        assertEquals(PaymentSheetResultKind.FAILED, vm.uiState.value.paymentSheetResult)
+        assertNull(vm.uiState.value.clientSecret)
+        assertNull(vm.uiState.value.paymentSheetConfig)
+        assertEquals("Card declined", vm.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `addTip success without secret leaves sheet untouched`() = runTest {
+        fakePaymentRepo.tipResult = Result.success(
+            TipResponseJson(
+                success = true,
+                data = TransactionJson(id = 7, status = "completed"),
+            ),
+        )
+        val vm = TippingViewModel(fakePaymentRepo)
+        vm.selectPresetTip(5.0)
+        vm.addTip(500)
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.showSuccess)
+        assertFalse(vm.uiState.value.paymentSheetReady)
+        assertFalse(vm.uiState.value.showPaymentSheet)
+    }
+
     // -- RefundViewModel --
 
     @Test
