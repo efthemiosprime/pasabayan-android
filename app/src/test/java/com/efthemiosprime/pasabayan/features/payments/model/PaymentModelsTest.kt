@@ -172,7 +172,7 @@ class PaymentModelsTest {
         assertEquals("RCP-001", receipt.receiptNumber)
         assertTrue(receipt.isShipper)
         assertEquals("Toronto → Montreal", receipt.routeDescription)
-        assertEquals(175.50, receipt.totalAmount, 0.001)
+        assertEquals(175.50, receipt.amount.total, 0.001)
     }
 
     @Test

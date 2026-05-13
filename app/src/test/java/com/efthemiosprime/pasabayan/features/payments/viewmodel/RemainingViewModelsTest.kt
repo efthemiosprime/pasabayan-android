@@ -355,12 +355,19 @@ class RemainingViewModelsTest {
     )
 
     private fun testReceipt(id: Int, url: String? = null) = PaymentReceipt(
-        id = id, receiptNumber = "RCP-$id", receiptUrl = url,
-        date = "2026-03-29", dateFormatted = "Mar 29, 2026",
-        role = "shipper", otherPartyName = "John",
-        totalAmount = 150.0, carrierAmount = null, platformFee = null,
-        tipAmount = null, currency = "cad", status = "completed",
-        pickupCity = "Toronto", deliveryCity = "Montreal", packageTitle = null,
+        id = id,
+        receiptNumber = "RCP-$id",
+        receiptUrl = url,
+        date = "2026-03-29",
+        dateFormatted = "Mar 29, 2026",
+        role = "shipper",
+        otherParty = com.efthemiosprime.pasabayan.features.payments.model.OtherParty(id = 1, name = "John"),
+        amount = com.efthemiosprime.pasabayan.features.payments.model.PaymentReceiptAmount(total = 150.0),
+        delivery = com.efthemiosprime.pasabayan.features.payments.model.PaymentReceiptDelivery(
+            pickupCity = "Toronto",
+            deliveryCity = "Montreal",
+        ),
+        status = "completed",
     )
 }
 

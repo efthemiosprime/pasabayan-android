@@ -2,9 +2,12 @@ package com.efthemiosprime.pasabayan.features.payments.model
 
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PayoutStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionStatus
+import com.efthemiosprime.pasabayan.core.network.payments.OtherPartyJson
 import com.efthemiosprime.pasabayan.core.network.payments.PayoutJson
 import com.efthemiosprime.pasabayan.core.network.payments.PaymentMethodApiJson
 import com.efthemiosprime.pasabayan.core.network.payments.PaymentReceiptJson
+import com.efthemiosprime.pasabayan.core.network.payments.ReceiptAmountJson
+import com.efthemiosprime.pasabayan.core.network.payments.ReceiptDeliveryJson
 import com.efthemiosprime.pasabayan.core.network.payments.RefundInfoJson
 import com.efthemiosprime.pasabayan.core.network.payments.StripeConfigJson
 import com.efthemiosprime.pasabayan.core.network.payments.StripeInfoJson
@@ -144,14 +147,28 @@ fun PaymentReceiptJson.toDomain(): PaymentReceipt = PaymentReceipt(
     date = date,
     dateFormatted = dateFormatted,
     role = role,
-    otherPartyName = otherParty?.name,
-    totalAmount = amount?.total ?: 0.0,
-    carrierAmount = amount?.carrierAmount,
-    platformFee = amount?.platformFee,
-    tipAmount = amount?.tip,
-    currency = amount?.currency ?: "cad",
+    otherParty = otherParty?.toDomain(),
+    amount = amount?.toDomain() ?: PaymentReceiptAmount(total = 0.0),
+    delivery = delivery?.toDomain(),
     status = status,
-    pickupCity = delivery?.pickupCity,
-    deliveryCity = delivery?.deliveryCity,
-    packageTitle = delivery?.packageTitle,
+)
+
+fun OtherPartyJson.toDomain() = OtherParty(
+    id = id,
+    name = name,
+    verificationLevel = verificationLevel,
+)
+
+fun ReceiptAmountJson.toDomain() = PaymentReceiptAmount(
+    total = total,
+    carrierAmount = carrierAmount,
+    platformFee = platformFee,
+    tip = tip,
+    currency = currency,
+)
+
+fun ReceiptDeliveryJson.toDomain() = PaymentReceiptDelivery(
+    pickupCity = pickupCity,
+    deliveryCity = deliveryCity,
+    packageTitle = packageTitle,
 )
