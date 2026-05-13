@@ -534,11 +534,14 @@ Public composables use the **`P` prefix** (Pasabayan) for discoverability and pa
 |-------------------|------|
 | `PButton`, `PButtonStyle`, `PButtonSize`, `PIconPosition` | Button system (primary, secondary, tertiary, destructive, filter, submit) |
 | `PCard`, `PCardVariant` | Flat bordered surface (no shadow) |
+| `PMenuRow` | Tappable menu row — leading icon (24 dp, primary tint) + title + optional 1-line subtitle + optional `trailing` slot + optional `badgeCount` (red `PNotificationBadge`) + RTL-aware chevron. iOS parity with `ProfileMenuItem`. |
+| `PChip` | Small tappable presentation chip — label + optional secondary text + optional leading icon. Capsule shape, surface bg, 1 dp outline. iOS parity with `TopCarrierChip` / `CarrierPopularRouteChip`. For filter UI with selected state use `PFilterChip` instead. |
+| `PAvatar` | Circular Coil 3 `AsyncImage` with initial-letter fallback and `?cb=` cache-busting. iOS parity with `UserProfileAvatar`. |
 | `PMessageBubble`, `PMessageBubbleStyle` | Chat/message bubble container variants (own, other, system) |
 | `PMessageDeliveryStatus`, `PMessageDeliveryState` | Delivery/read receipt status row (sent, delivered, read, read-by-me, unread) |
 | `PasabayanTheme` | Root Material 3 theme + tokens |
 
-**Implemented in `:core:designsystem`:** `POutlinedTextField`, `PFilterChip`, `PScaffold`, `PSnackbar`/`PSnackbarHost`, `PModalBottomSheet`, `PTopBar`, `PDivider`, `PCircularProgress`, `PMessageBubble`, `PMessageDeliveryStatus` (plus existing `PButton`, `PCard`, `ds*` modifiers). **Optional later:** pull-to-refresh wrapper when a screen needs it — see TDD slices below.
+**Implemented in `:core:designsystem`:** `POutlinedTextField`, `PFilterChip`, `PScaffold`, `PSnackbar`/`PSnackbarHost`, `PModalBottomSheet`, `PTopBar`, `PDivider`, `PCircularProgress`, `PMenuRow`, `PChip`, `PAvatar`, `PNotificationBadge`, `PMessageBubble`, `PMessageDeliveryStatus` (plus existing `PButton`, `PCard`, `ds*` modifiers). **Optional later:** pull-to-refresh wrapper when a screen needs it — see TDD slices below.
 
 ### Android naming: sheet vs modal
 

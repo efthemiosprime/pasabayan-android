@@ -64,8 +64,12 @@ class ProfileTabViewModelTest {
         isActiveShipper = true,
     )
 
+    private val fakeVerificationRepo: com.efthemiosprime.pasabayan.features.verification.services.VerificationRepository =
+        io.mockk.mockk(relaxed = true)
+
     private fun createVm() = ProfileTabViewModel(
         profileRepository = fakeRepo,
+        verificationRepository = fakeVerificationRepo,
         appContext = mockContext,
     )
 

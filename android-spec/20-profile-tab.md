@@ -80,36 +80,77 @@ Canonical contract details live in [09-profile-carrier-consent.md](09-profile-ca
 
 Android profile tab content order must remain:
 
-1. `UserProfileHeader`
-2. `RoleSwitcherSection`
-3. `ProfileStatsSection` (role-specific stats)
-4. `CarrierStatusCard` (carrier only)
-5. `VerificationStatusView` (visible for `basic` and `verified`, hidden for `premium`)
-6. `AccountMenuSection`
-7. `PaymentsMenuSection`
-8. `BookingsMenuSection`
-9. `FavoritesMenuSection` (shipper only)
-10. `FeedbackMenuSection`
-11. `SupportMenuSection`
-12. `ProfileActionsSection` (logout + app version footer)
+1. `ProfileUserHeader` — avatar (`PAvatar`, Coil-loaded), name + inline `VerificationBadge`, email, `RoleChip`. Carrier role overlays a top-right `CarrierActiveBadge`.
+2. `ProfileStatsBlock` (role-specific stats)
+3. `CarrierPreferencesCard` (carrier only) — read-only summary of trip defaults: preferred pickup city, max weight (kg), max space (L). Tapping "Edit" opens the existing carrier-profile edit sheet.
+4. `VerificationCallout` (visible for `basic` and `verified`, hidden for `premium`) — tinted info card with three states; see [Verification states](#verification-states-basic--verified--premium).
+5. `AccountMenuSection`
+6. `PaymentsMenuSection`
+7. `BookingsMenuSection`
+8. `FavoritesMenuSection` (shipper only)
+9. `FeedbackMenuSection` — Pending Reviews row + My Ratings row (with inline avg + count preview)
+10. `SupportMenuSection`
+11. Logout button + app version footer
 
-Do not reorder without updating this spec and iOS parity notes.
+The standalone `CarrierStatusCard` was consolidated into the header's `CarrierActiveBadge` (single source of truth). Role-switcher row is intentionally omitted — switching lives in `DashboardTopBar` only. Do not reorder without updating this spec and iOS parity notes.
 
 ## UI behavior and role gating
 
 ### Header
 
-- Show avatar, display name, email/phone summary, current role chip, verification badge.
-- Name/avatar priority: profile record values first; auth user fallback when profile data is absent.
-- Carrier role shows active/inactive carrier status badge.
-- Verification badge CTA:
-  - `basic`: tappable upgrade/verify path.
-  - `verified` / `premium`: non-edit badge display.
+- `PAvatar` (Coil 3 `AsyncImage`, 72 dp) — initials fallback while loading or when URL is null. Cache-busted via `state.avatarCacheBuster` after upload/delete (iOS parity with `UserProfileAvatar.cacheBustedURL`).
+- Avatar URL priority: `state.userProfile?.profilePicture ?? user.avatar`.
+- Name display priority: `state.userProfile?.fullName?.takeIf { it.isNotBlank() } ?: user.name`.
+- Inline `VerificationBadge` (18 dp) next to the name — green check for `verified`, gold star for `premium`, nothing for `basic`. Same composable also renders in `DashboardTopBar`; promotion candidate to `:core:designsystem` if a third consumer emerges.
+- Email below the name (`Body.small`, `onSurfaceVariant`).
+- Static `RoleChip` (identification only — switching lives in `DashboardTopBar`).
+- Carrier role overlays a top-right `CarrierActiveBadge` (green "Active" / gray "Inactive" pill).
 
 ### Role switching
 
-- Role switcher must update tab shell behavior consistently with dashboard role state.
+- Role switching lives **only** in `DashboardTopBar`'s `SwapHoriz` icon — single source of truth. The profile tab does not have its own role switcher.
 - If role activation prerequisites are missing (e.g. carrier setup), show setup/consent flow from [09-profile-carrier-consent.md](09-profile-carrier-consent.md).
+
+### Verification states (basic → verified → premium)
+
+`VerificationCallout` switches on `verificationLevel` + the `premiumStatus.requests[0].status` field:
+
+| Level | Pending premium app? | Renders |
+|-------|---------------------|---------|
+| `basic` | n/a | "Verification" header + Why-verify benefits + **Verify Now** CTA → `PhoneVerificationSheet` |
+| `verified` | none / approved / rejected | "Complete Your Verification" header + premium benefits (gold-star badge, search priority, government-ID verified) + **Verify My Identity** CTA → `PremiumVerificationSheet` |
+| `verified` | `pending` or `under_review` | "Premium Application Submitted" header + Status / Estimated Review / Application ID rows. No CTA. |
+| `premium` | n/a | Renders nothing (`shouldShowVerificationCard` filter). |
+
+All three branches share `VerificationCalloutSurface` chrome (BadgeBlueLight bg + Info-tinted 1 dp border + 16 dp padding) and `VerificationCalloutHeader` (48 dp icon circle + title h4 + caption description). Per-row benefits use `VerificationBenefitRow` with role-coloured icons.
+
+### Carrier preferences card
+
+`CarrierPreferencesCard` (carrier-only) renders three `PDetailRow`s sourced from `state.carrierProfile`:
+
+| Row | Source | Fallback |
+|-----|--------|----------|
+| Preferred Pickup City | `preferredPickupCity?.displayName()` (city + stateCode) | "Not set" |
+| Max Weight Capacity | `maxWeightCapacityKg` formatted as `"%.0f kg"` | "Not set" |
+| Max Space Capacity | `maxSpaceCapacityLiters` formatted as `"%.0f L"` | "Not set" |
+
+A trailing right-aligned "Edit" link (Info color + chevron) routes to the existing carrier-profile edit sheet via the `onEdit` callback.
+
+iOS parity reference: `CarrierPreferencesSection.swift` `.standalone`. Note that iOS also displays a "Usual transport" row sourced from a per-user preference store (`UsualTransportStore`); this row is **deferred** until the Android equivalent is ported.
+
+### Attention signals (badges)
+
+`ProfileAttentionViewModel` exposes `attention: StateFlow<AttentionSignalsJson>` from `GET /api/me/attention`:
+
+| Field | Wired to |
+|-------|----------|
+| `phoneVerificationNeeded` | iOS shows a badge on the Account → Verification menu row. Android does **not** — the dedicated `VerificationCallout` already serves the attention purpose; a redundant badge would compete with it. |
+| `payoutSetupNeeded` | Payments → **Payout Setup** row (`badgeCount = if (true) 1 else 0`); carrier-only so naturally hidden for shippers. |
+| `pendingReviewsCount` | Feedback → **Pending Reviews** row (`badgeCount = pendingReviewsCount`). |
+| `total` | Reserved for an eventual Profile-tab badge in `PasabayanBottomBar` (not yet wired — follow-up). |
+| `degraded` | Server reports partial response. Render existing values best-effort, no error UI. |
+
+Refresh policy: refresh on Profile-tab open via `LaunchedEffect(user, currentRole)`. The VM dedupes in-flight calls via `AtomicBoolean` (no client polling, safe for rapid tab switches). Failures are silenced into prior state — attention is best-effort, never an error UI. Future refresh triggers (after verify / payout / rating completion) call `attentionViewModel.refresh()` directly.
 
 ### Stats
 
@@ -125,40 +166,57 @@ Do not reorder without updating this spec and iOS parity notes.
 
 ### Menus and navigation targets
 
+All rows render via `PMenuRow` from `:core:designsystem` — leading icon (24 dp, primary tint) + title + 1-line subtitle + optional trailing slot + optional unread badge + chevron. iOS parity with `ProfileMenuItem`.
+
 #### Account
 
-| Item | Visibility | Target |
-|------|------------|--------|
-| Personal Info | all roles | Edit user profile sheet/route |
-| Verification | all roles | Verification status/detail route |
-| Vehicle Info | carrier only | Edit carrier profile sheet/route |
-| Shipping Addresses | shipper only | Placeholder / future route (explicitly marked if not implemented) |
+| Item | Visibility | Icon | Target | Badge |
+|------|------------|------|--------|-------|
+| Personal Info | all roles | `Icons.Filled.Person` | `EditUserProfileSheet` | — |
+| Vehicle Info | carrier only | `Icons.Filled.DirectionsCar` | `EditCarrierProfileSheet` | — |
+| Shipping Addresses | shipper only | `Icons.Filled.LocationOn` | placeholder (future route) | — |
+| Account & data | all roles | `Icons.Filled.ManageAccounts` | `AccountManagementSheet` | — |
+
+(Verification is **not** an Account menu row on Android — it's the dedicated `VerificationCallout` above. iOS includes both; the Android consolidation avoids duplicate entry points.)
 
 #### Payments
 
-| Item | Visibility | Target spec |
-|------|------------|-------------|
-| Payment Methods | all roles | [06-payments-stripe.md](06-payments-stripe.md) |
-| Transaction History | all roles | [06-payments-stripe.md](06-payments-stripe.md) |
-| Receipts | all roles | [06-payments-stripe.md](06-payments-stripe.md) |
-| Payout Setup | carrier only | [06-payments-stripe.md](06-payments-stripe.md) |
+| Item | Visibility | Icon | Target spec | Badge |
+|------|------------|------|-------------|-------|
+| Payment Methods | all roles | `Icons.Filled.CreditCard` | [06-payments-stripe.md](06-payments-stripe.md) | — |
+| Transaction History | all roles | `Icons.AutoMirrored.Filled.ListAlt` | [06-payments-stripe.md](06-payments-stripe.md) | — |
+| Receipts | all roles | `Icons.Filled.Receipt` | [06-payments-stripe.md](06-payments-stripe.md) | — |
+| Payout Setup | carrier only | `Icons.Filled.AccountBalance` | [06-payments-stripe.md](06-payments-stripe.md) | `attention.payoutSetupNeeded ? 1 : 0` |
 
 #### Bookings
 
-| Item | Visibility | Target spec |
-|------|------------|-------------|
-| Delivery History | carrier only | [05-bookings-matches.md](05-bookings-matches.md) |
-| Package History | shipper only | [05-bookings-matches.md](05-bookings-matches.md) |
+| Item | Visibility | Icon | Target spec |
+|------|------------|------|-------------|
+| Delivery History | carrier only | `Icons.Filled.History` | [05-bookings-matches.md](05-bookings-matches.md) |
+| Package History | shipper only | `Icons.Filled.History` | [05-bookings-matches.md](05-bookings-matches.md) |
 
-#### Favorites / feedback / support
+#### Favorites
 
-- `FavoritesMenuSection`: shipper only; route to favorites list from [11-favorites-ratings.md](11-favorites-ratings.md).
-- `FeedbackMenuSection`: pending reviews + my ratings; route to ratings surfaces from [11-favorites-ratings.md](11-favorites-ratings.md).
-- `SupportMenuSection`:
-  - Help Center
-  - Settings
-  - Terms and Privacy
-  (targets defined in [12-legal-support-misc.md](12-legal-support-misc.md))
+| Item | Visibility | Icon | Target spec |
+|------|------------|------|-------------|
+| Favorites | shipper only | `Icons.Filled.Star` | [11-favorites-ratings.md](11-favorites-ratings.md) |
+
+#### Feedback (two rows, iOS `FeedbackMenuSection` parity)
+
+| Item | Icon | Target | Badge | Trailing |
+|------|------|--------|-------|----------|
+| Pending Reviews | `Icons.Filled.RateReview` | `RatingsScreen` | `attention.pendingReviewsCount` | — |
+| My Ratings | `Icons.Filled.Star` (gold) | `RatingsScreen` | — | Inline `"%.2f ★ (N)"` from role-specific stats, or "No ratings yet" |
+
+The rating preview source is `state.userStats?.averageRating` + `totalRatings` (shipper) or `state.carrierStats?.ratings?.averageRating` (parsed via `toDoubleOrNull()`) + `totalRatings` (carrier). Helper: `profileRatingPreview(role, state)`.
+
+#### Support
+
+| Item | Icon | Target spec |
+|------|------|-------------|
+| Help Center | `Icons.AutoMirrored.Filled.HelpOutline` | [12-legal-support-misc.md](12-legal-support-misc.md) |
+| Settings | `Icons.Filled.Settings` | [12-legal-support-misc.md](12-legal-support-misc.md) |
+| Terms and Privacy | `Icons.Filled.Description` | [12-legal-support-misc.md](12-legal-support-misc.md) |
 
 ### Actions/footer
 
@@ -167,35 +225,70 @@ Do not reorder without updating this spec and iOS parity notes.
 
 ## Data and state contract
 
-Minimum state required in Android profile tab ViewModel layer:
+Two ViewModels back the profile tab — one for tab data, one for attention signals.
+
+### `ProfileTabViewModel.uiState`
 
 | State | Type | Purpose |
 |------|------|---------|
 | `isLoading` | Boolean | show loading state while profile/bootstrap requests run |
 | `errorMessage` | String? | one-shot or banner/dialog presentation |
 | `successMessage` | String? | save/update success presentation |
-| `userProfile` | UserProfile? | source of profile display values |
-| `carrierProfile` | CarrierProfile? | carrier-specific display/actions |
+| `userProfile` | UserProfileJson? | source of profile display values |
+| `carrierProfile` | CarrierProfileJson? | carrier-specific display + carrier-prefs card |
+| `carrierStats` | CarrierStatsJson? | carrier stats block + My Ratings inline preview |
+| `userStats` | UserStatsDataJson? | shipper stats block + My Ratings inline preview |
+| `premiumStatus` | PremiumVerificationStatusDataJson? | drives the `verified → upgrade vs pending` branch in `VerificationCallout`. Loaded only when `verificationLevel == "verified"` (basic/premium short-circuit). |
 | `avatarCacheBuster` | String | refresh avatar URL after upload/delete |
 | `currentRole` | UserRole | role-gated section rendering |
+| `authUser` | AuthUser? | session user echoed for screens that consume the VM directly |
 
 Behavior requirements:
-- Debounce/guard duplicate profile loads on quick tab revisits.
+- Debounce/guard duplicate profile loads on quick tab revisits via `AtomicBoolean`.
 - Force refresh after avatar upload/delete and profile save events.
 - Keep auth/session user representation in sync after profile updates.
 - Preserve optimistic UX without stale data races (single in-flight loader guard).
+- Premium status fetched after profile load; gated on level so basic/premium users avoid the API call.
+
+### `ProfileAttentionViewModel.attention`
+
+| State | Type | Purpose |
+|------|------|---------|
+| `attention` | StateFlow<AttentionSignalsJson> | drives per-row badges. Defaults to empty signals. |
+
+Behavior requirements:
+- `refresh()` is event-driven only — no client polling.
+- Triggered by `ProfileTabScreen` `LaunchedEffect(user, currentRole)`, after verify/payout/rating completion.
+- `AtomicBoolean` dedupes concurrent `refresh()` calls.
+- Failures are silenced into prior state — attention is best-effort, never an error UI.
 
 ## Design-system conformance (strict)
 
 All profile tab UI must use `:core:designsystem` primitives/tokens per [14-design-system.md](14-design-system.md):
 
-- Use `PScaffold` + `PTopBar` for screen chrome.
-- Use `PCard` and/or profile-specific `P*` section containers for menu blocks.
-- Use `PButton` for logout and section CTAs.
-- Use `PasabayanSpacing`, `PasabayanRadius`, `PasabayanTextStyles`, `PasabayanColors`.
-- Avoid ad-hoc `Color(0x...)`, raw spacing magic numbers, or bespoke component styling in feature module.
+| Primitive | Used by |
+|-----------|---------|
+| `PScaffold` + `PTopBar` | Outer chrome (delegated to `MainTabScreen`). |
+| `PCard` (and `PCardVariant.Large` for the header) | All section containers. |
+| `PMenuRow` | Every menu row across Account / Payments / Bookings / Favorites / Feedback / Support. |
+| `PAvatar` | Header avatar — Coil 3 over OkHttp + initials fallback + `?cb=…` cache-busting. |
+| `PChip` | Top Carriers + Popular Routes (Explore tab). |
+| `PNotificationBadge` | Per-row unread counts (used internally by `PMenuRow`). |
+| `PDetailRow` | Carrier preferences card. |
+| `PButton` | Logout + Verify Now / Apply for Premium CTAs. |
+| `PDivider` | Card sub-section separators. |
+| `PasabayanSpacing` / `PasabayanRadius` / `PasabayanTextStyles` / `PasabayanColors` | All visual values — no raw `dp` / `Color(0x…)`. |
 
-If a reusable profile pattern is missing (e.g., menu row primitive with icon/title/subtitle/chevron), add it to `:core:designsystem` first and document it in [14-design-system.md](14-design-system.md).
+Feature-shared (app module, not designsystem):
+
+| Composable | Location | Used by |
+|-----------|----------|---------|
+| `VerificationBadge` | `features/dashboard/components/` | `DashboardTopBar` + `ProfileUserHeader` (inline next to user name). Promote to `:core:designsystem` when a third consumer emerges. |
+| `CarrierActiveBadge` | `features/dashboard/components/` | `ProfileUserHeader` top-right overlay (carrier role only). |
+| `RoleChip` | `features/dashboard/components/` | `ProfileUserHeader` (static identification only). |
+| `CarrierPreferencesCard` | `features/profile/components/` | Profile tab between stats and verification (carrier role). |
+
+If a reusable profile pattern is missing, add it to `:core:designsystem` first and document it in [14-design-system.md](14-design-system.md). Per `.cursor/rules/ui-reusability-and-inheritance.mdc`, the second cross-feature consumer triggers promotion.
 
 ## Localization
 
@@ -214,14 +307,39 @@ All user-visible copy must be in Android resources (EN + FR) using [18-localizat
 
 ## TDD checklist (profile tab shell)
 
+### Tab-data ViewModel
 - [x] `ProfileTabViewModelTest`: section visibility for shipper vs carrier (`ProfileTabVisibility` + VM tests).
-- [x] `ProfileTabViewModelTest`: verification card visibility for `basic`/`verified`/`premium` (`shouldShowVerificationCard` + tests).
-- [x] `ProfileTabViewModelTest`: profile load dedupe and force-refresh rules (`loadTabData dedupes overlapping calls but allows forceRefresh to bypass`).
-- [x] Avatar cache-buster: `ProfileTabViewModelTest` covers `onAvatarChanged`.
-- [x] `ProfileTabNavigationTest`: each menu row opens the expected route/sheet — covered by `ProfileTabContent` callbacks wired in `MainTabScreen` (Personal info → `EditUserProfileSheet`, Vehicle info → `EditCarrierProfileSheet`, Verification → `PhoneVerificationSheet`, Payments hub, Settings → `SettingsScreen`, Favorites → `FavoritesListScreen`, Pending reviews → `RatingsScreen`, Account & data → `AccountManagementSheet`); placeholder routes (shipping addresses, delivery/package history, help, terms) are explicitly deferred to specs 05 and 12.
-- [ ] `ProfileTabLogoutTest`: logout clears session and returns to auth root — **partial** (androidTest verifies `ProfileTabContent` invokes `onLogout`; end-to-end auth is covered by existing auth flows).
+- [x] `ProfileTabViewModelTest`: verification card visibility for `basic`/`verified`/`premium` (`shouldShowVerificationCard`).
+- [x] `ProfileTabViewModelTest`: profile load dedupe and force-refresh rules.
+- [x] `ProfileTabViewModelTest`: avatar cache-buster (`onAvatarChanged`).
+- [x] `ProfileTabNavigationTest`: menu rows route correctly (callbacks wired in `MainTabScreen`).
 - [x] `ProfileTabUiTest` (androidTest): role-specific sections and logout callback.
-- [ ] `ProfileTabLocalizationTest` (or lint gate): no hardcoded user-facing strings — **deferred** (all profile UI via `stringResource`; add custom lint/CI if desired).
+- [ ] `ProfileTabLogoutTest`: end-to-end auth — partial; existing auth flows cover it.
+- [ ] `ProfileTabLocalizationTest`: no hardcoded user-facing strings — deferred (all profile UI via `stringResource`).
+
+### Attention signals (this iteration)
+- [x] `core:network` — `AttentionSignalsJsonTest`: full payload, defaults, `degraded` flag propagation, unknown extra fields.
+- [x] `app` — `ProfileAttentionViewModelTest`: empty initial state, success updates state, failure preserves prior state, concurrent `refresh()` dedupes to one repo call, `degraded` flag round-trip.
+
+### Avatar (this iteration)
+- [x] `core:designsystem` — `AvatarCacheBusterTest`: null URL → null, blank URL → null, blank cacheBuster passes through, `?cb=…` appended for query-less URLs, `&cb=…` for URLs with existing query.
+
+### Premium upgrade callout (this iteration)
+- [ ] VM-level test for `premiumStatus` branch selection — pre-existing `:app` test source-set bit-rot blocks adding new tests there; tracked as **deferred**, see [Open issues](#open-issues-and-known-deferrals).
+
+### Compose previews (light + dark, all in-file)
+- [x] `PMenuRow` — title-only / icon / icon+subtitle / icon+subtitle+badge / icon+trailing-slot.
+- [x] `PAvatar` — three sizes with no URL → initial fallback.
+- [x] `CarrierPreferencesCard` — populated + empty.
+- [x] `PChip` — three variants (label only, label + secondary, with optional icon).
+- [x] `ProfileTabScreenPreview` — shipper+verified header and carrier+premium+active header in light + dark.
+
+## Open issues and known deferrals
+
+- **Pre-existing `:app` test bit-rot.** `MatchingViewModelTest`, `ChatRepositoryImplTest`, `TripPackageProgressViewModelTest`, and `UserProfilePopoverViewModelTest` reference DTO fields that have since been renamed/added. These pre-date the profile-tab parity work and currently block `./gradlew :app:testDebugUnitTest` from compiling end-to-end. New tests added in this iteration (`ProfileAttentionViewModelTest`) compile cleanly in isolation but cannot be executed via Gradle until the bit-rot is cleaned up in a separate maintenance PR. The DTO + designsystem tests run independently and pass.
+- **Bottom-nav profile badge.** `attention.total` is exposed but not yet wired to `PasabayanBottomBar`'s `badgeCountByRoute` — follow-up.
+- **Carrier preferences "Usual transport" row.** iOS reads from `UsualTransportStore`; no Android equivalent yet. Tracked as a follow-up before carrier preferences spec is fully closed.
+- **Verification badge on Account → Verification row.** iOS shows `phoneVerificationNeeded` as a badge on a menu row; Android intentionally omits this menu entry because the dedicated `VerificationCallout` already serves the attention purpose. Revisit if user testing shows the callout is missed.
 
 ## Exit gate for this spec
 

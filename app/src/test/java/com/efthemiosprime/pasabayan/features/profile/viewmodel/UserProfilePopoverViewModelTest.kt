@@ -30,7 +30,7 @@ class UserProfilePopoverViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var ratingsRepo: FakeRatingsRepository
     private lateinit var favoritesRepo: FakeFavoritesRepository
-    private lateinit var profileRepo: FakeProfileRepository
+    private lateinit var profileRepo: FakePopoverProfileRepository
     private lateinit var viewModel: UserProfilePopoverViewModel
 
     @Before
@@ -38,7 +38,7 @@ class UserProfilePopoverViewModelTest {
         Dispatchers.setMain(testDispatcher)
         ratingsRepo = FakeRatingsRepository()
         favoritesRepo = FakeFavoritesRepository()
-        profileRepo = FakeProfileRepository()
+        profileRepo = FakePopoverProfileRepository()
         viewModel = UserProfilePopoverViewModel(
             ratingsRepository = ratingsRepo,
             favoritesRepository = favoritesRepo,
@@ -246,7 +246,7 @@ class UserProfilePopoverViewModelTest {
  * Local focused fake — only `fetchCarrierStats` is exercised by the popover VM.
  * Other [ProfileRepository] methods throw to flag accidental dependencies.
  */
-private class FakeProfileRepository : ProfileRepository {
+private class FakePopoverProfileRepository : ProfileRepository {
     var carrierStatsResult: Result<com.efthemiosprime.pasabayan.core.network.profile.CarrierStatsJson?> =
         Result.success(null)
     var carrierStatsCallCount: Int = 0
