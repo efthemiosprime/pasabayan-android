@@ -39,6 +39,12 @@
     <string name="profile_carrier_status_inactive">Inactive</string>
     <string name="profile_verification_title">Verification</string>
     <string name="profile_verification_subtitle">Upgrade to verify your account</string>
+    <string name="profile_verification_description_basic">Complete phone verification to get verified</string>
+    <string name="profile_verification_why_verify">Why verify?</string>
+    <string name="profile_verification_benefit_trust">Build trust with other users</string>
+    <string name="profile_verification_benefit_priority">Get priority in search results</string>
+    <string name="profile_verification_benefit_features">Unlock booking and payout features</string>
+    <string name="profile_verification_action_verify">Verify Now</string>
     <string name="profile_menu_account">Account</string>
     <string name="profile_menu_personal_info">Personal info</string>
     <string name="profile_menu_verification">Verification</string>

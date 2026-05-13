@@ -3,6 +3,7 @@ package com.efthemiosprime.pasabayan.features.profile.ui
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,12 +15,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.R
+import com.efthemiosprime.pasabayan.core.designsystem.PasabayanBorder
+import com.efthemiosprime.pasabayan.core.designsystem.PasabayanColors
+import com.efthemiosprime.pasabayan.core.designsystem.PasabayanRadius
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
@@ -182,7 +190,7 @@ fun ProfileTabContent(
                 Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
                     Text(
                         text = stringResource(R.string.profile_carrier_status_title),
-                        style = PasabayanTextStyles.Heading.h5,
+                        style = PasabayanTextStyles.Heading.h4,
                     )
                     val active = (state.carrierProfile?.carrierStatus == "active") || user.isActiveCarrier
                     Text(
@@ -197,27 +205,12 @@ fun ProfileTabContent(
             }
         }
         if (showVerify) {
-            PCard(
+            VerificationCallout(
+                onVerify = onOpenVerification,
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag(ProfileTestTags.Verification),
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
-                    Text(
-                        text = stringResource(R.string.profile_verification_title),
-                        style = PasabayanTextStyles.Heading.h5,
-                    )
-                    Text(
-                        text = stringResource(R.string.profile_verification_subtitle),
-                        style = PasabayanTextStyles.Body.small,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    PButton(
-                        text = stringResource(R.string.profile_menu_verification),
-                        onClick = onOpenVerification,
-                    )
-                }
-            }
+            )
         }
         ProfileMenuSection(
             title = stringResource(R.string.profile_menu_account),
@@ -394,7 +387,7 @@ private fun ProfileStatsBlock(
         Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
             Text(
                 text = stringResource(R.string.profile_stats_title),
-                style = PasabayanTextStyles.Heading.h5,
+                style = PasabayanTextStyles.Heading.h4,
             )
             Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
                 when (role) {
@@ -435,6 +428,109 @@ private fun StatLine(stringRes: Int, value: String) {
     }
 }
 
+/**
+ * Attention-grabbing verification call-to-action — iOS parity with the basic-state
+ * `statusCard` + `benefitsCard` combo in `VerificationStatusView.swift`. Tinted info
+ * background with a colored border distinguishes this from the neutral menu cards
+ * around it; "Why verify?" benefits + a full-width CTA make the action obvious.
+ */
+@Composable
+private fun VerificationCallout(
+    onVerify: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(PasabayanRadius.card),
+        color = PasabayanColors.BadgeBlueLight,
+        border = BorderStroke(PasabayanBorder.width, PasabayanColors.Info.copy(alpha = 0.3f)),
+    ) {
+        Column(
+            modifier = Modifier.padding(PasabayanSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(VerificationIconCircleSize)
+                        .clip(CircleShape)
+                        .background(PasabayanColors.Info.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.VerifiedUser,
+                        contentDescription = null,
+                        tint = PasabayanColors.Info,
+                        modifier = Modifier.size(VerificationIconGlyphSize),
+                    )
+                }
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+                ) {
+                    Text(
+                        text = stringResource(R.string.profile_verification_title),
+                        style = PasabayanTextStyles.Heading.h4,
+                    )
+                    Text(
+                        text = stringResource(R.string.profile_verification_description_basic),
+                        style = PasabayanTextStyles.Body.small,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs)) {
+                Text(
+                    text = stringResource(R.string.profile_verification_why_verify),
+                    style = PasabayanTextStyles.Body.medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                VerificationBenefitRow(
+                    text = stringResource(R.string.profile_verification_benefit_trust),
+                )
+                VerificationBenefitRow(
+                    text = stringResource(R.string.profile_verification_benefit_priority),
+                )
+                VerificationBenefitRow(
+                    text = stringResource(R.string.profile_verification_benefit_features),
+                )
+            }
+            PButton(
+                text = stringResource(R.string.profile_verification_action_verify),
+                onClick = onVerify,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun VerificationBenefitRow(text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Check,
+            contentDescription = null,
+            tint = PasabayanColors.Info,
+            modifier = Modifier.size(VerificationBenefitIconSize),
+        )
+        Text(
+            text = text,
+            style = PasabayanTextStyles.Body.small,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+}
+
+private val VerificationIconCircleSize = 48.dp
+private val VerificationIconGlyphSize = 26.dp
+private val VerificationBenefitIconSize = 16.dp
+
 @Composable
 private fun ProfileMenuSection(
     title: String,
@@ -443,7 +539,7 @@ private fun ProfileMenuSection(
 ) {
     PCard(modifier = Modifier.fillMaxWidth().testTag(testTag)) {
         Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.md)) {
-            Text(text = title, style = PasabayanTextStyles.Heading.h5)
+            Text(text = title, style = PasabayanTextStyles.Heading.h4)
             content()
         }
     }

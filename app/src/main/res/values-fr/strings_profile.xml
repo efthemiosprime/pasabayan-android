@@ -40,6 +40,12 @@
     <string name="profile_carrier_status_inactive">Inactif</string>
     <string name="profile_verification_title">Vérification</string>
     <string name="profile_verification_subtitle">Passez à la vérification de votre compte</string>
+    <string name="profile_verification_description_basic">Complétez la vérification du téléphone pour être vérifié</string>
+    <string name="profile_verification_why_verify">Pourquoi vérifier ?</string>
+    <string name="profile_verification_benefit_trust">Établissez la confiance avec les autres utilisateurs</string>
+    <string name="profile_verification_benefit_priority">Soyez prioritaire dans les résultats</string>
+    <string name="profile_verification_benefit_features">Débloquez les réservations et paiements</string>
+    <string name="profile_verification_action_verify">Vérifier maintenant</string>
     <string name="profile_menu_account">Compte</string>
     <string name="profile_menu_personal_info">Renseignements personnels</string>
     <string name="profile_menu_verification">Vérification</string>
