@@ -97,6 +97,15 @@
     <string name="payments_payout_disabled">Désactivé</string>
     <string name="payments_payout_connected_on">Connecté le %1$s</string>
 
+    <!-- Payment-method card menu + remove confirm dialog -->
+    <string name="payments_methods_default_badge">Par défaut</string>
+    <string name="payments_methods_set_default">Définir par défaut</string>
+    <string name="payments_methods_remove">Supprimer</string>
+    <string name="payments_methods_remove_confirm_title">Supprimer ce mode de paiement?</string>
+    <string name="payments_methods_remove_confirm_body">La carte sera retirée immédiatement de votre compte. Vous pourrez la rajouter plus tard.</string>
+    <string name="payments_methods_remove_confirm_cancel">Annuler</string>
+    <string name="payments_methods_more_options">Plus d\'options</string>
+
     <!-- Payout state labels — mirror PayoutStatus enum cases. -->
     <string name="payments_payout_state_pending">En attente</string>
     <string name="payments_payout_state_processing">En cours</string>

@@ -97,6 +97,15 @@
     <string name="payments_payout_disabled">Disabled</string>
     <string name="payments_payout_connected_on">Connected on %1$s</string>
 
+    <!-- Payment-method card menu + remove confirm dialog -->
+    <string name="payments_methods_default_badge">Default</string>
+    <string name="payments_methods_set_default">Set as default</string>
+    <string name="payments_methods_remove">Remove</string>
+    <string name="payments_methods_remove_confirm_title">Remove payment method?</string>
+    <string name="payments_methods_remove_confirm_body">The card will be removed from your account immediately. You can add it again later.</string>
+    <string name="payments_methods_remove_confirm_cancel">Cancel</string>
+    <string name="payments_methods_more_options">More options</string>
+
     <!-- Payout state labels — mirror PayoutStatus enum cases (distinct from payments_payout_status_*
          which are Stripe-Connect screen states). -->
     <string name="payments_payout_state_pending">Pending</string>
