@@ -300,6 +300,42 @@ class CarrierTripsViewModelTest {
     }
 
     @Test
+    fun `loadTripMatches caches matches per trip id`() = runTest {
+        fakeRepo.tripMatchesResult = Result.success(
+            listOf(
+                testTripMatch(id = 20, status = MatchStatus.DELIVERED),
+                testTripMatch(id = 21, status = MatchStatus.IN_TRANSIT),
+            ),
+        )
+
+        viewModel.loadTripMatches(tripId = 7)
+        advanceUntilIdle()
+
+        val cached = viewModel.uiState.value.tripMatchesByTripId[7]
+        assertEquals(2, cached?.size)
+        assertEquals(MatchStatus.DELIVERED, cached?.first()?.matchStatus)
+        assertEquals(listOf(7), fakeRepo.loadedTripMatchIds)
+    }
+
+    @Test
+    fun `loadTripMatches leaves prior cache intact on failure`() = runTest {
+        // First load succeeds and caches a list for trip 9.
+        fakeRepo.tripMatchesResult = Result.success(
+            listOf(testTripMatch(id = 30, status = MatchStatus.DELIVERED)),
+        )
+        viewModel.loadTripMatches(tripId = 9)
+        advanceUntilIdle()
+
+        // Re-entry fails — cached list must survive (no flicker on the details sheet).
+        fakeRepo.tripMatchesResult = Result.failure(Exception("Boom"))
+        viewModel.loadTripMatches(tripId = 9)
+        advanceUntilIdle()
+
+        val cached = viewModel.uiState.value.tripMatchesByTripId[9]
+        assertEquals(1, cached?.size)
+    }
+
+    @Test
     fun `updateTripDetails sends weight and notes and updates state`() = runTest {
         val existing = testTrip(7, TripStatus.ACTIVE).copy(availableWeightKg = 20.0, specialNotes = "Old")
         val updated = existing.copy(availableWeightKg = 12.5, specialNotes = "New")

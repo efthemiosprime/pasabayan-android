@@ -6,6 +6,7 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.core.network.trips.TripUpdateRequestJson
 import com.efthemiosprime.pasabayan.features.trips.model.Trip
+import com.efthemiosprime.pasabayan.features.trips.model.TripMatchPackage
 import com.efthemiosprime.pasabayan.features.trips.services.TripsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,14 @@ data class CarrierTripsUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val statusFilter: TripStatus? = null,
+    /**
+     * Matches loaded per trip id for the details sheet's All / Remaining /
+     * Delivered chip counts and the per-match cards. Lazily populated by
+     * [CarrierTripsViewModel.loadTripMatches] when a trip details sheet
+     * opens. iOS parity: `TripDetailsView.loadTripMatches()` sets
+     * `tripMatches` on view appear.
+     */
+    val tripMatchesByTripId: Map<Int, List<TripMatchPackage>> = emptyMap(),
 ) {
     /** Filtered trips: when filter is null, hides cancelled by default. */
     val filteredTrips: List<Trip>
@@ -67,6 +76,23 @@ class CarrierTripsViewModel @Inject constructor(
 
     fun setStatusFilter(status: TripStatus?) {
         _uiState.update { it.copy(statusFilter = status) }
+    }
+
+    /**
+     * Loads matches for [tripId] into [CarrierTripsUiState.tripMatchesByTripId]
+     * so the carrier trip-details sheet can render All / Remaining / Delivered
+     * counts and the per-match cards. Idempotent re-entry on failure leaves
+     * any previously cached list intact. iOS parity:
+     * `TripDetailsView.loadTripMatches()`.
+     */
+    fun loadTripMatches(tripId: Int) {
+        viewModelScope.launch {
+            tripsRepository.loadTripMatches(tripId).onSuccess { matches ->
+                _uiState.update { state ->
+                    state.copy(tripMatchesByTripId = state.tripMatchesByTripId + (tripId to matches))
+                }
+            }
+        }
     }
 
     fun deleteTrip(tripId: Int) {

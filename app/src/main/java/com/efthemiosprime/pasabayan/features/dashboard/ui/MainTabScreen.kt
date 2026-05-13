@@ -938,6 +938,9 @@ fun MainTabScreen(
         carrierTripsState.trips.firstOrNull { it.id == id }
     }
     selectedCarrierTrip?.let { trip ->
+        LaunchedEffect(trip.id) {
+            carrierTripsViewModel.loadTripMatches(trip.id)
+        }
         com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
             onDismissRequest = { selectedCarrierTripId = null },
         ) {
@@ -959,6 +962,7 @@ fun MainTabScreen(
                 onUpdateStatus = { targetStatus ->
                     carrierTripsViewModel.suspendUpdateTripStatus(trip.id, targetStatus)
                 },
+                tripMatches = carrierTripsState.tripMatchesByTripId[trip.id].orEmpty(),
             )
         }
     }

@@ -20,6 +20,8 @@ object PasabayanColors {
     val BadgeRust = Color(0xFFC13515)
     val BadgeGray = Color(0xFF8E8E93)
     val BadgeGold = Color(0xFFFFD700)
+    /** iOS `Color.pink` — tip badge accent. */
+    val BadgePink = Color(0xFFFF2D55)
 
     /** iOS `OnboardingTheme.primary` / carrier accent — not the app-wide M3 primary. */
     val OnboardingPrimary = Color(0xFF4A6CF7)
@@ -58,6 +60,7 @@ object PasabayanColors {
     val BadgeRedLight = Color(0x1AC13515)
     val BadgeGoldLight = Color(0x1AFFD700)
     val BadgeGrayLight = Color(0x1A8E8E93)
+    val BadgePinkLight = Color(0x1AFF2D55)
 
     val Border = Color(0xFFC6C6C8)
     val OverlayScrim = Color(0x4D000000)
