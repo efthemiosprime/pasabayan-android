@@ -3,6 +3,7 @@ package com.efthemiosprime.pasabayan.features.bookings.model
 import com.efthemiosprime.pasabayan.core.network.bookings.CancelMatchResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.CarrierRequestResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.DeliveryMatchJson
+import com.efthemiosprime.pasabayan.core.network.bookings.MatchCompatibilityJson
 import com.efthemiosprime.pasabayan.core.network.bookings.RefundResultJson
 import com.efthemiosprime.pasabayan.core.network.bookings.ShipperRequestResponseJson
 import com.efthemiosprime.pasabayan.features.bookings.model.nested.CarrierTripInfo
@@ -64,6 +65,7 @@ fun CarrierRequestResponseJson.toDomain(): RequestMatchResult? {
             negotiationNeeded = negotiationNeeded ?: false,
             isCounterOffer = isCounterOffer ?: false,
         ),
+        compatibility = compatibility?.toDomain(),
     )
 }
 
@@ -76,8 +78,19 @@ fun ShipperRequestResponseJson.toDomain(): RequestMatchResult? {
             negotiationNeeded = negotiationNeeded ?: false,
             isCounterOffer = isCounterOffer ?: false,
         ),
+        compatibility = compatibility?.toDomain(),
     )
 }
+
+fun MatchCompatibilityJson.toDomain(): MatchCompatibility = MatchCompatibility(
+    weightOverCapacity = weightOverCapacity,
+    packageWeightKg = packageWeightKg,
+    tripAvailableWeightKg = tripAvailableWeightKg,
+    overageKg = overageKg,
+    datesMisaligned = datesMisaligned,
+    routeUncertain = routeUncertain,
+    requiresCapacityAcknowledgment = requiresCapacityAcknowledgment,
+)
 
 fun RefundResultJson.toDomain(): RefundResult = RefundResult(
     processed = processed,

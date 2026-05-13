@@ -11,9 +11,14 @@ import kotlinx.serialization.Serializable
  * Mirrors iOS `CarrierRequestResponse` (commit 8c9646d).
  *
  * Carries the resulting DeliveryMatch alongside negotiation metadata:
- *  - `warnings`: pickup/delivery compatibility warnings to surface in UI
+ *  - `warnings`: pickup/delivery compatibility warnings to surface in UI.
+ *    Weight overage is NOT present here anymore (advisory-weight policy);
+ *    use [compatibility] for that.
  *  - `negotiationNeeded`: backend hint that price or details need follow-up
  *  - `isCounterOffer`: envelope-level flag reflecting the submitted body
+ *  - `compatibility`: structured weight/date/route flags (see
+ *    [MatchCompatibilityJson]). Present on 201 success of request +
+ *    counter-offer; also echoed in the 422 capacity-ack-required body.
  */
 @Serializable
 data class CarrierRequestResponseJson(
@@ -23,6 +28,7 @@ data class CarrierRequestResponseJson(
     val warnings: List<String>? = null,
     @SerialName("negotiation_needed") val negotiationNeeded: Boolean? = null,
     @SerialName("is_counter_offer") val isCounterOffer: Boolean? = null,
+    val compatibility: MatchCompatibilityJson? = null,
 )
 
 // -- Shipper request envelope --
@@ -39,6 +45,28 @@ data class ShipperRequestResponseJson(
     val warnings: List<String>? = null,
     @SerialName("negotiation_needed") val negotiationNeeded: Boolean? = null,
     @SerialName("is_counter_offer") val isCounterOffer: Boolean? = null,
+    val compatibility: MatchCompatibilityJson? = null,
+)
+
+// -- Inline match compatibility (advisory-weight policy) --
+
+/**
+ * Structured compatibility flags returned as a sibling of `data` on the
+ * request and counter-offer endpoints, and echoed in the 422 body when the
+ * server requires explicit overage acknowledgment.
+ *
+ * Distinct from [CompatibilityResponseJson] below — that envelope is for the
+ * standalone compatibility lookup endpoint and carries a different shape.
+ */
+@Serializable
+data class MatchCompatibilityJson(
+    @SerialName("weight_over_capacity") val weightOverCapacity: Boolean = false,
+    @SerialName("package_weight_kg") val packageWeightKg: Double? = null,
+    @SerialName("trip_available_weight_kg") val tripAvailableWeightKg: Double? = null,
+    @SerialName("overage_kg") val overageKg: Double? = null,
+    @SerialName("dates_misaligned") val datesMisaligned: Boolean = false,
+    @SerialName("route_uncertain") val routeUncertain: Boolean = false,
+    @SerialName("requires_capacity_acknowledgment") val requiresCapacityAcknowledgment: Boolean = false,
 )
 
 // -- Location tracking --

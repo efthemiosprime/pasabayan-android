@@ -11,6 +11,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -256,12 +257,12 @@ class BookingsRepositoryImplTest {
     @Test
     fun `shipperRequestTrip returns RequestMatchResult with negotiation metadata`() = runBlocking {
         server.enqueue(
-            MockResponse().setResponseCode(200).setBody(
+            MockResponse().setResponseCode(201).setBody(
                 """{
                     "success": true,
                     "message": "Counter-offer submitted",
                     "data": {"id": 301, "match_status": "shipper_requested", "agreed_price": "135.00"},
-                    "warnings": ["over_capacity"],
+                    "warnings": ["dates_misaligned"],
                     "negotiation_needed": true,
                     "is_counter_offer": true
                 }""",
@@ -280,9 +281,63 @@ class BookingsRepositoryImplTest {
         assertTrue(result.isSuccess)
         val payload = result.getOrThrow()
         assertEquals(301, payload.match.id)
-        assertEquals(listOf("over_capacity"), payload.negotiation.warnings)
+        assertEquals(listOf("dates_misaligned"), payload.negotiation.warnings)
         assertTrue(payload.negotiation.negotiationNeeded)
         assertTrue(payload.negotiation.isCounterOffer)
+    }
+
+    @Test
+    fun `shipperRequestTrip surfaces compatibility when over capacity`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(201).setBody(
+                """{
+                    "success": true,
+                    "message": "Trip request sent to carrier successfully",
+                    "data": {"id": 301, "match_status": "shipper_requested", "agreed_price": "135.00"},
+                    "compatibility": {
+                        "weight_over_capacity": true,
+                        "package_weight_kg": 2.0,
+                        "trip_available_weight_kg": 1.0,
+                        "overage_kg": 1.0,
+                        "dates_misaligned": false,
+                        "route_uncertain": false,
+                        "requires_capacity_acknowledgment": true
+                    },
+                    "is_counter_offer": false
+                }""",
+            ),
+        )
+
+        val result = repo.shipperRequestTrip(
+            packageId = 10, tripId = 1, offeredPrice = 135.0, message = null,
+        )
+        assertTrue(result.isSuccess)
+        val compat = result.getOrThrow().compatibility
+        assertNotNull(compat)
+        assertTrue(compat!!.weightOverCapacity)
+        assertTrue(compat.requiresCapacityAcknowledgment)
+        assertEquals(2.0, compat.packageWeightKg!!, 0.001)
+        assertEquals(1.0, compat.tripAvailableWeightKg!!, 0.001)
+        assertEquals(1.0, compat.overageKg!!, 0.001)
+    }
+
+    @Test
+    fun `shipperRequestTrip leaves compatibility null when envelope omits it`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(201).setBody(
+                """{
+                    "success": true,
+                    "message": "OK",
+                    "data": {"id": 302, "match_status": "shipper_requested", "agreed_price": "100.00"}
+                }""",
+            ),
+        )
+
+        val result = repo.shipperRequestTrip(
+            packageId = 10, tripId = 1, offeredPrice = 100.0, message = null,
+        )
+        assertTrue(result.isSuccess)
+        assertNull(result.getOrThrow().compatibility)
     }
 
     @Test
