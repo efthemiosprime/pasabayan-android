@@ -244,6 +244,133 @@ class PaymentViewModelsTest {
         assertEquals("pm_2", vm.uiState.value.paymentMethods.first().id)
         assertTrue(vm.uiState.value.paymentMethods.first().isDefault)
     }
+
+    // -- Add-card flow (B1) --
+
+    @Test
+    fun `prepareAddPaymentMethod success transitions to Ready and stores secrets`() = runTest {
+        fakeMethodsRepo.setupResult = Result.success(
+            SetupIntentDataJson(
+                clientSecret = "seti_secret_abc",
+                customerId = "cus_123",
+                ephemeralKey = "ek_456",
+            ),
+        )
+        val vm = PaymentMethodsViewModel(fakeMethodsRepo)
+        vm.prepareAddPaymentMethod()
+        advanceUntilIdle()
+
+        assertEquals(AddCardFlowState.Ready, vm.uiState.value.addCardFlowState)
+        assertEquals("seti_secret_abc", vm.uiState.value.setupIntentClientSecret)
+        assertEquals("cus_123", vm.uiState.value.setupIntentCustomerId)
+        assertEquals("ek_456", vm.uiState.value.setupIntentEphemeralKey)
+        assertNull(vm.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `prepareAddPaymentMethod failure sets Failed and surfaces error`() = runTest {
+        fakeMethodsRepo.setupResult = Result.failure(Exception("Stripe down"))
+        val vm = PaymentMethodsViewModel(fakeMethodsRepo)
+        vm.prepareAddPaymentMethod()
+        advanceUntilIdle()
+
+        val state = vm.uiState.value.addCardFlowState
+        assertTrue("expected Failed got $state", state is AddCardFlowState.Failed)
+        assertEquals("Stripe down", (state as AddCardFlowState.Failed).message)
+        assertEquals("Stripe down", vm.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `prepareAddPaymentMethod empty secret strings are normalised to null`() = runTest {
+        fakeMethodsRepo.setupResult = Result.success(
+            SetupIntentDataJson(clientSecret = "", customerId = "", ephemeralKey = ""),
+        )
+        val vm = PaymentMethodsViewModel(fakeMethodsRepo)
+        vm.prepareAddPaymentMethod()
+        advanceUntilIdle()
+
+        assertNull(vm.uiState.value.setupIntentClientSecret)
+        assertNull(vm.uiState.value.setupIntentCustomerId)
+        assertNull(vm.uiState.value.setupIntentEphemeralKey)
+    }
+
+    @Test
+    fun `onAddCardCompleted transitions to Success, closes sheet, clears secrets, reloads`() = runTest {
+        fakeMethodsRepo.setupResult = Result.success(
+            SetupIntentDataJson(clientSecret = "s", customerId = "c", ephemeralKey = "e"),
+        )
+        fakeMethodsRepo.loadResult = Result.success(
+            listOf(PaymentMethodDisplay("pm_new", "visa", "4242", 12, 2030, false)),
+        )
+        val vm = PaymentMethodsViewModel(fakeMethodsRepo)
+        vm.prepareAddPaymentMethod()
+        advanceUntilIdle()
+        vm.showAddCardSheet(true)
+
+        vm.onAddCardCompleted()
+        advanceUntilIdle()
+
+        assertEquals(AddCardFlowState.Success, vm.uiState.value.addCardFlowState)
+        assertFalse(vm.uiState.value.showAddCardSheet)
+        assertNull(vm.uiState.value.setupIntentClientSecret)
+        assertEquals("Payment method added", vm.uiState.value.successMessage)
+        // List reloaded with the newly-added card.
+        assertEquals(1, vm.uiState.value.paymentMethods.size)
+        assertEquals("pm_new", vm.uiState.value.paymentMethods[0].id)
+    }
+
+    @Test
+    fun `onAddCardCanceled returns to Idle and clears secrets`() = runTest {
+        fakeMethodsRepo.setupResult = Result.success(
+            SetupIntentDataJson(clientSecret = "s", customerId = "c", ephemeralKey = "e"),
+        )
+        val vm = PaymentMethodsViewModel(fakeMethodsRepo)
+        vm.prepareAddPaymentMethod()
+        advanceUntilIdle()
+        vm.showAddCardSheet(true)
+
+        vm.onAddCardCanceled()
+
+        assertEquals(AddCardFlowState.Idle, vm.uiState.value.addCardFlowState)
+        assertFalse(vm.uiState.value.showAddCardSheet)
+        assertNull(vm.uiState.value.setupIntentClientSecret)
+    }
+
+    @Test
+    fun `onAddCardSheetPresented transitions Ready to Presenting`() = runTest {
+        fakeMethodsRepo.setupResult = Result.success(
+            SetupIntentDataJson(clientSecret = "s", customerId = "c", ephemeralKey = "e"),
+        )
+        val vm = PaymentMethodsViewModel(fakeMethodsRepo)
+        vm.prepareAddPaymentMethod()
+        advanceUntilIdle()
+
+        vm.onAddCardSheetPresented()
+        assertEquals(AddCardFlowState.Presenting, vm.uiState.value.addCardFlowState)
+    }
+
+    @Test
+    fun `onAddCardFailed sets Failed with message`() = runTest {
+        val vm = PaymentMethodsViewModel(fakeMethodsRepo)
+        vm.onAddCardFailed("Card declined")
+
+        val state = vm.uiState.value.addCardFlowState
+        assertTrue(state is AddCardFlowState.Failed)
+        assertEquals("Card declined", (state as AddCardFlowState.Failed).message)
+        assertEquals("Card declined", vm.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `showAddCardSheet toggles flag`() = runTest {
+        val vm = PaymentMethodsViewModel(fakeMethodsRepo)
+        assertFalse(vm.uiState.value.showAddCardSheet)
+
+        vm.showAddCardSheet(true)
+        assertTrue(vm.uiState.value.showAddCardSheet)
+
+        vm.showAddCardSheet(false)
+        assertFalse(vm.uiState.value.showAddCardSheet)
+    }
 }
 
 // -- Fakes --

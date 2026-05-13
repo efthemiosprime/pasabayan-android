@@ -96,4 +96,12 @@
     <string name="payments_payout_enabled">Enabled</string>
     <string name="payments_payout_disabled">Disabled</string>
     <string name="payments_payout_connected_on">Connected on %1$s</string>
+
+    <!-- Refund reason presets — keys mirror RefundReason enum cases. -->
+    <string name="payments_refund_reason_damaged">Package was damaged during delivery</string>
+    <string name="payments_refund_reason_not_delivered">Package was never delivered</string>
+    <string name="payments_refund_reason_wrong_item">Wrong item was delivered</string>
+    <string name="payments_refund_reason_late_delivery">Delivery was significantly late</string>
+    <string name="payments_refund_reason_partial_delivery">Only partial items were delivered</string>
+    <string name="payments_refund_reason_other">Other</string>
 </resources>

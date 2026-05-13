@@ -96,4 +96,12 @@
     <string name="payments_payout_enabled">Activé</string>
     <string name="payments_payout_disabled">Désactivé</string>
     <string name="payments_payout_connected_on">Connecté le %1$s</string>
+
+    <!-- Refund reason presets — keys mirror RefundReason enum cases. -->
+    <string name="payments_refund_reason_damaged">Le colis a été endommagé pendant la livraison</string>
+    <string name="payments_refund_reason_not_delivered">Le colis n\'a jamais été livré</string>
+    <string name="payments_refund_reason_wrong_item">Le mauvais article a été livré</string>
+    <string name="payments_refund_reason_late_delivery">La livraison a été très en retard</string>
+    <string name="payments_refund_reason_partial_delivery">Seuls certains articles ont été livrés</string>
+    <string name="payments_refund_reason_other">Autre</string>
 </resources>

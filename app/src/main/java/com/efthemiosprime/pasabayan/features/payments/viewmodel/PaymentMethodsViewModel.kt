@@ -12,12 +12,27 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/** Lifecycle of the "add new card" flow surfaced via [AddPaymentMethodSheet] (D2) + Stripe PaymentSheet. */
+sealed interface AddCardFlowState {
+    object Idle : AddCardFlowState
+    object Preparing : AddCardFlowState
+    object Ready : AddCardFlowState
+    object Presenting : AddCardFlowState
+    object Success : AddCardFlowState
+    data class Failed(val message: String) : AddCardFlowState
+}
+
 data class PaymentMethodsUiState(
     val paymentMethods: List<PaymentMethodDisplay> = emptyList(),
     val defaultPaymentMethodId: String? = null,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val successMessage: String? = null,
+    val addCardFlowState: AddCardFlowState = AddCardFlowState.Idle,
+    val showAddCardSheet: Boolean = false,
+    val setupIntentClientSecret: String? = null,
+    val setupIntentCustomerId: String? = null,
+    val setupIntentEphemeralKey: String? = null,
 )
 
 @HiltViewModel
@@ -115,6 +130,85 @@ class PaymentMethodsViewModel @Inject constructor(
 
     fun clearMessages() {
         _uiState.update { it.copy(errorMessage = null, successMessage = null) }
+    }
+
+    // -- Add-card flow (B1) --
+    // iOS mirror: PaymentMethodsViewModel.swift prepareAddPaymentMethod / showCardForm
+
+    fun prepareAddPaymentMethod() {
+        _uiState.update {
+            it.copy(
+                addCardFlowState = AddCardFlowState.Preparing,
+                errorMessage = null,
+            )
+        }
+        viewModelScope.launch {
+            paymentMethodsRepository.createSetupIntent().fold(
+                onSuccess = { data ->
+                    _uiState.update {
+                        it.copy(
+                            addCardFlowState = AddCardFlowState.Ready,
+                            setupIntentClientSecret = data.clientSecret.takeIf { s -> s.isNotEmpty() },
+                            setupIntentCustomerId = data.customerId.takeIf { s -> s.isNotEmpty() },
+                            setupIntentEphemeralKey = data.ephemeralKey.takeIf { s -> s.isNotEmpty() },
+                        )
+                    }
+                },
+                onFailure = { e ->
+                    val msg = e.message ?: "Failed to set up payment method"
+                    _uiState.update {
+                        it.copy(
+                            addCardFlowState = AddCardFlowState.Failed(msg),
+                            errorMessage = msg,
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    fun showAddCardSheet(show: Boolean) {
+        _uiState.update { it.copy(showAddCardSheet = show) }
+    }
+
+    fun onAddCardSheetPresented() {
+        _uiState.update { it.copy(addCardFlowState = AddCardFlowState.Presenting) }
+    }
+
+    fun onAddCardCompleted() {
+        _uiState.update {
+            it.copy(
+                addCardFlowState = AddCardFlowState.Success,
+                showAddCardSheet = false,
+                setupIntentClientSecret = null,
+                setupIntentCustomerId = null,
+                setupIntentEphemeralKey = null,
+                successMessage = "Payment method added",
+                errorMessage = null,
+            )
+        }
+        loadPaymentMethods()
+    }
+
+    fun onAddCardCanceled() {
+        _uiState.update {
+            it.copy(
+                addCardFlowState = AddCardFlowState.Idle,
+                showAddCardSheet = false,
+                setupIntentClientSecret = null,
+                setupIntentCustomerId = null,
+                setupIntentEphemeralKey = null,
+            )
+        }
+    }
+
+    fun onAddCardFailed(message: String) {
+        _uiState.update {
+            it.copy(
+                addCardFlowState = AddCardFlowState.Failed(message),
+                errorMessage = message,
+            )
+        }
     }
 
     private fun applyDefaultAndSort(
