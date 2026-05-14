@@ -54,6 +54,12 @@ object PackageSubmitRequestMapper {
             direction = payload.directionCode,
             recipientName = payload.recipientName?.trim()?.takeIf { it.isNotBlank() },
             recipientPhone = payload.recipientPhone?.trim()?.takeIf { it.isNotBlank() },
+            taskName = payload.taskName?.trim()?.takeIf { it.isNotBlank() },
+            taskDescription = payload.taskDescription?.trim()?.takeIf { it.isNotBlank() },
+            storeLat = payload.storeLat,
+            storeLng = payload.storeLng,
+            deliveryLat = payload.deliveryLat,
+            deliveryLng = payload.deliveryLng,
         )
     }
 }

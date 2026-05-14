@@ -7,6 +7,20 @@
 **iOS reference:** `/Users/efthemios/Documents/projects/pasabayan/pasabayan-ios/Pasabayan/Features/Packages/`
 **Android impl:** `app/src/main/java/com/efthemiosprime/pasabayan/features/packages/` + `core/network/.../packages/`
 
+## Gap implementation status (2026-05-13)
+
+| # | Gap | Status |
+|---|-----|--------|
+| 1 | Multipart `PUT /packages/{id}` | ✅ Implemented — `PackagesApi.updatePackageMultipart`, `PackagesRepository.updatePackageWithImages`, `PackageViewModel.updatePackageWithImages`, `EditPackageSheet` image picker, JVM tests for serialization. |
+| 2 | `pollForProcessedImages` | ✅ Implemented — 3-attempt 2 s back-off poll in `PackageViewModel` (mirrors iOS), unit test using fake API. |
+| 3 | Shipper `PackageDetailScreen` expansion | ✅ Implemented — added `PackageImagesCarousel`, `PackageShipperInfoCard`, `PackageCompatibleTripsSummary` components; screen now renders shipper info, image carousel (with processing spinner), compatible-trips summary, full action set, light + dark previews. |
+| 4 | Service request — task-mode fields + advanced options | ✅ Implemented — new `Task` direction option for `general_errand`; `taskName` / `taskDescription` fields; payload, mapper, and DTO updated to send `task_name`, `task_description`, `store_lat/lng`, `delivery_lat/lng`. |
+| 5 | Interactive map + geocoding | ⏸️ Deferred — DTO + payload plumbing (`storeLat/Lng`, `deliveryLat/Lng`) is in place. Map UI itself still requires `com.google.maps.android:maps-compose` dependency wiring + Google Maps API key; out of this slice's reach. |
+| 6 | `checkSimilarPackages` duplicate detection | ✅ Implemented — `PackagesRepository.findSimilarPackages` (client-side filter on `/packages`), `PackageViewModel.checkSimilarPackages`, banner surfaced on `PackageRequestScreen` review step, light + dark previews, VM tests. |
+| 7 | `enableShipperRoleIfNeeded` | ✅ Implemented — `PackageViewModel` now consults `AuthRepository`; after a successful package or service-request create, it calls `loadCurrentUser()` so the session reflects the backend-side role activation. Best-effort, silent on failure. VM tests cover both branches. |
+| 8 | `PackageRequestScreen` modularization (refactor) | ⏸️ Deferred — purely cosmetic; the new banner is the only newly-extracted composable. Tracked separately. |
+| 9 | Package history view | ⏸️ Deferred — overlaps with bookings history (`BOOKINGS-PARITY-REVIEW.md` gap #3); single-feature ownership not yet decided. |
+
 ---
 
 ## Executive Summary

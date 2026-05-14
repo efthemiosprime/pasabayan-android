@@ -793,13 +793,18 @@ fun MainTabScreen(
                         }
                     }
                 },
-                onCancel = { showPackageRequestSheet = false },
+                onCancel = {
+                    showPackageRequestSheet = false
+                    packageViewModel.clearSimilarPackages()
+                },
                 savedDescriptions = packageCreationAssistState.savedDescriptions,
                 savedPickupTemplates = packageCreationAssistState.savedPickupTemplates,
                 savedHandoffTemplates = packageCreationAssistState.savedHandoffTemplates,
                 showTutorialOverlay = packageCreationAssistState.showTutorial,
                 onDismissTutorial = { packageCreationAssistViewModel.dismissTutorial(user.id) },
                 isSubmitting = packageUiState.isSubmittingPackageRequest,
+                similarPackages = packageUiState.similarPackages,
+                onCheckSimilarPackages = packageViewModel::checkSimilarPackages,
             )
         }
     }
@@ -999,8 +1004,16 @@ fun MainTabScreen(
             EditPackageSheet(
                 pkg = pkg,
                 onDismiss = dismissActiveSheetRoute,
-                onSave = { request ->
-                    packageViewModel.updatePackage(route.packageId, request)
+                onSave = { request, imageUris ->
+                    if (imageUris.isEmpty()) {
+                        packageViewModel.updatePackage(route.packageId, request)
+                    } else {
+                        packageViewModel.updatePackageWithImages(
+                            packageId = route.packageId,
+                            request = request,
+                            imageUris = imageUris,
+                        )
+                    }
                     packageViewModel.refreshPackages()
                     dismissActiveSheetRoute()
                 },

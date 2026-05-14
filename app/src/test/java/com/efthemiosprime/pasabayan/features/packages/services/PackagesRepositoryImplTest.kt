@@ -3,6 +3,7 @@ package com.efthemiosprime.pasabayan.features.packages.services
 import android.net.Uri
 import com.efthemiosprime.pasabayan.core.network.packages.CreatePackageRequestJson
 import com.efthemiosprime.pasabayan.core.network.packages.CreateServiceRequestBodyJson
+import com.efthemiosprime.pasabayan.core.network.packages.PackageUpdateRequestJson
 import com.efthemiosprime.pasabayan.core.network.packages.PackagesApi
 import com.efthemiosprime.pasabayan.core.network.packages.ShoppingItemJson
 import kotlinx.coroutines.runBlocking
@@ -166,6 +167,49 @@ class PackagesRepositoryImplTest {
         assertTrue(result.isSuccess)
         val request = server.takeRequest()
         assertEquals("/api/packages", request.path)
+        val contentType = request.getHeader("Content-Type") ?: ""
+        assertTrue(contentType.contains("multipart/form-data"))
+        assertTrue(request.body.readUtf8().contains("images[]"))
+    }
+
+    @Test
+    fun `updatePackageWithImages sends JSON PUT when no images`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"message":"OK","data":{"id":20,"pickup_city":"Toronto","delivery_city":"Montreal","request_status":"open"}}""",
+            ),
+        )
+
+        val result = repo.updatePackageWithImages(
+            id = 20,
+            request = PackageUpdateRequestJson(maxPriceBudget = 99.0),
+            imageUris = emptyList(),
+        )
+        assertTrue(result.isSuccess)
+        val request = server.takeRequest()
+        assertEquals("/api/packages/20", request.path)
+        assertEquals("PUT", request.method)
+        val contentType = request.getHeader("Content-Type") ?: ""
+        assertTrue(contentType.contains("application/json"))
+    }
+
+    @Test
+    fun `updatePackageWithImages sends multipart PUT when images present`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"message":"OK","data":{"id":21,"pickup_city":"Toronto","delivery_city":"Montreal","request_status":"open","images_processing":true}}""",
+            ),
+        )
+
+        val result = repo.updatePackageWithImages(
+            id = 21,
+            request = PackageUpdateRequestJson(urgencyLevel = "high"),
+            imageUris = listOf(Uri.parse("content://images/1")),
+        )
+        assertTrue(result.isSuccess)
+        val request = server.takeRequest()
+        assertEquals("/api/packages/21", request.path)
+        assertEquals("PUT", request.method)
         val contentType = request.getHeader("Content-Type") ?: ""
         assertTrue(contentType.contains("multipart/form-data"))
         assertTrue(request.body.readUtf8().contains("images[]"))

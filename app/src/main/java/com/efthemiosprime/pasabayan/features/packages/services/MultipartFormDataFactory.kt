@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
 import com.efthemiosprime.pasabayan.core.network.packages.CreatePackageRequestJson
+import com.efthemiosprime.pasabayan.core.network.packages.PackageUpdateRequestJson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
 import javax.inject.Inject
@@ -56,6 +57,24 @@ open class MultipartFormDataFactory {
         }
         request.pickupCityId?.let { put("pickup_city_id", it.toString().toPlainTextBody()) }
         request.deliveryCityId?.let { put("delivery_city_id", it.toString().toPlainTextBody()) }
+    }
+
+    /**
+     * Build multipart fields for an update — only non-null fields are emitted,
+     * mirroring iOS `updatePackageDetailsWithImages` which sends just the changed
+     * fields. Booleans are emitted as `"1"`/`"0"` for backend parity.
+     */
+    open fun createPackageUpdateFields(request: PackageUpdateRequestJson): Map<String, RequestBody> = buildMap {
+        request.maxPriceBudget?.let { put("max_price_budget", it.toString().toPlainTextBody()) }
+        request.urgencyLevel?.let { put("urgency_level", it.toPlainTextBody()) }
+        request.pickupDateFlexible?.let {
+            put("pickup_date_flexible", if (it) "1".toPlainTextBody() else "0".toPlainTextBody())
+        }
+        request.deliveryDateNeeded?.let { put("delivery_date_needed", it.toPlainTextBody()) }
+        request.specialHandlingRequirements?.let {
+            put("special_handling_requirements", it.toPlainTextBody())
+        }
+        request.requestStatus?.let { put("request_status", it.toPlainTextBody()) }
     }
 
     open fun createImageParts(imageUris: List<Uri>): List<MultipartBody.Part> {

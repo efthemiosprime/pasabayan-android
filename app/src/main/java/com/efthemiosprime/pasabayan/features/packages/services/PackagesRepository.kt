@@ -38,7 +38,27 @@ interface PackagesRepository {
 
     suspend fun updatePackage(id: Int, request: PackageUpdateRequestJson): Result<PackageRequest>
 
+    /**
+     * Multipart `PUT /packages/{id}` mirroring iOS `updatePackageDetailsWithImages`.
+     * Only non-null fields in [request] are sent. Images are appended as `images[]`.
+     * When the server returns `imagesProcessing = true` the caller should poll
+     * `getPackage(id)` until that flag flips. iOS caps at 5 images / 5 MB each.
+     */
+    suspend fun updatePackageWithImages(
+        id: Int,
+        request: PackageUpdateRequestJson,
+        imageUris: List<Uri>,
+    ): Result<PackageRequest>
+
     suspend fun cancelPackage(id: Int): Result<Unit>
+
+    /**
+     * iOS parity: filter currently-active shipper packages with the same
+     * pickup and delivery cities to warn the user of likely duplicates
+     * before creating a new request. Server has no dedicated endpoint —
+     * filtering is client-side over `loadPackages()`.
+     */
+    suspend fun findSimilarPackages(pickupCity: String, deliveryCity: String): Result<List<PackageRequest>>
 
     companion object {
         /** iOS-parity default page size — mirrors `Pagination.defaultPerPage`. */

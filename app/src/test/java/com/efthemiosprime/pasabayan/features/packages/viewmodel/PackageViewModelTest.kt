@@ -9,6 +9,8 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.UrgencyLevel
 import com.efthemiosprime.pasabayan.core.network.packages.CreatePackageRequestJson
 import com.efthemiosprime.pasabayan.core.network.packages.CreateServiceRequestBodyJson
 import com.efthemiosprime.pasabayan.core.network.packages.PackageUpdateRequestJson
+import com.efthemiosprime.pasabayan.core.session.AuthRepository
+import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepository
 import com.efthemiosprime.pasabayan.features.packages.model.AvailablePackage
@@ -23,6 +25,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -46,6 +50,7 @@ class PackageViewModelTest {
     private lateinit var fakeRepo: FakePackagesRepository
     private lateinit var fakeBookingsRepository: FakeBookingsRepository
     private lateinit var requirePhoneVerification: RequirePhoneVerificationUseCase
+    private lateinit var fakeAuthRepository: FakeAuthRepository
     private lateinit var viewModel: PackageViewModel
 
     @Before
@@ -69,11 +74,13 @@ class PackageViewModelTest {
         fakeBookingsRepository = FakeBookingsRepository()
         requirePhoneVerification = mockk()
         every { requirePhoneVerification.invoke() } returns Result.success(Unit)
+        fakeAuthRepository = FakeAuthRepository()
         viewModel = PackageViewModel(
             mockContext,
             fakeRepo,
             fakeBookingsRepository,
             requirePhoneVerification,
+            fakeAuthRepository,
         )
     }
 
@@ -518,6 +525,122 @@ class PackageViewModelTest {
     }
 
     @Test
+    fun `updatePackageWithImages calls multipart path and updates state on success`() = runTest {
+        val uri = Uri.parse("content://images/edit-1")
+        fakeRepo.updateWithImagesResult = Result.success(testPkg(12).copy(imagesProcessing = false))
+
+        viewModel.updatePackageWithImages(
+            packageId = 12,
+            request = PackageUpdateRequestJson(urgencyLevel = "high"),
+            imageUris = listOf(uri),
+        )
+        advanceUntilIdle()
+
+        // Multipart repo path was hit with the expected payload
+        val call = fakeRepo.updateWithImagesCalls.single()
+        assertEquals(12, call.first)
+        assertEquals("high", call.second.urgencyLevel)
+        assertEquals(listOf(uri), call.third)
+        // State reflects the update
+        val state = viewModel.uiState.value
+        assertEquals(12, state.selectedPackageDetail?.id)
+        assertEquals("Package updated", state.successMessage)
+        assertFalse(state.isUpdatingPackage)
+    }
+
+    @Test
+    fun `updatePackageWithImages surfaces error on failure`() = runTest {
+        fakeRepo.updateWithImagesResult = Result.failure(RuntimeException("boom"))
+
+        viewModel.updatePackageWithImages(
+            packageId = 13,
+            request = PackageUpdateRequestJson(urgencyLevel = "low"),
+            imageUris = listOf(Uri.parse("content://images/edit-2")),
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isUpdatingPackage)
+        assertEquals("boom", state.errorMessage)
+    }
+
+    @Test
+    fun `checkSimilarPackages exposes results on uiState`() = runTest {
+        val existing = testPkg(40)
+        fakeRepo.similarPackagesResult = Result.success(listOf(existing))
+
+        viewModel.checkSimilarPackages(pickupCity = "Toronto", deliveryCity = "Montreal")
+        advanceUntilIdle()
+
+        assertEquals(listOf("Toronto" to "Montreal"), fakeRepo.similarPackagesCalls)
+        assertEquals(listOf(existing), viewModel.uiState.value.similarPackages)
+    }
+
+    @Test
+    fun `checkSimilarPackages on failure clears banner`() = runTest {
+        fakeRepo.similarPackagesResult = Result.failure(RuntimeException("net down"))
+
+        viewModel.checkSimilarPackages(pickupCity = "Toronto", deliveryCity = "Montreal")
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.similarPackages.isEmpty())
+    }
+
+    @Test
+    fun `clearSimilarPackages empties the list`() = runTest {
+        fakeRepo.similarPackagesResult = Result.success(listOf(testPkg(50)))
+        viewModel.checkSimilarPackages(pickupCity = "Toronto", deliveryCity = "Montreal")
+        advanceUntilIdle()
+
+        viewModel.clearSimilarPackages()
+        assertTrue(viewModel.uiState.value.similarPackages.isEmpty())
+    }
+
+    @Test
+    fun `createPackageRequest refreshes auth when user is not shipper`() = runTest {
+        fakeAuthRepository.userFlow.value = testAuthUser(isActiveShipper = false)
+        fakeRepo.createResult = Result.success(testPkg(60))
+        fakeAuthRepository.loadCurrentUserResult = Result.success(testAuthUser(isActiveShipper = true))
+
+        viewModel.createPackageRequest(payload = testPackagePayload(), imageUris = emptyList())
+        advanceUntilIdle()
+
+        assertEquals(1, fakeAuthRepository.loadCurrentUserCalls)
+    }
+
+    @Test
+    fun `createPackageRequest skips auth refresh when already shipper`() = runTest {
+        fakeAuthRepository.userFlow.value = testAuthUser(isActiveShipper = true)
+        fakeRepo.createResult = Result.success(testPkg(61))
+
+        viewModel.createPackageRequest(payload = testPackagePayload(), imageUris = emptyList())
+        advanceUntilIdle()
+
+        assertEquals(0, fakeAuthRepository.loadCurrentUserCalls)
+    }
+
+    @Test
+    fun `updatePackageWithImages polls until imagesProcessing flips false`() = runTest {
+        val processingPkg = testPkg(14).copy(imagesProcessing = true)
+        val processedPkg = testPkg(14).copy(imagesProcessing = false)
+        fakeRepo.updateWithImagesResult = Result.success(processingPkg)
+        // First poll still processing, second poll done.
+        fakeRepo.getResult = Result.success(processedPkg)
+
+        viewModel.updatePackageWithImages(
+            packageId = 14,
+            request = PackageUpdateRequestJson(urgencyLevel = "high"),
+            imageUris = listOf(Uri.parse("content://images/edit-3")),
+        )
+        advanceUntilIdle()
+
+        // Poll converged: selected detail reflects processed state.
+        val state = viewModel.uiState.value
+        assertEquals(14, state.selectedPackageDetail?.id)
+        assertEquals(false, state.selectedPackageDetail?.imagesProcessing)
+    }
+
+    @Test
     fun `createPackageRequest blocked when phone not verified does not call repo`() = runTest {
         every { requirePhoneVerification.invoke() } returns
             Result.failure(RequirePhoneVerificationUseCase.PhoneVerificationRequired)
@@ -650,6 +773,24 @@ class PackageViewModelTest {
         serviceType = null,
     )
 
+    private fun testAuthUser(
+        id: Long = 1,
+        isActiveShipper: Boolean = true,
+        isActiveCarrier: Boolean = false,
+    ) = AuthUser(
+        id = id,
+        name = "Test",
+        email = "test@example.com",
+        avatar = null,
+        phone = "+15555551234",
+        phoneVerified = true,
+        profileCompleted = true,
+        provider = "google",
+        userTypes = listOf("shipper"),
+        isActiveCarrier = isActiveCarrier,
+        isActiveShipper = isActiveShipper,
+    )
+
     private fun testPkg(
         id: Int,
         status: PackageRequestStatus = PackageRequestStatus.OPEN,
@@ -679,6 +820,9 @@ class FakePackagesRepository : PackagesRepository {
     var createResult: Result<PackageRequest>? = null
     var createServiceResult: Result<PackageRequest>? = null
     var updateResult: Result<PackageRequest>? = null
+    var updateWithImagesResult: Result<PackageRequest>? = null
+    /** Records every call so tests can assert request bodies and image URIs. */
+    val updateWithImagesCalls: MutableList<Triple<Int, PackageUpdateRequestJson, List<Uri>>> = mutableListOf()
     var cancelResult: Result<Unit> = Result.success(Unit)
 
     // -- Browse pagination test surface --
@@ -721,7 +865,24 @@ class FakePackagesRepository : PackagesRepository {
     override suspend fun createServiceRequest(request: CreateServiceRequestBodyJson) =
         createServiceResult ?: Result.failure(Exception("Not set"))
     override suspend fun updatePackage(id: Int, request: PackageUpdateRequestJson) = updateResult ?: Result.failure(Exception("Not set"))
+    override suspend fun updatePackageWithImages(
+        id: Int,
+        request: PackageUpdateRequestJson,
+        imageUris: List<Uri>,
+    ): Result<PackageRequest> {
+        updateWithImagesCalls += Triple(id, request, imageUris)
+        return updateWithImagesResult ?: updateResult ?: Result.failure(Exception("Not set"))
+    }
     override suspend fun cancelPackage(id: Int) = cancelResult
+    var similarPackagesResult: Result<List<PackageRequest>> = Result.success(emptyList())
+    val similarPackagesCalls: MutableList<Pair<String, String>> = mutableListOf()
+    override suspend fun findSimilarPackages(
+        pickupCity: String,
+        deliveryCity: String,
+    ): Result<List<PackageRequest>> {
+        similarPackagesCalls += pickupCity to deliveryCity
+        return similarPackagesResult
+    }
 }
 
 private class FakeBookingsRepository : BookingsRepository {
@@ -770,4 +931,26 @@ private class FakeBookingsRepository : BookingsRepository {
     override suspend fun getCarrierLocation(matchId: Int):
         Result<com.efthemiosprime.pasabayan.features.bookings.model.CarrierLocationSnapshot> =
         Result.failure(Exception("Not used"))
+}
+
+private class FakeAuthRepository : AuthRepository {
+    val userFlow: MutableStateFlow<AuthUser?> = MutableStateFlow(null)
+    var loadCurrentUserResult: Result<AuthUser> = Result.failure(Exception("Not set"))
+    var loadCurrentUserCalls: Int = 0
+
+    override suspend fun loginWithProviderAccessToken(provider: String, accessToken: String): Result<AuthUser> =
+        Result.failure(Exception("Not used"))
+
+    override suspend fun loadCurrentUser(): Result<AuthUser> {
+        loadCurrentUserCalls += 1
+        return loadCurrentUserResult.onSuccess { user -> userFlow.value = user }
+    }
+
+    override suspend fun logout(): Result<Unit> = Result.success(Unit)
+
+    override fun currentUser(): StateFlow<AuthUser?> = userFlow
+
+    override fun clearCurrentUser() {
+        userFlow.value = null
+    }
 }

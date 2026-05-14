@@ -42,6 +42,20 @@ interface PackagesApi {
         @Body body: PackageUpdateRequestJson,
     ): Response<PackageRequestResponseJson>
 
+    /**
+     * Multipart PUT for updating a package with new images. Mirrors iOS
+     * `updatePackageDetailsWithImages`. The backend processes images
+     * asynchronously and may return `imagesProcessing = true` — callers
+     * should poll `getPackage(id)` until processing completes.
+     */
+    @Multipart
+    @PUT("packages/{id}")
+    suspend fun updatePackageMultipart(
+        @Path("id") id: Int,
+        @PartMap fields: Map<String, @JvmSuppressWildcards RequestBody>,
+        @Part images: List<MultipartBody.Part>,
+    ): Response<PackageRequestResponseJson>
+
     @POST("packages/{id}/cancel")
     suspend fun cancelPackage(@Path("id") id: Int): Response<PackageRequestResponseJson>
 

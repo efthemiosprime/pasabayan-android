@@ -65,6 +65,12 @@ private enum class ErrandServiceType(val code: String, val labelRes: Int) {
 private enum class ErrandDirection(val code: String, val labelRes: Int) {
     Receive("receive", R.string.packages_service_direction_receive),
     Send("send", R.string.packages_service_direction_send),
+    /**
+     * iOS parity: when the shipper picks a custom task (e.g. "water plants"),
+     * the create-service flow branches into a `taskName` + `taskDescription`
+     * pair instead of a shopping list. Only valid for [ErrandServiceType.GeneralErrand].
+     */
+    Task("task", R.string.packages_service_direction_task),
 }
 
 private data class ShoppingItemInput(
@@ -96,10 +102,18 @@ fun PackageErrandRequestScreen(
     var estimatedCost by remember { mutableStateOf("") }
     var maxBudget by remember { mutableStateOf("") }
     var specialRequirements by remember { mutableStateOf("") }
+    var taskName by remember { mutableStateOf("") }
+    var taskDescription by remember { mutableStateOf("") }
     var deliveryDate by remember { mutableStateOf(LocalDate.now().plusDays(1)) }
     val serviceTypeLabels = serviceTypes.associateWith { stringResource(it.labelRes) }
+    val isTaskMode = serviceType == ErrandServiceType.GeneralErrand && direction == ErrandDirection.Task
 
-    val itemsComplete = shoppingItems.any { it.name.isNotBlank() && it.quantity.isNotBlank() }
+    // iOS parity: task mode swaps the shopping-list requirement for a task-name requirement.
+    val itemsComplete = if (isTaskMode) {
+        taskName.isNotBlank()
+    } else {
+        shoppingItems.any { it.name.isNotBlank() && it.quantity.isNotBlank() }
+    }
     val addressComplete = deliveryAddress.isNotBlank() && deliveryCity.isNotBlank()
     val completedRequirements = listOf(itemsComplete, addressComplete).count { it }
     val requireRecipient = serviceType == ErrandServiceType.GeneralErrand && direction == ErrandDirection.Send
@@ -112,7 +126,13 @@ fun PackageErrandRequestScreen(
         requirementChips = listOf(
             PackageRequirementChipUi(
                 icon = Icons.Default.List,
-                label = stringResource(R.string.packages_service_chip_items),
+                label = stringResource(
+                    if (isTaskMode) {
+                        R.string.packages_service_chip_task
+                    } else {
+                        R.string.packages_service_chip_items
+                    },
+                ),
                 isComplete = itemsComplete,
             ),
             PackageRequirementChipUi(
@@ -129,15 +149,19 @@ fun PackageErrandRequestScreen(
             PButton(
                 text = stringResource(R.string.packages_service_action_send_request),
                 onClick = {
-                    val requestItems = shoppingItems
-                        .filter { it.name.isNotBlank() && it.quantity.isNotBlank() }
-                        .map { item ->
-                            ServiceRequestShoppingItem(
-                                item = item.name,
-                                quantity = item.quantity,
-                                notes = item.notes,
-                            )
-                        }
+                    val requestItems = if (isTaskMode) {
+                        emptyList()
+                    } else {
+                        shoppingItems
+                            .filter { it.name.isNotBlank() && it.quantity.isNotBlank() }
+                            .map { item ->
+                                ServiceRequestShoppingItem(
+                                    item = item.name,
+                                    quantity = item.quantity,
+                                    notes = item.notes,
+                                )
+                            }
+                    }
                     onSave(
                         ServiceRequestSubmitPayload(
                             serviceTypeCode = serviceType.code,
@@ -153,6 +177,8 @@ fun PackageErrandRequestScreen(
                             directionCode = if (serviceType == ErrandServiceType.GeneralErrand) direction.code else null,
                             recipientName = if (requireRecipient) recipientName else null,
                             recipientPhone = if (requireRecipient) recipientPhone else null,
+                            taskName = if (isTaskMode) taskName else null,
+                            taskDescription = if (isTaskMode) taskDescription else null,
                         ),
                     )
                 },
@@ -190,23 +216,45 @@ fun PackageErrandRequestScreen(
                 }
             }
 
-            PExpandableSection(
-                title = stringResource(R.string.packages_service_section_items_list),
-                initiallyExpanded = true,
-            ) {
-                shoppingItems.forEachIndexed { index, item ->
-                    ShoppingItemEditor(
-                        item = item,
-                        onItemChanged = { updated -> shoppingItems[index] = updated },
-                        onRemove = { if (shoppingItems.size > 1) shoppingItems.removeAt(index) },
+            if (isTaskMode) {
+                PExpandableSection(
+                    title = stringResource(R.string.packages_service_section_task_details),
+                    initiallyExpanded = true,
+                ) {
+                    POutlinedTextField(
+                        value = taskName,
+                        onValueChange = { taskName = it },
+                        label = { Text(stringResource(R.string.packages_service_field_task_name)) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    POutlinedTextField(
+                        value = taskDescription,
+                        onValueChange = { taskDescription = it },
+                        label = { Text(stringResource(R.string.packages_service_field_task_description)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = false,
+                        maxLines = 5,
                     )
                 }
-                PButton(
-                    text = stringResource(R.string.packages_service_action_add_item),
-                    onClick = { shoppingItems.add(ShoppingItemInput()) },
-                    style = PButtonStyle.Secondary,
-                    size = PButtonSize.Small,
-                )
+            } else {
+                PExpandableSection(
+                    title = stringResource(R.string.packages_service_section_items_list),
+                    initiallyExpanded = true,
+                ) {
+                    shoppingItems.forEachIndexed { index, item ->
+                        ShoppingItemEditor(
+                            item = item,
+                            onItemChanged = { updated -> shoppingItems[index] = updated },
+                            onRemove = { if (shoppingItems.size > 1) shoppingItems.removeAt(index) },
+                        )
+                    }
+                    PButton(
+                        text = stringResource(R.string.packages_service_action_add_item),
+                        onClick = { shoppingItems.add(ShoppingItemInput()) },
+                        style = PButtonStyle.Secondary,
+                        size = PButtonSize.Small,
+                    )
+                }
             }
 
             PExpandableSection(
@@ -420,18 +468,14 @@ private fun ErrandDirectionToggle(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
         ) {
-            DirectionOption(
-                label = stringResource(ErrandDirection.Receive.labelRes),
-                selected = direction == ErrandDirection.Receive,
-                onClick = { onDirectionChanged(ErrandDirection.Receive) },
-                modifier = Modifier.weight(1f),
-            )
-            DirectionOption(
-                label = stringResource(ErrandDirection.Send.labelRes),
-                selected = direction == ErrandDirection.Send,
-                onClick = { onDirectionChanged(ErrandDirection.Send) },
-                modifier = Modifier.weight(1f),
-            )
+            ErrandDirection.entries.forEach { option ->
+                DirectionOption(
+                    label = stringResource(option.labelRes),
+                    selected = direction == option,
+                    onClick = { onDirectionChanged(option) },
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
     }
 }

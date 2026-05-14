@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.packages.services
 
 import android.net.Uri
+import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageRequestStatus
 import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.network.ApiErrorMapper
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
@@ -155,6 +156,46 @@ class PackagesRepositoryImpl @Inject constructor(
             Result.success(pkg)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun updatePackageWithImages(
+        id: Int,
+        request: PackageUpdateRequestJson,
+        imageUris: List<Uri>,
+    ): Result<PackageRequest> {
+        return try {
+            val response = if (imageUris.isEmpty()) {
+                packagesApi.updatePackage(id, request)
+            } else {
+                val fields = multipartFormDataFactory.createPackageUpdateFields(request)
+                val imageParts = multipartFormDataFactory.createImageParts(imageUris)
+                packagesApi.updatePackageMultipart(id = id, fields = fields, images = imageParts)
+            }
+            response.toPackageResult()
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun findSimilarPackages(
+        pickupCity: String,
+        deliveryCity: String,
+    ): Result<List<PackageRequest>> {
+        val normalizedPickup = pickupCity.trim().lowercase()
+        val normalizedDelivery = deliveryCity.trim().lowercase()
+        if (normalizedPickup.isEmpty() || normalizedDelivery.isEmpty()) {
+            return Result.success(emptyList())
+        }
+        return loadPackages().map { packages ->
+            packages.filter { pkg ->
+                val samePickup = pkg.pickupCity?.trim()?.lowercase() == normalizedPickup
+                val sameDelivery = pkg.deliveryCity?.trim()?.lowercase() == normalizedDelivery
+                val active = pkg.requestStatus == PackageRequestStatus.OPEN ||
+                    pkg.requestStatus == PackageRequestStatus.PENDING_REQUEST ||
+                    pkg.requestStatus == PackageRequestStatus.PENDING
+                samePickup && sameDelivery && active
+            }
         }
     }
 

@@ -17,6 +17,11 @@
     <!-- Actions -->
     <string name="packages_create_package">Create Package Request</string>
     <string name="packages_edit_package">Edit Package</string>
+    <string name="packages_similar_warning_title">Similar request found</string>
+    <string name="packages_similar_warning_body">You already have %1$d active package request with the same pickup and delivery cities. Submitting another may delay matching.</string>
+    <string name="packages_edit_images_label">Images (%1$d / %2$d)</string>
+    <string name="packages_edit_images_pick">Add images</string>
+    <string name="packages_edit_images_clear">Clear</string>
     <string name="packages_cancel_package">Cancel Package</string>
     <string name="packages_view_compatible_trips">View Compatible Trips</string>
 
@@ -31,6 +36,11 @@
     <string name="packages_detail_fragile">Fragile</string>
     <string name="packages_detail_description">Description</string>
     <string name="packages_detail_handling">Special Handling</string>
+    <string name="packages_detail_images_title">Images</string>
+    <string name="packages_detail_images_processing">Processing images, hang tight…</string>
+    <string name="packages_detail_shipper_info_title">Shipper</string>
+    <string name="packages_detail_shipper_no_ratings">No ratings yet</string>
+    <string name="packages_detail_compatible_trips_hint">Tap below to browse matching carrier trips.</string>
 
     <!-- Creation form -->
     <string name="packages_create_title">New Package Request</string>
@@ -94,6 +104,7 @@
     <string name="packages_service_close">Close service request</string>
     <string name="packages_service_required_steps">Required steps</string>
     <string name="packages_service_chip_items">Items</string>
+    <string name="packages_service_chip_task">Task</string>
     <string name="packages_service_chip_handoff">Handoff</string>
     <string name="packages_service_section_service_needed">Service Needed</string>
     <string name="packages_service_section_items_list">Items List</string>
@@ -107,6 +118,10 @@
     <string name="packages_service_direction_label">Direction</string>
     <string name="packages_service_direction_receive">Receive items</string>
     <string name="packages_service_direction_send">Send items</string>
+    <string name="packages_service_direction_task">Custom task</string>
+    <string name="packages_service_section_task_details">Task Details</string>
+    <string name="packages_service_field_task_name">Task name</string>
+    <string name="packages_service_field_task_description">Describe what needs to be done</string>
     <string name="packages_service_field_delivery_address">Handoff Address</string>
     <string name="packages_service_field_delivery_city">Handoff City</string>
     <string name="packages_service_field_recipient_name">Recipient Name</string>
@@ -214,4 +229,9 @@
     <string name="carrier_package_detail_fragile_item">Fragile item</string>
     <string name="carrier_package_detail_request_to_carry">Request to Carry</string>
     <string name="carrier_package_detail_sender_information">Sender Information</string>
+
+    <plurals name="packages_detail_compatible_trips_count">
+        <item quantity="one">%1$d compatible trip</item>
+        <item quantity="other">%1$d compatible trips</item>
+    </plurals>
 </resources>

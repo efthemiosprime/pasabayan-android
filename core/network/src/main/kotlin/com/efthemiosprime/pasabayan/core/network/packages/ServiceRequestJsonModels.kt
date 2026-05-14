@@ -22,6 +22,10 @@ data class CreateServiceRequestBodyJson(
     val direction: String? = null,
     @SerialName("recipient_name") val recipientName: String? = null,
     @SerialName("recipient_phone") val recipientPhone: String? = null,
+    /** Custom-task name. iOS parity: only sent when `direction == "task"` + general_errand. */
+    @SerialName("task_name") val taskName: String? = null,
+    /** Custom-task description. iOS parity: only sent when `direction == "task"` + general_errand. */
+    @SerialName("task_description") val taskDescription: String? = null,
 )
 
 @Serializable

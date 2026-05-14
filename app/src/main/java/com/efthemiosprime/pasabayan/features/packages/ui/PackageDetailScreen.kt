@@ -29,10 +29,16 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PStatusBadge
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageRequestStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UrgencyLevel
+import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
+import com.efthemiosprime.pasabayan.features.packages.components.PackageCompatibleTripsSummary
 import com.efthemiosprime.pasabayan.features.packages.components.PackageDetailsSection
+import com.efthemiosprime.pasabayan.features.packages.components.PackageImagesCarousel
+import com.efthemiosprime.pasabayan.features.packages.components.PackageShipperInfoCard
 import com.efthemiosprime.pasabayan.features.packages.components.PackageStatusBadgeConfig
 import com.efthemiosprime.pasabayan.features.packages.components.packageDisplayTitle
+import com.efthemiosprime.pasabayan.features.packages.components.packageTypeLabel
 import com.efthemiosprime.pasabayan.features.packages.components.urgencyLevelLabel
+import com.efthemiosprime.pasabayan.features.packages.model.PackageImage
 import com.efthemiosprime.pasabayan.features.packages.model.PackageRequest
 
 @Composable
@@ -41,21 +47,19 @@ fun PackageDetailScreen(
     onEdit: () -> Unit,
     onCancel: () -> Unit,
     onBack: () -> Unit,
+    /**
+     * Triggered when the user taps the compatible-trips action. Wire to the
+     * bookings feature's compatible-trips screen. No-op by default so the
+     * detail can render in isolation.
+     */
+    onViewCompatibleTrips: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val screenHeightDp = LocalConfiguration.current.screenHeightDp
     val maxSheetHeight = (screenHeightDp * 0.85f).dp
-    val statusLabel = when (pkg.status) {
-        PackageRequestStatus.OPEN -> stringResource(R.string.packages_status_open)
-        PackageRequestStatus.PENDING_REQUEST -> stringResource(R.string.packages_status_pending_request)
-        PackageRequestStatus.MATCHED -> stringResource(R.string.packages_status_matched)
-        PackageRequestStatus.PICKED_UP -> stringResource(R.string.packages_status_picked_up)
-        PackageRequestStatus.DELIVERED -> stringResource(R.string.packages_status_delivered)
-        PackageRequestStatus.CANCELLED -> stringResource(R.string.packages_status_cancelled)
-        PackageRequestStatus.PENDING -> stringResource(R.string.packages_status_pending_request)
-        PackageRequestStatus.BOOKED -> stringResource(R.string.packages_status_matched)
-        PackageRequestStatus.IN_TRANSIT -> stringResource(R.string.packages_status_picked_up)
-    }
+    val statusLabel = packageStatusLabel(pkg.status)
+    val isCancellable = pkg.status == PackageRequestStatus.OPEN ||
+        pkg.status == PackageRequestStatus.PENDING_REQUEST
 
     Column(
         modifier = modifier
@@ -71,6 +75,12 @@ fun PackageDetailScreen(
             text = packageDisplayTitle(pkg),
             style = PasabayanTextStyles.Heading.h4,
             color = MaterialTheme.colorScheme.onSurface,
+        )
+
+        // Image carousel (also shown while server processes uploads asynchronously)
+        PackageImagesCarousel(
+            images = pkg.images ?: emptyList(),
+            isProcessing = pkg.imagesProcessing == true,
         )
 
         // Route
@@ -96,7 +106,7 @@ fun PackageDetailScreen(
         PackageDetailsSection(
             weightKg = pkg.packageWeightKg,
             dimensions = pkg.packageDimensions?.formatted,
-            packageType = pkg.packageType?.let { com.efthemiosprime.pasabayan.features.packages.components.packageTypeLabel(it) },
+            packageType = pkg.packageType?.let { packageTypeLabel(it) },
             isFragile = pkg.isFragile,
             description = pkg.packageDescription,
             specialHandling = pkg.specialHandlingRequirements,
@@ -120,8 +130,17 @@ fun PackageDetailScreen(
             }
         }
 
+        // Shipper info (iOS parity)
+        PackageShipperInfoCard(shipper = pkg.shipper)
+
+        // Compatible trips summary (iOS parity)
+        PackageCompatibleTripsSummary(
+            count = pkg.compatibleTripsCount,
+            onViewCompatibleTrips = onViewCompatibleTrips,
+        )
+
         // Actions
-        if (pkg.status == PackageRequestStatus.OPEN || pkg.status == PackageRequestStatus.PENDING_REQUEST) {
+        if (isCancellable) {
             PButton(
                 text = stringResource(R.string.packages_edit_package),
                 onClick = onEdit,
@@ -143,8 +162,21 @@ fun PackageDetailScreen(
     }
 }
 
-@Preview(showBackground = true, name = "PackageDetail — light", heightDp = 900)
-@Preview(showBackground = true, name = "PackageDetail — dark", heightDp = 900, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun packageStatusLabel(status: PackageRequestStatus): String = when (status) {
+    PackageRequestStatus.OPEN -> stringResource(R.string.packages_status_open)
+    PackageRequestStatus.PENDING_REQUEST -> stringResource(R.string.packages_status_pending_request)
+    PackageRequestStatus.MATCHED -> stringResource(R.string.packages_status_matched)
+    PackageRequestStatus.PICKED_UP -> stringResource(R.string.packages_status_picked_up)
+    PackageRequestStatus.DELIVERED -> stringResource(R.string.packages_status_delivered)
+    PackageRequestStatus.CANCELLED -> stringResource(R.string.packages_status_cancelled)
+    PackageRequestStatus.PENDING -> stringResource(R.string.packages_status_pending_request)
+    PackageRequestStatus.BOOKED -> stringResource(R.string.packages_status_matched)
+    PackageRequestStatus.IN_TRANSIT -> stringResource(R.string.packages_status_picked_up)
+}
+
+@Preview(showBackground = true, name = "PackageDetail — light", heightDp = 1100)
+@Preview(showBackground = true, name = "PackageDetail — dark", heightDp = 1100, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PackageDetailPreview() {
     PasabayanTheme {
@@ -161,14 +193,26 @@ private fun PackageDetailPreview() {
                 pickupDateFlexible = false, deliveryDateNeeded = "2026-04-07",
                 deliveryTimeNeeded = null, specialHandlingRequirements = "Keep upright",
                 requestStatus = PackageRequestStatus.OPEN, createdAt = null, updatedAt = null,
-                compatibleTripsCount = 3, shipper = null,
-                images = null, imagesProcessing = null,
+                compatibleTripsCount = 3,
+                shipper = UserSummary(
+                    id = 5,
+                    name = "Marie L.",
+                    rating = "4.8",
+                    totalRatings = 42,
+                    verificationLevel = "verified",
+                ),
+                images = listOf(
+                    PackageImage(1, 1, "/img/1", 0, "1.jpg", "https://example.com/1.jpg", null),
+                    PackageImage(2, 1, "/img/2", 1, "2.jpg", "https://example.com/2.jpg", null),
+                ),
+                imagesProcessing = null,
                 serviceType = null, shoppingList = null,
                 storeName = null, storeAddress = null, receiptRequired = null,
             ),
             onEdit = {},
             onCancel = {},
             onBack = {},
+            onViewCompatibleTrips = {},
         )
     }
 }

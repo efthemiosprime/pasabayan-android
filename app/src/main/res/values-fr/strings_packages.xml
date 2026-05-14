@@ -17,6 +17,11 @@
     <!-- Actions -->
     <string name="packages_create_package">Cr\u00e9er une demande de colis</string>
     <string name="packages_edit_package">Modifier le colis</string>
+    <string name="packages_similar_warning_title">Demande similaire trouvée</string>
+    <string name="packages_similar_warning_body">Vous avez déjà %1$d demande de colis active avec les mêmes villes de récupération et de livraison. En soumettre une autre pourrait retarder l\'appariement.</string>
+    <string name="packages_edit_images_label">Images (%1$d / %2$d)</string>
+    <string name="packages_edit_images_pick">Ajouter des images</string>
+    <string name="packages_edit_images_clear">Effacer</string>
     <string name="packages_cancel_package">Annuler le colis</string>
     <string name="packages_view_compatible_trips">Voir les trajets compatibles</string>
 
@@ -31,6 +36,11 @@
     <string name="packages_detail_fragile">Fragile</string>
     <string name="packages_detail_description">Description</string>
     <string name="packages_detail_handling">Manutention sp\u00e9ciale</string>
+    <string name="packages_detail_images_title">Images</string>
+    <string name="packages_detail_images_processing">Traitement des images en cours\u2026</string>
+    <string name="packages_detail_shipper_info_title">Exp\u00e9diteur</string>
+    <string name="packages_detail_shipper_no_ratings">Aucune note pour l\'instant</string>
+    <string name="packages_detail_compatible_trips_hint">Appuyez ci-dessous pour parcourir les trajets compatibles.</string>
 
     <!-- Creation form -->
     <string name="packages_create_title">Nouvelle demande de colis</string>
@@ -94,6 +104,7 @@
     <string name="packages_service_close">Fermer la demande de service</string>
     <string name="packages_service_required_steps">\u00c9tapes requises</string>
     <string name="packages_service_chip_items">Articles</string>
+    <string name="packages_service_chip_task">Tâche</string>
     <string name="packages_service_chip_handoff">Remise</string>
     <string name="packages_service_section_service_needed">Service n\u00e9cessaire</string>
     <string name="packages_service_section_items_list">Liste d\'articles</string>
@@ -107,6 +118,10 @@
     <string name="packages_service_direction_label">Direction</string>
     <string name="packages_service_direction_receive">Recevoir des articles</string>
     <string name="packages_service_direction_send">Envoyer des articles</string>
+    <string name="packages_service_direction_task">Tâche personnalisée</string>
+    <string name="packages_service_section_task_details">Détails de la tâche</string>
+    <string name="packages_service_field_task_name">Nom de la tâche</string>
+    <string name="packages_service_field_task_description">Décrivez ce qui doit être fait</string>
     <string name="packages_service_field_delivery_address">Adresse de remise</string>
     <string name="packages_service_field_delivery_city">Ville de remise</string>
     <string name="packages_service_field_recipient_name">Nom du destinataire</string>
@@ -214,4 +229,9 @@
     <string name="carrier_package_detail_fragile_item">Article fragile</string>
     <string name="carrier_package_detail_request_to_carry">Proposer de transporter</string>
     <string name="carrier_package_detail_sender_information">Informations sur l\'expéditeur</string>
+
+    <plurals name="packages_detail_compatible_trips_count">
+        <item quantity="one">%1$d trajet compatible</item>
+        <item quantity="other">%1$d trajets compatibles</item>
+    </plurals>
 </resources>

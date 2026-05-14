@@ -16,6 +16,16 @@ data class ServiceRequestSubmitPayload(
     val directionCode: String?,
     val recipientName: String?,
     val recipientPhone: String?,
+    /** iOS parity: custom-task name; only set when `general_errand` + direction `task`. */
+    val taskName: String? = null,
+    /** iOS parity: custom-task description; only set when `general_errand` + direction `task`. */
+    val taskDescription: String? = null,
+    /** Optional store coordinates. Populated by [PackageLocationMap] integration (Slice E). */
+    val storeLat: Double? = null,
+    val storeLng: Double? = null,
+    /** Optional delivery coordinates. Populated by map integration (Slice E). */
+    val deliveryLat: Double? = null,
+    val deliveryLng: Double? = null,
 )
 
 data class ServiceRequestShoppingItem(

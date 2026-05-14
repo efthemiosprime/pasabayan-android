@@ -1,20 +1,37 @@
 package com.efthemiosprime.pasabayan.features.packages.ui
 
 import android.content.res.Configuration
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.efthemiosprime.pasabayan.R
+import com.efthemiosprime.pasabayan.core.designsystem.PasabayanRadius
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
+import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
@@ -23,17 +40,30 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextFie
 import com.efthemiosprime.pasabayan.core.network.packages.PackageUpdateRequestJson
 import com.efthemiosprime.pasabayan.features.packages.model.PackageRequest
 
+/**
+ * Maximum number of new images that can be attached to an edit. Mirrors iOS
+ * `updatePackageDetailsWithImages`, which caps at 5 images.
+ */
+private const val EDIT_PACKAGE_IMAGE_LIMIT = 5
+
 @Composable
 fun EditPackageSheet(
     pkg: PackageRequest,
     onDismiss: () -> Unit,
-    onSave: (PackageUpdateRequestJson) -> Unit,
+    onSave: (PackageUpdateRequestJson, List<Uri>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var maxBudget by remember { mutableStateOf(pkg.maxPriceBudget?.toString().orEmpty()) }
     var urgency by remember { mutableStateOf(pkg.urgencyLevel?.name?.lowercase().orEmpty()) }
     var deliveryDate by remember { mutableStateOf(pkg.deliveryDateNeeded.orEmpty()) }
     var specialHandling by remember { mutableStateOf(pkg.specialHandlingRequirements.orEmpty()) }
+    val selectedPhotoUris = remember { mutableStateListOf<Uri>() }
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents(),
+    ) { uris ->
+        val capped = uris.take(EDIT_PACKAGE_IMAGE_LIMIT - selectedPhotoUris.size)
+        selectedPhotoUris.addAll(capped)
+    }
 
     PDetailSheetScaffold(
         title = stringResource(R.string.packages_edit_package),
@@ -70,6 +100,53 @@ fun EditPackageSheet(
                 singleLine = false,
                 maxLines = 4,
             )
+
+            Text(
+                text = stringResource(
+                    R.string.packages_edit_images_label,
+                    selectedPhotoUris.size,
+                    EDIT_PACKAGE_IMAGE_LIMIT,
+                ),
+                style = PasabayanTextStyles.Body.medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (selectedPhotoUris.isNotEmpty()) {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+                ) {
+                    items(selectedPhotoUris) { uri ->
+                        AsyncImage(
+                            model = uri,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(RoundedCornerShape(PasabayanRadius.sm)),
+                        )
+                    }
+                }
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                PButton(
+                    text = stringResource(R.string.packages_edit_images_pick),
+                    onClick = { photoPickerLauncher.launch("image/*") },
+                    style = PButtonStyle.Secondary,
+                    enabled = selectedPhotoUris.size < EDIT_PACKAGE_IMAGE_LIMIT,
+                    modifier = Modifier.weight(1f),
+                )
+                if (selectedPhotoUris.isNotEmpty()) {
+                    PButton(
+                        text = stringResource(R.string.packages_edit_images_clear),
+                        onClick = { selectedPhotoUris.clear() },
+                        style = PButtonStyle.Tertiary,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+
             PButton(
                 text = stringResource(R.string.packages_edit_package),
                 onClick = {
@@ -80,6 +157,7 @@ fun EditPackageSheet(
                             deliveryDateNeeded = deliveryDate.trim().ifBlank { null },
                             specialHandlingRequirements = specialHandling.trim().ifBlank { null },
                         ),
+                        selectedPhotoUris.toList(),
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -137,7 +215,7 @@ private fun EditPackageSheetPreview() {
                 receiptRequired = null,
             ),
             onDismiss = {},
-            onSave = {},
+            onSave = { _, _ -> },
         )
     }
 }

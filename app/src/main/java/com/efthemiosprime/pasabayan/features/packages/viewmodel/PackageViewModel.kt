@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageRequestStatus
+import com.efthemiosprime.pasabayan.core.session.AuthRepository
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepository
 import com.efthemiosprime.pasabayan.features.packages.model.AvailablePackage
@@ -20,6 +21,7 @@ import com.efthemiosprime.pasabayan.features.verification.model.VerifyPhoneReaso
 import com.efthemiosprime.pasabayan.features.verification.services.RequirePhoneVerificationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -67,6 +69,14 @@ data class PackageUiState(
      * [PackageViewModel.consumeRequiresPhoneVerification] to clear it.
      */
     val requiresPhoneVerification: VerifyPhoneReason? = null,
+    /**
+     * iOS parity: existing active packages with the same pickup/delivery cities
+     * as the request the user is composing. Surfaced inline in the create flow
+     * to warn shippers of likely duplicates. Cleared via
+     * [PackageViewModel.clearSimilarPackages] when the user dismisses the warning
+     * or proceeds anyway.
+     */
+    val similarPackages: List<PackageRequest> = emptyList(),
 ) {
     /**
      * iOS parity: `packageType` filter is applied client-side after the
@@ -86,6 +96,7 @@ class PackageViewModel @Inject constructor(
     private val packagesRepository: PackagesRepository,
     private val bookingsRepository: BookingsRepository,
     private val requirePhoneVerification: RequirePhoneVerificationUseCase,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PackageUiState())
@@ -332,15 +343,9 @@ class PackageViewModel @Inject constructor(
             _uiState.update { it.copy(isUpdatingPackage = true, errorMessage = null, successMessage = null) }
             packagesRepository.updatePackage(packageId, request).fold(
                 onSuccess = { updatedPackage ->
-                    _uiState.update { state ->
-                        state.copy(
-                            isUpdatingPackage = false,
-                            selectedPackageDetail = updatedPackage,
-                            packageRequests = state.packageRequests.map { existing ->
-                                if (existing.id == updatedPackage.id) updatedPackage else existing
-                            },
-                            successMessage = context.getString(R.string.packages_success_update_package),
-                        )
+                    applyUpdatedPackage(updatedPackage)
+                    if (updatedPackage.imagesProcessing == true) {
+                        pollForProcessedImages(packageId)
                     }
                 },
                 onFailure = { e ->
@@ -353,6 +358,83 @@ class PackageViewModel @Inject constructor(
                     }
                 },
             )
+        }
+    }
+
+    /**
+     * Multipart update — sends only non-null fields plus new image URIs.
+     * On success, kicks off [pollForProcessedImages] when the backend
+     * reports `imagesProcessing = true`. Mirrors iOS
+     * `updatePackageDetailsWithImages` + `pollForProcessedImages`.
+     */
+    fun updatePackageWithImages(
+        packageId: Int,
+        request: com.efthemiosprime.pasabayan.core.network.packages.PackageUpdateRequestJson,
+        imageUris: List<Uri>,
+        onResult: (Result<PackageRequest>) -> Unit = {},
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isUpdatingPackage = true, errorMessage = null, successMessage = null) }
+            val result = packagesRepository.updatePackageWithImages(packageId, request, imageUris)
+            result.fold(
+                onSuccess = { updatedPackage ->
+                    applyUpdatedPackage(updatedPackage)
+                    if (updatedPackage.imagesProcessing == true) {
+                        pollForProcessedImages(packageId)
+                    }
+                },
+                onFailure = { e ->
+                    _uiState.update {
+                        it.copy(
+                            isUpdatingPackage = false,
+                            errorMessage = e.message
+                                ?: context.getString(R.string.packages_error_update_package),
+                        )
+                    }
+                },
+            )
+            onResult(result)
+        }
+    }
+
+    private fun applyUpdatedPackage(updatedPackage: PackageRequest) {
+        _uiState.update { state ->
+            state.copy(
+                isUpdatingPackage = false,
+                selectedPackageDetail = updatedPackage,
+                packageRequests = state.packageRequests.map { existing ->
+                    if (existing.id == updatedPackage.id) updatedPackage else existing
+                },
+                successMessage = context.getString(R.string.packages_success_update_package),
+            )
+        }
+    }
+
+    /**
+     * Polls `getPackage(id)` to refresh image URLs after async server-side
+     * image processing completes. Mirrors iOS `pollForProcessedImages`: up
+     * to 3 attempts, 2-second backoff. Stops early when the server clears
+     * `imagesProcessing`.
+     */
+    private fun pollForProcessedImages(packageId: Int, attempt: Int = 0) {
+        if (attempt >= POLL_PROCESSED_IMAGES_MAX_ATTEMPTS) return
+        viewModelScope.launch {
+            delay(POLL_PROCESSED_IMAGES_INTERVAL_MS)
+            packagesRepository.getPackage(packageId).onSuccess { refreshed ->
+                _uiState.update { state ->
+                    state.copy(
+                        selectedPackageDetail = state.selectedPackageDetail
+                            ?.takeIf { it.id == refreshed.id }?.let { refreshed }
+                            ?: state.selectedPackageDetail,
+                        packageRequests = state.packageRequests.map { existing ->
+                            if (existing.id == refreshed.id) refreshed else existing
+                        },
+                    )
+                }
+                if (refreshed.imagesProcessing == true) {
+                    pollForProcessedImages(packageId, attempt + 1)
+                }
+            }
         }
     }
 
@@ -422,6 +504,7 @@ class PackageViewModel @Inject constructor(
                             packageRequests = listOf(created) + it.packageRequests,
                         )
                     }
+                    enableShipperRoleIfNeeded()
                 },
                 onFailure = { e ->
                     _uiState.update {
@@ -464,6 +547,7 @@ class PackageViewModel @Inject constructor(
                             packageRequests = listOf(created) + it.packageRequests,
                         )
                     }
+                    enableShipperRoleIfNeeded()
                 },
                 onFailure = { e ->
                     _uiState.update {
@@ -551,5 +635,49 @@ class PackageViewModel @Inject constructor(
 
     fun clearTripRequestState() {
         _uiState.update { it.copy(tripRequestErrorMessage = null, tripRequestSuccessMessage = null) }
+    }
+
+    /**
+     * iOS-parity duplicate-detection helper. Looks up active packages with
+     * the same pickup/delivery cities. UI binds to
+     * [PackageUiState.similarPackages] and shows a warning banner if non-empty.
+     * Failures are treated as "no duplicates" — duplicate detection is
+     * advisory, not blocking.
+     */
+    fun checkSimilarPackages(pickupCity: String, deliveryCity: String) {
+        viewModelScope.launch {
+            packagesRepository.findSimilarPackages(pickupCity, deliveryCity).fold(
+                onSuccess = { similar ->
+                    _uiState.update { it.copy(similarPackages = similar) }
+                },
+                onFailure = {
+                    _uiState.update { it.copy(similarPackages = emptyList()) }
+                },
+            )
+        }
+    }
+
+    fun clearSimilarPackages() {
+        _uiState.update { it.copy(similarPackages = emptyList()) }
+    }
+
+    /**
+     * iOS parity: after a successful package or service-request creation,
+     * refresh `/auth/me` so the session picks up the backend-side shipper
+     * role activation. No-op when the user is already active. Failures
+     * are silent — role enablement is best-effort and not user-blocking.
+     */
+    private fun enableShipperRoleIfNeeded() {
+        if (authRepository.currentUser().value?.isActiveShipper == true) return
+        viewModelScope.launch {
+            authRepository.loadCurrentUser()
+        }
+    }
+
+    private companion object {
+        /** iOS parity: `pollForProcessedImages` retries up to 3 times. */
+        const val POLL_PROCESSED_IMAGES_MAX_ATTEMPTS = 3
+        /** iOS parity: 2-second back-off between processed-image poll attempts. */
+        const val POLL_PROCESSED_IMAGES_INTERVAL_MS = 2_000L
     }
 }

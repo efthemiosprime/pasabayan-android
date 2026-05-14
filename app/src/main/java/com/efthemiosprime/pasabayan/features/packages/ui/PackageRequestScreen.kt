@@ -38,6 +38,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -84,6 +85,17 @@ fun PackageRequestScreen(
     showTutorialOverlay: Boolean = false,
     onDismissTutorial: () -> Unit = {},
     isSubmitting: Boolean = false,
+    /**
+     * iOS parity: active packages with matching pickup/delivery cities found
+     * by [com.efthemiosprime.pasabayan.features.packages.viewmodel.PackageViewModel.checkSimilarPackages].
+     * Surfaced as a warning banner on the review step. Empty list hides it.
+     */
+    similarPackages: List<com.efthemiosprime.pasabayan.features.packages.model.PackageRequest> = emptyList(),
+    /**
+     * Triggered when the user reaches the review step so duplicate detection
+     * can run. Caller wires this to `viewModel.checkSimilarPackages(pickup, delivery)`.
+     */
+    onCheckSimilarPackages: (pickupCity: String, deliveryCity: String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -261,6 +273,14 @@ fun PackageRequestScreen(
         val deliveryDateFormatted = deliveryDate.format(dateFormatter)
         val deliveryTimeFormatted = deliveryTime.format(timeFormatter)
 
+        // iOS parity: kick off duplicate detection the moment the shipper opens the review
+        // step (or whenever the cities change while review is open). Inert when fields are blank.
+        LaunchedEffect(hasReachedFullReview, pickupCity, deliveryCity) {
+            if (hasReachedFullReview && pickupCity.isNotBlank() && deliveryCity.isNotBlank()) {
+                onCheckSimilarPackages(pickupCity.trim(), deliveryCity.trim())
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -268,6 +288,9 @@ fun PackageRequestScreen(
                 .padding(contentPadding),
             verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.lg),
         ) {
+            if (hasReachedFullReview && similarPackages.isNotEmpty()) {
+                SimilarPackagesWarning(count = similarPackages.size)
+            }
             if (!hasReachedFullReview) {
                 when (currentStep) {
                     0 -> {
@@ -819,11 +842,59 @@ private fun urgencyOptions(): List<RequestOption> = listOf(
     RequestOption(code = "express", labelRes = R.string.packages_urgency_express),
 )
 
+/**
+ * iOS-parity warning surfaced on the review step when the shipper already has
+ * active packages with the same pickup and delivery cities. Advisory — not a
+ * hard block.
+ */
+@Composable
+private fun SimilarPackagesWarning(count: Int) {
+    PCard(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(PasabayanSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.tertiary,
+                )
+                Text(
+                    text = stringResource(R.string.packages_similar_warning_title),
+                    style = PasabayanTextStyles.Body.large,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            Text(
+                text = stringResource(R.string.packages_similar_warning_body, count),
+                style = PasabayanTextStyles.Body.medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true, name = "PackageRequest — light", heightDp = 900)
 @Preview(showBackground = true, name = "PackageRequest — dark", heightDp = 900, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PackageRequestPreview() {
     PasabayanTheme {
         PackageRequestScreen(onSave = { _, _ -> }, onCancel = {})
+    }
+}
+
+@Preview(showBackground = true, name = "SimilarPackagesWarning — light")
+@Preview(showBackground = true, name = "SimilarPackagesWarning — dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun SimilarPackagesWarningPreview() {
+    PasabayanTheme {
+        SimilarPackagesWarning(count = 2)
     }
 }
