@@ -302,4 +302,12 @@
     <string name="bookings_auto_charge_failure_retrying">Retrying…</string>
     <string name="bookings_auto_charge_failure_badge_label">Payment failed</string>
     <string name="bookings_auto_charge_failure_badge_retry">Retry</string>
+
+    <!-- Slice 7 — Carrier Stripe onboarding gate (iOS parity with CarrierOnboardingRequiredSheet) -->
+    <string name="bookings_carrier_onboarding_title">Payout setup required</string>
+    <string name="bookings_carrier_onboarding_close">Close</string>
+    <string name="bookings_carrier_onboarding_default_message">Complete your Stripe payout setup so we can pay you for this delivery.</string>
+    <string name="bookings_carrier_onboarding_cta">Complete payout setup</string>
+    <string name="bookings_carrier_onboarding_cancel">Not now</string>
+    <string name="bookings_carrier_onboarding_loading">Checking your payout status…</string>
 </resources>

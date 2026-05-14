@@ -267,6 +267,112 @@ class MatchingViewModelTest {
         assertNull(viewModel.uiState.value.pendingOverageConfirmation)
     }
 
+    // -- Carrier Stripe onboarding gate (Slice 7) --
+
+    @Test
+    fun `carrier acceptMatch surfaces pendingCarrierOnboarding on 422 CarrierOnboardingRequired`() = runTest {
+        val match = testMatch(1, MatchStatus.SHIPPER_REQUESTED)
+        fakeRepo.loadResult = Result.success(listOf(match))
+        fakeRepo.carrierAcceptResult = Result.failure(
+            com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException(
+                com.efthemiosprime.pasabayan.core.domain.error.DomainError.CarrierOnboardingRequired(
+                    message = "Carrier must complete Stripe onboarding before match can be confirmed.",
+                ),
+            ),
+        )
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+
+        viewModel.acceptMatch(1, isCarrier = true)
+        advanceUntilIdle()
+
+        val pending = viewModel.uiState.value.pendingCarrierOnboarding
+        assertNotNull(pending)
+        assertEquals(
+            "Carrier must complete Stripe onboarding before match can be confirmed.",
+            pending!!.message,
+        )
+        val action = pending.action as com.efthemiosprime.pasabayan.features.bookings.model.CarrierOnboardingPrompt.Action.AcceptShipperRequest
+        assertEquals(1, action.matchId)
+        assertNull(viewModel.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `shipper accept on CarrierOnboardingRequired surfaces generic error rather than prompt`() = runTest {
+        val match = testMatch(1, MatchStatus.CARRIER_REQUESTED)
+        fakeRepo.loadResult = Result.success(listOf(match))
+        fakeRepo.shipperAcceptResult = Result.failure(
+            com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException(
+                com.efthemiosprime.pasabayan.core.domain.error.DomainError.CarrierOnboardingRequired(
+                    message = "Carrier hasn't onboarded yet.",
+                ),
+            ),
+        )
+        viewModel.loadMatches("shipper")
+        advanceUntilIdle()
+
+        viewModel.acceptMatch(1, isCarrier = false)
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.pendingCarrierOnboarding)
+        assertEquals("Carrier hasn't onboarded yet.", viewModel.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `retryAfterCarrierOnboarding clears state and replays the accept call`() = runTest {
+        val match = testMatch(1, MatchStatus.SHIPPER_REQUESTED)
+        val accepted = testMatch(1, MatchStatus.CARRIER_ACCEPTED)
+        fakeRepo.loadResult = Result.success(listOf(match))
+        // First call surfaces the prompt.
+        fakeRepo.carrierAcceptResult = Result.failure(
+            com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException(
+                com.efthemiosprime.pasabayan.core.domain.error.DomainError.CarrierOnboardingRequired(
+                    message = "Complete payout setup first.",
+                ),
+            ),
+        )
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+        viewModel.acceptMatch(1, isCarrier = true)
+        advanceUntilIdle()
+
+        val prompt = viewModel.uiState.value.pendingCarrierOnboarding!!
+        // Then succeed on the replay.
+        fakeRepo.carrierAcceptResult = Result.success(accepted)
+        viewModel.retryAfterCarrierOnboarding(prompt)
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.pendingCarrierOnboarding)
+        assertEquals(MatchStatus.CARRIER_ACCEPTED, viewModel.uiState.value.matches[0].matchStatus)
+    }
+
+    @Test
+    fun `dismissCarrierOnboarding clears state without replaying`() = runTest {
+        val match = testMatch(1, MatchStatus.SHIPPER_REQUESTED)
+        fakeRepo.loadResult = Result.success(listOf(match))
+        fakeRepo.carrierAcceptResult = Result.failure(
+            com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException(
+                com.efthemiosprime.pasabayan.core.domain.error.DomainError.CarrierOnboardingRequired(
+                    message = "msg",
+                ),
+            ),
+        )
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+        viewModel.acceptMatch(1, isCarrier = true)
+        advanceUntilIdle()
+        // Reset the carrierAcceptCalls counter via lastCarrierAcceptAcknowledge — start from
+        // a known state and assert no replay happened.
+        fakeRepo.lastCarrierAcceptAcknowledge = null
+
+        viewModel.dismissCarrierOnboarding()
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.pendingCarrierOnboarding)
+        // No further API call (lastCarrierAcceptAcknowledge would have been set by performAccept).
+        assertNull(fakeRepo.lastCarrierAcceptAcknowledge)
+    }
+
     @Test
     fun `cancelMatch replaces match with cancelled version on success`() = runTest {
         val cancelled = testMatch(1, MatchStatus.CANCELLED)

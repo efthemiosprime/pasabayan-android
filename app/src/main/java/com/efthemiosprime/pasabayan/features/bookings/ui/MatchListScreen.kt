@@ -411,6 +411,23 @@ fun MatchListScreen(
         )
     }
 
+    // Carrier Stripe onboarding gate — 422 `carrier_onboarding_required`.
+    // Sheet drives Stripe Connect onboarding; on success, MatchingVM replays the
+    // original carrier-accept call via [retryAfterCarrierOnboarding].
+    state.pendingCarrierOnboarding?.let { prompt ->
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { viewModel.dismissCarrierOnboarding() },
+        ) {
+            com.efthemiosprime.pasabayan.features.bookings.ui.CarrierOnboardingRequiredSheet(
+                prompt = prompt,
+                onCompletedOnboarding = { completed ->
+                    viewModel.retryAfterCarrierOnboarding(completed)
+                },
+                onDismiss = { viewModel.dismissCarrierOnboarding() },
+            )
+        }
+    }
+
     // Auto-charge confirm sheet (shipper confirms a PENDING match).
     if (autoChargeState !is AutoChargeConfirmationState.Idle) {
         AutoChargeConfirmationSheet(

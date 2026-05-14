@@ -302,4 +302,12 @@
     <string name="bookings_auto_charge_failure_retrying">Nouvel essai…</string>
     <string name="bookings_auto_charge_failure_badge_label">Paiement refusé</string>
     <string name="bookings_auto_charge_failure_badge_retry">Réessayer</string>
+
+    <!-- Slice 7 — Configuration des paiements transporteur (parité avec CarrierOnboardingRequiredSheet iOS) -->
+    <string name="bookings_carrier_onboarding_title">Configuration des paiements requise</string>
+    <string name="bookings_carrier_onboarding_close">Fermer</string>
+    <string name="bookings_carrier_onboarding_default_message">Terminez la configuration de vos paiements Stripe pour que nous puissions vous payer pour cette livraison.</string>
+    <string name="bookings_carrier_onboarding_cta">Terminer la configuration</string>
+    <string name="bookings_carrier_onboarding_cancel">Plus tard</string>
+    <string name="bookings_carrier_onboarding_loading">Vérification de votre statut de paiement…</string>
 </resources>

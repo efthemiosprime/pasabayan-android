@@ -6,6 +6,7 @@ import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.session.AuthRepository
+import com.efthemiosprime.pasabayan.features.bookings.model.CarrierOnboardingPrompt
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.model.NegotiationMetadata
 import com.efthemiosprime.pasabayan.features.bookings.model.OverageConfirmationData
@@ -65,6 +66,13 @@ data class MatchingUiState(
      * distinct "trip is full" state rather than a generic conflict error.
      */
     val tripOvercommitted: String? = null,
+    /**
+     * Non-null when the carrier-accept call returned 422
+     * `carrier_onboarding_required`. iOS parity: `CarrierOnboardingPrompt`
+     * — the UI presents [CarrierOnboardingRequiredSheet] and replays
+     * [CarrierOnboardingPrompt.action] once Stripe onboarding finishes.
+     */
+    val pendingCarrierOnboarding: CarrierOnboardingPrompt? = null,
 ) {
     val filteredMatches: List<DeliveryMatch>
         get() = when (statusFilter) {
@@ -197,10 +205,53 @@ class MatchingViewModel @Inject constructor(
             is DomainError.TripOvercommitted -> {
                 _uiState.update { it.copy(tripOvercommitted = domain.message ?: "Trip is full") }
             }
+            is DomainError.CarrierOnboardingRequired -> {
+                if (isCarrier) {
+                    _uiState.update {
+                        it.copy(
+                            pendingCarrierOnboarding = CarrierOnboardingPrompt(
+                                message = domain.message.orEmpty(),
+                                action = CarrierOnboardingPrompt.Action.AcceptShipperRequest(matchId = matchId),
+                            ),
+                        )
+                    }
+                } else {
+                    _uiState.update { it.copy(errorMessage = domain.message ?: "Failed to accept") }
+                }
+            }
             else -> {
                 _uiState.update { it.copy(errorMessage = error.message ?: "Failed to accept") }
             }
         }
+    }
+
+    /**
+     * Replay the action that triggered a `carrier_onboarding_required` response
+     * once the carrier has finished Stripe onboarding. Mirrors iOS' retry path
+     * driven by [CarrierOnboardingPrompt.action].
+     */
+    fun retryAfterCarrierOnboarding(prompt: CarrierOnboardingPrompt) {
+        _uiState.update { it.copy(pendingCarrierOnboarding = null) }
+        viewModelScope.launch {
+            when (val action = prompt.action) {
+                is CarrierOnboardingPrompt.Action.AcceptShipperRequest ->
+                    performAccept(
+                        matchId = action.matchId,
+                        isCarrier = true,
+                        acknowledgeOverage = action.acknowledgeOverage,
+                    )
+                is CarrierOnboardingPrompt.Action.ConfirmMatch -> {
+                    // The shipper-side `confirmMatch` path is owned by
+                    // AutoChargeConfirmationViewModel, not this VM. Drop the
+                    // prompt; the host should re-open the confirmation sheet.
+                }
+            }
+        }
+    }
+
+    /** Dismiss the onboarding prompt without retrying (user tapped "Not now"). */
+    fun dismissCarrierOnboarding() {
+        _uiState.update { it.copy(pendingCarrierOnboarding = null) }
     }
 
     private fun buildLocalOverageConfirmation(match: DeliveryMatch, isCarrier: Boolean): OverageConfirmationData? {
