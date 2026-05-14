@@ -1057,6 +1057,33 @@ fun MainTabScreen(
                         packageViewModel.clearPackageDetail()
                         dismissActiveSheetRoute()
                     },
+                    onViewCompatibleTrips = {
+                        viewModel.openCompatibleTripsForPackageSheet(detail.id)
+                    },
+                )
+            }
+        }
+    }
+
+    val compatibleTripsRoute = state.activeSheetRoute as? DashboardSheetRoute.CompatibleTripsForPackage
+    compatibleTripsRoute?.let { route ->
+        LaunchedEffect(route.packageId) {
+            packageViewModel.loadPackageDetail(route.packageId)
+        }
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { dismissActiveSheetRoute() },
+        ) {
+            val detail = packageUiState.selectedPackageDetail
+            if (detail != null && detail.id == route.packageId) {
+                com.efthemiosprime.pasabayan.features.bookings.ui.CompatibleTripsScreen(
+                    pkg = detail,
+                    onClose = { dismissActiveSheetRoute() },
+                    onRequestTrip = { intent ->
+                        // TODO(Slice 2 follow-up): pipe the request through MatchingViewModel.requestToCarry
+                        // for the shipper-side flow with full counter-offer/existing-request gating.
+                        // For now, dismiss so the screen behaves predictably until the request flow lands.
+                        dismissActiveSheetRoute()
+                    },
                 )
             }
         }

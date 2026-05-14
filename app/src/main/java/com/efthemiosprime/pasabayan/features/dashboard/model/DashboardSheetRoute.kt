@@ -13,4 +13,10 @@ sealed interface DashboardSheetRoute {
     data class CarrierPackageDetail(val packageId: Int) : DashboardSheetRoute
 
     data class EditPackage(val packageId: Int) : DashboardSheetRoute
+
+    /**
+     * Shipper-side discovery: trips compatible with a specific package request.
+     * iOS parity: `CompatibleTripsView` opened from PackageDetail's compatible-trips CTA.
+     */
+    data class CompatibleTripsForPackage(val packageId: Int) : DashboardSheetRoute
 }

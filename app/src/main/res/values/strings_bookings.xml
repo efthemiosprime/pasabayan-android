@@ -216,4 +216,23 @@
     <!-- Carrier browse packages (Slice 1 — standalone route over /packages/available) -->
     <string name="bookings_carrier_browse_title">Browse Packages</string>
     <string name="bookings_carrier_browse_close">Close</string>
+
+    <!-- Compatible trips for package (Slice 2 — iOS parity with CompatibleTripsView) -->
+    <string name="bookings_compatible_trips_title">Compatible Carriers</string>
+    <string name="bookings_compatible_trips_subtitle">Carriers travelling your route</string>
+    <string name="bookings_compatible_trips_close">Close</string>
+    <string name="bookings_compatible_trips_finding">Finding compatible carriers…</string>
+    <string name="bookings_compatible_trips_empty_title">No Compatible Carriers</string>
+    <string name="bookings_compatible_trips_empty_description">No carriers are travelling your route yet. Check back later.</string>
+    <string name="bookings_compatible_trips_error_title">Could Not Load Carriers</string>
+    <string name="bookings_compatible_trips_error_load">Failed to load compatible trips. Please try again.</string>
+    <string name="bookings_compatible_trips_try_again">Try Again</string>
+    <string name="bookings_compatible_trips_request_to_book">Request Carrier</string>
+    <string name="bookings_compatible_trips_request_pending">Request Pending</string>
+    <string name="bookings_compatible_trips_offered_price">Offered price</string>
+    <string name="bookings_compatible_trips_price_cad">CAD $%1$.2f</string>
+    <string name="bookings_compatible_trips_per_kg_rate">CAD $%1$.2f/kg</string>
+    <string name="bookings_compatible_trips_weight_kg">%1$.1f kg available</string>
+    <string name="bookings_compatible_trips_distance_km">%1$.1f km</string>
+    <string name="bookings_compatible_trips_no_pricing">Pricing unavailable</string>
 </resources>

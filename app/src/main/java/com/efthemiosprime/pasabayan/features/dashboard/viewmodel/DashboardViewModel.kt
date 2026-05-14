@@ -111,6 +111,12 @@ class DashboardViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    fun openCompatibleTripsForPackageSheet(packageId: Int) {
+        _uiState.update {
+            it.copy(activeSheetRoute = DashboardSheetRoute.CompatibleTripsForPackage(packageId = packageId))
+        }
+    }
+
     fun dismissActiveSheetRoute() {
         _uiState.update { it.copy(activeSheetRoute = null) }
     }

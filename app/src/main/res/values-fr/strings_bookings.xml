@@ -216,4 +216,23 @@
     <!-- Parcourir les colis (Slice 1 — route autonome pour /packages/available) -->
     <string name="bookings_carrier_browse_title">Parcourir les colis</string>
     <string name="bookings_carrier_browse_close">Fermer</string>
+
+    <!-- Trajets compatibles pour un colis (Slice 2 — parité avec CompatibleTripsView iOS) -->
+    <string name="bookings_compatible_trips_title">Transporteurs compatibles</string>
+    <string name="bookings_compatible_trips_subtitle">Transporteurs sur votre itinéraire</string>
+    <string name="bookings_compatible_trips_close">Fermer</string>
+    <string name="bookings_compatible_trips_finding">Recherche de transporteurs compatibles…</string>
+    <string name="bookings_compatible_trips_empty_title">Aucun transporteur compatible</string>
+    <string name="bookings_compatible_trips_empty_description">Aucun transporteur ne dessert votre itinéraire pour le moment. Revenez plus tard.</string>
+    <string name="bookings_compatible_trips_error_title">Impossible de charger les transporteurs</string>
+    <string name="bookings_compatible_trips_error_load">Le chargement des trajets compatibles a échoué. Réessayez.</string>
+    <string name="bookings_compatible_trips_try_again">Réessayer</string>
+    <string name="bookings_compatible_trips_request_to_book">Solliciter le transporteur</string>
+    <string name="bookings_compatible_trips_request_pending">Demande en attente</string>
+    <string name="bookings_compatible_trips_offered_price">Prix proposé</string>
+    <string name="bookings_compatible_trips_price_cad">%1$.2f $ CAD</string>
+    <string name="bookings_compatible_trips_per_kg_rate">%1$.2f $ CAD/kg</string>
+    <string name="bookings_compatible_trips_weight_kg">%1$.1f kg disponible</string>
+    <string name="bookings_compatible_trips_distance_km">%1$.1f km</string>
+    <string name="bookings_compatible_trips_no_pricing">Tarif indisponible</string>
 </resources>
