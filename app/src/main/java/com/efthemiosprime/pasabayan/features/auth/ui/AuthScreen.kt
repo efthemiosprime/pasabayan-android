@@ -144,8 +144,8 @@ fun AuthScreen(
     onSignInWithGoogle: () -> Unit,
     onSignInWithFacebook: () -> Unit,
     onLogout: () -> Unit,
-    onConsumeDidJustCompleteConsent: () -> Unit = {},
     modifier: Modifier = Modifier,
+    onConsumeDidJustCompleteConsent: () -> Unit = {},
 ) {
     Box(
         modifier = modifier
@@ -174,7 +174,6 @@ fun AuthScreen(
             }
             SessionUiState.SignedOut -> {
                 MarketingAuthScrollContent(
-                    session = state.session,
                     transientError = state.transientError,
                     isBusy = state.isBusy,
                     onSignInWithGoogle = onSignInWithGoogle,
@@ -193,9 +192,14 @@ fun AuthScreen(
     }
 }
 
+/**
+ * Marketing + sign-in screen for the [SessionUiState.SignedOut] state. The
+ * [SessionUiState.Checking] cold-start window is handled upstream in
+ * [AuthScreen] (renders a splash spinner), so this composable can assume the
+ * viewer is signed out.
+ */
 @Composable
 private fun MarketingAuthScrollContent(
-    session: SessionUiState,
     transientError: String?,
     isBusy: Boolean,
     onSignInWithGoogle: () -> Unit,
@@ -237,24 +241,14 @@ private fun MarketingAuthScrollContent(
                 )
             }
 
-            when (session) {
-                SessionUiState.Checking -> {
-                    if (!isBusy) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                    }
-                }
-                SessionUiState.SignedOut -> {
-                    GoogleSignInRow(
-                        onClick = onSignInWithGoogle,
-                        enabled = !isBusy,
-                    )
-                    FacebookSignInRow(
-                        onClick = onSignInWithFacebook,
-                        enabled = !isBusy,
-                    )
-                }
-                is SessionUiState.SignedIn -> Unit
-            }
+            GoogleSignInRow(
+                onClick = onSignInWithGoogle,
+                enabled = !isBusy,
+            )
+            FacebookSignInRow(
+                onClick = onSignInWithFacebook,
+                enabled = !isBusy,
+            )
         }
 
         Spacer(modifier = Modifier.height(40.dp))

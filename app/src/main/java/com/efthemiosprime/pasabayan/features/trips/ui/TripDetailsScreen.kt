@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.trips.ui
 
 import android.content.res.Configuration
+import java.util.Locale
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -263,14 +264,14 @@ fun TripDetailsScreen(
                 // distance + multiplier are present. Most useful for flat / distance-based
                 // pricing; renders nothing when the server didn't supply the breakdown.
                 com.efthemiosprime.pasabayan.features.trips.components.TripPricingBreakdown(
-                    basePriceText = trip.basePrice?.let { String.format("$%.2f", it) },
+                    basePriceText = trip.basePrice?.let { String.format(Locale.ROOT, "$%.2f", it) },
                     distanceText = trip.distanceKm?.let {
                         stringResource(R.string.trips_detail_distance_km_format, it)
                     },
                     multiplierText = trip.distanceMultiplier?.let {
                         stringResource(R.string.trips_detail_multiplier_format, it)
                     },
-                    calculatedPriceText = trip.calculatedPrice?.let { String.format("$%.2f", it) },
+                    calculatedPriceText = trip.calculatedPrice?.let { String.format(Locale.ROOT, "$%.2f", it) },
                 )
             }
         }

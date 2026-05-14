@@ -297,6 +297,78 @@ class MatchingViewModelTest {
         assertNull(viewModel.uiState.value.errorMessage)
     }
 
+    // -- Reentrancy guard (H1) --
+
+    @Test
+    fun `acceptMatch ignores second tap while first is in flight`() = runTest {
+        val match = testMatch(1, MatchStatus.SHIPPER_REQUESTED)
+        val accepted = testMatch(1, MatchStatus.CARRIER_ACCEPTED)
+        fakeRepo.loadResult = Result.success(listOf(match))
+        fakeRepo.carrierAcceptResult = Result.success(accepted)
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        fakeRepo.carrierAcceptGate = gate
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+
+        viewModel.acceptMatch(1, isCarrier = true)
+        advanceUntilIdle()
+
+        // First call entered the repo (await on gate) and the matchId is in flight.
+        assertEquals(1, fakeRepo.carrierAcceptCallCount)
+        assertTrue(viewModel.uiState.value.isActionInFlight(1))
+
+        // Second tap while still pending must be ignored — no new call.
+        viewModel.acceptMatch(1, isCarrier = true)
+        advanceUntilIdle()
+        assertEquals(1, fakeRepo.carrierAcceptCallCount)
+
+        // Release the gate and let the first call complete.
+        gate.complete(Unit)
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.isActionInFlight(1))
+        assertEquals(MatchStatus.CARRIER_ACCEPTED, viewModel.uiState.value.matches[0].matchStatus)
+    }
+
+    @Test
+    fun `declineMatch ignores second tap while first is in flight`() = runTest {
+        val match = testMatch(1, MatchStatus.SHIPPER_REQUESTED)
+        val declined = testMatch(1, MatchStatus.SHIPPER_DECLINED)
+        fakeRepo.loadResult = Result.success(listOf(match))
+        fakeRepo.carrierDeclineResult = Result.success(declined)
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        fakeRepo.carrierDeclineGate = gate
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+
+        viewModel.declineMatch(1, isCarrier = true)
+        advanceUntilIdle()
+        assertEquals(1, fakeRepo.carrierDeclineCallCount)
+        assertTrue(viewModel.uiState.value.isActionInFlight(1))
+
+        viewModel.declineMatch(1, isCarrier = true)
+        advanceUntilIdle()
+        assertEquals(1, fakeRepo.carrierDeclineCallCount)
+
+        gate.complete(Unit)
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.isActionInFlight(1))
+    }
+
+    @Test
+    fun `acceptMatch clears in-flight set even when call fails`() = runTest {
+        val match = testMatch(1, MatchStatus.SHIPPER_REQUESTED)
+        fakeRepo.loadResult = Result.success(listOf(match))
+        fakeRepo.carrierAcceptResult = Result.failure(RuntimeException("boom"))
+        viewModel.loadMatches("carrier")
+        advanceUntilIdle()
+
+        viewModel.acceptMatch(1, isCarrier = true)
+        advanceUntilIdle()
+
+        // After failure the set is cleared so a retry tap works.
+        assertFalse(viewModel.uiState.value.isActionInFlight(1))
+    }
+
     @Test
     fun `shipper accept on CarrierOnboardingRequired surfaces generic error rather than prompt`() = runTest {
         val match = testMatch(1, MatchStatus.CARRIER_REQUESTED)
@@ -788,16 +860,33 @@ class FakeBookingsRepository : BookingsRepository {
     var lastShipperAcceptAcknowledge: Boolean? = null
     var lastCarrierAcceptAcknowledge: Boolean? = null
 
+    /**
+     * Optional gates that pause the accept/decline calls until the test
+     * completes them. Used by the reentrancy-guard tests to keep a call
+     * in flight long enough to verify the second tap is ignored.
+     */
+    var carrierAcceptGate: kotlinx.coroutines.CompletableDeferred<Unit>? = null
+    var carrierDeclineGate: kotlinx.coroutines.CompletableDeferred<Unit>? = null
+
+    var carrierAcceptCallCount: Int = 0
+    var carrierDeclineCallCount: Int = 0
+
     override suspend fun shipperAcceptCarrierRequest(matchId: Int, acknowledgeOverage: Boolean?): Result<DeliveryMatch> {
         lastShipperAcceptAcknowledge = acknowledgeOverage
         return shipperAcceptResult ?: Result.failure(Exception("Not set"))
     }
     override suspend fun shipperDeclineCarrierRequest(matchId: Int, reason: String?) = shipperDeclineResult ?: Result.failure(Exception("Not set"))
     override suspend fun carrierAcceptShipperRequest(matchId: Int, acknowledgeOverage: Boolean?): Result<DeliveryMatch> {
+        carrierAcceptCallCount += 1
         lastCarrierAcceptAcknowledge = acknowledgeOverage
+        carrierAcceptGate?.await()
         return carrierAcceptResult ?: Result.failure(Exception("Not set"))
     }
-    override suspend fun carrierDeclineShipperRequest(matchId: Int, reason: String?) = carrierDeclineResult ?: Result.failure(Exception("Not set"))
+    override suspend fun carrierDeclineShipperRequest(matchId: Int, reason: String?): Result<DeliveryMatch> {
+        carrierDeclineCallCount += 1
+        carrierDeclineGate?.await()
+        return carrierDeclineResult ?: Result.failure(Exception("Not set"))
+    }
     override suspend fun generatePickupCode(matchId: Int) = Result.success("123456")
     override suspend fun generateDeliveryCode(matchId: Int) = Result.success("654321")
     override suspend fun confirmPickupWithCode(matchId: Int, code: String) = confirmResult ?: Result.failure(Exception("Not set"))

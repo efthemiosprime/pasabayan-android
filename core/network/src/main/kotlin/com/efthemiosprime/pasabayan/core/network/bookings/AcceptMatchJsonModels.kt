@@ -4,9 +4,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Body for the accept endpoints:
+ * Body for the accept endpoints (iOS parity — see BookingsAPIService.swift):
  * - `PUT /matches/{id}/accept-shipper-request` (carrier accepts shipper's request)
- * - `PUT /matches/{id}/accept-carrier-request` (shipper accepts carrier's offer)
+ * - `PUT /matches/{id}/accept`               (shipper accepts carrier's offer)
  *
  * `acknowledgeOverage` is only set when the accepting party has explicitly
  * confirmed an over-capacity match via the confirmation sheet. Omitted (null)

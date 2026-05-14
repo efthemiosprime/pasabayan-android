@@ -211,9 +211,12 @@ private fun ReceiveBody(pkg: AvailablePackage) {
         ShoppingListPreview(items = pkg.shoppingItems)
     }
     pkg.estimatedCost?.takeIf { it.isNotBlank() }?.let { cost ->
+        // iOS parity (CarrierPackageCard.swift:516): pass the raw string into a
+        // currency-prefixed format. Avoids silently displaying $0.00 when the
+        // server returns non-numeric values like "TBD" or "~150".
         PDetailRow(
             label = stringResource(R.string.carrier_package_card_estimated_cost),
-            value = stringResource(R.string.packages_detail_budget_value, cost.toDoubleOrNull() ?: 0.0),
+            value = stringResource(R.string.carrier_package_card_estimated_cost_value, cost),
             valueColor = PasabayanColors.Success,
         )
     }

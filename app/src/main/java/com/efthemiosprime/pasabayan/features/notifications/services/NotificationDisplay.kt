@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.notifications.services
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -25,6 +26,9 @@ class NotificationDisplay @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
 
+    // Lint can't see that hasPostPermission() below gates the POST_NOTIFICATIONS
+    // permission check for the `notify` call — the runtime guard is correct.
+    @SuppressLint("MissingPermission")
     fun post(
         title: String,
         body: String,

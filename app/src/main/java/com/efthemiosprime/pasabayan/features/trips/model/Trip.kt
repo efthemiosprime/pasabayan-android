@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.trips.model
 
 import androidx.annotation.StringRes
+import java.util.Locale
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PricingType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransportationMethod
@@ -97,14 +98,14 @@ data class Trip(
 
     val formattedPrice: String
         get() = when (effectivePricingType) {
-            PricingType.PER_KG -> String.format("$%.2f/kg", effectivePrice)
-            PricingType.FLAT -> String.format("$%.2f flat", effectivePrice)
+            PricingType.PER_KG -> String.format(Locale.ROOT, "$%.2f/kg", effectivePrice)
+            PricingType.FLAT -> String.format(Locale.ROOT, "$%.2f flat", effectivePrice)
         }
 
     val formattedPriceCompact: String
         get() = when (effectivePricingType) {
-            PricingType.PER_KG -> String.format("$%.2f/kg", effectivePrice)
-            PricingType.FLAT -> String.format("$%.2f", effectivePrice)
+            PricingType.PER_KG -> String.format(Locale.ROOT, "$%.2f/kg", effectivePrice)
+            PricingType.FLAT -> String.format(Locale.ROOT, "$%.2f", effectivePrice)
         }
 
     // Alias used by iOS naming in some parity docs.
@@ -112,7 +113,7 @@ data class Trip(
         get() = formattedPrice
 
     val formattedCapacity: String
-        get() = String.format("%.1f kg", availableWeightKg ?: 0.0)
+        get() = String.format(Locale.ROOT, "%.1f kg", availableWeightKg ?: 0.0)
 
     val formattedDepartureDate: String
         get() = DateTimeParsing.parseApiDateTime(departureDate)

@@ -52,6 +52,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Exposes java.time.*, j.u.stream.*, j.u.function.* on API < 26 so the
+        // many `Instant.parse` / `Instant.compareTo` call sites in trip + match
+        // ViewModels stop crashing on minSdk=25 devices. Without this, lint
+        // surfaces 73 NewApi errors targeting java.time APIs.
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "17"
@@ -77,6 +82,7 @@ android {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(project(":core:designsystem"))
     implementation(project(":core:domain"))
     implementation(project(":core:domain-error"))

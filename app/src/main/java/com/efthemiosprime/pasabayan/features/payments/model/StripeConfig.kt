@@ -1,5 +1,7 @@
 package com.efthemiosprime.pasabayan.features.payments.model
 
+import java.util.Locale
+
 data class StripeConfig(
     val mode: String,
     val publicKey: String,
@@ -22,12 +24,12 @@ data class StripeConfig(
         baseAmount * (1 - carrierFeePercentage / 100)
 
     fun validateMinimumPrice(price: Double): String? =
-        if (price < minDeliveryPrice) "Minimum price is $${String.format("%.2f", minDeliveryPrice)}" else null
+        if (price < minDeliveryPrice) "Minimum price is $${String.format(Locale.ROOT, "%.2f", minDeliveryPrice)}" else null
 
     fun validateProposedPrice(price: Double): String? {
         val minError = validateMinimumPrice(price)
         if (minError != null) return minError
-        if (price > MAX_PROPOSED_PRICE) return "Maximum price is $${String.format("%.2f", MAX_PROPOSED_PRICE)}"
+        if (price > MAX_PROPOSED_PRICE) return "Maximum price is $${String.format(Locale.ROOT, "%.2f", MAX_PROPOSED_PRICE)}"
         return null
     }
 

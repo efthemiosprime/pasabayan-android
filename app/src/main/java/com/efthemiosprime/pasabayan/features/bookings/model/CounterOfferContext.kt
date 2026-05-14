@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.bookings.model
 
 import com.efthemiosprime.pasabayan.core.domain.`enum`.InitiatedBy
+import java.util.Locale
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
 import com.efthemiosprime.pasabayan.features.notifications.model.NotificationData
 
@@ -151,7 +152,7 @@ data class CounterOfferContext(
             }
         }
 
-        private fun formatPrice(value: Double): String = String.format("$%.2f", value)
+        private fun formatPrice(value: Double): String = String.format(Locale.ROOT, "$%.2f", value)
 
         private val ORIGINAL_PRICE_REGEX = Regex(
             "(?:\\(\\s*was\\s*\\$?\\s*([0-9]+(?:\\.[0-9]{1,2})?)\\s*\\)|\\bwas\\s*\\$?\\s*([0-9]+(?:\\.[0-9]{1,2})?)\\b)",

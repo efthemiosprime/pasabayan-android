@@ -27,12 +27,17 @@ firebaseBom = "33.7.0"
 securityCrypto = "1.1.0-alpha06"
 stripe = "21.5.1"
 browser = "1.8.0"
+# Core library desugaring — exposes java.time.*, j.u.stream.*, j.u.f.* on API < 26.
+# Required because minSdk = 25 but ViewModels use java.time.Instant for trip
+# date comparisons. Without this, those calls crash on API 25 with NoClassDefFoundError.
+desugarJdkLibs = "2.1.5"
 mockk = "1.13.16"
 coil = "3.0.4"
 playServicesMaps = "19.0.0"
 mapsCompose = "6.4.4"
 
 [libraries]
+desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarJdkLibs" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.bookings.components
 
 import android.content.res.Configuration
+import java.util.Locale
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -29,12 +30,12 @@ fun PriceComparisonSection(
         Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
             PDetailRow(
                 label = stringResource(R.string.bookings_detail_agreed_price),
-                value = String.format("$%.2f", agreedPrice),
+                value = String.format(Locale.ROOT, "$%.2f", agreedPrice),
             )
             if (originalPrice != null && isCounterOffer) {
                 PDetailRow(
                     label = stringResource(R.string.bookings_detail_original_price),
-                    value = String.format("$%.2f", originalPrice),
+                    value = String.format(Locale.ROOT, "$%.2f", originalPrice),
                 )
                 val diff = agreedPrice - originalPrice
                 val color = if (diff > 0) PasabayanColors.Success else PasabayanColors.Error

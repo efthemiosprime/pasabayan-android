@@ -233,6 +233,7 @@
     <string name="carrier_package_card_task_details">Task details</string>
     <string name="carrier_package_card_shopping_list">Shopping list</string>
     <string name="carrier_package_card_estimated_cost">Est. cost</string>
+    <string name="carrier_package_card_estimated_cost_value">$%1$s</string>
     <string name="carrier_package_card_more_items">+%1$d more items</string>
     <string name="carrier_package_card_items_count">%1$d items</string>
 

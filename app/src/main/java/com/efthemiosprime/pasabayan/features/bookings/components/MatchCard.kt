@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.bookings.components
 
 import android.content.res.Configuration
+import java.util.Locale
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -95,7 +96,7 @@ fun MatchCard(
             // Price
             PDetailRow(
                 label = stringResource(R.string.bookings_detail_agreed_price),
-                value = String.format("$%.2f", match.agreedPrice),
+                value = String.format(Locale.ROOT, "$%.2f", match.agreedPrice),
             )
 
             // Counter-offer indicator

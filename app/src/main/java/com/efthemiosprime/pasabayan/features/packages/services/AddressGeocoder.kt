@@ -3,6 +3,7 @@ package com.efthemiosprime.pasabayan.features.packages.services
 import android.content.Context
 import android.location.Geocoder
 import android.os.Build
+import androidx.annotation.RequiresApi
 import com.efthemiosprime.pasabayan.core.domain.model.Coordinates
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
@@ -76,6 +77,7 @@ class AddressGeocoder @Inject constructor(
         }.getOrNull()
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private suspend fun forwardListener(geocoder: Geocoder, address: String): Coordinates? =
         suspendCoroutine { cont ->
             geocoder.getFromLocationName(address, 1) { addresses ->
@@ -86,6 +88,7 @@ class AddressGeocoder @Inject constructor(
             }
         }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private suspend fun reverseListener(geocoder: Geocoder, coordinates: Coordinates): String? =
         suspendCoroutine { cont ->
             geocoder.getFromLocation(coordinates.latitude, coordinates.longitude, 1) { addresses ->

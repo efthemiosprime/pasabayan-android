@@ -786,7 +786,7 @@ Per policy, **do not** add a local pre-flight gate on `CounterOfferPromptSheet` 
 
 ### Deprecation tripwire
 
-The legacy `POST /api/trips/{tripId}/packages/{packageId}/accept` emits `Deprecation: true` + `Link: …; rel="successor-version"`. Android does not call it — `BookingsRepositoryImpl` migrated to `PUT /matches/{id}/accept-carrier-request` in slice 1. The `DeprecationLoggingInterceptor` in `:core:network` logs a single `Log.w` warning on debug builds whenever any response carries the header, so a regression would be visible immediately during development.
+The legacy `POST /api/trips/{tripId}/packages/{packageId}/accept` emits `Deprecation: true` + `Link: …; rel="successor-version"`. Android does not call it — `BookingsRepositoryImpl` calls `PUT /matches/{id}/accept` (iOS-canonical path, realigned in commit `7e577f3`). The `DeprecationLoggingInterceptor` in `:core:network` logs a single `Log.w` warning on debug builds whenever any response carries the header, so a regression would be visible immediately during development.
 
 ---
 
@@ -840,16 +840,18 @@ The legacy `POST /api/trips/{tripId}/packages/{packageId}/accept` emits `Depreca
 
 ### Accept/decline flows
 
-**`AcceptMatchRequest`** (shared body for both `PUT /matches/{id}/accept-shipper-request` and `PUT /matches/{id}/accept-carrier-request`):
+**`AcceptMatchRequestJson`** (shared body for both `PUT /matches/{id}/accept-shipper-request` and `PUT /matches/{id}/accept`):
 
 | Field | Type | Wire key | Notes |
 |-------|------|----------|-------|
 | `message` | `String?` | `message` | Optional message to the counterparty. |
 | `acknowledgeOverage` | `Boolean?` | `acknowledge_overage` | Set to `true` **only** when the user has confirmed the "Accept Anyway?" sheet for an over-capacity match. Omitted (null) on the fitting-weight path — matches iOS. Server treats absent / `false` identically. See [§ Advisory-weight policy](#advisory-weight-policy-over-capacity-matches) below. |
 
-**`CarrierDeclineRequest`:** `reason: String?`
+**`DeclineMatchRequestJson`** (shared body for both `PUT /matches/{id}/decline-shipper-request` and `PUT /matches/{id}/decline`):
 
-**`ShipperDeclineRequest`:** `reason: String?`
+| Field | Type | Wire key | Notes |
+|-------|------|----------|-------|
+| `reason` | `String?` | `reason` | Optional free-text reason. Omitted from the JSON when null/blank to match iOS' empty-body path. iOS `CarrierDeclineRequest.reason` is required and `ShipperDeclineRequest.reason` is optional; Android collapses both to a single nullable-reason DTO since the wire format is identical. |
 
 **`CarrierResponseResult`:** `success: Boolean`, `message: String`, `data: DeliveryMatch`
 
@@ -1070,10 +1072,10 @@ Computed: `title: String`
 
 | Method | Path | Request body | Response | Notes |
 |--------|------|-------------|----------|-------|
-| PUT | `/matches/{matchId}/accept-carrier-request` | `AcceptMatchRequest` | `ShipperMatchResponse` | Shipper accepts carrier's offer. Body supports optional `acknowledge_overage` for advisory-weight policy (see slice 1/4 of the over-capacity sweep). |
-| POST | `/matches/{matchId}/decline` | `ShipperDeclineRequest` | `ShipperMatchResponse` | Shipper declines carrier's request |
-| PUT | `/matches/{matchId}/accept-shipper-request` | `AcceptMatchRequest` | `AcceptShipperRequestResponse` | Carrier accepts shipper's request. Body supports optional `acknowledge_overage`. |
-| PUT | `/matches/{matchId}/decline-shipper-request` | `CarrierDeclineRequest` | `CarrierResponseResult` | Carrier declines shipper's request |
+| PUT | `/matches/{matchId}/accept` | `AcceptMatchRequestJson` | `ShipperMatchResponse` | Shipper accepts carrier's offer (iOS-canonical generic path). Body supports optional `acknowledge_overage` for advisory-weight policy (see slice 1/4 of the over-capacity sweep). Realigned from the old `/accept-carrier-request` path in commit `7e577f3`. |
+| PUT | `/matches/{matchId}/decline` | `DeclineMatchRequestJson` | `ShipperMatchResponse` | Shipper declines carrier's request (iOS-canonical generic path). Body carries optional `reason`. Realigned from `POST /decline` (no body) in commit `7e577f3`. |
+| PUT | `/matches/{matchId}/accept-shipper-request` | `AcceptMatchRequestJson` | `AcceptShipperRequestResponse` | Carrier accepts shipper's request. Body supports optional `acknowledge_overage`. |
+| PUT | `/matches/{matchId}/decline-shipper-request` | `DeclineMatchRequestJson` | `CarrierResponseResult` | Carrier declines shipper's request. Body carries optional `reason`. |
 
 ### Code generation
 
@@ -1163,9 +1165,9 @@ DELIVERY:
   PUT /matches/{}/deliver  →  delivered
 
 CANCELLATION (any time):
-  POST /matches/{}/decline                →  cancelled
-  PUT /matches/{}/decline-shipper-req     →  cancelled
-  DELETE /matches/{}                      →  cancelled (with refund)
+  PUT /matches/{}/decline                 →  cancelled  (shipper declines carrier)
+  PUT /matches/{}/decline-shipper-request →  cancelled  (carrier declines shipper)
+  DELETE /matches/{}                      →  cancelled  (with refund)
 
 COUNTER-OFFER (from any non-confirmed state):
   Same endpoints as initiation + is_counter_offer: true + original_match_id
@@ -1912,7 +1914,7 @@ All display strings must use `stringResource(R.string.key)`. Add to `res/values/
 ### Repository
 - [ ] Match listing — shipper, carrier, all, pending, single
 - [ ] Match creation and all status transitions (confirm, pickup, transit, deliver, cancel)
-- [x] Accept/decline — both roles (4 endpoints) → `BookingsRepositoryImplTest` (slice 1 of advisory-weight sweep: `PUT /matches/{id}/accept-carrier-request` + `acknowledge_overage` body)
+- [x] Accept/decline — both roles (4 endpoints) → `BookingsRepositoryImplTest`. iOS-canonical paths: `PUT /matches/{id}/accept` + `PUT /decline` (shipper-side, generic), `PUT /matches/{id}/accept-shipper-request` + `PUT /decline-shipper-request` (carrier-side). Both accept bodies carry optional `acknowledge_overage`; both decline bodies carry optional `reason` (`DeclineMatchRequestJson`).
 - [x] `RequestMatchResult.compatibility` decoded on 201 → `BookingsRepositoryImplTest.shipperRequestTrip surfaces compatibility when over capacity`
 - [ ] Counter-offer submission — both roles
 - [ ] Auto-charge retry

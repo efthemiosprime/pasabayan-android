@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.bookings.ui
 
 import android.content.res.Configuration
+import java.util.Locale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +49,7 @@ fun ShipperMatchCreationSheet(
     modifier: Modifier = Modifier,
 ) {
     var selectedPackageId by remember { mutableStateOf<Int?>(null) }
-    var offeredPrice by remember { mutableStateOf(String.format("%.2f", trip.effectivePrice)) }
+    var offeredPrice by remember { mutableStateOf(String.format(Locale.ROOT, "%.2f", trip.effectivePrice)) }
     var message by remember { mutableStateOf("") }
 
     LaunchedEffect(pendingPackages) {

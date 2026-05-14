@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.bookings.ui
 
 import android.content.res.Configuration
+import java.util.Locale
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -100,7 +101,7 @@ fun CounterOfferPromptSheet(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = String.format("$%.2f", currentPrice),
+                    text = String.format(Locale.ROOT, "$%.2f", currentPrice),
                     style = PasabayanTextStyles.Body.medium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textDecoration = TextDecoration.LineThrough,
@@ -116,7 +117,7 @@ fun CounterOfferPromptSheet(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = String.format("$%.2f", referencePrice),
+                        text = String.format(Locale.ROOT, "$%.2f", referencePrice),
                         style = PasabayanTextStyles.Body.medium,
                         color = PasabayanColors.Info,
                     )
@@ -136,7 +137,7 @@ fun CounterOfferPromptSheet(
             val errorText = errorText(validation)
             val hintText = stringResource(
                 R.string.bookings_counter_offer_minimum_hint,
-                String.format("$%.2f", minDeliveryPrice),
+                String.format(Locale.ROOT, "$%.2f", minDeliveryPrice),
             )
             POutlinedTextField(
                 value = rawPrice,
@@ -212,7 +213,7 @@ private fun errorText(validation: CounterOfferPromptValidation): String? = when 
     is CounterOfferPromptValidation.BelowMinimum ->
         stringResource(
             R.string.bookings_counter_offer_error_minimum,
-            String.format("$%.2f", validation.minimum),
+            String.format(Locale.ROOT, "$%.2f", validation.minimum),
         )
     CounterOfferPromptValidation.SameAsOriginal ->
         stringResource(R.string.bookings_counter_offer_error_different)

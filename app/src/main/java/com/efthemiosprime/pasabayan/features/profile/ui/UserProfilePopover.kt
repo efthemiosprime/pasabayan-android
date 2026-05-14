@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.profile.ui
 
 import android.content.res.Configuration
+import java.util.Locale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -305,7 +306,7 @@ private fun HeaderRatingRow(rating: Double?, totalRatings: Int?) {
     ) {
         StarRow(rating = rating.toInt().coerceIn(0, 5))
         Text(
-            text = String.format("%.1f", rating),
+            text = String.format(Locale.ROOT, "%.1f", rating),
             style = PasabayanTextStyles.Body.regular,
             color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Medium,
@@ -394,7 +395,7 @@ private fun PerformanceStatsSection(
                         modifier = Modifier.weight(1f),
                     )
                     PerformanceStatItem(
-                        value = String.format("%.1f", rating ?: 0.0),
+                        value = String.format(Locale.ROOT, "%.1f", rating ?: 0.0),
                         label = stringResource(R.string.profile_stats_rating),
                         modifier = Modifier.weight(1f),
                     )

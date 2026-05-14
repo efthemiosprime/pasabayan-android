@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.payments.model
 
 import android.net.Uri
+import java.util.Locale
 
 data class PaymentReceipt(
     val id: Int,
@@ -28,7 +29,7 @@ data class PaymentReceipt(
         }
 
     val displayAmount: String
-        get() = String.format("$%.2f %s", displayAmountValue, amount.currency.uppercase())
+        get() = String.format(Locale.ROOT, "$%.2f %s", displayAmountValue, amount.currency.uppercase())
 
     val routeDescription: String
         get() {

@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.payments.model
 
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PayoutStatus
+import java.util.Locale
 import com.efthemiosprime.pasabayan.core.domain.`enum`.TransactionStatus
 import kotlinx.serialization.json.JsonElement
 
@@ -40,5 +41,5 @@ data class Transaction(
     val currency: String get() = amounts?.currency ?: "cad"
 
     val formattedTotal: String
-        get() = String.format("$%.2f %s", totalAmount, currency.uppercase())
+        get() = String.format(Locale.ROOT, "$%.2f %s", totalAmount, currency.uppercase())
 }

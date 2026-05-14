@@ -73,12 +73,24 @@ data class MatchingUiState(
      * [CarrierOnboardingPrompt.action] once Stripe onboarding finishes.
      */
     val pendingCarrierOnboarding: CarrierOnboardingPrompt? = null,
+    /**
+     * Match ids for which an accept or decline call is in flight. UI binds
+     * the per-row Accept/Decline buttons to `matchId !in pendingActionMatchIds`
+     * so a double-tap can't fire two parallel `PUT /matches/{id}/accept(-shipper-request)`
+     * (or decline) calls — the server would 409 the second one, and worse,
+     * the optimistic state update could race itself. Entries are added on
+     * call start and removed on success/failure.
+     */
+    val pendingActionMatchIds: Set<Int> = emptySet(),
 ) {
     val filteredMatches: List<DeliveryMatch>
         get() = when (statusFilter) {
             null -> matches
             else -> matches.filter { it.matchStatus == statusFilter }
         }
+
+    /** Returns true when an accept/decline call is in-flight for [matchId]. */
+    fun isActionInFlight(matchId: Int): Boolean = matchId in pendingActionMatchIds
 }
 
 @HiltViewModel
@@ -146,6 +158,11 @@ class MatchingViewModel @Inject constructor(
      * depth for stale local capacity values.
      */
     fun acceptMatch(matchId: Int, isCarrier: Boolean) {
+        // Reentrancy guard: ignore the second tap while an accept/decline is
+        // still in flight for this match. Without this, a double-tap fires
+        // two parallel network calls; the second usually 409s and races the
+        // optimistic UI update.
+        if (_uiState.value.isActionInFlight(matchId)) return
         val match = _uiState.value.matches.firstOrNull { it.id == matchId }
         val pending = match?.let { buildLocalOverageConfirmation(it, isCarrier) }
         if (pending != null) {
@@ -160,6 +177,7 @@ class MatchingViewModel @Inject constructor(
     /** Confirm "Accept Anyway" — retries the accept call with `acknowledge_overage = true`. */
     fun confirmOverageAcceptance() {
         val pending = _uiState.value.pendingOverageConfirmation ?: return
+        if (_uiState.value.isActionInFlight(pending.matchId)) return
         _uiState.update { it.copy(pendingOverageConfirmation = null) }
         viewModelScope.launch {
             performAccept(pending.matchId, pending.isCarrierAccepting, acknowledgeOverage = true)
@@ -177,19 +195,32 @@ class MatchingViewModel @Inject constructor(
     }
 
     private suspend fun performAccept(matchId: Int, isCarrier: Boolean, acknowledgeOverage: Boolean?) {
-        val result = if (isCarrier) {
-            bookingsRepository.carrierAcceptShipperRequest(matchId, acknowledgeOverage)
-        } else {
-            bookingsRepository.shipperAcceptCarrierRequest(matchId, acknowledgeOverage)
+        markActionInFlight(matchId)
+        try {
+            val result = if (isCarrier) {
+                bookingsRepository.carrierAcceptShipperRequest(matchId, acknowledgeOverage)
+            } else {
+                bookingsRepository.shipperAcceptCarrierRequest(matchId, acknowledgeOverage)
+            }
+            result.fold(
+                onSuccess = { updatedMatch ->
+                    _uiState.update { state ->
+                        state.copy(matches = state.matches.map { if (it.id == matchId) updatedMatch else it })
+                    }
+                },
+                onFailure = { e -> handleAcceptFailure(matchId, isCarrier, e) },
+            )
+        } finally {
+            clearActionInFlight(matchId)
         }
-        result.fold(
-            onSuccess = { updatedMatch ->
-                _uiState.update { state ->
-                    state.copy(matches = state.matches.map { if (it.id == matchId) updatedMatch else it })
-                }
-            },
-            onFailure = { e -> handleAcceptFailure(matchId, isCarrier, e) },
-        )
+    }
+
+    private fun markActionInFlight(matchId: Int) {
+        _uiState.update { it.copy(pendingActionMatchIds = it.pendingActionMatchIds + matchId) }
+    }
+
+    private fun clearActionInFlight(matchId: Int) {
+        _uiState.update { it.copy(pendingActionMatchIds = it.pendingActionMatchIds - matchId) }
     }
 
     private fun handleAcceptFailure(matchId: Int, isCarrier: Boolean, error: Throwable) {
@@ -286,11 +317,18 @@ class MatchingViewModel @Inject constructor(
     }
 
     fun declineMatch(matchId: Int, isCarrier: Boolean, reason: String? = null) {
+        // Reentrancy guard — see acceptMatch for rationale.
+        if (_uiState.value.isActionInFlight(matchId)) return
         viewModelScope.launch {
-            val result = if (isCarrier) {
-                bookingsRepository.carrierDeclineShipperRequest(matchId, reason)
-            } else {
-                bookingsRepository.shipperDeclineCarrierRequest(matchId, reason)
+            markActionInFlight(matchId)
+            val result = try {
+                if (isCarrier) {
+                    bookingsRepository.carrierDeclineShipperRequest(matchId, reason)
+                } else {
+                    bookingsRepository.shipperDeclineCarrierRequest(matchId, reason)
+                }
+            } finally {
+                clearActionInFlight(matchId)
             }
             result.fold(
                 onSuccess = { updatedMatch ->

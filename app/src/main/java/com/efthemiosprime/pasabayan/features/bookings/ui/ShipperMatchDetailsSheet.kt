@@ -1,6 +1,7 @@
 package com.efthemiosprime.pasabayan.features.bookings.ui
 
 import android.content.res.Configuration
+import java.util.Locale
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -230,7 +231,7 @@ fun ShipperMatchDetailsSheetContent(
                 PDetailSectionTitle(text = stringResource(R.string.bookings_section_payment_summary))
                 PDetailRow(
                     label = stringResource(R.string.bookings_detail_agreed_price),
-                    value = String.format("$%.2f", match.agreedPrice),
+                    value = String.format(Locale.ROOT, "$%.2f", match.agreedPrice),
                     valueColor = PasabayanColors.Success,
                 )
                 if (match.packageRequest != null) {
@@ -244,7 +245,7 @@ fun ShipperMatchDetailsSheetContent(
                         val total = perKg * weight
                         PDetailRow(
                             label = stringResource(R.string.bookings_pricing_rate_breakdown, weight, perKg),
-                            value = String.format("$%.2f", total),
+                            value = String.format(Locale.ROOT, "$%.2f", total),
                         )
                     }
                 }
