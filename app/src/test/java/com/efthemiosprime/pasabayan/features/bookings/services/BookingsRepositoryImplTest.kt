@@ -769,4 +769,53 @@ class BookingsRepositoryImplTest {
         )
         assertTrue(repo.bookTripDirect(tripId = 42, payload = payload).isFailure)
     }
+
+    // -- submitRating --
+
+    @Test
+    fun `submitRating returns match on success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Rated", "data": {"id": 42, "match_status": "delivered", "agreed_price": 150.0}}""",
+            ),
+        )
+
+        val result = repo.submitRating(matchId = 42, rating = 5, reviewText = "Great delivery!")
+        assertTrue(result.isSuccess)
+        assertEquals(42, result.getOrThrow().id)
+    }
+
+    @Test
+    fun `submitRating accepts blank review and posts null`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Rated", "data": {"id": 42, "match_status": "delivered"}}""",
+            ),
+        )
+
+        val result = repo.submitRating(matchId = 42, rating = 4, reviewText = "   ")
+        assertTrue(result.isSuccess)
+        // Body inspection: ensure the request did not include a non-null review_text.
+        val recorded = server.takeRequest().body.readUtf8()
+        assertTrue(
+            "Blank review_text should be omitted or null on the wire; got body=$recorded",
+            !recorded.contains("\"review_text\":\"") || recorded.contains("\"review_text\":null"),
+        )
+    }
+
+    @Test
+    fun `submitRating returns failure on 422`() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(422).setBody("""{"message":"already rated"}"""))
+
+        assertTrue(repo.submitRating(matchId = 42, rating = 5, reviewText = null).isFailure)
+    }
+
+    @Test
+    fun `submitRating returns InvalidResponse when body missing data`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody("""{"success": true, "message": "ok"}"""),
+        )
+
+        assertTrue(repo.submitRating(matchId = 42, rating = 5, reviewText = null).isFailure)
+    }
 }

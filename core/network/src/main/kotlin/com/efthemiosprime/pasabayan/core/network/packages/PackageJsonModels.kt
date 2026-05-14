@@ -44,10 +44,18 @@ data class PackageRequestJson(
     @SerialName("images_processing") @Serializable(with = FlexibleBoolSerializer::class) val imagesProcessing: Boolean? = null,
     // Service request fields
     @SerialName("service_type") val serviceType: String? = null,
+    /**
+     * Errand direction: `receive`, `send`, or `task`. Null on legacy delivery rows.
+     * Parse via `ErrandDirection.fromApi(...)` — strict casing is intentional.
+     */
+    val direction: String? = null,
     @SerialName("shopping_list") val shoppingList: JsonElement? = null,
     @SerialName("store_name") val storeName: String? = null,
     @SerialName("store_address") val storeAddress: String? = null,
     @SerialName("receipt_required") @Serializable(with = FlexibleBoolSerializer::class) val receiptRequired: Boolean? = null,
+    /** Recipient for `direction=send`. */
+    @SerialName("recipient_name") val recipientName: String? = null,
+    @SerialName("recipient_phone") val recipientPhone: String? = null,
     /** Custom-task name. iOS parity: returned for `service_type=general_errand` with direction `task`. */
     @SerialName("task_name") val taskName: String? = null,
     /** Custom-task description. iOS parity: returned for `service_type=general_errand` with direction `task`. */

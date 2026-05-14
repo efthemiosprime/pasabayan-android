@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.features.packages.model
 
+import com.efthemiosprime.pasabayan.core.domain.`enum`.ErrandDirection
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageRequestStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UrgencyLevel
@@ -32,12 +33,29 @@ data class AvailablePackage(
     val distanceKm: Double?,
     val shipper: UserSummary?,
     val serviceType: String?,
+    /** Raw `direction` from the API; nil on legacy delivery rows. */
+    val direction: String? = null,
+    val storeName: String? = null,
+    val recipientName: String? = null,
+    val recipientPhone: String? = null,
+    val taskName: String? = null,
+    val taskDescription: String? = null,
 ) {
     /** Use packageRequestId for API calls, fallback to id. */
     val effectiveId: Int get() = packageRequestId ?: id
 
     val isServiceRequest: Boolean
         get() = serviceType != null && serviceType != "delivery"
+
+    /** Errand direction; legacy delivery rows (null) default to [ErrandDirection.RECEIVE]. */
+    val errandDirection: ErrandDirection
+        get() = ErrandDirection.fromApi(direction)
+
+    val isTaskErrand: Boolean
+        get() = errandDirection == ErrandDirection.TASK
+
+    val isSendErrand: Boolean
+        get() = errandDirection == ErrandDirection.SEND
 }
 
 fun AvailablePackage.toPackageRequest(): PackageRequest = PackageRequest(
@@ -71,8 +89,13 @@ fun AvailablePackage.toPackageRequest(): PackageRequest = PackageRequest(
     images = null,
     imagesProcessing = null,
     serviceType = serviceType,
+    direction = direction,
     shoppingList = null,
-    storeName = null,
+    storeName = storeName,
     storeAddress = null,
     receiptRequired = null,
+    recipientName = recipientName,
+    recipientPhone = recipientPhone,
+    taskName = taskName,
+    taskDescription = taskDescription,
 )

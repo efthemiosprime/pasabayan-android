@@ -243,4 +243,6 @@ private class FakeBookingsRepositoryForDirectBooking : BookingsRepository {
         Result.failure<com.efthemiosprime.pasabayan.features.bookings.model.ReceiverAccessToken>(Exception("Not used"))
     override suspend fun revokeReceiverAccess(matchId: Int, tokenId: Int): Result<Unit> =
         Result.failure(Exception("Not used"))
+    override suspend fun submitRating(matchId: Int, rating: Int, reviewText: String?) =
+        Result.failure<com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch>(Exception("Not used"))
 }

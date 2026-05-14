@@ -34,6 +34,14 @@ data class AvailablePackageJson(
     @SerialName("days_since_posted") @Serializable(with = FlexibleDoubleSerializer::class) val daysSincePosted: Double? = null,
     val shipper: UserSummary? = null,
     @SerialName("service_type") val serviceType: String? = null,
+    // Service / errand fields. `direction` is `receive`, `send`, or `task`;
+    // legacy delivery rows omit it. Parsed via `ErrandDirection.fromApi(...)`.
+    val direction: String? = null,
+    @SerialName("store_name") val storeName: String? = null,
+    @SerialName("recipient_name") val recipientName: String? = null,
+    @SerialName("recipient_phone") val recipientPhone: String? = null,
+    @SerialName("task_name") val taskName: String? = null,
+    @SerialName("task_description") val taskDescription: String? = null,
     @SerialName("distance_km") @Serializable(with = FlexibleDoubleSerializer::class) val distanceKm: Double? = null,
 )
 

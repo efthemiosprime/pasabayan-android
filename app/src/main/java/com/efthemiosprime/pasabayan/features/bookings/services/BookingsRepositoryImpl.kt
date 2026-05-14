@@ -8,6 +8,7 @@ import com.efthemiosprime.pasabayan.core.network.bookings.BookingsApi
 import com.efthemiosprime.pasabayan.core.network.bookings.CarrierCounterOfferRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.CreateReceiverAccessRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.DirectBookingRequestJson
+import com.efthemiosprime.pasabayan.core.network.bookings.RateMatchRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.MatchResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.ShipperCounterOfferRequestJson
 import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
@@ -315,6 +316,28 @@ class BookingsRepositoryImpl @Inject constructor(
             val res = bookingsApi.revokeReceiverAccess(matchId, tokenId)
             if (!res.isSuccessful) return Result.failure(mapError(res))
             Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun submitRating(
+        matchId: Int,
+        rating: Int,
+        reviewText: String?,
+    ): Result<DeliveryMatch> {
+        return try {
+            val res = bookingsApi.rateMatch(
+                matchId = matchId,
+                body = RateMatchRequestJson(
+                    rating = rating,
+                    reviewText = reviewText?.takeIf { it.isNotBlank() },
+                ),
+            )
+            if (!res.isSuccessful) return Result.failure(mapError(res))
+            val match = res.body()?.data?.toDomain()
+                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            Result.success(match)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }

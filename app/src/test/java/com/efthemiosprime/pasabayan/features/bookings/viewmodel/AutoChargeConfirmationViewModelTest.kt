@@ -342,6 +342,8 @@ private class FakeBookingsRepo : BookingsRepository {
         tripId: Int,
         payload: com.efthemiosprime.pasabayan.features.bookings.model.DirectBookingPayload,
     ) = Result.failure<com.efthemiosprime.pasabayan.features.bookings.model.nested.DirectBookingData>(Exception("Not used"))
+    override suspend fun submitRating(matchId: Int, rating: Int, reviewText: String?) =
+        Result.failure<com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch>(Exception("Not used"))
 }
 
 private class FakePaymentMethodsRepo : PaymentMethodsRepository {

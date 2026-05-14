@@ -124,4 +124,19 @@ interface BookingsRepository {
         tripId: Int,
         payload: DirectBookingPayload,
     ): Result<DirectBookingData>
+
+    // -- Rating --
+
+    /**
+     * Submit a post-delivery rating for a match. Backed by
+     * `POST /matches/{matchId}/rate`. Mirrors iOS `RatingViewModel.submitRating`.
+     *
+     * @param rating integer star value (1..5)
+     * @param reviewText optional written review; null/blank is allowed
+     */
+    suspend fun submitRating(
+        matchId: Int,
+        rating: Int,
+        reviewText: String?,
+    ): Result<DeliveryMatch>
 }

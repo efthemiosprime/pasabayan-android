@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.features.packages.model
 
+import com.efthemiosprime.pasabayan.core.domain.`enum`.ErrandDirection
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageRequestStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageSize
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageType
@@ -43,10 +44,16 @@ data class PackageRequest(
     val imagesProcessing: Boolean?,
     // Service request fields
     val serviceType: String?,
+    /** Raw `direction` from the API (`receive`, `send`, `task`); null on legacy delivery rows. */
+    val direction: String? = null,
     val shoppingList: String?,
     val storeName: String?,
     val storeAddress: String?,
     val receiptRequired: Boolean?,
+    /** Recipient name. iOS parity — set when direction=send. */
+    val recipientName: String? = null,
+    /** Recipient phone. iOS parity — set when direction=send. */
+    val recipientPhone: String? = null,
     /** Custom-task name. iOS parity — set when service_type=general_errand + direction=task. */
     val taskName: String? = null,
     /** Custom-task description. iOS parity — set when service_type=general_errand + direction=task. */
@@ -82,4 +89,14 @@ data class PackageRequest(
 
     val isServiceRequest: Boolean
         get() = serviceType != null && serviceType != "delivery"
+
+    /** Errand direction; legacy delivery rows (null) default to [ErrandDirection.RECEIVE]. */
+    val errandDirection: ErrandDirection
+        get() = ErrandDirection.fromApi(direction)
+
+    val isTaskErrand: Boolean
+        get() = errandDirection == ErrandDirection.TASK
+
+    val isSendErrand: Boolean
+        get() = errandDirection == ErrandDirection.SEND
 }

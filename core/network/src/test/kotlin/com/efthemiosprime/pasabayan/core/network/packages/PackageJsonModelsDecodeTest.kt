@@ -218,6 +218,67 @@ class PackageJsonModelsDecodeTest {
         assertEquals("Tuesdays and Fridays for the next two weeks", pkg.taskDescription)
     }
 
+    @Test
+    fun `PackageRequestJson decodes direction and recipient fields for send errand`() {
+        val raw = """
+            {
+              "id": 102,
+              "service_type": "general_errand",
+              "direction": "send",
+              "recipient_name": "Jane Doe",
+              "recipient_phone": "+15145551234"
+            }
+        """.trimIndent()
+        val pkg = json.decodeFromString<PackageRequestJson>(raw)
+
+        assertEquals("send", pkg.direction)
+        assertEquals("Jane Doe", pkg.recipientName)
+        assertEquals("+15145551234", pkg.recipientPhone)
+    }
+
+    @Test
+    fun `AvailablePackageJson decodes errand fields`() {
+        val raw = """
+            {
+              "id": 30,
+              "pickup_city": "Montreal",
+              "delivery_city": "Toronto",
+              "service_type": "general_errand",
+              "direction": "task",
+              "store_name": "Metro Plus",
+              "recipient_name": "Jane Doe",
+              "recipient_phone": "+15145551234",
+              "task_name": "Walk my dog",
+              "task_description": "Daily walk, 30 min."
+            }
+        """.trimIndent()
+        val pkg = json.decodeFromString<AvailablePackageJson>(raw)
+
+        assertEquals("task", pkg.direction)
+        assertEquals("Metro Plus", pkg.storeName)
+        assertEquals("Jane Doe", pkg.recipientName)
+        assertEquals("+15145551234", pkg.recipientPhone)
+        assertEquals("Walk my dog", pkg.taskName)
+        assertEquals("Daily walk, 30 min.", pkg.taskDescription)
+    }
+
+    @Test
+    fun `AvailablePackageJson tolerates unknown links and quality_score`() {
+        // Compatible-packages endpoint adds `quality_score` (Int) and the paginator
+        // envelope carries `links[]`. Both must be tolerated by the decoder.
+        val raw = """
+            {
+              "id": 31,
+              "pickup_city": "Montreal",
+              "delivery_city": "Toronto",
+              "quality_score": 99,
+              "links": [{"url": "...", "label": "1", "active": true}]
+            }
+        """.trimIndent()
+        val pkg = json.decodeFromString<AvailablePackageJson>(raw)
+        assertEquals(31, pkg.id)
+    }
+
     // -- CreateServiceRequestBodyJson --
 
     @Test

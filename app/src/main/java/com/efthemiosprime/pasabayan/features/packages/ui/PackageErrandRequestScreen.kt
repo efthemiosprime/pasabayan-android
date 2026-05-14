@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.annotation.StringRes
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import com.efthemiosprime.pasabayan.R
@@ -48,6 +49,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonSize
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
 import com.efthemiosprime.pasabayan.core.designsystem.component.PExpandableSection
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
+import com.efthemiosprime.pasabayan.core.domain.`enum`.ErrandDirection
 import com.efthemiosprime.pasabayan.core.domain.model.Coordinates
 import com.efthemiosprime.pasabayan.features.packages.components.PackageLocationMap
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequestBaseScaffold
@@ -66,15 +68,11 @@ private enum class ErrandServiceType(val code: String, val labelRes: Int) {
     GeneralErrand("general_errand", R.string.packages_service_type_general_errand),
 }
 
-private enum class ErrandDirection(val code: String, val labelRes: Int) {
-    Receive("receive", R.string.packages_service_direction_receive),
-    Send("send", R.string.packages_service_direction_send),
-    /**
-     * iOS parity: when the shipper picks a custom task (e.g. "water plants"),
-     * the create-service flow branches into a `taskName` + `taskDescription`
-     * pair instead of a shopping list. Only valid for [ErrandServiceType.GeneralErrand].
-     */
-    Task("task", R.string.packages_service_direction_task),
+@StringRes
+private fun ErrandDirection.labelRes(): Int = when (this) {
+    ErrandDirection.RECEIVE -> R.string.packages_service_direction_receive
+    ErrandDirection.SEND -> R.string.packages_service_direction_send
+    ErrandDirection.TASK -> R.string.packages_service_direction_task
 }
 
 private data class ShoppingItemInput(
@@ -105,7 +103,7 @@ fun PackageErrandRequestScreen(
     val shoppingItems = remember { mutableStateListOf(ShoppingItemInput()) }
 
     var serviceType by remember { mutableStateOf(ErrandServiceType.GroceryShopping) }
-    var direction by remember { mutableStateOf(ErrandDirection.Receive) }
+    var direction by remember { mutableStateOf(ErrandDirection.RECEIVE) }
     var deliveryAddress by remember { mutableStateOf("") }
     var deliveryCity by remember { mutableStateOf("") }
     var deliveryCitySuggestions by remember { mutableStateOf(emptyList<String>()) }
@@ -127,7 +125,7 @@ fun PackageErrandRequestScreen(
     val coroutineScope = rememberCoroutineScope()
     var deliveryDate by remember { mutableStateOf(LocalDate.now().plusDays(1)) }
     val serviceTypeLabels = serviceTypes.associateWith { stringResource(it.labelRes) }
-    val isTaskMode = serviceType == ErrandServiceType.GeneralErrand && direction == ErrandDirection.Task
+    val isTaskMode = serviceType == ErrandServiceType.GeneralErrand && direction == ErrandDirection.TASK
 
     // iOS parity: task mode swaps the shopping-list requirement for a task-name requirement.
     val itemsComplete = if (isTaskMode) {
@@ -137,7 +135,7 @@ fun PackageErrandRequestScreen(
     }
     val addressComplete = deliveryAddress.isNotBlank() && deliveryCity.isNotBlank()
     val completedRequirements = listOf(itemsComplete, addressComplete).count { it }
-    val requireRecipient = serviceType == ErrandServiceType.GeneralErrand && direction == ErrandDirection.Send
+    val requireRecipient = serviceType == ErrandServiceType.GeneralErrand && direction == ErrandDirection.SEND
     val canSubmit = itemsComplete && addressComplete && (!requireRecipient || recipientName.isNotBlank())
 
     PackageRequestBaseScaffold(
@@ -195,7 +193,7 @@ fun PackageErrandRequestScreen(
                             maxPriceBudget = maxBudget.toDoubleOrNull(),
                             deliveryDateNeeded = deliveryDate,
                             urgencyLevelCode = "normal",
-                            directionCode = if (serviceType == ErrandServiceType.GeneralErrand) direction.code else null,
+                            directionCode = if (serviceType == ErrandServiceType.GeneralErrand) direction.apiValue else null,
                             recipientName = if (requireRecipient) recipientName else null,
                             recipientPhone = if (requireRecipient) recipientPhone else null,
                             taskName = if (isTaskMode) taskName else null,
@@ -534,7 +532,7 @@ private fun ErrandDirectionToggle(
         ) {
             ErrandDirection.entries.forEach { option ->
                 DirectionOption(
-                    label = stringResource(option.labelRes),
+                    label = stringResource(option.labelRes()),
                     selected = direction == option,
                     onClick = { onDirectionChanged(option) },
                     modifier = Modifier.weight(1f),

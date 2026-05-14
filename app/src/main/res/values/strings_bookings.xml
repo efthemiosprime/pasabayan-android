@@ -310,4 +310,24 @@
     <string name="bookings_carrier_onboarding_cta">Complete payout setup</string>
     <string name="bookings_carrier_onboarding_cancel">Not now</string>
     <string name="bookings_carrier_onboarding_loading">Checking your payout status…</string>
+
+    <!-- Slice 8 — Post-delivery rating (iOS parity with RateDeliverySheet) -->
+    <string name="bookings_rate_delivery_title">Rate Delivery</string>
+    <string name="bookings_rate_delivery_close">Close</string>
+    <string name="bookings_rate_delivery_experience_question">How was your experience?</string>
+    <string name="bookings_rate_delivery_write_review">Write a review (optional)</string>
+    <string name="bookings_rate_delivery_placeholder">Share details so others know what to expect.</string>
+    <string name="bookings_rate_delivery_submit">Submit rating</string>
+    <string name="bookings_rate_delivery_submitting">Submitting…</string>
+    <string name="bookings_rate_delivery_success_title">Rating submitted</string>
+    <string name="bookings_rate_delivery_success_message">Thanks for sharing your experience.</string>
+    <string name="bookings_rate_delivery_error_title">Could not submit rating</string>
+    <string name="bookings_rate_delivery_error_generic">Could not submit rating. Please try again.</string>
+    <string name="bookings_rate_delivery_character_counter">%1$d/%2$d</string>
+    <string name="bookings_rate_delivery_star_cd">%1$d of 5 stars</string>
+    <string name="bookings_rate_delivery_rating_terrible">Terrible</string>
+    <string name="bookings_rate_delivery_rating_poor">Poor</string>
+    <string name="bookings_rate_delivery_rating_okay">Okay</string>
+    <string name="bookings_rate_delivery_rating_good">Good</string>
+    <string name="bookings_rate_delivery_rating_excellent">Excellent</string>
 </resources>

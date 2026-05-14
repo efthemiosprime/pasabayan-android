@@ -40,10 +40,13 @@ fun PackageRequestJson.toDomain(): PackageRequest = PackageRequest(
     images = images?.map { it.toDomain() },
     imagesProcessing = imagesProcessing,
     serviceType = serviceType,
+    direction = direction,
     shoppingList = shoppingList.toDisplayString(),
     storeName = storeName,
     storeAddress = storeAddress,
     receiptRequired = receiptRequired,
+    recipientName = recipientName,
+    recipientPhone = recipientPhone,
     taskName = taskName,
     taskDescription = taskDescription,
     pickupLat = pickupLat,
@@ -84,6 +87,12 @@ fun AvailablePackageJson.toDomain(): AvailablePackage = AvailablePackage(
     distanceKm = distanceKm,
     shipper = shipper,
     serviceType = serviceType,
+    direction = direction,
+    storeName = storeName,
+    recipientName = recipientName,
+    recipientPhone = recipientPhone,
+    taskName = taskName,
+    taskDescription = taskDescription,
 )
 
 private fun JsonElement?.toDisplayString(): String? {

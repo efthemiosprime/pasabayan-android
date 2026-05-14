@@ -107,7 +107,10 @@ interface BookingsApi {
     // -- Rating --
 
     @POST("matches/{matchId}/rate")
-    suspend fun rateMatch(@Path("matchId") matchId: Int, @Body body: Map<String, @JvmSuppressWildcards Any>): Response<MatchResponseJson>
+    suspend fun rateMatch(
+        @Path("matchId") matchId: Int,
+        @Body body: RateMatchRequestJson,
+    ): Response<MatchResponseJson>
 
     // -- Auto-charge retry --
 

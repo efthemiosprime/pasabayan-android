@@ -255,4 +255,7 @@ private class FakeBookingsRepositoryForHistory : BookingsRepository {
         payload: com.efthemiosprime.pasabayan.features.bookings.model.DirectBookingPayload,
     ): Result<com.efthemiosprime.pasabayan.features.bookings.model.nested.DirectBookingData> =
         Result.failure(Exception("Not used"))
+    override suspend fun submitRating(matchId: Int, rating: Int, reviewText: String?):
+        Result<com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch> =
+        Result.failure(Exception("Not used"))
 }

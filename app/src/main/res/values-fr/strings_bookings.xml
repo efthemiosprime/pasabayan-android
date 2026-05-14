@@ -310,4 +310,24 @@
     <string name="bookings_carrier_onboarding_cta">Terminer la configuration</string>
     <string name="bookings_carrier_onboarding_cancel">Plus tard</string>
     <string name="bookings_carrier_onboarding_loading">Vérification de votre statut de paiement…</string>
+
+    <!-- Slice 8 — Évaluation post-livraison (parité avec RateDeliverySheet iOS) -->
+    <string name="bookings_rate_delivery_title">Évaluer la livraison</string>
+    <string name="bookings_rate_delivery_close">Fermer</string>
+    <string name="bookings_rate_delivery_experience_question">Comment s\'est passée votre expérience ?</string>
+    <string name="bookings_rate_delivery_write_review">Rédiger un avis (facultatif)</string>
+    <string name="bookings_rate_delivery_placeholder">Partagez des détails pour aider les autres à savoir à quoi s\'attendre.</string>
+    <string name="bookings_rate_delivery_submit">Envoyer l\'évaluation</string>
+    <string name="bookings_rate_delivery_submitting">Envoi…</string>
+    <string name="bookings_rate_delivery_success_title">Évaluation envoyée</string>
+    <string name="bookings_rate_delivery_success_message">Merci d\'avoir partagé votre expérience.</string>
+    <string name="bookings_rate_delivery_error_title">Impossible d\'envoyer l\'évaluation</string>
+    <string name="bookings_rate_delivery_error_generic">Impossible d\'envoyer l\'évaluation. Réessayez.</string>
+    <string name="bookings_rate_delivery_character_counter">%1$d/%2$d</string>
+    <string name="bookings_rate_delivery_star_cd">%1$d étoiles sur 5</string>
+    <string name="bookings_rate_delivery_rating_terrible">Très mauvaise</string>
+    <string name="bookings_rate_delivery_rating_poor">Mauvaise</string>
+    <string name="bookings_rate_delivery_rating_okay">Correcte</string>
+    <string name="bookings_rate_delivery_rating_good">Bonne</string>
+    <string name="bookings_rate_delivery_rating_excellent">Excellente</string>
 </resources>

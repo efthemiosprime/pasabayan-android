@@ -1,5 +1,6 @@
 package com.efthemiosprime.pasabayan.features.packages.model
 
+import com.efthemiosprime.pasabayan.core.domain.`enum`.ErrandDirection
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageRequestStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageType
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UrgencyLevel
@@ -10,6 +11,7 @@ import com.efthemiosprime.pasabayan.core.network.packages.PackageImageJson
 import com.efthemiosprime.pasabayan.core.network.packages.PackageRequestJson
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -150,6 +152,68 @@ class PackageMapperTest {
 
         assertEquals("Water the plants", pkg.taskName)
         assertEquals("Tuesdays and Fridays for the next two weeks", pkg.taskDescription)
+    }
+
+    @Test
+    fun `PackageRequestJson toDomain maps direction and recipient fields`() {
+        val payload = PackageRequestJson(
+            id = 32,
+            serviceType = "general_errand",
+            direction = "send",
+            recipientName = "Jane Doe",
+            recipientPhone = "+15145551234",
+        )
+        val pkg = payload.toDomain()
+
+        assertEquals("send", pkg.direction)
+        assertEquals(ErrandDirection.SEND, pkg.errandDirection)
+        assertTrue(pkg.isSendErrand)
+        assertEquals("Jane Doe", pkg.recipientName)
+        assertEquals("+15145551234", pkg.recipientPhone)
+    }
+
+    @Test
+    fun `PackageRequestJson toDomain treats null direction as RECEIVE`() {
+        // Legacy delivery rows omit direction.
+        val pkg = PackageRequestJson(id = 1).toDomain()
+        assertNull(pkg.direction)
+        assertEquals(ErrandDirection.RECEIVE, pkg.errandDirection)
+        assertFalse(pkg.isTaskErrand)
+        assertFalse(pkg.isSendErrand)
+    }
+
+    @Test
+    fun `AvailablePackageJson toDomain maps errand fields and round-trips through toPackageRequest`() {
+        val avail = AvailablePackageJson(
+            id = 21,
+            packageRequestId = 11,
+            pickupCity = "Montreal",
+            deliveryCity = "Toronto",
+            urgencyLevel = UrgencyLevel.NORMAL,
+            packageType = PackageType.GENERAL,
+            serviceType = "general_errand",
+            direction = "task",
+            storeName = "Metro Plus",
+            recipientName = null,
+            recipientPhone = null,
+            taskName = "Walk my dog",
+            taskDescription = "Daily walk, 30 min.",
+            shipper = UserSummary(id = 5, name = "Alex"),
+        ).toDomain()
+
+        assertEquals("task", avail.direction)
+        assertEquals(ErrandDirection.TASK, avail.errandDirection)
+        assertTrue(avail.isTaskErrand)
+        assertEquals("Metro Plus", avail.storeName)
+        assertEquals("Walk my dog", avail.taskName)
+        assertEquals("Daily walk, 30 min.", avail.taskDescription)
+
+        val pkg = avail.toPackageRequest()
+        assertEquals("task", pkg.direction)
+        assertEquals(ErrandDirection.TASK, pkg.errandDirection)
+        assertEquals("Walk my dog", pkg.taskName)
+        assertEquals("Daily walk, 30 min.", pkg.taskDescription)
+        assertEquals("Metro Plus", pkg.storeName)
     }
 
     @Test
