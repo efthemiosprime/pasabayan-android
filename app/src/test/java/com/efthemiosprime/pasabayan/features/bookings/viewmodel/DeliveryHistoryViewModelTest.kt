@@ -192,13 +192,13 @@ private class FakeBookingsRepositoryForDeliveryHistory : BookingsRepository {
         matchId: Int,
         acknowledgeOverage: Boolean?,
     ): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
-    override suspend fun shipperDecline(matchId: Int): Result<DeliveryMatch> =
+    override suspend fun shipperDeclineCarrierRequest(matchId: Int, reason: String?): Result<DeliveryMatch> =
         Result.failure(Exception("Not used"))
     override suspend fun carrierAcceptShipperRequest(
         matchId: Int,
         acknowledgeOverage: Boolean?,
     ): Result<DeliveryMatch> = Result.failure(Exception("Not used"))
-    override suspend fun carrierDeclineShipperRequest(matchId: Int): Result<DeliveryMatch> =
+    override suspend fun carrierDeclineShipperRequest(matchId: Int, reason: String?): Result<DeliveryMatch> =
         Result.failure(Exception("Not used"))
     override suspend fun generatePickupCode(matchId: Int): Result<String> =
         Result.failure(Exception("Not used"))

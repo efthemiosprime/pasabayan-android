@@ -792,12 +792,12 @@ class FakeBookingsRepository : BookingsRepository {
         lastShipperAcceptAcknowledge = acknowledgeOverage
         return shipperAcceptResult ?: Result.failure(Exception("Not set"))
     }
-    override suspend fun shipperDecline(matchId: Int) = shipperDeclineResult ?: Result.failure(Exception("Not set"))
+    override suspend fun shipperDeclineCarrierRequest(matchId: Int, reason: String?) = shipperDeclineResult ?: Result.failure(Exception("Not set"))
     override suspend fun carrierAcceptShipperRequest(matchId: Int, acknowledgeOverage: Boolean?): Result<DeliveryMatch> {
         lastCarrierAcceptAcknowledge = acknowledgeOverage
         return carrierAcceptResult ?: Result.failure(Exception("Not set"))
     }
-    override suspend fun carrierDeclineShipperRequest(matchId: Int) = carrierDeclineResult ?: Result.failure(Exception("Not set"))
+    override suspend fun carrierDeclineShipperRequest(matchId: Int, reason: String?) = carrierDeclineResult ?: Result.failure(Exception("Not set"))
     override suspend fun generatePickupCode(matchId: Int) = Result.success("123456")
     override suspend fun generateDeliveryCode(matchId: Int) = Result.success("654321")
     override suspend fun confirmPickupWithCode(matchId: Int, code: String) = confirmResult ?: Result.failure(Exception("Not set"))

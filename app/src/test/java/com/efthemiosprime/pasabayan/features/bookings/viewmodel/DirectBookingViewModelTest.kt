@@ -210,11 +210,11 @@ private class FakeBookingsRepositoryForDirectBooking : BookingsRepository {
         Result.failure<com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch>(Exception("Not used"))
     override suspend fun shipperAcceptCarrierRequest(matchId: Int, acknowledgeOverage: Boolean?) =
         Result.failure<com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch>(Exception("Not used"))
-    override suspend fun shipperDecline(matchId: Int) =
+    override suspend fun shipperDeclineCarrierRequest(matchId: Int, reason: String?) =
         Result.failure<com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch>(Exception("Not used"))
     override suspend fun carrierAcceptShipperRequest(matchId: Int, acknowledgeOverage: Boolean?) =
         Result.failure<com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch>(Exception("Not used"))
-    override suspend fun carrierDeclineShipperRequest(matchId: Int) =
+    override suspend fun carrierDeclineShipperRequest(matchId: Int, reason: String?) =
         Result.failure<com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch>(Exception("Not used"))
     override suspend fun generatePickupCode(matchId: Int) = Result.failure<String>(Exception("Not used"))
     override suspend fun generateDeliveryCode(matchId: Int) = Result.failure<String>(Exception("Not used"))

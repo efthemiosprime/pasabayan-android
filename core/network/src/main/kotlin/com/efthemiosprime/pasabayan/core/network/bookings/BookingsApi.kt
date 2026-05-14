@@ -61,15 +61,27 @@ interface BookingsApi {
     ): Response<DeliveryConfirmationResponseJson>
 
     // -- Accept/decline flows --
+    //
+    // iOS parity (see Pasabayan/Features/Bookings/Services/BookingsAPIService.swift):
+    //  - Shipper acts on carrier's request → `PUT /matches/{id}/accept` (generic) +
+    //    `PUT /matches/{id}/decline` (generic). iOS calls these `acceptCarrierRequest`
+    //    and `declineCarrierRequest` but the wire endpoints are the unsuffixed forms.
+    //  - Carrier acts on shipper's request → `PUT /matches/{id}/accept-shipper-request` +
+    //    `PUT /matches/{id}/decline-shipper-request`.
+    // The previous Android paths (`/accept-carrier-request`, `POST /decline`) diverged from
+    // iOS; restored to match exactly.
 
-    @PUT("matches/{matchId}/accept-carrier-request")
+    @PUT("matches/{matchId}/accept")
     suspend fun shipperAcceptCarrierRequest(
         @Path("matchId") matchId: Int,
         @Body body: AcceptMatchRequestJson = AcceptMatchRequestJson(),
     ): Response<MatchResponseJson>
 
-    @POST("matches/{matchId}/decline")
-    suspend fun shipperDecline(@Path("matchId") matchId: Int): Response<MatchResponseJson>
+    @PUT("matches/{matchId}/decline")
+    suspend fun shipperDeclineCarrierRequest(
+        @Path("matchId") matchId: Int,
+        @Body body: DeclineMatchRequestJson = DeclineMatchRequestJson(),
+    ): Response<MatchResponseJson>
 
     @PUT("matches/{matchId}/accept-shipper-request")
     suspend fun carrierAcceptShipperRequest(
@@ -78,7 +90,10 @@ interface BookingsApi {
     ): Response<MatchResponseJson>
 
     @PUT("matches/{matchId}/decline-shipper-request")
-    suspend fun carrierDeclineShipperRequest(@Path("matchId") matchId: Int): Response<MatchResponseJson>
+    suspend fun carrierDeclineShipperRequest(
+        @Path("matchId") matchId: Int,
+        @Body body: DeclineMatchRequestJson = DeclineMatchRequestJson(),
+    ): Response<MatchResponseJson>
 
     // -- Code generation --
 

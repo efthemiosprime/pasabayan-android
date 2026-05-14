@@ -285,12 +285,12 @@ class MatchingViewModel @Inject constructor(
         )
     }
 
-    fun declineMatch(matchId: Int, isCarrier: Boolean) {
+    fun declineMatch(matchId: Int, isCarrier: Boolean, reason: String? = null) {
         viewModelScope.launch {
             val result = if (isCarrier) {
-                bookingsRepository.carrierDeclineShipperRequest(matchId)
+                bookingsRepository.carrierDeclineShipperRequest(matchId, reason)
             } else {
-                bookingsRepository.shipperDecline(matchId)
+                bookingsRepository.shipperDeclineCarrierRequest(matchId, reason)
             }
             result.fold(
                 onSuccess = { updatedMatch ->

@@ -7,6 +7,7 @@ import com.efthemiosprime.pasabayan.core.network.bookings.AcceptMatchRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.BookingsApi
 import com.efthemiosprime.pasabayan.core.network.bookings.CarrierCounterOfferRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.CreateReceiverAccessRequestJson
+import com.efthemiosprime.pasabayan.core.network.bookings.DeclineMatchRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.DirectBookingRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.RateMatchRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.MatchResponseJson
@@ -103,8 +104,15 @@ class BookingsRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun shipperDecline(matchId: Int): Result<DeliveryMatch> =
-        matchAction { bookingsApi.shipperDecline(matchId) }
+    override suspend fun shipperDeclineCarrierRequest(
+        matchId: Int,
+        reason: String?,
+    ): Result<DeliveryMatch> = matchAction {
+        bookingsApi.shipperDeclineCarrierRequest(
+            matchId = matchId,
+            body = DeclineMatchRequestJson(reason = reason?.takeIf { it.isNotBlank() }),
+        )
+    }
 
     override suspend fun carrierAcceptShipperRequest(
         matchId: Int,
@@ -116,8 +124,15 @@ class BookingsRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun carrierDeclineShipperRequest(matchId: Int): Result<DeliveryMatch> =
-        matchAction { bookingsApi.carrierDeclineShipperRequest(matchId) }
+    override suspend fun carrierDeclineShipperRequest(
+        matchId: Int,
+        reason: String?,
+    ): Result<DeliveryMatch> = matchAction {
+        bookingsApi.carrierDeclineShipperRequest(
+            matchId = matchId,
+            body = DeclineMatchRequestJson(reason = reason?.takeIf { it.isNotBlank() }),
+        )
+    }
 
     override suspend fun generatePickupCode(matchId: Int): Result<String> {
         return try {

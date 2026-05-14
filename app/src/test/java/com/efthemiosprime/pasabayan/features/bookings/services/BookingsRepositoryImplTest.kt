@@ -218,10 +218,10 @@ class BookingsRepositoryImplTest {
         assertEquals("123456", result.getOrThrow())
     }
 
-    // -- shipperAcceptCarrierRequest (new contract — PUT /matches/{id}/accept-carrier-request) --
+    // -- shipperAcceptCarrierRequest (iOS parity — PUT /matches/{id}/accept) --
 
     @Test
-    fun `shipperAcceptCarrierRequest hits PUT accept-carrier-request`() = runBlocking {
+    fun `shipperAcceptCarrierRequest hits PUT accept`() = runBlocking {
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(
                 """{"success": true, "message": "Accepted", "data": {"id": 100, "match_status": "confirmed"}}""",
@@ -233,7 +233,7 @@ class BookingsRepositoryImplTest {
 
         val request = server.takeRequest()
         assertEquals("PUT", request.method)
-        assertEquals("/api/matches/100/accept-carrier-request", request.path)
+        assertEquals("/api/matches/100/accept", request.path)
     }
 
     @Test
@@ -294,6 +294,112 @@ class BookingsRepositoryImplTest {
 
         val body = server.takeRequest().body.readUtf8()
         assertTrue("payload should include acknowledge_overage=true", body.contains("\"acknowledge_overage\":true"))
+    }
+
+    // -- shipperDeclineCarrierRequest (iOS parity — PUT /matches/{id}/decline) --
+
+    @Test
+    fun `shipperDeclineCarrierRequest hits PUT decline`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Declined", "data": {"id": 100, "match_status": "carrier_declined"}}""",
+            ),
+        )
+
+        val result = repo.shipperDeclineCarrierRequest(100)
+        assertTrue(result.isSuccess)
+
+        val request = server.takeRequest()
+        assertEquals("PUT", request.method)
+        assertEquals("/api/matches/100/decline", request.path)
+    }
+
+    @Test
+    fun `shipperDeclineCarrierRequest omits reason when null`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Declined", "data": {"id": 100, "match_status": "carrier_declined"}}""",
+            ),
+        )
+
+        repo.shipperDeclineCarrierRequest(100, reason = null)
+
+        val body = server.takeRequest().body.readUtf8()
+        assertFalse("payload should not include reason when null", body.contains("reason"))
+    }
+
+    @Test
+    fun `shipperDeclineCarrierRequest sends reason when provided`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Declined", "data": {"id": 100, "match_status": "carrier_declined"}}""",
+            ),
+        )
+
+        repo.shipperDeclineCarrierRequest(100, reason = "Schedule conflict")
+
+        val body = server.takeRequest().body.readUtf8()
+        assertTrue("payload should include reason", body.contains("\"reason\":\"Schedule conflict\""))
+    }
+
+    @Test
+    fun `shipperDeclineCarrierRequest treats blank reason as null`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Declined", "data": {"id": 100, "match_status": "carrier_declined"}}""",
+            ),
+        )
+
+        repo.shipperDeclineCarrierRequest(100, reason = "   ")
+
+        val body = server.takeRequest().body.readUtf8()
+        assertFalse("blank reason should be omitted", body.contains("reason"))
+    }
+
+    // -- carrierDeclineShipperRequest (PUT /matches/{id}/decline-shipper-request, with optional reason) --
+
+    @Test
+    fun `carrierDeclineShipperRequest hits PUT decline-shipper-request`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Declined", "data": {"id": 100, "match_status": "shipper_declined"}}""",
+            ),
+        )
+
+        val result = repo.carrierDeclineShipperRequest(100)
+        assertTrue(result.isSuccess)
+
+        val request = server.takeRequest()
+        assertEquals("PUT", request.method)
+        assertEquals("/api/matches/100/decline-shipper-request", request.path)
+    }
+
+    @Test
+    fun `carrierDeclineShipperRequest sends reason when provided`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Declined", "data": {"id": 100, "match_status": "shipper_declined"}}""",
+            ),
+        )
+
+        repo.carrierDeclineShipperRequest(100, reason = "Capacity full")
+
+        val body = server.takeRequest().body.readUtf8()
+        assertTrue("payload should include reason", body.contains("\"reason\":\"Capacity full\""))
+    }
+
+    @Test
+    fun `carrierDeclineShipperRequest omits reason when null`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"success": true, "message": "Declined", "data": {"id": 100, "match_status": "shipper_declined"}}""",
+            ),
+        )
+
+        repo.carrierDeclineShipperRequest(100, reason = null)
+
+        val body = server.takeRequest().body.readUtf8()
+        assertFalse("payload should not include reason when null", body.contains("reason"))
     }
 
     // -- shipperRequestTrip envelope (iOS parity 8c9646d) --

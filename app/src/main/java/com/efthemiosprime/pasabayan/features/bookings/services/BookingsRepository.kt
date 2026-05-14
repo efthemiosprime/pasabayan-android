@@ -32,14 +32,29 @@ interface BookingsRepository {
         acknowledgeOverage: Boolean? = null,
     ): Result<DeliveryMatch>
 
-    suspend fun shipperDecline(matchId: Int): Result<DeliveryMatch>
+    /**
+     * Shipper declines a carrier's request to carry. iOS parity —
+     * `reason` is free-text and optional (sent only when non-blank).
+     */
+    suspend fun shipperDeclineCarrierRequest(
+        matchId: Int,
+        reason: String? = null,
+    ): Result<DeliveryMatch>
 
     suspend fun carrierAcceptShipperRequest(
         matchId: Int,
         acknowledgeOverage: Boolean? = null,
     ): Result<DeliveryMatch>
 
-    suspend fun carrierDeclineShipperRequest(matchId: Int): Result<DeliveryMatch>
+    /**
+     * Carrier declines a shipper's request. iOS sends `reason` as required;
+     * Android keeps it nullable so the same call site can be reused for the
+     * shipper-side decline. Pass an empty/blank reason → null to match iOS.
+     */
+    suspend fun carrierDeclineShipperRequest(
+        matchId: Int,
+        reason: String? = null,
+    ): Result<DeliveryMatch>
 
     suspend fun generatePickupCode(matchId: Int): Result<String>
 
