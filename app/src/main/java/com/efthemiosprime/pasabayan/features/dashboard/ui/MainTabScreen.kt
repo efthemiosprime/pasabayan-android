@@ -166,6 +166,12 @@ fun MainTabScreen(
     var profileReceiptListOpen by remember { mutableStateOf(false) }
     var profileReceiptDetailId by remember { mutableStateOf<Int?>(null) }
     var packageHistoryOpen by remember { mutableStateOf(false) }
+    // Selected delivered-package match for the details sheet launched from
+    // the package-history screen. Independent of bookings-tab selection so the
+    // two flows don't fight over the same state.
+    var packageHistorySelectedMatch by remember {
+        mutableStateOf<com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch?>(null)
+    }
     var showEditUserProfileSheet by remember { mutableStateOf(false) }
     var showEditCarrierProfileSheet by remember { mutableStateOf(false) }
     var showPrivacyPreferencesSheet by remember { mutableStateOf(false) }
@@ -301,6 +307,7 @@ fun MainTabScreen(
             favoritesOpen = false
             ratingsOpen = false
             packageHistoryOpen = false
+            packageHistorySelectedMatch = null
         }
     }
 
@@ -464,11 +471,11 @@ fun MainTabScreen(
                             // already provides its own top bar, so we don't wrap.
                             com.efthemiosprime.pasabayan.features.packages.ui.PackageHistoryScreen(
                                 onClose = { packageHistoryOpen = false },
-                                onViewMatchDetails = {
-                                    // Dismiss history first so the match detail sheet
-                                    // doesn't sit behind it. Match-detail wiring lives
-                                    // in the bookings feature; defer until needed.
-                                    packageHistoryOpen = false
+                                onViewMatchDetails = { match ->
+                                    // Layer the shipper match details sheet on top of
+                                    // the history screen — iOS parity: tapping a row
+                                    // in PackageHistoryView pushes BookingDetailsView.
+                                    packageHistorySelectedMatch = match
                                 },
                                 onCreatePackage = {
                                     packageHistoryOpen = false
@@ -481,6 +488,27 @@ fun MainTabScreen(
                                 },
                                 modifier = Modifier.fillMaxSize(),
                             )
+
+                            packageHistorySelectedMatch?.let { selected ->
+                                com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+                                    onDismissRequest = { packageHistorySelectedMatch = null },
+                                ) {
+                                    com.efthemiosprime.pasabayan.features.bookings.ui.ShipperMatchDetailsSheetContent(
+                                        match = selected,
+                                        isCarrier = false,
+                                        onClose = { packageHistorySelectedMatch = null },
+                                        // Delivered matches expose no actions
+                                        // (`DeliveryMatch.availableActions` is empty
+                                        // for status=DELIVERED), so we just dismiss.
+                                        onAction = { packageHistorySelectedMatch = null },
+                                        onContactSupport = {
+                                            packageHistorySelectedMatch = null
+                                            showHelpCenterSheet = true
+                                        },
+                                        currentUserId = user.id.toInt(),
+                                    )
+                                }
+                            }
                         }
                         settingsOpen -> {
                             Column {
