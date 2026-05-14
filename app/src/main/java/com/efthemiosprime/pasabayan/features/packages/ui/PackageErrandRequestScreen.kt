@@ -29,8 +29,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -46,6 +48,8 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonSize
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
 import com.efthemiosprime.pasabayan.core.designsystem.component.PExpandableSection
 import com.efthemiosprime.pasabayan.core.designsystem.component.POutlinedTextField
+import com.efthemiosprime.pasabayan.core.domain.model.Coordinates
+import com.efthemiosprime.pasabayan.features.packages.components.PackageLocationMap
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequestBaseScaffold
 import com.efthemiosprime.pasabayan.features.packages.components.PackageRequirementChipUi
 import com.efthemiosprime.pasabayan.features.packages.model.ServiceRequestShoppingItem
@@ -84,6 +88,16 @@ fun PackageErrandRequestScreen(
     onSave: (ServiceRequestSubmitPayload) -> Unit,
     onCancel: () -> Unit,
     isSubmitting: Boolean = false,
+    /**
+     * Forward geocode the typed address (e.g. "Use address" button on the map
+     * card). Returns `null` when the address can't be resolved. Default no-op
+     * so the screen remains usable without a geocoder.
+     */
+    onGeocodeAddress: suspend (String) -> Coordinates? = { null },
+    /**
+     * Reverse geocode the tapped coordinate to back-fill the address field.
+     */
+    onReverseGeocode: suspend (Coordinates) -> String? = { null },
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -104,6 +118,13 @@ fun PackageErrandRequestScreen(
     var specialRequirements by remember { mutableStateOf("") }
     var taskName by remember { mutableStateOf("") }
     var taskDescription by remember { mutableStateOf("") }
+    // Selected coordinates (separate state for store + delivery) — `null` means
+    // no pin. Forward / reverse geocode bridges the typed address with this
+    // value; the map drops a pin on tap, the "Use address" button fills it
+    // from the address text.
+    var storeCoordinates by remember { mutableStateOf<Coordinates?>(null) }
+    var deliveryCoordinates by remember { mutableStateOf<Coordinates?>(null) }
+    val coroutineScope = rememberCoroutineScope()
     var deliveryDate by remember { mutableStateOf(LocalDate.now().plusDays(1)) }
     val serviceTypeLabels = serviceTypes.associateWith { stringResource(it.labelRes) }
     val isTaskMode = serviceType == ErrandServiceType.GeneralErrand && direction == ErrandDirection.Task
@@ -179,6 +200,10 @@ fun PackageErrandRequestScreen(
                             recipientPhone = if (requireRecipient) recipientPhone else null,
                             taskName = if (isTaskMode) taskName else null,
                             taskDescription = if (isTaskMode) taskDescription else null,
+                            storeLat = storeCoordinates?.latitude,
+                            storeLng = storeCoordinates?.longitude,
+                            deliveryLat = deliveryCoordinates?.latitude,
+                            deliveryLng = deliveryCoordinates?.longitude,
                         ),
                     )
                 },
@@ -334,6 +359,26 @@ fun PackageErrandRequestScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
+
+                MapLocationPicker(
+                    title = stringResource(R.string.packages_service_map_section_delivery),
+                    address = deliveryAddress,
+                    selected = deliveryCoordinates,
+                    onSelected = { coords ->
+                        deliveryCoordinates = coords
+                        coroutineScope.launch {
+                            onReverseGeocode(coords)?.let { resolved ->
+                                if (deliveryAddress.isBlank()) deliveryAddress = resolved
+                            }
+                        }
+                    },
+                    onUseAddress = {
+                        coroutineScope.launch {
+                            onGeocodeAddress(deliveryAddress)?.let { deliveryCoordinates = it }
+                        }
+                    },
+                    onClear = { deliveryCoordinates = null },
+                )
             }
 
             PExpandableSection(
@@ -351,6 +396,25 @@ fun PackageErrandRequestScreen(
                         onValueChange = { storeAddress = it },
                         label = { Text(stringResource(R.string.packages_service_field_store_address)) },
                         modifier = Modifier.fillMaxWidth(),
+                    )
+                    MapLocationPicker(
+                        title = stringResource(R.string.packages_service_map_section_store),
+                        address = storeAddress,
+                        selected = storeCoordinates,
+                        onSelected = { coords ->
+                            storeCoordinates = coords
+                            coroutineScope.launch {
+                                onReverseGeocode(coords)?.let { resolved ->
+                                    if (storeAddress.isBlank()) storeAddress = resolved
+                                }
+                            }
+                        },
+                        onUseAddress = {
+                            coroutineScope.launch {
+                                onGeocodeAddress(storeAddress)?.let { storeCoordinates = it }
+                            }
+                        },
+                        onClear = { storeCoordinates = null },
                     )
                     POutlinedTextField(
                         value = estimatedCost,
@@ -599,6 +663,52 @@ private fun showDatePicker(
 }
 
 private val errandDateFormatter: DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+
+/**
+ * Couples [PackageLocationMap] with "Use address" / "Clear pin" affordances —
+ * the iOS `InteractiveMapView` callers bundle the same chrome. Kept private
+ * to this screen because the buttons assume the parent owns the address string
+ * and geocoding callbacks.
+ */
+@Composable
+private fun MapLocationPicker(
+    title: String,
+    address: String,
+    selected: Coordinates?,
+    onSelected: (Coordinates) -> Unit,
+    onUseAddress: () -> Unit,
+    onClear: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
+        PackageLocationMap(
+            title = title,
+            selected = selected,
+            onLocationSelected = onSelected,
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm),
+        ) {
+            PButton(
+                text = stringResource(R.string.packages_service_map_use_address),
+                onClick = onUseAddress,
+                style = PButtonStyle.Secondary,
+                size = PButtonSize.Small,
+                enabled = address.isNotBlank(),
+                modifier = Modifier.weight(1f),
+            )
+            if (selected != null) {
+                PButton(
+                    text = stringResource(R.string.packages_service_map_clear),
+                    onClick = onClear,
+                    style = PButtonStyle.Tertiary,
+                    size = PButtonSize.Small,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
 
 @Preview(showBackground = true, name = "PackageErrandRequest - light", heightDp = 900)
 @Preview(

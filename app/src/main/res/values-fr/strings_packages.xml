@@ -105,6 +105,12 @@
     <string name="packages_service_required_steps">\u00c9tapes requises</string>
     <string name="packages_service_chip_items">Articles</string>
     <string name="packages_service_chip_task">Tâche</string>
+    <string name="packages_service_map_section_store">Emplacement du magasin sur la carte</string>
+    <string name="packages_service_map_section_delivery">Emplacement de livraison sur la carte</string>
+    <string name="packages_service_map_hint">Appuyez sur la carte pour déposer une épingle, ou saisissez l\'adresse pour la placer automatiquement.</string>
+    <string name="packages_service_map_coords">%1$.4f, %2$.4f</string>
+    <string name="packages_service_map_use_address">Utiliser l\'adresse</string>
+    <string name="packages_service_map_clear">Retirer l\'épingle</string>
     <string name="packages_service_chip_handoff">Remise</string>
     <string name="packages_service_section_service_needed">Service n\u00e9cessaire</string>
     <string name="packages_service_section_items_list">Liste d\'articles</string>

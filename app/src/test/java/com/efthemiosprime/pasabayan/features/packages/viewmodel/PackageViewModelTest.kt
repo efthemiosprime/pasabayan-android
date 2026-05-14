@@ -81,6 +81,7 @@ class PackageViewModelTest {
             fakeBookingsRepository,
             requirePhoneVerification,
             fakeAuthRepository,
+            mockk(relaxed = true),
         )
     }
 

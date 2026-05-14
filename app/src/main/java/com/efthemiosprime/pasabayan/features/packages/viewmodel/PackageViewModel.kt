@@ -6,9 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.R
 import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageRequestStatus
+import com.efthemiosprime.pasabayan.core.domain.model.Coordinates
 import com.efthemiosprime.pasabayan.core.session.AuthRepository
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.bookings.services.BookingsRepository
+import com.efthemiosprime.pasabayan.features.packages.services.AddressGeocoder
 import com.efthemiosprime.pasabayan.features.packages.model.AvailablePackage
 import com.efthemiosprime.pasabayan.features.packages.model.AvailablePackagesPage
 import com.efthemiosprime.pasabayan.features.packages.model.PackageBrowseFilter
@@ -97,6 +99,7 @@ class PackageViewModel @Inject constructor(
     private val bookingsRepository: BookingsRepository,
     private val requirePhoneVerification: RequirePhoneVerificationUseCase,
     private val authRepository: AuthRepository,
+    private val addressGeocoder: AddressGeocoder,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PackageUiState())
@@ -660,6 +663,17 @@ class PackageViewModel @Inject constructor(
     fun clearSimilarPackages() {
         _uiState.update { it.copy(similarPackages = emptyList()) }
     }
+
+    /**
+     * iOS parity: forward / reverse geocoding helpers used by
+     * `PackageErrandRequestScreen` to bridge typed addresses and the
+     * interactive map. Delegates to [AddressGeocoder] which wraps the
+     * Android framework's `Geocoder`.
+     */
+    suspend fun geocodeAddress(address: String): Coordinates? = addressGeocoder.forward(address)
+
+    suspend fun reverseGeocode(coordinates: Coordinates): String? =
+        addressGeocoder.reverse(coordinates)
 
     /**
      * iOS parity: after a successful package or service-request creation,

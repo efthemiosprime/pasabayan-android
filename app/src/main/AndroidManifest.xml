@@ -30,6 +30,13 @@
         android:theme="@style/Theme.Pasabayan"
         android:usesCleartextTraffic="false">
 
+        <!-- Google Maps — service-request store / delivery interactive map (Slice E).
+             Key injected from `local.properties` via `MAPS_API_KEY=...`. Empty value
+             builds cleanly but renders a watermarked tile until a real key is provided. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+
         <!-- Facebook SDK (same app id / client token as pasabayan-android-develop) -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"

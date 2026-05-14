@@ -105,6 +105,12 @@
     <string name="packages_service_required_steps">Required steps</string>
     <string name="packages_service_chip_items">Items</string>
     <string name="packages_service_chip_task">Task</string>
+    <string name="packages_service_map_section_store">Store location on map</string>
+    <string name="packages_service_map_section_delivery">Delivery location on map</string>
+    <string name="packages_service_map_hint">Tap the map to drop a pin, or fill in the address to place one automatically.</string>
+    <string name="packages_service_map_coords">%1$.4f, %2$.4f</string>
+    <string name="packages_service_map_use_address">Use address</string>
+    <string name="packages_service_map_clear">Clear pin</string>
     <string name="packages_service_chip_handoff">Handoff</string>
     <string name="packages_service_section_service_needed">Service Needed</string>
     <string name="packages_service_section_items_list">Items List</string>

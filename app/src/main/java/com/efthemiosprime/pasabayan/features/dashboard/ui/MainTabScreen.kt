@@ -853,6 +853,8 @@ fun MainTabScreen(
                 },
                 onCancel = { showErrandRequestSheet = false },
                 isSubmitting = packageUiState.isSubmittingServiceRequest,
+                onGeocodeAddress = packageViewModel::geocodeAddress,
+                onReverseGeocode = packageViewModel::reverseGeocode,
             )
         }
     }

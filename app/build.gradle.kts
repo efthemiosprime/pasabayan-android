@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,6 +9,18 @@ plugins {
     alias(libs.plugins.ksp)
     // Must be applied last — processes app/google-services.json (Firebase + Google OAuth client IDs)
     alias(libs.plugins.google.services)
+}
+
+// Google Maps API key — read from local.properties (`MAPS_API_KEY=...`) and
+// injected as a manifest placeholder. Empty string is safe: the map will render
+// a watermarked "API key required" tile but the app still builds and runs.
+val mapsApiKey: String = run {
+    val props = Properties()
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { props.load(it) }
+    }
+    props.getProperty("MAPS_API_KEY", "")
 }
 
 android {
@@ -21,6 +35,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Injected into AndroidManifest as `com.google.android.geo.API_KEY`.
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     buildTypes {
@@ -106,6 +123,10 @@ dependencies {
 
     // Chrome Custom Tabs — Stripe Connect onboarding / dashboard
     implementation(libs.androidx.browser)
+
+    // Google Maps — interactive map for service-request store / delivery pickers
+    implementation(libs.play.services.maps)
+    implementation(libs.maps.compose)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation("androidx.compose.material:material-icons-extended")
