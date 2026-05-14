@@ -18,9 +18,6 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.component.CardMenuAction
-import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
-import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonSize
-import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCardActionFooter
 import com.efthemiosprime.pasabayan.core.designsystem.component.PDetailRow
 import com.efthemiosprime.pasabayan.core.designsystem.component.PCard
@@ -134,67 +131,6 @@ private fun rememberMatchMenuActions(
     }
 }
 
-@Composable
-private fun bookingActionLabel(action: BookingAction): String = when (action) {
-    BookingAction.AcceptBooking -> stringResource(R.string.bookings_action_accept)
-    BookingAction.DeclineBooking -> stringResource(R.string.bookings_action_decline)
-    BookingAction.CounterOffer -> stringResource(R.string.bookings_action_counter_offer)
-    BookingAction.CancelBooking -> stringResource(R.string.bookings_action_cancel)
-    BookingAction.MarkPickedUp -> stringResource(R.string.bookings_action_mark_picked_up)
-    BookingAction.MarkInTransit -> stringResource(R.string.bookings_action_mark_in_transit)
-    BookingAction.MarkDelivered -> stringResource(R.string.bookings_action_mark_delivered)
-    BookingAction.TrackLive -> stringResource(R.string.bookings_action_track_live)
-    BookingAction.EnterPickupCode -> stringResource(R.string.bookings_action_generate_code)
-    BookingAction.EnterDeliveryCode -> stringResource(R.string.bookings_action_enter_code)
-    BookingAction.ConfirmMatch -> stringResource(R.string.bookings_action_confirm_match)
-}
-
-@Composable
-private fun MatchActionButtons(
-    actions: List<BookingAction>,
-    onAction: (BookingAction) -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
-        actions.forEach { action ->
-            val (text, style) = when (action) {
-                BookingAction.AcceptBooking -> Pair(R.string.bookings_action_accept, PButtonStyle.Primary)
-                BookingAction.DeclineBooking -> Pair(R.string.bookings_action_decline, PButtonStyle.Destructive)
-                BookingAction.CounterOffer -> Pair(R.string.bookings_action_counter_offer, PButtonStyle.Secondary)
-                BookingAction.CancelBooking -> Pair(R.string.bookings_action_cancel, PButtonStyle.Destructive)
-                BookingAction.MarkPickedUp -> Pair(R.string.bookings_action_mark_picked_up, PButtonStyle.Primary)
-                BookingAction.MarkInTransit -> Pair(R.string.bookings_action_mark_in_transit, PButtonStyle.Primary)
-                BookingAction.MarkDelivered -> Pair(R.string.bookings_action_mark_delivered, PButtonStyle.Primary)
-                BookingAction.TrackLive -> Pair(R.string.bookings_action_track_live, PButtonStyle.Secondary)
-                BookingAction.EnterPickupCode -> Pair(R.string.bookings_action_generate_code, PButtonStyle.Secondary)
-                BookingAction.EnterDeliveryCode -> Pair(R.string.bookings_action_enter_code, PButtonStyle.Secondary)
-                BookingAction.ConfirmMatch -> Pair(R.string.bookings_action_confirm_match, PButtonStyle.Primary)
-            }
-            PButton(
-                text = stringResource(text),
-                onClick = { onAction(action) },
-                style = style,
-                size = PButtonSize.Small,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-    }
-}
-
-@Composable
-private fun matchStatusLabel(status: MatchStatus): String = when (status) {
-    MatchStatus.PENDING -> stringResource(R.string.bookings_status_pending)
-    MatchStatus.CONFIRMED -> stringResource(R.string.bookings_status_confirmed)
-    MatchStatus.PICKED_UP -> stringResource(R.string.bookings_status_picked_up)
-    MatchStatus.IN_TRANSIT -> stringResource(R.string.bookings_status_in_transit)
-    MatchStatus.DELIVERED -> stringResource(R.string.bookings_status_delivered)
-    MatchStatus.CANCELLED -> stringResource(R.string.bookings_status_cancelled)
-    MatchStatus.CARRIER_REQUESTED -> stringResource(R.string.bookings_status_carrier_requested)
-    MatchStatus.SHIPPER_REQUESTED -> stringResource(R.string.bookings_status_shipper_requested)
-    MatchStatus.SHIPPER_ACCEPTED -> stringResource(R.string.bookings_status_confirmed)
-    MatchStatus.CARRIER_ACCEPTED -> stringResource(R.string.bookings_status_confirmed)
-    MatchStatus.SHIPPER_DECLINED -> stringResource(R.string.bookings_status_cancelled)
-    MatchStatus.CARRIER_DECLINED -> stringResource(R.string.bookings_status_cancelled)
-}
 
 @Preview(showBackground = true, name = "MatchCard — light")
 @Preview(showBackground = true, name = "MatchCard — dark", uiMode = Configuration.UI_MODE_NIGHT_YES)

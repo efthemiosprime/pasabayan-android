@@ -32,6 +32,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanColors
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanSpacing
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
+import com.efthemiosprime.pasabayan.features.bookings.components.matchStatusLabel
 import com.efthemiosprime.pasabayan.features.trips.model.TripMatchPackage
 
 /**
@@ -287,18 +288,3 @@ private fun matchStatusBadgeColor(status: MatchStatus): Color = when (status) {
     else -> PasabayanColors.BadgeGray
 }
 
-@Composable
-private fun matchStatusLabel(status: MatchStatus): String = when (status) {
-    MatchStatus.PENDING -> stringResource(R.string.bookings_status_pending)
-    MatchStatus.CONFIRMED -> stringResource(R.string.bookings_status_confirmed)
-    MatchStatus.PICKED_UP -> stringResource(R.string.bookings_status_picked_up)
-    MatchStatus.IN_TRANSIT -> stringResource(R.string.bookings_status_in_transit)
-    MatchStatus.DELIVERED -> stringResource(R.string.bookings_status_delivered)
-    MatchStatus.CANCELLED -> stringResource(R.string.bookings_status_cancelled)
-    MatchStatus.CARRIER_REQUESTED -> stringResource(R.string.bookings_status_carrier_requested)
-    MatchStatus.SHIPPER_REQUESTED -> stringResource(R.string.bookings_status_shipper_requested)
-    MatchStatus.SHIPPER_ACCEPTED,
-    MatchStatus.CARRIER_ACCEPTED -> stringResource(R.string.bookings_status_confirmed)
-    MatchStatus.SHIPPER_DECLINED,
-    MatchStatus.CARRIER_DECLINED -> stringResource(R.string.bookings_status_cancelled)
-}

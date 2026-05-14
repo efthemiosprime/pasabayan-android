@@ -41,6 +41,9 @@ import com.efthemiosprime.pasabayan.core.domain.model.UserSummary
 import com.efthemiosprime.pasabayan.features.bookings.components.CounterOfferBanner
 import com.efthemiosprime.pasabayan.features.bookings.components.MatchStatusBadgeConfig
 import com.efthemiosprime.pasabayan.features.bookings.components.OverCapacityBanner
+import com.efthemiosprime.pasabayan.features.bookings.components.bookingActionLabel
+import com.efthemiosprime.pasabayan.features.bookings.components.bookingActionStyle
+import com.efthemiosprime.pasabayan.features.bookings.components.matchStatusLabel
 import com.efthemiosprime.pasabayan.features.bookings.model.BookingAction
 import com.efthemiosprime.pasabayan.features.bookings.model.CounterOfferContext
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
@@ -277,9 +280,9 @@ fun ShipperMatchDetailsSheetContent(
             Column(verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.sm)) {
                 actions.forEach { action ->
                     PButton(
-                        text = actionLabel(action),
+                        text = bookingActionLabel(action),
                         onClick = { onAction(action) },
-                        style = actionStyle(action),
+                        style = bookingActionStyle(action),
                         size = PButtonSize.Small,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -352,40 +355,6 @@ private fun formatIsoDate(value: String?): String {
     }.getOrElse { value }
 }
 
-@Composable
-private fun actionLabel(action: BookingAction): String = when (action) {
-    BookingAction.AcceptBooking -> stringResource(R.string.bookings_action_accept)
-    BookingAction.DeclineBooking -> stringResource(R.string.bookings_action_decline)
-    BookingAction.CounterOffer -> stringResource(R.string.bookings_action_counter_offer)
-    BookingAction.CancelBooking -> stringResource(R.string.bookings_action_cancel)
-    BookingAction.MarkPickedUp -> stringResource(R.string.bookings_action_mark_picked_up)
-    BookingAction.MarkInTransit -> stringResource(R.string.bookings_action_mark_in_transit)
-    BookingAction.MarkDelivered -> stringResource(R.string.bookings_action_mark_delivered)
-    BookingAction.TrackLive -> stringResource(R.string.bookings_action_track_live)
-    BookingAction.EnterPickupCode -> stringResource(R.string.bookings_action_generate_code)
-    BookingAction.EnterDeliveryCode -> stringResource(R.string.bookings_action_enter_code)
-    BookingAction.ConfirmMatch -> stringResource(R.string.bookings_action_confirm_match)
-}
-
-private fun actionStyle(action: BookingAction): PButtonStyle = when (action) {
-    BookingAction.DeclineBooking, BookingAction.CancelBooking -> PButtonStyle.Destructive
-    BookingAction.CounterOffer, BookingAction.TrackLive, BookingAction.EnterPickupCode, BookingAction.EnterDeliveryCode -> PButtonStyle.Secondary
-    else -> PButtonStyle.Primary
-}
-
-@Composable
-private fun matchStatusLabel(status: MatchStatus): String = when (status) {
-    MatchStatus.PENDING -> stringResource(R.string.bookings_status_pending)
-    MatchStatus.CONFIRMED -> stringResource(R.string.bookings_status_confirmed)
-    MatchStatus.PICKED_UP -> stringResource(R.string.bookings_status_picked_up)
-    MatchStatus.IN_TRANSIT -> stringResource(R.string.bookings_status_in_transit)
-    MatchStatus.DELIVERED -> stringResource(R.string.bookings_status_delivered)
-    MatchStatus.CANCELLED -> stringResource(R.string.bookings_status_cancelled)
-    MatchStatus.CARRIER_REQUESTED -> stringResource(R.string.bookings_status_carrier_requested)
-    MatchStatus.SHIPPER_REQUESTED -> stringResource(R.string.bookings_status_shipper_requested)
-    MatchStatus.SHIPPER_ACCEPTED, MatchStatus.CARRIER_ACCEPTED -> stringResource(R.string.bookings_status_confirmed)
-    MatchStatus.SHIPPER_DECLINED, MatchStatus.CARRIER_DECLINED -> stringResource(R.string.bookings_status_cancelled)
-}
 
 @Preview(showBackground = true, name = "ShipperMatchDetailsSheet - light", heightDp = 900)
 @Preview(showBackground = true, name = "ShipperMatchDetailsSheet - dark", heightDp = 900, uiMode = Configuration.UI_MODE_NIGHT_YES)
