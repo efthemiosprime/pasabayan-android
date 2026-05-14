@@ -263,4 +263,8 @@ private class FakeBookingsRepositoryForShareWithReceiver : BookingsRepository {
         Result.failure<List<com.efthemiosprime.pasabayan.features.bookings.model.CompatibleTrip>>(Exception("Not used"))
     override suspend fun getCompatiblePackages(tripId: Int) =
         Result.failure<List<com.efthemiosprime.pasabayan.features.packages.model.PackageRequest>>(Exception("Not used"))
+    override suspend fun bookTripDirect(
+        tripId: Int,
+        payload: com.efthemiosprime.pasabayan.features.bookings.model.DirectBookingPayload,
+    ) = Result.failure<com.efthemiosprime.pasabayan.features.bookings.model.nested.DirectBookingData>(Exception("Not used"))
 }

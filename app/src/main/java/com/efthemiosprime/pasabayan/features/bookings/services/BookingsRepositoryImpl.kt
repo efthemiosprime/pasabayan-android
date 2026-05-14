@@ -7,6 +7,7 @@ import com.efthemiosprime.pasabayan.core.network.bookings.AcceptMatchRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.BookingsApi
 import com.efthemiosprime.pasabayan.core.network.bookings.CarrierCounterOfferRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.CreateReceiverAccessRequestJson
+import com.efthemiosprime.pasabayan.core.network.bookings.DirectBookingRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.MatchResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.ShipperCounterOfferRequestJson
 import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
@@ -14,8 +15,11 @@ import com.efthemiosprime.pasabayan.features.bookings.model.CarrierLocationSnaps
 import com.efthemiosprime.pasabayan.features.bookings.model.CompatibleTrip
 import com.efthemiosprime.pasabayan.features.bookings.model.ConfirmMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
+import com.efthemiosprime.pasabayan.features.bookings.model.DirectBookingPayload
 import com.efthemiosprime.pasabayan.features.bookings.model.ReceiverAccessToken
 import com.efthemiosprime.pasabayan.features.bookings.model.RequestMatchResult
+import com.efthemiosprime.pasabayan.features.bookings.model.nested.DirectBookingData
+import com.efthemiosprime.pasabayan.features.bookings.model.nested.toDomain
 import com.efthemiosprime.pasabayan.features.bookings.model.toDomain
 import com.efthemiosprime.pasabayan.features.packages.model.PackageRequest
 import com.efthemiosprime.pasabayan.features.packages.model.toDomain
@@ -311,6 +315,32 @@ class BookingsRepositoryImpl @Inject constructor(
             val res = bookingsApi.revokeReceiverAccess(matchId, tokenId)
             if (!res.isSuccessful) return Result.failure(mapError(res))
             Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun bookTripDirect(
+        tripId: Int,
+        payload: DirectBookingPayload,
+    ): Result<DirectBookingData> {
+        return try {
+            val res = bookingsApi.bookTripDirect(
+                tripId = tripId,
+                body = DirectBookingRequestJson(
+                    bookingType = payload.bookingType,
+                    spaceNeededLiters = payload.spaceNeededLiters,
+                    weightNeededKg = payload.weightNeededKg,
+                    pickupLocation = payload.pickupLocation,
+                    deliveryLocation = payload.deliveryLocation,
+                    priceAgreed = payload.priceAgreed,
+                    specialRequirements = payload.specialRequirements,
+                ),
+            )
+            if (!res.isSuccessful) return Result.failure(mapError(res))
+            val booking = res.body()?.data?.booking?.toDomain()
+                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            Result.success(booking)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }

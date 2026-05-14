@@ -119,6 +119,14 @@ interface BookingsApi {
     @GET("matches/{matchId}/carrier-location")
     suspend fun getCarrierLocation(@Path("matchId") matchId: Int): Response<CarrierLocationDataResponseJson>
 
+    // -- Direct booking (shipper books trip without negotiation) --
+
+    @POST("trips/{tripId}/book")
+    suspend fun bookTripDirect(
+        @Path("tripId") tripId: Int,
+        @Body body: DirectBookingRequestJson,
+    ): Response<DirectBookingResponseJson>
+
     // -- Discovery / compatibility --
 
     /** Carrier-side: packages compatible with a specific trip. */

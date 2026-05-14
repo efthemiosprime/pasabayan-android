@@ -5,8 +5,10 @@ import com.efthemiosprime.pasabayan.features.bookings.model.CarrierLocationSnaps
 import com.efthemiosprime.pasabayan.features.bookings.model.CompatibleTrip
 import com.efthemiosprime.pasabayan.features.bookings.model.ConfirmMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
+import com.efthemiosprime.pasabayan.features.bookings.model.DirectBookingPayload
 import com.efthemiosprime.pasabayan.features.bookings.model.ReceiverAccessToken
 import com.efthemiosprime.pasabayan.features.bookings.model.RequestMatchResult
+import com.efthemiosprime.pasabayan.features.bookings.model.nested.DirectBookingData
 import com.efthemiosprime.pasabayan.features.packages.model.PackageRequest
 
 interface BookingsRepository {
@@ -111,4 +113,15 @@ interface BookingsRepository {
     ): Result<ReceiverAccessToken>
 
     suspend fun revokeReceiverAccess(matchId: Int, tokenId: Int): Result<Unit>
+
+    // -- Direct booking --
+
+    /**
+     * Book a trip directly without going through the package-request match flow.
+     * Backed by `POST /trips/{tripId}/book`. Mirrors iOS `bookTripDirect`.
+     */
+    suspend fun bookTripDirect(
+        tripId: Int,
+        payload: DirectBookingPayload,
+    ): Result<DirectBookingData>
 }

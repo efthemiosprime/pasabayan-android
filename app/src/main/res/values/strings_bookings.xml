@@ -251,4 +251,34 @@
     <string name="bookings_share_with_receiver_try_again">Try Again</string>
     <string name="bookings_share_with_receiver_message_body">Track your package delivery:\n%1$s</string>
     <string name="bookings_share_with_receiver_message_pin_suffix">\n\nPIN: %1$s\n\n(You\'ll need this PIN to confirm delivery)</string>
+
+    <!-- Direct booking (Slice 6 — iOS parity with DirectBookingSheet) -->
+    <string name="bookings_direct_title">Book this trip</string>
+    <string name="bookings_direct_close">Close</string>
+    <string name="bookings_direct_book_now">Book now</string>
+    <string name="bookings_direct_booking_in_progress">Booking…</string>
+    <string name="bookings_direct_section_trip">Trip details</string>
+    <string name="bookings_direct_section_requirements">Your requirements</string>
+    <string name="bookings_direct_section_locations">Pickup &amp; delivery</string>
+    <string name="bookings_direct_section_pricing">Pricing</string>
+    <string name="bookings_direct_section_special">Special requirements</string>
+    <string name="bookings_direct_space_label">Space needed (litres)</string>
+    <string name="bookings_direct_weight_label">Weight needed (kg)</string>
+    <string name="bookings_direct_optional">Optional</string>
+    <string name="bookings_direct_pickup_label">Pickup address</string>
+    <string name="bookings_direct_pickup_placeholder">Where should the carrier pick up?</string>
+    <string name="bookings_direct_delivery_label">Delivery address</string>
+    <string name="bookings_direct_delivery_placeholder">Where should it be delivered?</string>
+    <string name="bookings_direct_price_label">Agreed price (CAD)</string>
+    <string name="bookings_direct_service_fee_label">Service fee (CAD)</string>
+    <string name="bookings_direct_total_label">Total</string>
+    <string name="bookings_direct_total_value">CAD $%1$.2f</string>
+    <string name="bookings_direct_special_placeholder">Anything the carrier should know?</string>
+    <string name="bookings_direct_route_label">Route</string>
+    <string name="bookings_direct_weight_available">%1$.1f kg available</string>
+    <string name="bookings_direct_per_kg_rate">CAD $%1$.2f/kg</string>
+    <string name="bookings_direct_success_title">Booking submitted</string>
+    <string name="bookings_direct_error_title">Could not book trip</string>
+    <string name="bookings_direct_error_generic">Booking failed. Please try again.</string>
+    <string name="bookings_direct_try_again">Try Again</string>
 </resources>

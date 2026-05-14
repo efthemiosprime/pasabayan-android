@@ -706,4 +706,67 @@ class BookingsRepositoryImplTest {
 
         assertTrue(repo.revokeReceiverAccess(matchId = 100, tokenId = 0).isFailure)
     }
+
+    // -- bookTripDirect --
+
+    @Test
+    fun `bookTripDirect returns booking on success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(201).setBody(
+                """{
+                    "success": true,
+                    "message": "Booked",
+                    "data": {
+                        "booking": {
+                            "id": 9001,
+                            "trip_id": 42,
+                            "booker_id": 7,
+                            "booking_type": "space_only",
+                            "status": "pending",
+                            "price_agreed": 120.50,
+                            "created_at": "2026-05-14T11:30:00Z"
+                        }
+                    }
+                }""",
+            ),
+        )
+
+        val payload = com.efthemiosprime.pasabayan.features.bookings.model.DirectBookingPayload(
+            bookingType = "space_only",
+            spaceNeededLiters = 10.0,
+            weightNeededKg = 5.0,
+            pickupLocation = "1234 Mock St",
+            deliveryLocation = "4321 Test Ave",
+            priceAgreed = 120.50,
+            specialRequirements = "Handle with care",
+        )
+
+        val result = repo.bookTripDirect(tripId = 42, payload = payload)
+        assertTrue(result.isSuccess)
+        val booking = result.getOrThrow()
+        assertEquals(9001, booking.bookingId)
+        assertEquals(42, booking.tripId)
+        assertEquals(120.50, booking.agreedPrice, 0.0001)
+        assertEquals("pending", booking.status)
+    }
+
+    @Test
+    fun `bookTripDirect returns InvalidResponse when booking missing`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(201).setBody("""{"success": true, "message": "ok"}"""),
+        )
+        val payload = com.efthemiosprime.pasabayan.features.bookings.model.DirectBookingPayload(
+            priceAgreed = 50.0,
+        )
+        assertTrue(repo.bookTripDirect(tripId = 42, payload = payload).isFailure)
+    }
+
+    @Test
+    fun `bookTripDirect returns failure on 422 validation`() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(422).setBody("""{"message":"trip already full"}"""))
+        val payload = com.efthemiosprime.pasabayan.features.bookings.model.DirectBookingPayload(
+            priceAgreed = 50.0,
+        )
+        assertTrue(repo.bookTripDirect(tripId = 42, payload = payload).isFailure)
+    }
 }

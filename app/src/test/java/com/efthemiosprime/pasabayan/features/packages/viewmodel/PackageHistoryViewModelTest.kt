@@ -250,4 +250,9 @@ private class FakeBookingsRepositoryForHistory : BookingsRepository {
         Result.failure(Exception("Not used"))
     override suspend fun revokeReceiverAccess(matchId: Int, tokenId: Int): Result<Unit> =
         Result.failure(Exception("Not used"))
+    override suspend fun bookTripDirect(
+        tripId: Int,
+        payload: com.efthemiosprime.pasabayan.features.bookings.model.DirectBookingPayload,
+    ): Result<com.efthemiosprime.pasabayan.features.bookings.model.nested.DirectBookingData> =
+        Result.failure(Exception("Not used"))
 }
