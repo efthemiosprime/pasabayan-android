@@ -193,4 +193,27 @@
     <string name="bookings_history_error_title">Could Not Load History</string>
     <string name="bookings_history_error_load">Failed to load delivery history. Please try again.</string>
     <string name="bookings_history_try_again">Try Again</string>
+
+    <!-- Compatible packages for trip (Slice 1 — iOS parity with CompatiblePackagesForTripView) -->
+    <string name="bookings_compatible_packages_title">Compatible Packages</string>
+    <string name="bookings_compatible_packages_close">Close</string>
+    <string name="bookings_compatible_packages_finding">Finding compatible packages…</string>
+    <string name="bookings_compatible_packages_empty_title">No Compatible Packages</string>
+    <string name="bookings_compatible_packages_empty_description">No packages match this trip yet. Check back later.</string>
+    <string name="bookings_compatible_packages_error_title">Could Not Load Packages</string>
+    <string name="bookings_compatible_packages_error_load">Failed to load compatible packages. Please try again.</string>
+    <string name="bookings_compatible_packages_try_again">Try Again</string>
+    <string name="bookings_compatible_packages_request_to_carry">Request to Carry</string>
+    <string name="bookings_compatible_packages_estimated_earnings">Estimated earnings</string>
+    <string name="bookings_compatible_packages_sender_budget">Sender budget</string>
+    <string name="bookings_compatible_packages_budget_max">CAD $%1$.2f max</string>
+    <string name="bookings_compatible_packages_price_cad">CAD $%1$.2f</string>
+    <string name="bookings_compatible_packages_weight_kg">%1$.1f kg</string>
+    <string name="bookings_compatible_packages_distance_km">%1$.1f km</string>
+    <string name="bookings_compatible_packages_pickup_date">Pickup</string>
+    <string name="bookings_compatible_packages_flexible_suffix">(±1 day)</string>
+
+    <!-- Carrier browse packages (Slice 1 — standalone route over /packages/available) -->
+    <string name="bookings_carrier_browse_title">Browse Packages</string>
+    <string name="bookings_carrier_browse_close">Close</string>
 </resources>
