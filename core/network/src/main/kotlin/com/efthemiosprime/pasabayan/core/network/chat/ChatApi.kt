@@ -21,6 +21,8 @@ interface ChatApi {
         @Query("role") role: String? = null,
         @Query("status") status: String? = null,
         @Query("unread_only") unreadOnly: Boolean? = null,
+        @Query("page") page: Int? = null,
+        @Query("per_page") perPage: Int? = null,
     ): Response<ConversationsResponseJson>
 
     @GET("chat/conversations/{conversationId}")

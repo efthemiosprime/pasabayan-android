@@ -42,13 +42,30 @@ class ChatRepositoryImpl @Inject constructor(
         role: String?,
         status: String?,
         unreadOnly: Boolean?,
-    ): Result<List<ConversationSummary>> {
+        page: Int,
+        perPage: Int,
+    ): Result<ConversationsPage> {
         return try {
-            val response = chatApi.getConversations(role = role, status = status, unreadOnly = unreadOnly)
+            val response = chatApi.getConversations(
+                role = role,
+                status = status,
+                unreadOnly = unreadOnly,
+                page = page,
+                perPage = perPage,
+            )
             if (!response.isSuccessful) {
                 Result.failure(mapError(response))
             } else {
-                Result.success(response.body()?.conversationsOrEmpty()?.map { it.toDomain() }.orEmpty())
+                val body = response.body()
+                val conversations = body?.conversationsOrEmpty()?.map { it.toDomain() }.orEmpty()
+                Result.success(
+                    ConversationsPage(
+                        conversations = conversations,
+                        currentPage = body?.resolvedCurrentPage() ?: 1,
+                        lastPage = body?.resolvedLastPage() ?: 1,
+                        total = body?.resolvedTotal() ?: conversations.size,
+                    ),
+                )
             }
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))

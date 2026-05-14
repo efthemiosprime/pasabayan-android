@@ -4,14 +4,17 @@ import com.efthemiosprime.pasabayan.core.network.chat.ChannelAuthResponseJson
 import com.efthemiosprime.pasabayan.core.network.chat.ChatApi
 import com.efthemiosprime.pasabayan.core.network.chat.ConversationSummaryJson
 import com.efthemiosprime.pasabayan.core.network.chat.ConversationsResponseJson
+import com.efthemiosprime.pasabayan.core.network.chat.PaginatedConversationsJson
 import com.efthemiosprime.pasabayan.core.network.chat.ParticipantJson
 import com.efthemiosprime.pasabayan.features.chat.model.ReverbConfig
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import retrofit2.Response
@@ -30,9 +33,9 @@ class ChatRepositoryImplTest {
     )
 
     @Test
-    fun `loadConversations maps network DTOs to domain`() = runTest {
+    fun `loadConversations maps legacy flat array to single-page envelope`() = runTest {
         coEvery {
-            chatApi.getConversations(any(), any(), any())
+            chatApi.getConversations(any(), any(), any(), any(), any())
         } returns Response.success(
             ConversationsResponseJson(
                 conversations = listOf(
@@ -55,10 +58,61 @@ class ChatRepositoryImplTest {
         val result = repository.loadConversations()
 
         assertTrue(result.isSuccess)
-        val conversations = result.getOrNull().orEmpty()
-        assertEquals(1, conversations.size)
-        assertEquals("Carrier", conversations.first().otherParticipant.name)
-        assertEquals(2, conversations.first().unreadCount)
+        val page = result.getOrNull()!!
+        assertEquals(1, page.conversations.size)
+        assertEquals("Carrier", page.conversations.first().otherParticipant.name)
+        assertEquals(2, page.conversations.first().unreadCount)
+        assertEquals(1, page.currentPage)
+        assertEquals(1, page.lastPage)
+        assertFalse(page.hasMore)
+    }
+
+    @Test
+    fun `loadConversations forwards pagination params and surfaces hasMore from paginator`() = runTest {
+        coEvery {
+            chatApi.getConversations(any(), any(), any(), any(), any())
+        } returns Response.success(
+            ConversationsResponseJson(
+                data = PaginatedConversationsJson(
+                    data = listOf(
+                        ConversationSummaryJson(
+                            id = 9,
+                            status = "active",
+                            statusDisplay = "Active",
+                            unreadCount = 0,
+                            otherParticipant = ParticipantJson(id = 3, name = "Shipper", avatar = null),
+                        ),
+                    ),
+                    currentPage = 2,
+                    lastPage = 4,
+                    perPage = 15,
+                    total = 47,
+                ),
+            ),
+        )
+
+        val result = repository.loadConversations(
+            role = "shipper",
+            status = "active",
+            unreadOnly = true,
+            page = 2,
+            perPage = 15,
+        )
+
+        assertTrue(result.isSuccess)
+        val page = result.getOrNull()!!
+        assertEquals(2, page.currentPage)
+        assertEquals(4, page.lastPage)
+        assertTrue(page.hasMore)
+        coVerify {
+            chatApi.getConversations(
+                role = "shipper",
+                status = "active",
+                unreadOnly = true,
+                page = 2,
+                perPage = 15,
+            )
+        }
     }
 
     @Test

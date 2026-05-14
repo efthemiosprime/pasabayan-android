@@ -12,7 +12,9 @@ interface ChatRepository {
         role: String? = null,
         status: String? = null,
         unreadOnly: Boolean? = null,
-    ): Result<List<ConversationSummary>>
+        page: Int = 1,
+        perPage: Int = DEFAULT_PER_PAGE,
+    ): Result<ConversationsPage>
 
     suspend fun loadConversationDetail(conversationId: Int): Result<ConversationSummary>
 
@@ -37,6 +39,19 @@ interface ChatRepository {
         channelName: String,
         socketId: String,
     ): Result<String>
+
+    companion object {
+        const val DEFAULT_PER_PAGE: Int = 15
+    }
+}
+
+data class ConversationsPage(
+    val conversations: List<ConversationSummary>,
+    val currentPage: Int,
+    val lastPage: Int,
+    val total: Int,
+) {
+    val hasMore: Boolean get() = currentPage < lastPage
 }
 
 data class MessagesPage(

@@ -11,6 +11,7 @@ import com.efthemiosprime.pasabayan.features.chat.model.ReverbConfig
 import com.efthemiosprime.pasabayan.features.chat.model.Sender
 import com.efthemiosprime.pasabayan.features.chat.services.ChatMergeLogic
 import com.efthemiosprime.pasabayan.features.chat.services.ChatRepository
+import com.efthemiosprime.pasabayan.features.chat.services.ConversationsPage
 import com.efthemiosprime.pasabayan.features.chat.services.MessageDeliveryStatus
 import com.efthemiosprime.pasabayan.features.chat.services.MessagesPage
 import com.efthemiosprime.pasabayan.features.chat.services.RealtimeChatEvent
@@ -283,21 +284,28 @@ private class FakeChatRepository : ChatRepository {
         role: String?,
         status: String?,
         unreadOnly: Boolean?,
-    ): Result<List<ConversationSummary>> = Result.success(
-        listOf(
-            ConversationSummary(
-                id = 1,
-                matchId = 1,
-                status = "active",
-                statusDisplay = "Active",
-                userRole = "shipper",
-                otherParticipant = Participant(2, "Carrier", null, null),
-                matchInfo = MatchInfo("A-B", null, null, null),
-                unreadCount = 1,
-                lastMessage = LastMessage(1, "Hi", "text", null, null),
-                lastMessageAt = null,
-                createdAt = null,
+        page: Int,
+        perPage: Int,
+    ): Result<ConversationsPage> = Result.success(
+        ConversationsPage(
+            conversations = listOf(
+                ConversationSummary(
+                    id = 1,
+                    matchId = 1,
+                    status = "active",
+                    statusDisplay = "Active",
+                    userRole = "shipper",
+                    otherParticipant = Participant(2, "Carrier", null, null),
+                    matchInfo = MatchInfo("A-B", null, null, null),
+                    unreadCount = 1,
+                    lastMessage = LastMessage(1, "Hi", "text", null, null),
+                    lastMessageAt = null,
+                    createdAt = null,
+                ),
             ),
+            currentPage = 1,
+            lastPage = 1,
+            total = 1,
         ),
     )
 

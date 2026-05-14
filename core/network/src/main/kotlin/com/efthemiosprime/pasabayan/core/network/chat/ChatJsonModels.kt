@@ -27,6 +27,11 @@ data class ConversationsResponseJson(
             data != null -> data.data
             else -> emptyList()
         }
+
+    fun resolvedCurrentPage(): Int = data?.currentPage ?: 1
+    fun resolvedLastPage(): Int = data?.lastPage ?: 1
+    fun resolvedTotal(): Int = data?.total ?: conversations?.size ?: 0
+    fun hasMorePages(): Boolean = resolvedCurrentPage() < resolvedLastPage()
 }
 
 /**

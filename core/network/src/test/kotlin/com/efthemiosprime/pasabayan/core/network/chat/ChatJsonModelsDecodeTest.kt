@@ -82,6 +82,62 @@ class ChatJsonModelsDecodeTest {
     }
 
     @Test
+    fun `ConversationsResponseJson exposes paginator page numbers for infinite scroll`() {
+        // Mirrors iOS ChatViewModel.loadNextConversationsPage: page 2 of N means
+        // hasMore = currentPage < lastPage. The decoder must surface both so the
+        // VM can drive the prefetch trigger and stop at the last page.
+        val raw = """
+            {
+              "message": "Conversations retrieved successfully",
+              "data": {
+                "current_page": 2,
+                "last_page": 4,
+                "per_page": 15,
+                "total": 47,
+                "data": [
+                  {
+                    "id": 78,
+                    "status": "active",
+                    "status_display": "Active",
+                    "unread_count": 0,
+                    "other_participant": { "id": 11, "name": "Carrier Two" }
+                  }
+                ]
+              }
+            }
+        """.trimIndent()
+
+        val decoded = json.decodeFromString<ConversationsResponseJson>(raw)
+
+        assertEquals(1, decoded.conversationsOrEmpty().size)
+        assertEquals(2, decoded.resolvedCurrentPage())
+        assertEquals(4, decoded.resolvedLastPage())
+        assertEquals(47, decoded.resolvedTotal())
+        assertTrue(decoded.hasMorePages())
+    }
+
+    @Test
+    fun `ConversationsResponseJson legacy flat array decodes as single page`() {
+        // The legacy flat-array shape has no paginator metadata. Treat it as a
+        // single page so the VM's hasMore predicate naturally evaluates false.
+        val raw = """
+            {
+              "message": "Conversations retrieved",
+              "conversations": [
+                { "id": 77, "status": "active", "status_display": "Active", "unread_count": 0,
+                  "other_participant": { "id": 10, "name": "Carrier One" } }
+              ]
+            }
+        """.trimIndent()
+
+        val decoded = json.decodeFromString<ConversationsResponseJson>(raw)
+
+        assertEquals(1, decoded.resolvedCurrentPage())
+        assertEquals(1, decoded.resolvedLastPage())
+        assertFalse(decoded.hasMorePages())
+    }
+
+    @Test
     fun `ConversationsResponseJson decodes empty paginator without crashing`() {
         // First-time user with no conversations — the API still emits the
         // paginator envelope with an empty `data` array. We must not throw.
