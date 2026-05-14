@@ -235,4 +235,20 @@
     <string name="bookings_compatible_trips_weight_kg">%1$.1f kg available</string>
     <string name="bookings_compatible_trips_distance_km">%1$.1f km</string>
     <string name="bookings_compatible_trips_no_pricing">Pricing unavailable</string>
+
+    <!-- Share with receiver (Slice 5 — iOS parity with ShareWithReceiverSheet) -->
+    <string name="bookings_share_with_receiver_title">Share with Receiver</string>
+    <string name="bookings_share_with_receiver_close">Close</string>
+    <string name="bookings_share_with_receiver_loading">Generating tracking link…</string>
+    <string name="bookings_share_with_receiver_success_title">Tracking Link Ready</string>
+    <string name="bookings_share_with_receiver_link_label">Link</string>
+    <string name="bookings_share_with_receiver_pin_label">PIN</string>
+    <string name="bookings_share_with_receiver_share_action">Share</string>
+    <string name="bookings_share_with_receiver_share_chooser">Share tracking link</string>
+    <string name="bookings_share_with_receiver_helper">The receiver can use this link to track the delivery and generate the verification code.</string>
+    <string name="bookings_share_with_receiver_error_title">Could Not Share</string>
+    <string name="bookings_share_with_receiver_error_generic">Failed to share. Try again.</string>
+    <string name="bookings_share_with_receiver_try_again">Try Again</string>
+    <string name="bookings_share_with_receiver_message_body">Track your package delivery:\n%1$s</string>
+    <string name="bookings_share_with_receiver_message_pin_suffix">\n\nPIN: %1$s\n\n(You\'ll need this PIN to confirm delivery)</string>
 </resources>

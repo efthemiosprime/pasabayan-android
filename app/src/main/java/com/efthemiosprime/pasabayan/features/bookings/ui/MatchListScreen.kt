@@ -130,6 +130,10 @@ fun MatchListScreen(
     // Distinct surface from [selectedMatch]: the composer is shown on its own so it doesn't
     // require stacking the details sheet underneath.
     var counterOfferTarget by remember { mutableStateOf<DeliveryMatch?>(null) }
+    // Distinct surface again — share-with-receiver runs its own three-step network chain
+    // and the details sheet should close while the share sheet loads. iOS parity:
+    // ShipperMatchDetailsView dismisses on .sheet(isPresented:).
+    var shareWithReceiverMatchId by remember { mutableStateOf<Int?>(null) }
     // Tracks whether we've entered the in-flight submit state since the sheet opened,
     // so we can dismiss the sheet on the trailing edge of the spinner rather than
     // immediately on tap (lets the user see the loading state).
@@ -328,6 +332,11 @@ fun MatchListScreen(
                 isCarrier = isCarrier,
                 onClose = { selectedMatch = null },
                 onContactSupport = onContactSupport,
+                onShareWithReceiver = {
+                    val id = match.id
+                    selectedMatch = null
+                    shareWithReceiverMatchId = id
+                },
                 onAction = { action ->
                     onAction(action, match.id)
                     when (action) {
@@ -411,6 +420,17 @@ fun MatchListScreen(
             onRetry = { autoChargeViewModel.retryConfirmation() },
             onDismiss = { autoChargeViewModel.dismiss() },
         )
+    }
+
+    shareWithReceiverMatchId?.let { matchId ->
+        com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+            onDismissRequest = { shareWithReceiverMatchId = null },
+        ) {
+            ShareWithReceiverSheet(
+                matchId = matchId,
+                onClose = { shareWithReceiverMatchId = null },
+            )
+        }
     }
 }
 

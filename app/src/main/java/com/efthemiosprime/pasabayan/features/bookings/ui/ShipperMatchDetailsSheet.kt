@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.Icon
@@ -69,6 +70,12 @@ fun ShipperMatchDetailsSheetContent(
      * so we use one consolidated label.
      */
     onContactSupport: () -> Unit = {},
+    /**
+     * iOS parity: shipper-side "Share with Receiver" CTA appears after pickup and
+     * during transit for non-service package deliveries. Opens
+     * [com.efthemiosprime.pasabayan.features.bookings.ui.ShareWithReceiverSheet].
+     */
+    onShareWithReceiver: () -> Unit = {},
 ) {
     val statusLabel = matchStatusLabel(match.matchStatus)
     val currentStep = timelineCurrentIndex(match.matchStatus)
@@ -288,6 +295,22 @@ fun ShipperMatchDetailsSheetContent(
                     )
                 }
             }
+        }
+
+        // iOS parity (ShipperMatchDetailsView.swift line 801): shipper-only
+        // share-with-receiver CTA after pickup, only for loaded-package matches.
+        val isPackageMatch = match.packageRequest != null
+        val isAfterPickup = match.matchStatus == MatchStatus.PICKED_UP ||
+            match.matchStatus == MatchStatus.IN_TRANSIT
+        if (!isCarrier && isPackageMatch && isAfterPickup) {
+            PButton(
+                text = stringResource(R.string.bookings_share_with_receiver_share_action),
+                onClick = onShareWithReceiver,
+                style = PButtonStyle.Secondary,
+                size = PButtonSize.Small,
+                icon = Icons.Default.Share,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
 
         // iOS parity: every booking-detail variant ends with a Contact Support /

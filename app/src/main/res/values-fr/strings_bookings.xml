@@ -235,4 +235,20 @@
     <string name="bookings_compatible_trips_weight_kg">%1$.1f kg disponible</string>
     <string name="bookings_compatible_trips_distance_km">%1$.1f km</string>
     <string name="bookings_compatible_trips_no_pricing">Tarif indisponible</string>
+
+    <!-- Partager avec le destinataire (Slice 5 — parité avec ShareWithReceiverSheet iOS) -->
+    <string name="bookings_share_with_receiver_title">Partager avec le destinataire</string>
+    <string name="bookings_share_with_receiver_close">Fermer</string>
+    <string name="bookings_share_with_receiver_loading">Génération du lien de suivi…</string>
+    <string name="bookings_share_with_receiver_success_title">Lien de suivi prêt</string>
+    <string name="bookings_share_with_receiver_link_label">Lien</string>
+    <string name="bookings_share_with_receiver_pin_label">NIP</string>
+    <string name="bookings_share_with_receiver_share_action">Partager</string>
+    <string name="bookings_share_with_receiver_share_chooser">Partager le lien de suivi</string>
+    <string name="bookings_share_with_receiver_helper">Le destinataire peut utiliser ce lien pour suivre la livraison et générer le code de confirmation.</string>
+    <string name="bookings_share_with_receiver_error_title">Impossible de partager</string>
+    <string name="bookings_share_with_receiver_error_generic">Le partage a échoué. Réessayez.</string>
+    <string name="bookings_share_with_receiver_try_again">Réessayer</string>
+    <string name="bookings_share_with_receiver_message_body">Suivez la livraison de votre colis :\n%1$s</string>
+    <string name="bookings_share_with_receiver_message_pin_suffix">\n\nNIP : %1$s\n\n(Vous aurez besoin de ce NIP pour confirmer la livraison)</string>
 </resources>
