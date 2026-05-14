@@ -281,4 +281,25 @@
     <string name="bookings_direct_error_title">Could not book trip</string>
     <string name="bookings_direct_error_generic">Booking failed. Please try again.</string>
     <string name="bookings_direct_try_again">Try Again</string>
+
+    <!-- Slice 9 — Secondary banners and badges (iOS parity) -->
+    <string name="bookings_chat_access_message">Message %1$s</string>
+    <string name="bookings_chat_access_subtitle">Open the in-app chat</string>
+    <string name="bookings_chat_access_open_cd">Open chat with %1$s</string>
+
+    <string name="bookings_liability_banner_title">Liability Reminder</string>
+    <string name="bookings_liability_banner_subtitle">Review your responsibilities and terms</string>
+    <string name="bookings_liability_banner_open_cd">Open liability reminder</string>
+
+    <string name="bookings_route_card_title">Route Information</string>
+    <string name="bookings_route_card_pickup">Pickup</string>
+    <string name="bookings_route_card_delivery">Delivery</string>
+
+    <string name="bookings_auto_charge_failure_title">Payment Failed</string>
+    <string name="bookings_auto_charge_failure_description">We couldn\'t process your payment. Please try again or update your card.</string>
+    <string name="bookings_auto_charge_failure_update_card">Update Card</string>
+    <string name="bookings_auto_charge_failure_retry">Try Again</string>
+    <string name="bookings_auto_charge_failure_retrying">Retrying…</string>
+    <string name="bookings_auto_charge_failure_badge_label">Payment failed</string>
+    <string name="bookings_auto_charge_failure_badge_retry">Retry</string>
 </resources>

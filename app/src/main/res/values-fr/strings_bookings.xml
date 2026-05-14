@@ -281,4 +281,25 @@
     <string name="bookings_direct_error_title">Impossible de réserver le trajet</string>
     <string name="bookings_direct_error_generic">La réservation a échoué. Réessayez.</string>
     <string name="bookings_direct_try_again">Réessayer</string>
+
+    <!-- Slice 9 — Bannières et badges secondaires (parité iOS) -->
+    <string name="bookings_chat_access_message">Envoyer un message à %1$s</string>
+    <string name="bookings_chat_access_subtitle">Ouvrir la messagerie intégrée</string>
+    <string name="bookings_chat_access_open_cd">Ouvrir la conversation avec %1$s</string>
+
+    <string name="bookings_liability_banner_title">Rappel de responsabilité</string>
+    <string name="bookings_liability_banner_subtitle">Consultez vos responsabilités et les conditions</string>
+    <string name="bookings_liability_banner_open_cd">Ouvrir le rappel de responsabilité</string>
+
+    <string name="bookings_route_card_title">Itinéraire</string>
+    <string name="bookings_route_card_pickup">Ramassage</string>
+    <string name="bookings_route_card_delivery">Livraison</string>
+
+    <string name="bookings_auto_charge_failure_title">Paiement refusé</string>
+    <string name="bookings_auto_charge_failure_description">Nous n\'avons pas pu traiter votre paiement. Réessayez ou mettez à jour votre carte.</string>
+    <string name="bookings_auto_charge_failure_update_card">Modifier la carte</string>
+    <string name="bookings_auto_charge_failure_retry">Réessayer</string>
+    <string name="bookings_auto_charge_failure_retrying">Nouvel essai…</string>
+    <string name="bookings_auto_charge_failure_badge_label">Paiement refusé</string>
+    <string name="bookings_auto_charge_failure_badge_retry">Réessayer</string>
 </resources>
