@@ -1,4 +1,4 @@
-package com.efthemiosprime.pasabayan.features.packages.viewmodel
+package com.efthemiosprime.pasabayan.features.bookings.viewmodel
 
 import android.content.Context
 import com.efthemiosprime.pasabayan.R
@@ -24,20 +24,21 @@ import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class PackageHistoryViewModelTest {
+class DeliveryHistoryViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var context: Context
-    private lateinit var fakeBookingsRepository: FakeBookingsRepositoryForHistory
-    private lateinit var viewModel: PackageHistoryViewModel
+    private lateinit var fakeBookingsRepository: FakeBookingsRepositoryForDeliveryHistory
+    private lateinit var viewModel: DeliveryHistoryViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         context = mockk(relaxed = true)
-        every { context.getString(R.string.packages_history_error_load) } returns "Failed to load package history. Please try again."
-        fakeBookingsRepository = FakeBookingsRepositoryForHistory()
-        viewModel = PackageHistoryViewModel(context, fakeBookingsRepository)
+        every { context.getString(R.string.bookings_history_error_load) } returns
+            "Failed to load delivery history. Please try again."
+        fakeBookingsRepository = FakeBookingsRepositoryForDeliveryHistory()
+        viewModel = DeliveryHistoryViewModel(context, fakeBookingsRepository)
     }
 
     @After
@@ -46,11 +47,11 @@ class PackageHistoryViewModelTest {
     }
 
     @Test
-    fun `loadHistory queries shipper-delivered matches and exposes them`() = runTest {
+    fun `loadHistory queries carrier-delivered matches and exposes them`() = runTest {
         fakeBookingsRepository.loadMatchesResult = Result.success(
             listOf(
-                match(id = 1, status = MatchStatus.DELIVERED, agreedPrice = 75.0),
-                match(id = 2, status = MatchStatus.DELIVERED, agreedPrice = 120.5),
+                match(id = 1, status = MatchStatus.DELIVERED, agreedPrice = 50.0),
+                match(id = 2, status = MatchStatus.DELIVERED, agreedPrice = 175.25),
             ),
         )
 
@@ -59,19 +60,22 @@ class PackageHistoryViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals(2, state.matches.size)
-        assertEquals(195.5, state.totalSpent, 0.001)
+        assertEquals(225.25, state.totalEarned, 0.001)
         assertTrue(state.hasLoaded)
         assertFalse(state.isLoading)
         assertNull(state.errorMessage)
-        assertEquals(listOf("shipper" to "delivered"), fakeBookingsRepository.loadMatchesCalls)
+        assertEquals(
+            listOf("carrier" to "delivered"),
+            fakeBookingsRepository.loadMatchesCalls,
+        )
     }
 
     @Test
     fun `loadHistory filters out non-delivered statuses defensively`() = runTest {
         fakeBookingsRepository.loadMatchesResult = Result.success(
             listOf(
-                match(id = 1, status = MatchStatus.DELIVERED, agreedPrice = 50.0),
-                match(id = 2, status = MatchStatus.PICKED_UP, agreedPrice = 60.0),
+                match(id = 1, status = MatchStatus.DELIVERED, agreedPrice = 100.0),
+                match(id = 2, status = MatchStatus.IN_TRANSIT, agreedPrice = 50.0),
             ),
         )
 
@@ -80,19 +84,18 @@ class PackageHistoryViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals(1, state.matches.size)
-        assertEquals(MatchStatus.DELIVERED, state.matches.first().matchStatus)
-        assertEquals(50.0, state.totalSpent, 0.001)
+        assertEquals(100.0, state.totalEarned, 0.001)
     }
 
     @Test
     fun `loadHistory surfaces error message on failure`() = runTest {
-        fakeBookingsRepository.loadMatchesResult = Result.failure(RuntimeException("network down"))
+        fakeBookingsRepository.loadMatchesResult = Result.failure(RuntimeException("timed out"))
 
         viewModel.loadHistory()
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals("network down", state.errorMessage)
+        assertEquals("timed out", state.errorMessage)
         assertFalse(state.isLoading)
         assertTrue(state.hasLoaded)
     }
@@ -160,10 +163,9 @@ class PackageHistoryViewModelTest {
 
 /**
  * Minimal `BookingsRepository` stub — only `loadMatches` is exercised by the
- * history VM. Mockk can't mock the inline-value `Result` return type
- * cleanly, so we hand-roll the test fake instead.
+ * history VM. Mockk can't mock the inline-value `Result` return type cleanly.
  */
-private class FakeBookingsRepositoryForHistory : BookingsRepository {
+private class FakeBookingsRepositoryForDeliveryHistory : BookingsRepository {
     var loadMatchesResult: Result<List<DeliveryMatch>> = Result.success(emptyList())
     val loadMatchesCalls: MutableList<Pair<String?, String?>> = mutableListOf()
 
@@ -236,11 +238,13 @@ private class FakeBookingsRepositoryForHistory : BookingsRepository {
         carrierId: Int?,
     ): Result<List<com.efthemiosprime.pasabayan.features.bookings.model.CompatibleTrip>> =
         Result.failure(Exception("Not used"))
-    override suspend fun getCompatiblePackages(tripId: Int):
-        Result<List<com.efthemiosprime.pasabayan.features.packages.model.PackageRequest>> =
+    override suspend fun getCompatiblePackages(
+        tripId: Int,
+    ): Result<List<com.efthemiosprime.pasabayan.features.packages.model.PackageRequest>> =
         Result.failure(Exception("Not used"))
-    override suspend fun getReceiverAccess(matchId: Int):
-        Result<List<com.efthemiosprime.pasabayan.features.bookings.model.ReceiverAccessToken>> =
+    override suspend fun getReceiverAccess(
+        matchId: Int,
+    ): Result<List<com.efthemiosprime.pasabayan.features.bookings.model.ReceiverAccessToken>> =
         Result.failure(Exception("Not used"))
     override suspend fun createReceiverAccess(
         matchId: Int,

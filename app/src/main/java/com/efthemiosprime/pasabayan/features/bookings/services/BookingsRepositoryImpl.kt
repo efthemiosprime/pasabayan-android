@@ -6,14 +6,19 @@ import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.core.network.bookings.AcceptMatchRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.BookingsApi
 import com.efthemiosprime.pasabayan.core.network.bookings.CarrierCounterOfferRequestJson
+import com.efthemiosprime.pasabayan.core.network.bookings.CreateReceiverAccessRequestJson
 import com.efthemiosprime.pasabayan.core.network.bookings.MatchResponseJson
 import com.efthemiosprime.pasabayan.core.network.bookings.ShipperCounterOfferRequestJson
 import com.efthemiosprime.pasabayan.features.bookings.model.CancelMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.CarrierLocationSnapshot
+import com.efthemiosprime.pasabayan.features.bookings.model.CompatibleTrip
 import com.efthemiosprime.pasabayan.features.bookings.model.ConfirmMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
+import com.efthemiosprime.pasabayan.features.bookings.model.ReceiverAccessToken
 import com.efthemiosprime.pasabayan.features.bookings.model.RequestMatchResult
 import com.efthemiosprime.pasabayan.features.bookings.model.toDomain
+import com.efthemiosprime.pasabayan.features.packages.model.PackageRequest
+import com.efthemiosprime.pasabayan.features.packages.model.toDomain
 import kotlinx.serialization.json.Json
 import retrofit2.Response
 import javax.inject.Inject
@@ -234,6 +239,78 @@ class BookingsRepositoryImpl @Inject constructor(
             val snapshot = res.body()?.data?.toDomain()
                 ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
             Result.success(snapshot)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun getCompatibleTrips(
+        packageRequestId: Int,
+        carrierId: Int?,
+    ): Result<List<CompatibleTrip>> {
+        return try {
+            val res = bookingsApi.getCompatibleTrips(packageRequestId)
+            if (!res.isSuccessful) return Result.failure(mapError(res))
+            val body = res.body()
+                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            val all = body.data.data.map { it.toDomain() }
+            val filtered = if (carrierId != null) all.filter { it.carrierId == carrierId } else all
+            Result.success(filtered)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun getCompatiblePackages(tripId: Int): Result<List<PackageRequest>> {
+        return try {
+            val res = bookingsApi.getCompatiblePackages(tripId)
+            if (!res.isSuccessful) return Result.failure(mapError(res))
+            val body = res.body()
+                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            Result.success(body.data.packages.map { it.toDomain() })
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun getReceiverAccess(matchId: Int): Result<List<ReceiverAccessToken>> {
+        return try {
+            val res = bookingsApi.getReceiverAccess(matchId)
+            if (!res.isSuccessful) return Result.failure(mapError(res))
+            val tokens = res.body()?.data?.map { it.toDomain() } ?: emptyList()
+            Result.success(tokens)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun createReceiverAccess(
+        matchId: Int,
+        generatePin: Boolean,
+        receiverName: String?,
+    ): Result<ReceiverAccessToken> {
+        return try {
+            val res = bookingsApi.createReceiverAccess(
+                matchId = matchId,
+                body = CreateReceiverAccessRequestJson(
+                    generatePin = generatePin,
+                    receiverName = receiverName,
+                ),
+            )
+            if (!res.isSuccessful) return Result.failure(mapError(res))
+            val token = res.body()?.data?.toDomain()
+                ?: return Result.failure(DomainErrorMapperException(DomainError.InvalidResponse))
+            Result.success(token)
+        } catch (e: Exception) {
+            Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
+        }
+    }
+
+    override suspend fun revokeReceiverAccess(matchId: Int, tokenId: Int): Result<Unit> {
+        return try {
+            val res = bookingsApi.revokeReceiverAccess(matchId, tokenId)
+            if (!res.isSuccessful) return Result.failure(mapError(res))
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(DomainErrorMapperException(DomainError.NetworkError(e)))
         }

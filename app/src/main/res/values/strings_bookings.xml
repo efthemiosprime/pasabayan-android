@@ -179,4 +179,18 @@
     <string name="matching_overage_kg_format">%1$.1f kg</string>
     <string name="matching_trip_overcommitted_title">Trip is full</string>
     <string name="matching_trip_overcommitted_dismiss">OK</string>
+
+    <!-- Carrier delivery history (Gap 1 — iOS parity with DeliveryHistoryView) -->
+    <string name="bookings_history_title">Delivery History</string>
+    <string name="bookings_history_close">Close history</string>
+    <string name="bookings_history_summary">Summary</string>
+    <string name="bookings_history_deliveries">Deliveries</string>
+    <string name="bookings_history_total_earned">Total Earned</string>
+    <string name="bookings_history_total_value">CAD $%1$.2f</string>
+    <string name="bookings_history_empty_title">No Deliveries Yet</string>
+    <string name="bookings_history_empty_description">Your completed trips will appear here.</string>
+    <string name="bookings_history_browse_packages">Browse Packages</string>
+    <string name="bookings_history_error_title">Could Not Load History</string>
+    <string name="bookings_history_error_load">Failed to load delivery history. Please try again.</string>
+    <string name="bookings_history_try_again">Try Again</string>
 </resources>

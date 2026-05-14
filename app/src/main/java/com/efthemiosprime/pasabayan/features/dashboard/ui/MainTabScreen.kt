@@ -166,10 +166,15 @@ fun MainTabScreen(
     var profileReceiptListOpen by remember { mutableStateOf(false) }
     var profileReceiptDetailId by remember { mutableStateOf<Int?>(null) }
     var packageHistoryOpen by remember { mutableStateOf(false) }
+    var deliveryHistoryOpen by remember { mutableStateOf(false) }
     // Selected delivered-package match for the details sheet launched from
     // the package-history screen. Independent of bookings-tab selection so the
     // two flows don't fight over the same state.
     var packageHistorySelectedMatch by remember {
+        mutableStateOf<com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch?>(null)
+    }
+    // Selected delivered match from the carrier delivery-history screen.
+    var deliveryHistorySelectedMatch by remember {
         mutableStateOf<com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch?>(null)
     }
     var showEditUserProfileSheet by remember { mutableStateOf(false) }
@@ -308,6 +313,8 @@ fun MainTabScreen(
             ratingsOpen = false
             packageHistoryOpen = false
             packageHistorySelectedMatch = null
+            deliveryHistoryOpen = false
+            deliveryHistorySelectedMatch = null
         }
     }
 
@@ -463,6 +470,41 @@ fun MainTabScreen(
                                     onRequestDelivery = { carrier -> sendRequestCarrier = carrier },
                                     modifier = Modifier.fillMaxSize(),
                                 )
+                            }
+                        }
+                        deliveryHistoryOpen -> {
+                            // iOS parity: Profile → "Delivery History" opens
+                            // DeliveryHistoryView as a sheet. The screen brings
+                            // its own top bar via PScaffold/PTopBar.
+                            com.efthemiosprime.pasabayan.features.bookings.ui.DeliveryHistoryScreen(
+                                onClose = { deliveryHistoryOpen = false },
+                                onViewMatchDetails = { match ->
+                                    deliveryHistorySelectedMatch = match
+                                },
+                                onBrowsePackages = {
+                                    deliveryHistoryOpen = false
+                                    val packagesIndex = tabs.indexOfFirst { it.route == "packages" }
+                                    if (packagesIndex >= 0) viewModel.selectTab(packagesIndex)
+                                },
+                                modifier = Modifier.fillMaxSize(),
+                            )
+
+                            deliveryHistorySelectedMatch?.let { selected ->
+                                com.efthemiosprime.pasabayan.core.designsystem.component.PModalBottomSheet(
+                                    onDismissRequest = { deliveryHistorySelectedMatch = null },
+                                ) {
+                                    com.efthemiosprime.pasabayan.features.bookings.ui.ShipperMatchDetailsSheetContent(
+                                        match = selected,
+                                        isCarrier = true,
+                                        onClose = { deliveryHistorySelectedMatch = null },
+                                        onAction = { deliveryHistorySelectedMatch = null },
+                                        onContactSupport = {
+                                            deliveryHistorySelectedMatch = null
+                                            showHelpCenterSheet = true
+                                        },
+                                        currentUserId = user.id.toInt(),
+                                    )
+                                }
                             }
                         }
                         packageHistoryOpen -> {
@@ -648,6 +690,7 @@ fun MainTabScreen(
                             onOpenHelpCenter = { showHelpCenterSheet = true },
                             onOpenLegal = { showLegalViewerSheet = true },
                             onOpenPackageHistory = { packageHistoryOpen = true },
+                            onOpenDeliveryHistory = { deliveryHistoryOpen = true },
                         )
                     }
                 }

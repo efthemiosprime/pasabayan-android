@@ -47,6 +47,15 @@ data class PackageRequest(
     val storeName: String?,
     val storeAddress: String?,
     val receiptRequired: Boolean?,
+    /** Custom-task name. iOS parity — set when service_type=general_errand + direction=task. */
+    val taskName: String? = null,
+    /** Custom-task description. iOS parity — set when service_type=general_errand + direction=task. */
+    val taskDescription: String? = null,
+    // Coordinates (iOS parity — drive detail-screen map pins)
+    val pickupLat: Double? = null,
+    val pickupLng: Double? = null,
+    val deliveryLat: Double? = null,
+    val deliveryLng: Double? = null,
 ) {
     val title: String
         get() = packageDescription

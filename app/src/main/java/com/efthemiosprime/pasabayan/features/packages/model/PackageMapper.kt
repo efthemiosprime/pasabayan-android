@@ -44,6 +44,12 @@ fun PackageRequestJson.toDomain(): PackageRequest = PackageRequest(
     storeName = storeName,
     storeAddress = storeAddress,
     receiptRequired = receiptRequired,
+    taskName = taskName,
+    taskDescription = taskDescription,
+    pickupLat = pickupLat,
+    pickupLng = pickupLng,
+    deliveryLat = deliveryLat,
+    deliveryLng = deliveryLng,
 )
 
 fun PackageImageJson.toDomain(): PackageImage = PackageImage(

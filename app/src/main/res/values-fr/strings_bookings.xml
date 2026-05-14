@@ -179,4 +179,18 @@
     <string name="matching_overage_kg_format">%1$.1f kg</string>
     <string name="matching_trip_overcommitted_title">Trajet complet</string>
     <string name="matching_trip_overcommitted_dismiss">OK</string>
+
+    <!-- Historique des livraisons (Gap 1) -->
+    <string name="bookings_history_title">Historique des livraisons</string>
+    <string name="bookings_history_close">Fermer l\'historique</string>
+    <string name="bookings_history_summary">Résumé</string>
+    <string name="bookings_history_deliveries">Livraisons</string>
+    <string name="bookings_history_total_earned">Total gagné</string>
+    <string name="bookings_history_total_value">%1$.2f $ CAD</string>
+    <string name="bookings_history_empty_title">Aucune livraison pour l\'instant</string>
+    <string name="bookings_history_empty_description">Vos trajets terminés apparaîtront ici.</string>
+    <string name="bookings_history_browse_packages">Parcourir les colis</string>
+    <string name="bookings_history_error_title">Impossible de charger l\'historique</string>
+    <string name="bookings_history_error_load">Le chargement de l\'historique a échoué. Réessayez.</string>
+    <string name="bookings_history_try_again">Réessayer</string>
 </resources>

@@ -110,15 +110,16 @@ groups:
       - { method: GET,  path: "/matches/{matchId}/carrier-location", auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift, notes: "Polling-based carrier GPS" }
       - { method: POST, path: "/matches/{matchId}/location",        auth: bearer, ios_service: Pasabayan/Services/CarrierLocationService.swift, notes: "Carrier posts lat/lng/accuracy every 30s" }
       # Receiver access
-      - { method: GET,  path: "/matches/{matchId}/receiver-access",            auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift }
-      - { method: POST, path: "/matches/{matchId}/receiver-access",            auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift, notes: "Generate receiver tracking link" }
-      - { method: GET,  path: "/matches/{matchId}/receiver-access/{tokenId}",  auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift, notes: "Validate receiver token" }
+      - { method: GET,    path: "/matches/{matchId}/receiver-access",            auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift, notes: "List active tokens for a match" }
+      - { method: POST,   path: "/matches/{matchId}/receiver-access",            auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift, notes: "Generate receiver tracking link. Body: {generate_pin: bool, receiver_name?: string}" }
+      - { method: DELETE, path: "/matches/{matchId}/receiver-access/{tokenId}",  auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift, notes: "Revoke an existing receiver token" }
       # Receipts
       - { method: POST, path: "/services/matches/{matchId}/receipt", auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift }
       - { method: GET,  path: "/services/matches/{matchId}/receipt", auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift }
       # Trip booking & compatibility
       - { method: POST, path: "/trips/{tripId}/book",                             auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift, notes: "Shipper books trip directly" }
       - { method: GET,  path: "/trips/{tripId}/compatibility/{packageId}",        auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift }
+      - { method: GET,  path: "/trips/{tripId}/compatible-packages",              auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift, notes: "Carrier-side: packages compatible with a specific trip" }
       - { method: GET,  path: "/trips/{tripId}/matches",                          auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift }
       - { method: POST, path: "/packages/{packageId}/request-trip/{tripId}",      auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift, ambiguous: true, notes: "ShipperCounterOfferRequest when is_counter_offer; else ShipperTripRequest" }
       - { method: POST, path: "/trips/{tripId}/packages/{packageId}/request",     auth: bearer, ios_service: Pasabayan/Features/Bookings/Services/BookingsAPIService.swift, ambiguous: true, notes: "CarrierCounterOfferRequest when is_counter_offer; else CarrierRequestBody" }

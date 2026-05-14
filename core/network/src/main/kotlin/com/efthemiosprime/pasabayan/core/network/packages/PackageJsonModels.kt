@@ -48,6 +48,15 @@ data class PackageRequestJson(
     @SerialName("store_name") val storeName: String? = null,
     @SerialName("store_address") val storeAddress: String? = null,
     @SerialName("receipt_required") @Serializable(with = FlexibleBoolSerializer::class) val receiptRequired: Boolean? = null,
+    /** Custom-task name. iOS parity: returned for `service_type=general_errand` with direction `task`. */
+    @SerialName("task_name") val taskName: String? = null,
+    /** Custom-task description. iOS parity: returned for `service_type=general_errand` with direction `task`. */
+    @SerialName("task_description") val taskDescription: String? = null,
+    // Coordinates (iOS parity — used by detail-screen map pins + compatibility math)
+    @SerialName("pickup_lat") @Serializable(with = FlexibleDoubleSerializer::class) val pickupLat: Double? = null,
+    @SerialName("pickup_lng") @Serializable(with = FlexibleDoubleSerializer::class) val pickupLng: Double? = null,
+    @SerialName("delivery_lat") @Serializable(with = FlexibleDoubleSerializer::class) val deliveryLat: Double? = null,
+    @SerialName("delivery_lng") @Serializable(with = FlexibleDoubleSerializer::class) val deliveryLng: Double? = null,
     // Compatibility fields
     @SerialName("compatibility_score") @Serializable(with = FlexibleDoubleSerializer::class) val compatibilityScore: Double? = null,
     @SerialName("estimated_earnings") @Serializable(with = FlexibleDoubleSerializer::class) val estimatedEarnings: Double? = null,

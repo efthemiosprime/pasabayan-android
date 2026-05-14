@@ -180,6 +180,44 @@ class PackageJsonModelsDecodeTest {
         assertTrue(encoded.contains("\"fragile\":true"))
     }
 
+    // -- Coordinates + task fields (read-side parity gaps 2 + 3) --
+
+    @Test
+    fun `PackageRequestJson decodes pickup and delivery coordinates`() {
+        val raw = """
+            {
+              "id": 100,
+              "pickup_lat": 43.6532,
+              "pickup_lng": "-79.3832",
+              "delivery_lat": 45.5017,
+              "delivery_lng": -73.5673
+            }
+        """.trimIndent()
+        val pkg = json.decodeFromString<PackageRequestJson>(raw)
+
+        // FlexibleDoubleSerializer must accept both numeric and string lat/lng.
+        assertEquals(43.6532, pkg.pickupLat!!, 0.0001)
+        assertEquals(-79.3832, pkg.pickupLng!!, 0.0001)
+        assertEquals(45.5017, pkg.deliveryLat!!, 0.0001)
+        assertEquals(-73.5673, pkg.deliveryLng!!, 0.0001)
+    }
+
+    @Test
+    fun `PackageRequestJson decodes task name and description for general_errand`() {
+        val raw = """
+            {
+              "id": 101,
+              "service_type": "general_errand",
+              "task_name": "Water the plants",
+              "task_description": "Tuesdays and Fridays for the next two weeks"
+            }
+        """.trimIndent()
+        val pkg = json.decodeFromString<PackageRequestJson>(raw)
+
+        assertEquals("Water the plants", pkg.taskName)
+        assertEquals("Tuesdays and Fridays for the next two weeks", pkg.taskDescription)
+    }
+
     // -- CreateServiceRequestBodyJson --
 
     @Test

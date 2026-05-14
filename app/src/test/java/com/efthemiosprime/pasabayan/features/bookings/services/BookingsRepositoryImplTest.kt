@@ -485,4 +485,225 @@ class BookingsRepositoryImplTest {
         val result = repo.getCarrierLocation(100)
         assertTrue(result.isFailure)
     }
+
+    // -- getCompatibleTrips --
+
+    @Test
+    fun `getCompatibleTrips returns trips on success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "success": true,
+                    "message": "OK",
+                    "data": {
+                        "data": [
+                            {"id": 1, "carrier_id": 10, "origin_city": "Manila",
+                             "destination_city": "Cebu", "trip_status": "active",
+                             "transportation_method": "flight",
+                             "available_weight_kg": "20.0", "price_per_kg": "5.50",
+                             "can_request": true},
+                            {"id": 2, "carrier_id": 20, "origin_city": "Manila",
+                             "destination_city": "Cebu", "trip_status": "active",
+                             "transportation_method": "flight",
+                             "available_weight_kg": "10.0", "price_per_kg": "6.00",
+                             "shipper_request_status": "shipper_requested"}
+                        ],
+                        "current_page": 1, "last_page": 1, "total": 2, "per_page": 15
+                    }
+                }""",
+            ),
+        )
+
+        val result = repo.getCompatibleTrips(packageRequestId = 42)
+        assertTrue(result.isSuccess)
+        val trips = result.getOrThrow()
+        assertEquals(2, trips.size)
+        assertEquals(1, trips[0].id)
+        assertTrue(trips[0].canRequestTrip)
+        assertFalse(trips[0].hasActiveRequest)
+        assertTrue(trips[1].hasActiveRequest)
+        assertEquals(20.0, trips[0].availableWeightKgDouble!!, 0.0001)
+    }
+
+    @Test
+    fun `getCompatibleTrips applies client-side carrierId filter`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "success": true, "message": "OK",
+                    "data": {
+                        "data": [
+                            {"id": 1, "carrier_id": 10, "origin_city": "Manila",
+                             "destination_city": "Cebu", "trip_status": "active",
+                             "transportation_method": "flight"},
+                            {"id": 2, "carrier_id": 20, "origin_city": "Manila",
+                             "destination_city": "Cebu", "trip_status": "active",
+                             "transportation_method": "flight"}
+                        ],
+                        "current_page": 1, "last_page": 1, "total": 2, "per_page": 15
+                    }
+                }""",
+            ),
+        )
+
+        val trips = repo.getCompatibleTrips(packageRequestId = 42, carrierId = 20).getOrThrow()
+        assertEquals(1, trips.size)
+        assertEquals(20, trips[0].carrierId)
+    }
+
+    @Test
+    fun `getCompatibleTrips returns failure on 401`() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(401).setBody("""{"message":"Unauthenticated"}"""))
+
+        val result = repo.getCompatibleTrips(packageRequestId = 42)
+        assertTrue(result.isFailure)
+    }
+
+    // -- getCompatiblePackages --
+
+    @Test
+    fun `getCompatiblePackages handles nested compatible_packages shape`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "success": true, "message": "OK",
+                    "data": {
+                        "compatible_packages": {
+                            "data": [
+                                {"id": 100, "pickup_city": "Manila", "delivery_city": "Cebu"},
+                                {"id": 101, "pickup_city": "Manila", "delivery_city": "Davao"}
+                            ],
+                            "current_page": 1, "last_page": 1, "total": 2, "per_page": 15
+                        }
+                    }
+                }""",
+            ),
+        )
+
+        val packages = repo.getCompatiblePackages(tripId = 7).getOrThrow()
+        assertEquals(2, packages.size)
+        assertEquals(100, packages[0].id)
+        assertEquals("Cebu", packages[0].deliveryCity)
+    }
+
+    @Test
+    fun `getCompatiblePackages handles flat data shape`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "success": true, "message": "OK",
+                    "data": {
+                        "data": [
+                            {"id": 200, "pickup_city": "Toronto", "delivery_city": "Montreal"}
+                        ],
+                        "current_page": 1, "last_page": 1, "total": 1, "per_page": 15
+                    }
+                }""",
+            ),
+        )
+
+        val packages = repo.getCompatiblePackages(tripId = 7).getOrThrow()
+        assertEquals(1, packages.size)
+        assertEquals(200, packages[0].id)
+    }
+
+    @Test
+    fun `getCompatiblePackages returns failure on 500`() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(500).setBody("""{"message":"server"}"""))
+
+        assertTrue(repo.getCompatiblePackages(tripId = 7).isFailure)
+    }
+
+    // -- Receiver access --
+
+    @Test
+    fun `getReceiverAccess returns tokens on success`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{
+                    "success": true,
+                    "data": [
+                        {"id": 1, "short_code": "ABC123", "short_url": "https://p.bay/ABC123",
+                         "has_pin": true, "pin": "9182", "is_active": true,
+                         "created_at": "2026-05-13T10:00:00Z"},
+                        {"id": 2, "short_code": "XYZ789", "short_url": "https://p.bay/XYZ789",
+                         "has_pin": false, "is_active": false,
+                         "created_at": "2026-05-12T10:00:00Z"}
+                    ]
+                }""",
+            ),
+        )
+
+        val tokens = repo.getReceiverAccess(matchId = 100).getOrThrow()
+        assertEquals(2, tokens.size)
+        assertEquals("ABC123", tokens[0].shortCode)
+        assertEquals("9182", tokens[0].pin)
+        assertTrue(tokens[0].hasPin)
+        assertTrue(tokens[0].isActive)
+        assertFalse(tokens[1].isActive)
+    }
+
+    @Test
+    fun `getReceiverAccess returns empty list when data missing`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody("""{"success": true}"""),
+        )
+
+        val tokens = repo.getReceiverAccess(matchId = 100).getOrThrow()
+        assertTrue(tokens.isEmpty())
+    }
+
+    @Test
+    fun `createReceiverAccess returns new token`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(201).setBody(
+                """{
+                    "success": true,
+                    "data": {
+                        "id": 99, "short_code": "NEW999", "short_url": "https://p.bay/NEW999",
+                        "has_pin": true, "pin": "1234", "is_active": true,
+                        "created_at": "2026-05-14T12:00:00Z"
+                    }
+                }""",
+            ),
+        )
+
+        val token = repo.createReceiverAccess(matchId = 100, generatePin = true).getOrThrow()
+        assertEquals(99, token.id)
+        assertEquals("NEW999", token.shortCode)
+        assertEquals("1234", token.pin)
+    }
+
+    @Test
+    fun `createReceiverAccess returns InvalidResponse when data missing`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(201).setBody("""{"success": true}"""),
+        )
+
+        assertTrue(repo.createReceiverAccess(matchId = 100).isFailure)
+    }
+
+    @Test
+    fun `createReceiverAccess returns failure on 422`() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(422).setBody("""{"message":"unavailable"}"""))
+
+        assertTrue(repo.createReceiverAccess(matchId = 100).isFailure)
+    }
+
+    @Test
+    fun `revokeReceiverAccess returns success on 200`() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody("""{"success": true, "message": "Revoked"}"""),
+        )
+
+        val result = repo.revokeReceiverAccess(matchId = 100, tokenId = 99)
+        assertTrue(result.isSuccess)
+    }
+
+    @Test
+    fun `revokeReceiverAccess returns failure on 404`() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(404).setBody("""{"message":"not found"}"""))
+
+        assertTrue(repo.revokeReceiverAccess(matchId = 100, tokenId = 0).isFailure)
+    }
 }

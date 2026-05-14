@@ -122,6 +122,37 @@ class PackageMapperTest {
     }
 
     @Test
+    fun `PackageRequestJson toDomain maps coordinates`() {
+        val payload = PackageRequestJson(
+            id = 30,
+            pickupLat = 43.6532,
+            pickupLng = -79.3832,
+            deliveryLat = 45.5017,
+            deliveryLng = -73.5673,
+        )
+        val pkg = payload.toDomain()
+
+        assertEquals(43.6532, pkg.pickupLat!!, 0.0001)
+        assertEquals(-79.3832, pkg.pickupLng!!, 0.0001)
+        assertEquals(45.5017, pkg.deliveryLat!!, 0.0001)
+        assertEquals(-73.5673, pkg.deliveryLng!!, 0.0001)
+    }
+
+    @Test
+    fun `PackageRequestJson toDomain maps task name and description`() {
+        val payload = PackageRequestJson(
+            id = 31,
+            serviceType = "general_errand",
+            taskName = "Water the plants",
+            taskDescription = "Tuesdays and Fridays for the next two weeks",
+        )
+        val pkg = payload.toDomain()
+
+        assertEquals("Water the plants", pkg.taskName)
+        assertEquals("Tuesdays and Fridays for the next two weeks", pkg.taskDescription)
+    }
+
+    @Test
     fun `AvailablePackageJson toDomain maps fields`() {
         val json = AvailablePackageJson(
             id = 20,

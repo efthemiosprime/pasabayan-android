@@ -118,4 +118,38 @@ interface BookingsApi {
 
     @GET("matches/{matchId}/carrier-location")
     suspend fun getCarrierLocation(@Path("matchId") matchId: Int): Response<CarrierLocationDataResponseJson>
+
+    // -- Discovery / compatibility --
+
+    /** Carrier-side: packages compatible with a specific trip. */
+    @GET("trips/{tripId}/compatible-packages")
+    suspend fun getCompatiblePackages(@Path("tripId") tripId: Int): Response<CompatiblePackagesResponseJson>
+
+    /**
+     * Shipper-side: trips compatible with a specific package request. iOS allows an optional
+     * client-side `carrierId` filter — apply that at the repository layer, not as a query param.
+     */
+    @GET("packages/{packageRequestId}/compatible-trips")
+    suspend fun getCompatibleTrips(
+        @Path("packageRequestId") packageRequestId: Int,
+    ): Response<CompatibleTripsResponseJson>
+
+    // -- Receiver access --
+
+    @GET("matches/{matchId}/receiver-access")
+    suspend fun getReceiverAccess(
+        @Path("matchId") matchId: Int,
+    ): Response<ReceiverAccessListResponseJson>
+
+    @POST("matches/{matchId}/receiver-access")
+    suspend fun createReceiverAccess(
+        @Path("matchId") matchId: Int,
+        @Body body: CreateReceiverAccessRequestJson,
+    ): Response<CreateReceiverAccessResponseJson>
+
+    @DELETE("matches/{matchId}/receiver-access/{tokenId}")
+    suspend fun revokeReceiverAccess(
+        @Path("matchId") matchId: Int,
+        @Path("tokenId") tokenId: Int,
+    ): Response<RevokeReceiverAccessResponseJson>
 }

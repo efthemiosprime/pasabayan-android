@@ -315,6 +315,29 @@ private class FakeBookingsRepo : BookingsRepository {
 
     override suspend fun getCarrierLocation(matchId: Int) =
         Result.failure<com.efthemiosprime.pasabayan.features.bookings.model.CarrierLocationSnapshot>(Exception("Not used"))
+
+    override suspend fun getCompatibleTrips(packageRequestId: Int, carrierId: Int?) =
+        Result.failure<List<com.efthemiosprime.pasabayan.features.bookings.model.CompatibleTrip>>(
+            Exception("Not used"),
+        )
+
+    override suspend fun getCompatiblePackages(tripId: Int) =
+        Result.failure<List<com.efthemiosprime.pasabayan.features.packages.model.PackageRequest>>(
+            Exception("Not used"),
+        )
+
+    override suspend fun getReceiverAccess(matchId: Int) =
+        Result.failure<List<com.efthemiosprime.pasabayan.features.bookings.model.ReceiverAccessToken>>(
+            Exception("Not used"),
+        )
+
+    override suspend fun createReceiverAccess(matchId: Int, generatePin: Boolean, receiverName: String?) =
+        Result.failure<com.efthemiosprime.pasabayan.features.bookings.model.ReceiverAccessToken>(
+            Exception("Not used"),
+        )
+
+    override suspend fun revokeReceiverAccess(matchId: Int, tokenId: Int): Result<Unit> =
+        Result.failure(Exception("Not used"))
 }
 
 private class FakePaymentMethodsRepo : PaymentMethodsRepository {

@@ -111,6 +111,7 @@ fun ProfileTabScreen(
     onOpenHelpCenter: () -> Unit = {},
     onOpenLegal: () -> Unit = {},
     onOpenPackageHistory: () -> Unit = {},
+    onOpenDeliveryHistory: () -> Unit = {},
     onOpenPlaceholder: (String) -> Unit = { },
     viewModel: ProfileTabViewModel = hiltViewModel(),
     attentionViewModel: ProfileAttentionViewModel = hiltViewModel(),
@@ -173,6 +174,7 @@ fun ProfileTabScreen(
         onOpenHelpCenter = onOpenHelpCenter,
         onOpenLegal = onOpenLegal,
         onOpenPackageHistory = onOpenPackageHistory,
+        onOpenDeliveryHistory = onOpenDeliveryHistory,
         onOpenPlaceholder = onOpenPlaceholder,
         modifier = modifier,
     )
@@ -203,6 +205,7 @@ fun ProfileTabContent(
     onOpenHelpCenter: () -> Unit = {},
     onOpenLegal: () -> Unit = {},
     onOpenPackageHistory: () -> Unit = {},
+    onOpenDeliveryHistory: () -> Unit = {},
     onOpenPlaceholder: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -324,7 +327,7 @@ fun ProfileTabContent(
                     title = stringResource(R.string.profile_menu_delivery_history),
                     subtitle = stringResource(R.string.profile_menu_delivery_history_subtitle),
                     leadingIcon = Icons.Filled.History,
-                    onClick = { onOpenPlaceholder("delivery_history") },
+                    onClick = onOpenDeliveryHistory,
                 )
             }
             if (shouldShowPackageHistoryMenu(currentRole)) {
