@@ -110,6 +110,7 @@ fun ProfileTabScreen(
     onOpenRatings: () -> Unit = {},
     onOpenHelpCenter: () -> Unit = {},
     onOpenLegal: () -> Unit = {},
+    onOpenPackageHistory: () -> Unit = {},
     onOpenPlaceholder: (String) -> Unit = { },
     viewModel: ProfileTabViewModel = hiltViewModel(),
     attentionViewModel: ProfileAttentionViewModel = hiltViewModel(),
@@ -171,6 +172,7 @@ fun ProfileTabScreen(
         onOpenRatings = onOpenRatings,
         onOpenHelpCenter = onOpenHelpCenter,
         onOpenLegal = onOpenLegal,
+        onOpenPackageHistory = onOpenPackageHistory,
         onOpenPlaceholder = onOpenPlaceholder,
         modifier = modifier,
     )
@@ -200,6 +202,7 @@ fun ProfileTabContent(
     onOpenRatings: () -> Unit = {},
     onOpenHelpCenter: () -> Unit = {},
     onOpenLegal: () -> Unit = {},
+    onOpenPackageHistory: () -> Unit = {},
     onOpenPlaceholder: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -329,7 +332,7 @@ fun ProfileTabContent(
                     title = stringResource(R.string.profile_menu_package_history),
                     subtitle = stringResource(R.string.profile_menu_package_history_subtitle),
                     leadingIcon = Icons.Filled.History,
-                    onClick = { onOpenPlaceholder("package_history") },
+                    onClick = onOpenPackageHistory,
                 )
             }
         }

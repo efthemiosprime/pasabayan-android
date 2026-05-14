@@ -165,6 +165,7 @@ fun MainTabScreen(
     var profileTransactionDetailId by remember { mutableStateOf<Int?>(null) }
     var profileReceiptListOpen by remember { mutableStateOf(false) }
     var profileReceiptDetailId by remember { mutableStateOf<Int?>(null) }
+    var packageHistoryOpen by remember { mutableStateOf(false) }
     var showEditUserProfileSheet by remember { mutableStateOf(false) }
     var showEditCarrierProfileSheet by remember { mutableStateOf(false) }
     var showPrivacyPreferencesSheet by remember { mutableStateOf(false) }
@@ -299,6 +300,7 @@ fun MainTabScreen(
             settingsOpen = false
             favoritesOpen = false
             ratingsOpen = false
+            packageHistoryOpen = false
         }
     }
 
@@ -456,6 +458,30 @@ fun MainTabScreen(
                                 )
                             }
                         }
+                        packageHistoryOpen -> {
+                            // iOS parity: Profile → "Package History" opens
+                            // PackageHistoryView as a sheet. PackageHistoryScreen
+                            // already provides its own top bar, so we don't wrap.
+                            com.efthemiosprime.pasabayan.features.packages.ui.PackageHistoryScreen(
+                                onClose = { packageHistoryOpen = false },
+                                onViewMatchDetails = {
+                                    // Dismiss history first so the match detail sheet
+                                    // doesn't sit behind it. Match-detail wiring lives
+                                    // in the bookings feature; defer until needed.
+                                    packageHistoryOpen = false
+                                },
+                                onCreatePackage = {
+                                    packageHistoryOpen = false
+                                    if (packageCreationAssistState.hasAcknowledgedDisclaimer) {
+                                        showPackageRequestSheet = true
+                                    } else {
+                                        openErrandAfterDisclaimer = false
+                                        showPackageDisclaimerGate = true
+                                    }
+                                },
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
                         settingsOpen -> {
                             Column {
                                 PTopBar(
@@ -593,6 +619,7 @@ fun MainTabScreen(
                             onOpenRatings = { ratingsOpen = true },
                             onOpenHelpCenter = { showHelpCenterSheet = true },
                             onOpenLegal = { showLegalViewerSheet = true },
+                            onOpenPackageHistory = { packageHistoryOpen = true },
                         )
                     }
                 }
