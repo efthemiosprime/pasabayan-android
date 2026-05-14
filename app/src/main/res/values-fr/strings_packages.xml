@@ -240,4 +240,18 @@
         <item quantity="one">%1$d trajet compatible</item>
         <item quantity="other">%1$d trajets compatibles</item>
     </plurals>
+
+    <!-- Historique des colis (Slice I) -->
+    <string name="packages_history_title">Historique des colis</string>
+    <string name="packages_history_close">Fermer l\'historique</string>
+    <string name="packages_history_summary">Résumé</string>
+    <string name="packages_history_packages">Colis</string>
+    <string name="packages_history_total_spent">Total dépensé</string>
+    <string name="packages_history_total_value">%1$.2f $ CAD</string>
+    <string name="packages_history_empty_title">Aucune livraison pour l\'instant</string>
+    <string name="packages_history_empty_description">Vos colis livrés apparaîtront ici une fois terminés.</string>
+    <string name="packages_history_create_package">Créer un colis</string>
+    <string name="packages_history_error_title">Impossible de charger l\'historique</string>
+    <string name="packages_history_error_load">Le chargement de l\'historique a échoué. Réessayez.</string>
+    <string name="packages_history_try_again">Réessayer</string>
 </resources>

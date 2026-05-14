@@ -240,4 +240,18 @@
         <item quantity="one">%1$d compatible trip</item>
         <item quantity="other">%1$d compatible trips</item>
     </plurals>
+
+    <!-- Package history (Slice I — iOS parity with PackageHistoryView) -->
+    <string name="packages_history_title">Package History</string>
+    <string name="packages_history_close">Close history</string>
+    <string name="packages_history_summary">Summary</string>
+    <string name="packages_history_packages">Packages</string>
+    <string name="packages_history_total_spent">Total Spent</string>
+    <string name="packages_history_total_value">CAD $%1$.2f</string>
+    <string name="packages_history_empty_title">No Deliveries Yet</string>
+    <string name="packages_history_empty_description">Your delivered packages will appear here once they\'re completed.</string>
+    <string name="packages_history_create_package">Create a Package</string>
+    <string name="packages_history_error_title">Could Not Load History</string>
+    <string name="packages_history_error_load">Failed to load package history. Please try again.</string>
+    <string name="packages_history_try_again">Try Again</string>
 </resources>
