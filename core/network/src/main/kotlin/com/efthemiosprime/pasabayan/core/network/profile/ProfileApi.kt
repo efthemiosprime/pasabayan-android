@@ -10,6 +10,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
+import retrofit2.http.Query
 import retrofit2.http.Streaming
 
 /**
@@ -94,4 +95,15 @@ interface ProfileApi {
      */
     @GET("me/attention")
     suspend fun getAttention(): Response<AttentionSignalsJson>
+
+    /**
+     * Single source-of-truth attention payload driving every badge surface
+     * (tab-bar Profile badge, dashboard bell, drawer sections, per-row badges).
+     * Server caches per (user, role) for ~30 s — do not add a client cache.
+     * Omit [role] for the dual-role union; pass `"carrier"` or `"shipper"` for
+     * single-role sub-counts. iOS parity:
+     * `Pasabayan/Features/Profile/Services/ProfileAPIService.swift` (getBadgeSummary).
+     */
+    @GET("me/badge-summary")
+    suspend fun getBadgeSummary(@Query("role") role: String?): Response<BadgeSummaryJson>
 }
