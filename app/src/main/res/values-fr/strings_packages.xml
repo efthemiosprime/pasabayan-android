@@ -222,6 +222,19 @@
     <!-- Carrier explore package card (iOS CarrierPackageCard) -->
     <string name="carrier_package_card_fragile">Fragile</string>
     <string name="carrier_package_card_no_ratings_yet">Aucun avis pour le moment</string>
+    <!-- Étiquettes des variantes de course — parité iOS avec CarrierPackageCard.swift -->
+    <string name="carrier_package_card_store">Magasin</string>
+    <string name="carrier_package_card_store_carrier_choice">Au choix du coursier</string>
+    <string name="carrier_package_card_deliver_to">Livrer à</string>
+    <string name="carrier_package_card_from">Provenance</string>
+    <string name="carrier_package_card_to">Destination</string>
+    <string name="carrier_package_card_recipient">Destinataire</string>
+    <string name="carrier_package_card_recipient_phone">Téléphone</string>
+    <string name="carrier_package_card_task_details">Détails de la tâche</string>
+    <string name="carrier_package_card_shopping_list">Liste de courses</string>
+    <string name="carrier_package_card_estimated_cost">Coût est.</string>
+    <string name="carrier_package_card_more_items">+%1$d articles supplémentaires</string>
+    <string name="carrier_package_card_items_count">%1$d articles</string>
 
     <!-- Carrier package detail sheet (iOS CarrierPackageDetailSheet) -->
     <string name="carrier_package_detail_title">Détails du colis</string>

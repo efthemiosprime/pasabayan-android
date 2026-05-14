@@ -8,6 +8,7 @@ import com.efthemiosprime.pasabayan.core.domain.util.FlexibleBoolNotNullSerializ
 import com.efthemiosprime.pasabayan.core.domain.util.FlexibleDoubleSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class AvailablePackageJson(
@@ -37,7 +38,10 @@ data class AvailablePackageJson(
     // Service / errand fields. `direction` is `receive`, `send`, or `task`;
     // legacy delivery rows omit it. Parsed via `ErrandDirection.fromApi(...)`.
     val direction: String? = null,
+    @SerialName("shopping_list") val shoppingList: JsonElement? = null,
     @SerialName("store_name") val storeName: String? = null,
+    @SerialName("store_address") val storeAddress: String? = null,
+    @SerialName("estimated_cost") val estimatedCost: String? = null,
     @SerialName("recipient_name") val recipientName: String? = null,
     @SerialName("recipient_phone") val recipientPhone: String? = null,
     @SerialName("task_name") val taskName: String? = null,

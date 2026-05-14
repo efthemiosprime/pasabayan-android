@@ -54,6 +54,7 @@ import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTheme
 import com.efthemiosprime.pasabayan.core.designsystem.PasabayanTextStyles
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButton
 import com.efthemiosprime.pasabayan.core.designsystem.component.PButtonStyle
+import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgress
 import com.efthemiosprime.pasabayan.core.network.BuildConfig as NetworkBuildConfig
 import com.efthemiosprime.pasabayan.core.designsystem.component.PExpandableCardHost
 import com.efthemiosprime.pasabayan.core.session.AuthUser
@@ -160,9 +161,18 @@ fun AuthScreen(
                     )
                 }
             }
-            SessionUiState.Checking,
-            SessionUiState.SignedOut,
-            -> {
+            // Cold-start bootstrap: stored token is being validated against /auth/me.
+            // Render a neutral splash so users with a valid session don't see the
+            // marketing/login page flash before MainTabScreen mounts.
+            SessionUiState.Checking -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    PCircularProgress()
+                }
+            }
+            SessionUiState.SignedOut -> {
                 MarketingAuthScrollContent(
                     session = state.session,
                     transientError = state.transientError,

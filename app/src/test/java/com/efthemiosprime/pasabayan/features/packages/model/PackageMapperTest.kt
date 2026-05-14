@@ -217,6 +217,32 @@ class PackageMapperTest {
     }
 
     @Test
+    fun `AvailablePackageJson toDomain parses shopping list and estimated cost for receive errands`() {
+        val json = AvailablePackageJson(
+            id = 30,
+            packageRequestId = 15,
+            pickupCity = "Montreal",
+            deliveryCity = "Toronto",
+            serviceType = "grocery_shopping",
+            direction = "receive",
+            storeName = "Costco",
+            estimatedCost = "150.00",
+            shoppingList = this.json.parseToJsonElement(
+                """[{"item":"Milk 2L","quantity":"2","notes":"2% fat"},{"item":"Eggs","quantity":"1"}]""",
+            ),
+        )
+        val pkg = json.toDomain()
+
+        assertEquals("150.00", pkg.estimatedCost)
+        assertEquals(2, pkg.shoppingItems.size)
+        assertEquals("Milk 2L", pkg.shoppingItems[0].item)
+        assertEquals("2", pkg.shoppingItems[0].quantity)
+        assertEquals("2% fat", pkg.shoppingItems[0].notes)
+        assertEquals("Eggs", pkg.shoppingItems[1].item)
+        assertEquals(null, pkg.shoppingItems[1].notes)
+    }
+
+    @Test
     fun `AvailablePackageJson toDomain maps fields`() {
         val json = AvailablePackageJson(
             id = 20,

@@ -36,6 +36,11 @@ data class AvailablePackage(
     /** Raw `direction` from the API; nil on legacy delivery rows. */
     val direction: String? = null,
     val storeName: String? = null,
+    val storeAddress: String? = null,
+    /** Pre-parsed shopping list — iOS parity with `AvailablePackage.parsedShoppingList`. */
+    val shoppingItems: List<ShoppingItem> = emptyList(),
+    /** Carrier-facing estimated cost string from the API (e.g. `"150.00"`). */
+    val estimatedCost: String? = null,
     val recipientName: String? = null,
     val recipientPhone: String? = null,
     val taskName: String? = null,
@@ -92,7 +97,7 @@ fun AvailablePackage.toPackageRequest(): PackageRequest = PackageRequest(
     direction = direction,
     shoppingList = null,
     storeName = storeName,
-    storeAddress = null,
+    storeAddress = storeAddress,
     receiptRequired = null,
     recipientName = recipientName,
     recipientPhone = recipientPhone,

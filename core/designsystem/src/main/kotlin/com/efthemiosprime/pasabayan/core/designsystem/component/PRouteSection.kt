@@ -34,6 +34,8 @@ fun PRouteSection(
     destinationAddress: String? = null,
     originLandmark: String? = null,
     destinationLandmark: String? = null,
+    originCaption: String? = null,
+    destinationCaption: String? = null,
     accentColor: Color = PasabayanColors.Info,
 ) {
     Row(
@@ -53,7 +55,17 @@ fun PRouteSection(
             Canvas(
                 modifier = Modifier
                     .width(2.dp)
-                    .height(if (hasSubtext(originAddress, originLandmark, destinationAddress, destinationLandmark)) 60.dp else 32.dp),
+                    .height(
+                        if (hasSubtext(
+                                originAddress,
+                                originLandmark,
+                                destinationAddress,
+                                destinationLandmark,
+                                originCaption,
+                                destinationCaption,
+                            )
+                        ) 60.dp else 32.dp,
+                    ),
             ) {
                 val pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))
                 drawLine(
@@ -76,6 +88,13 @@ fun PRouteSection(
             verticalArrangement = Arrangement.spacedBy(PasabayanSpacing.xs),
         ) {
             // Origin
+            originCaption?.let {
+                Text(
+                    text = it,
+                    style = PasabayanTextStyles.Caption.small,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Text(
                 text = origin,
                 style = PasabayanTextStyles.Body.medium,
@@ -97,6 +116,13 @@ fun PRouteSection(
             }
 
             // Destination
+            destinationCaption?.let {
+                Text(
+                    text = it,
+                    style = PasabayanTextStyles.Caption.small,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Text(
                 text = destination,
                 style = PasabayanTextStyles.Body.medium,

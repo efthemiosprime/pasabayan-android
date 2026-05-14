@@ -222,6 +222,19 @@
     <!-- Carrier explore package card (iOS CarrierPackageCard) -->
     <string name="carrier_package_card_fragile">Fragile</string>
     <string name="carrier_package_card_no_ratings_yet">No ratings yet</string>
+    <!-- Errand variant labels — iOS parity with CarrierPackageCard.swift originLabel/destinationLabel/section headers -->
+    <string name="carrier_package_card_store">Store</string>
+    <string name="carrier_package_card_store_carrier_choice">Carrier\'s choice</string>
+    <string name="carrier_package_card_deliver_to">Deliver to</string>
+    <string name="carrier_package_card_from">From</string>
+    <string name="carrier_package_card_to">To</string>
+    <string name="carrier_package_card_recipient">Recipient</string>
+    <string name="carrier_package_card_recipient_phone">Phone</string>
+    <string name="carrier_package_card_task_details">Task details</string>
+    <string name="carrier_package_card_shopping_list">Shopping list</string>
+    <string name="carrier_package_card_estimated_cost">Est. cost</string>
+    <string name="carrier_package_card_more_items">+%1$d more items</string>
+    <string name="carrier_package_card_items_count">%1$d items</string>
 
     <!-- Carrier package detail sheet (iOS CarrierPackageDetailSheet) -->
     <string name="carrier_package_detail_title">Package Details</string>

@@ -58,7 +58,7 @@ class TipSelectionScreenTest {
             }
         }
         composeRule
-            .onNodeWithText(string(R.string.payments_tip_submit).substringBefore(" %1$s"), substring = true)
+            .onNodeWithText(string(R.string.payments_tip_submit).substringBefore(" %1${'$'}s"), substring = true)
             .assertIsNotEnabled()
     }
 
@@ -74,7 +74,7 @@ class TipSelectionScreenTest {
             }
         }
         composeRule
-            .onNodeWithText(string(R.string.payments_tip_submit).substringBefore(" %1$s"), substring = true)
+            .onNodeWithText(string(R.string.payments_tip_submit).substringBefore(" %1${'$'}s"), substring = true)
             .assertIsEnabled()
     }
 
