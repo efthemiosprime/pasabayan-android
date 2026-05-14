@@ -101,4 +101,26 @@
     <string name="dashboard_shipper_tip_flexible_body">Offrir des fen\u00eatres de livraison de 2 \u00e0 3 jours augmente les correspondances de transporteurs de 60 %.</string>
     <string name="dashboard_shipper_sender_tip_title">Conseil exp\u00e9diteur</string>
     <string name="dashboard_shipper_sender_tip_body">Des fen\u00eatres de livraison flexibles augmentent vos chances de trouver des transporteurs de 60 %. Envisagez d\'offrir des fen\u00eatres de 2 \u00e0 3 jours.</string>
+
+    <!-- Pr\u00e9f\u00e9rences transporteur \u2014 formulaire (parit\u00e9 iOS CarrierPreferencesFormSheet, Dashboard.xcstrings) -->
+    <string name="carrier_prefs_title">D\u00e9finir vos valeurs par d\u00e9faut</string>
+    <string name="carrier_prefs_intro_subtitle">Ces pr\u00e9f\u00e9rences pr\u00e9-rempliront la cr\u00e9ation de nouveaux trajets.</string>
+    <string name="carrier_prefs_pickup_title">Ville de ramassage pr\u00e9f\u00e9r\u00e9e</string>
+    <string name="carrier_prefs_pickup_subtitle">Votre lieu de ramassage pr\u00e9f\u00e9r\u00e9</string>
+    <string name="carrier_prefs_pickup_placeholder">Choisir la ville de ramassage</string>
+    <string name="carrier_prefs_max_weight_title">Capacit\u00e9 poids max</string>
+    <string name="carrier_prefs_max_weight_subtitle">Poids max que vous pouvez transporter (kg)</string>
+    <string name="carrier_prefs_max_weight_placeholder">p. ex. 25</string>
+    <string name="carrier_prefs_max_weight_unit">kg</string>
+    <string name="carrier_prefs_usual_transport_title">Transport habituel</string>
+    <string name="carrier_prefs_usual_transport_subtitle">Votre type de v\u00e9hicule habituel</string>
+    <string name="carrier_prefs_max_space_title">Capacit\u00e9 volum\u00e9trique max</string>
+    <string name="carrier_prefs_max_space_subtitle">Volume de chargement max (L)</string>
+    <string name="carrier_prefs_max_space_placeholder">p. ex. 500</string>
+    <string name="carrier_prefs_max_space_unit">litres</string>
+    <string name="carrier_prefs_optional">FACULTATIF</string>
+    <string name="carrier_prefs_save">Enregistrer les pr\u00e9f\u00e9rences</string>
+    <string name="carrier_prefs_error">Erreur</string>
+    <string name="carrier_prefs_validation_max_weight_required">Le poids max est requis (0\u2013999,99 kg).</string>
+    <string name="carrier_prefs_validation_max_space_invalid">Le volume max doit \u00eatre entre 0 et 999,99 litres.</string>
 </resources>

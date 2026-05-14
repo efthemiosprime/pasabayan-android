@@ -100,4 +100,26 @@
     <string name="dashboard_shipper_tip_flexible_body">Offering 2\u20133 day delivery windows increases carrier matches by 60%.</string>
     <string name="dashboard_shipper_sender_tip_title">Sender Tip</string>
     <string name="dashboard_shipper_sender_tip_body">Flexible delivery windows increase your chances of finding carriers by 60%. Consider offering 2\u20133 day windows.</string>
+
+    <!-- Carrier preferences form (iOS CarrierPreferencesFormSheet parity, Dashboard.xcstrings) -->
+    <string name="carrier_prefs_title">Set Your Defaults</string>
+    <string name="carrier_prefs_intro_subtitle">These preferences will pre-fill when creating new trips, saving you time.</string>
+    <string name="carrier_prefs_pickup_title">Preferred Pickup City</string>
+    <string name="carrier_prefs_pickup_subtitle">Select your preferred pickup location</string>
+    <string name="carrier_prefs_pickup_placeholder">Select preferred pickup city</string>
+    <string name="carrier_prefs_max_weight_title">Max Weight Capacity</string>
+    <string name="carrier_prefs_max_weight_subtitle">Maximum weight you can carry (kg)</string>
+    <string name="carrier_prefs_max_weight_placeholder">e.g., 25</string>
+    <string name="carrier_prefs_max_weight_unit">kg</string>
+    <string name="carrier_prefs_usual_transport_title">Usual Transport</string>
+    <string name="carrier_prefs_usual_transport_subtitle">Your typical vehicle type</string>
+    <string name="carrier_prefs_max_space_title">Max Space Capacity</string>
+    <string name="carrier_prefs_max_space_subtitle">Maximum cargo volume (L)</string>
+    <string name="carrier_prefs_max_space_placeholder">e.g., 500</string>
+    <string name="carrier_prefs_max_space_unit">liters</string>
+    <string name="carrier_prefs_optional">OPTIONAL</string>
+    <string name="carrier_prefs_save">Save Preferences</string>
+    <string name="carrier_prefs_error">Error</string>
+    <string name="carrier_prefs_validation_max_weight_required">Max weight is required (0\u2013999.99 kg).</string>
+    <string name="carrier_prefs_validation_max_space_invalid">Max space must be between 0 and 999.99 liters.</string>
 </resources>

@@ -47,6 +47,8 @@ class ChatScreensTest {
                         ),
                     ),
                     onOpenConversation = {},
+                    onLoadMore = {},
+                    onRetryLoadMore = {},
                 )
             }
         }
