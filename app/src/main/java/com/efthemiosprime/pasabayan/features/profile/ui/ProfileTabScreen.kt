@@ -71,7 +71,6 @@ import com.efthemiosprime.pasabayan.core.designsystem.component.PCircularProgres
 import com.efthemiosprime.pasabayan.core.designsystem.component.PMenuRow
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
 import com.efthemiosprime.pasabayan.core.domain.`enum`.VerificationLevel
-import com.efthemiosprime.pasabayan.core.network.profile.AttentionSignalsJson
 import com.efthemiosprime.pasabayan.core.network.verification.PremiumVerificationStatusDataJson
 import com.efthemiosprime.pasabayan.core.session.AuthUser
 import com.efthemiosprime.pasabayan.features.profile.model.ProfileTabUiState
@@ -85,7 +84,7 @@ import com.efthemiosprime.pasabayan.features.dashboard.components.CarrierActiveB
 import com.efthemiosprime.pasabayan.features.dashboard.components.RoleChip
 import com.efthemiosprime.pasabayan.features.dashboard.components.VerificationBadge
 import com.efthemiosprime.pasabayan.features.profile.components.CarrierPreferencesCard
-import com.efthemiosprime.pasabayan.features.profile.viewmodel.ProfileAttentionViewModel
+import com.efthemiosprime.pasabayan.features.profile.viewmodel.BadgeSummaryViewModel
 import com.efthemiosprime.pasabayan.features.profile.viewmodel.ProfileTabViewModel
 import com.efthemiosprime.pasabayan.features.verification.model.PremiumApplicationStatus
 
@@ -114,16 +113,16 @@ fun ProfileTabScreen(
     onOpenDeliveryHistory: () -> Unit = {},
     onOpenPlaceholder: (String) -> Unit = { },
     viewModel: ProfileTabViewModel = hiltViewModel(),
-    attentionViewModel: ProfileAttentionViewModel = hiltViewModel(),
+    badgeSummaryViewModel: BadgeSummaryViewModel = hiltViewModel(),
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val attention by attentionViewModel.attention.collectAsStateWithLifecycle()
+    val summary by badgeSummaryViewModel.summary.collectAsStateWithLifecycle()
     val versionName = rememberVersionName()
     LaunchedEffect(user, currentRole) {
         viewModel.loadTabData(user, currentRole)
-        // iOS parity: refresh on Profile-tab open. The VM dedupes in-flight calls.
-        attentionViewModel.refresh()
+        // iOS parity: refresh on Profile-tab open. Repository coalesces concurrent calls.
+        badgeSummaryViewModel.refresh(currentRole)
     }
     if (state.isLoading && state.userProfile == null && state.errorMessage == null) {
         Box(
@@ -152,7 +151,8 @@ fun ProfileTabScreen(
     }
     ProfileTabContent(
         state = state,
-        attention = attention,
+        payoutSetupNeeded = summary?.verification?.payoutSetupNeeded == true,
+        pendingReviewsCount = summary?.pendingReviewsCount ?: 0,
         user = user,
         currentRole = currentRole,
         versionName = versionName,
@@ -189,7 +189,8 @@ fun ProfileTabContent(
     onSwitchRole: () -> Unit,
     onLogout: () -> Unit,
     onOpenPaymentsHub: () -> Unit,
-    attention: AttentionSignalsJson = AttentionSignalsJson(),
+    payoutSetupNeeded: Boolean = false,
+    pendingReviewsCount: Int = 0,
     onOpenPaymentMethods: () -> Unit = onOpenPaymentsHub,
     onOpenTransactions: () -> Unit = onOpenPaymentsHub,
     onOpenReceipts: () -> Unit = onOpenPaymentsHub,
@@ -313,7 +314,7 @@ fun ProfileTabContent(
                     title = stringResource(R.string.profile_menu_payout),
                     subtitle = stringResource(R.string.profile_menu_payout_subtitle),
                     leadingIcon = Icons.Filled.AccountBalance,
-                    badgeCount = if (attention.payoutSetupNeeded) 1 else 0,
+                    badgeCount = if (payoutSetupNeeded) 1 else 0,
                     onClick = onOpenPayoutSetup,
                 )
             }
@@ -362,7 +363,7 @@ fun ProfileTabContent(
                 title = stringResource(R.string.profile_menu_pending_reviews),
                 subtitle = stringResource(R.string.profile_menu_pending_reviews_subtitle),
                 leadingIcon = Icons.Filled.RateReview,
-                badgeCount = attention.pendingReviewsCount,
+                badgeCount = pendingReviewsCount,
                 onClick = onOpenRatings,
             )
             val (avgRating, ratingCount) = profileRatingPreview(currentRole, state)
