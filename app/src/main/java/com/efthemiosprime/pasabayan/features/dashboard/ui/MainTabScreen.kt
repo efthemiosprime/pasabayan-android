@@ -125,11 +125,16 @@ fun MainTabScreen(
     val notificationsBootstrapViewModel: com.efthemiosprime.pasabayan.features.notifications.viewmodel.NotificationsBootstrapViewModel = hiltViewModel()
     val notificationViewModel: NotificationViewModel = hiltViewModel()
     val notificationState by notificationViewModel.uiState.collectAsStateWithLifecycle()
-    // Profile-tab attention badge — same activity-scoped instance ProfileTabScreen consumes,
-    // so the count stays in sync without an extra fetch.
-    val profileAttentionViewModel: com.efthemiosprime.pasabayan.features.profile.viewmodel.ProfileAttentionViewModel =
+    // Profile-tab attention badge — single source of truth: BadgeSummary
+    // (`/me/badge-summary`). Gated on `hasValidData` so a transient failure
+    // doesn't flash zero. Per-role refresh fires when the active role changes.
+    val badgeSummaryViewModel: com.efthemiosprime.pasabayan.features.profile.viewmodel.BadgeSummaryViewModel =
         hiltViewModel()
-    val profileAttention by profileAttentionViewModel.attention.collectAsStateWithLifecycle()
+    val badgeSummary by badgeSummaryViewModel.summary.collectAsStateWithLifecycle()
+    val badgeSummaryValid by badgeSummaryViewModel.hasValidData.collectAsStateWithLifecycle()
+    LaunchedEffect(state.currentRole) {
+        badgeSummaryViewModel.refresh(state.currentRole)
+    }
     var notificationsSheetOpen by remember { mutableStateOf(false) }
     // iOS parity (ActionableItem aggregation): pull matches + profile so we can compute
     // booking-request / status-update / pickup-ready / verify-prompt cards on the sheet.
@@ -339,7 +344,7 @@ fun MainTabScreen(
                 onTabSelected = { viewModel.selectTab(it) },
                 badgeCountByRoute = mapOf(
                     "messages" to conversationsState.allUnreadCount,
-                    "profile" to profileAttention.total,
+                    "profile" to if (badgeSummaryValid) badgeSummary?.total ?: 0 else 0,
                 ),
             )
         },
