@@ -53,6 +53,7 @@ import com.efthemiosprime.pasabayan.features.notifications.services.ActionableIt
 import com.efthemiosprime.pasabayan.features.notifications.services.NavigationEvent
 import com.efthemiosprime.pasabayan.features.notifications.services.NotificationRouter
 import com.efthemiosprime.pasabayan.features.notifications.services.NotificationRouterEntryPoint
+import com.efthemiosprime.pasabayan.features.notifications.services.buildAccountSetupSpecs
 import com.efthemiosprime.pasabayan.features.notifications.services.buildActionableItemSpecs
 import com.efthemiosprime.pasabayan.features.notifications.ui.ActionableItem
 import com.efthemiosprime.pasabayan.features.notifications.ui.ComprehensiveNotificationsScreen
@@ -1227,27 +1228,13 @@ fun MainTabScreen(
             UserRole.SHIPPER -> "shipper"
             UserRole.CARRIER -> "carrier"
         }
-        val verificationLevel = VerificationLevel.normalized(
-            profileState.userProfile?.verificationLevel,
-        )
-        val specs = remember(
-            state.currentRole,
-            carrierTripsState.trips,
-            matchingState.matches,
-            packageUiState.packageRequests,
-            conversationsState.allUnreadCount,
-            verificationLevel,
-        ) {
-            buildActionableItemSpecs(
-                role = state.currentRole,
-                carrierTrips = carrierTripsState.trips,
-                matches = matchingState.matches,
-                shipperPackages = packageUiState.packageRequests,
-                unreadMessageCount = conversationsState.allUnreadCount,
-                verificationLevel = verificationLevel,
-            )
+        val actionSpecs = remember(badgeSummary, state.currentRole) {
+            buildActionableItemSpecs(summary = badgeSummary, role = state.currentRole)
         }
-        val actionableItems = specs.map { spec ->
+        val accountSpecs = remember(badgeSummary) {
+            buildAccountSetupSpecs(summary = badgeSummary)
+        }
+        val actionableItems = actionSpecs.map { spec ->
             ActionableItem(
                 id = spec.id,
                 type = spec.type,
@@ -1261,7 +1248,26 @@ fun MainTabScreen(
                         closeSheet = { notificationsSheetOpen = false },
                         onSetCarrierTripFilter = { carrierTripsViewModel.setStatusFilter(it) },
                         onOpenPhoneVerification = { showPhoneVerificationSheet = true },
-                        onOpenPremiumVerification = { showPremiumVerificationSheet = true },
+                        onOpenPayoutSetup = { profilePayoutSetupOpen = true },
+                    )
+                },
+            )
+        }
+        val accountSetupItems = accountSpecs.map { spec ->
+            ActionableItem(
+                id = spec.id,
+                type = spec.type,
+                title = actionableTitle(spec),
+                description = actionableDescription(spec),
+                onClick = {
+                    handleActionableItemTap(
+                        id = spec.id,
+                        tabs = tabs,
+                        selectTab = { viewModel.selectTab(it) },
+                        closeSheet = { notificationsSheetOpen = false },
+                        onSetCarrierTripFilter = { carrierTripsViewModel.setStatusFilter(it) },
+                        onOpenPhoneVerification = { showPhoneVerificationSheet = true },
+                        onOpenPayoutSetup = { profilePayoutSetupOpen = true },
                     )
                 },
             )
@@ -1270,6 +1276,7 @@ fun MainTabScreen(
             onClose = { notificationsSheetOpen = false },
             role = role,
             actionableItems = actionableItems,
+            accountSetupItems = accountSetupItems,
             viewModel = notificationViewModel,
         )
     }
@@ -1293,11 +1300,8 @@ private fun actionableTitle(spec: com.efthemiosprime.pasabayan.features.notifica
         ActionableItemIds.PICKUP_READY -> androidx.compose.ui.res.pluralStringResource(
             R.plurals.notifications_actionable_pickup_ready_title, spec.count, spec.count,
         )
-        ActionableItemIds.UNREAD_MESSAGES -> androidx.compose.ui.res.pluralStringResource(
-            R.plurals.notifications_actionable_unread_messages_title, spec.count, spec.count,
-        )
-        ActionableItemIds.VERIFY_NUMBER -> stringResource(R.string.notifications_actionable_verify_number_title)
-        ActionableItemIds.UPGRADE_PREMIUM -> stringResource(R.string.notifications_actionable_upgrade_premium_title)
+        ActionableItemIds.VERIFY_PHONE -> stringResource(R.string.notifications_actionable_verify_phone_title)
+        ActionableItemIds.SETUP_PAYOUT -> stringResource(R.string.notifications_actionable_setup_payout_title)
         else -> ""
     }
 }
@@ -1320,19 +1324,16 @@ private fun actionableDescription(spec: com.efthemiosprime.pasabayan.features.no
         ActionableItemIds.PICKUP_READY -> androidx.compose.ui.res.pluralStringResource(
             R.plurals.notifications_actionable_pickup_ready_description, spec.count, spec.count,
         )
-        ActionableItemIds.UNREAD_MESSAGES -> androidx.compose.ui.res.pluralStringResource(
-            R.plurals.notifications_actionable_unread_messages_description, spec.count, spec.count,
-        )
-        ActionableItemIds.VERIFY_NUMBER -> stringResource(R.string.notifications_actionable_verify_number_description)
-        ActionableItemIds.UPGRADE_PREMIUM -> stringResource(R.string.notifications_actionable_upgrade_premium_description)
+        ActionableItemIds.VERIFY_PHONE -> stringResource(R.string.notifications_actionable_verify_phone_description)
+        ActionableItemIds.SETUP_PAYOUT -> stringResource(R.string.notifications_actionable_setup_payout_description)
         else -> ""
     }
 }
 
 /**
  * iOS parity: each `ActionableItem.action` dismisses the sheet and either switches tabs (with
- * an optional filter) or opens a verification flow. Per-spec ids let us keep the dispatch logic
- * outside the aggregator (which stays pure).
+ * an optional filter) or opens a verification / payout flow. Per-spec ids let the aggregator
+ * stay pure.
  */
 private fun handleActionableItemTap(
     id: String,
@@ -1341,13 +1342,12 @@ private fun handleActionableItemTap(
     closeSheet: () -> Unit,
     onSetCarrierTripFilter: (TripStatus?) -> Unit,
     onOpenPhoneVerification: () -> Unit,
-    onOpenPremiumVerification: () -> Unit,
+    onOpenPayoutSetup: () -> Unit,
 ) {
     closeSheet()
     val matchesIndex = tabs.indexOfFirst { it.route == "matches" }
     val myTripsIndex = tabs.indexOfFirst { it.route == "my_trips" }
     val packagesIndex = tabs.indexOfFirst { it.route == "packages" }
-    val messagesIndex = tabs.indexOfFirst { it.route == "messages" }
     when (id) {
         ActionableItemIds.BOOKING_REQUESTS,
         ActionableItemIds.STATUS_UPDATES,
@@ -1361,11 +1361,8 @@ private fun handleActionableItemTap(
         ActionableItemIds.PICKUP_READY -> {
             if (packagesIndex >= 0) selectTab(packagesIndex)
         }
-        ActionableItemIds.UNREAD_MESSAGES -> {
-            if (messagesIndex >= 0) selectTab(messagesIndex)
-        }
-        ActionableItemIds.VERIFY_NUMBER -> onOpenPhoneVerification()
-        ActionableItemIds.UPGRADE_PREMIUM -> onOpenPremiumVerification()
+        ActionableItemIds.VERIFY_PHONE -> onOpenPhoneVerification()
+        ActionableItemIds.SETUP_PAYOUT -> onOpenPayoutSetup()
     }
 }
 

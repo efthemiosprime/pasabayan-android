@@ -95,16 +95,11 @@
         <item quantity="one">You have 1 package ready for carrier pickup</item>
         <item quantity="other">You have %1$d packages ready for carrier pickup</item>
     </plurals>
-    <plurals name="notifications_actionable_unread_messages_title">
-        <item quantity="one">1 Unread Message</item>
-        <item quantity="other">%1$d Unread Messages</item>
-    </plurals>
-    <plurals name="notifications_actionable_unread_messages_description">
-        <item quantity="one">You have 1 unread message in your conversations</item>
-        <item quantity="other">You have %1$d unread messages in your conversations</item>
-    </plurals>
-    <string name="notifications_actionable_verify_number_title">Verify your phone number</string>
-    <string name="notifications_actionable_verify_number_description">Unlock the trusted badge by verifying your contact number.</string>
-    <string name="notifications_actionable_upgrade_premium_title">Upgrade to Premium</string>
-    <string name="notifications_actionable_upgrade_premium_description">Get the gold star badge and priority features.</string>
+    <!-- Account Setup section — iOS parity (`ComprehensiveNotificationsView.verificationItems`).
+         Sourced from BadgeSummary.verification.{phoneVerificationNeeded, payoutSetupNeeded}. -->
+    <string name="notifications_section_account_setup">Account Setup</string>
+    <string name="notifications_actionable_verify_phone_title">Verify Your Phone</string>
+    <string name="notifications_actionable_verify_phone_description">Confirm your phone number to unlock booking and messaging features.</string>
+    <string name="notifications_actionable_setup_payout_title">Set Up Payouts</string>
+    <string name="notifications_actionable_setup_payout_description">Add your bank account so you can receive carrier earnings.</string>
 </resources>

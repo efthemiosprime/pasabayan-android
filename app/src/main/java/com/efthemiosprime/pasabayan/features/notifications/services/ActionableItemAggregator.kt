@@ -1,18 +1,15 @@
 package com.efthemiosprime.pasabayan.features.notifications.services
 
-import com.efthemiosprime.pasabayan.core.domain.`enum`.MatchStatus
-import com.efthemiosprime.pasabayan.core.domain.`enum`.PackageRequestStatus
-import com.efthemiosprime.pasabayan.core.domain.`enum`.TripStatus
 import com.efthemiosprime.pasabayan.core.domain.`enum`.UserRole
-import com.efthemiosprime.pasabayan.core.domain.`enum`.VerificationLevel
-import com.efthemiosprime.pasabayan.features.bookings.model.DeliveryMatch
 import com.efthemiosprime.pasabayan.features.notifications.model.ActionableItemType
-import com.efthemiosprime.pasabayan.features.packages.model.PackageRequest
-import com.efthemiosprime.pasabayan.features.trips.model.Trip
+import com.efthemiosprime.pasabayan.features.profile.model.BadgeSummary
 
 /**
- * Stable IDs for each spec. The notifications screen uses these to key list items and to
- * de-duplicate across re-aggregations.
+ * Stable IDs for each spec. The notifications screen uses these for list keying and to dispatch
+ * on-tap routing.
+ *
+ * VERIFY_PHONE / SETUP_PAYOUT match iOS verbatim
+ * (`ComprehensiveNotificationsView.verificationItems` IDs) so cross-platform telemetry lines up.
  */
 object ActionableItemIds {
     const val BOOKING_REQUESTS = "pending_requests_consolidated"
@@ -20,123 +17,107 @@ object ActionableItemIds {
     const val INACTIVE_TRIPS = "inactive_trips_consolidated"
     const val CARRIER_RESPONSES = "pending_responses_consolidated"
     const val PICKUP_READY = "pickup_ready_consolidated"
-    const val UNREAD_MESSAGES = "unread_messages"
-    const val VERIFY_NUMBER = "verify_number"
-    const val UPGRADE_PREMIUM = "upgrade_premium"
+    const val VERIFY_PHONE = "verification_phone_needed"
+    const val SETUP_PAYOUT = "verification_payout_needed"
 }
 
 /**
- * Locally-aggregated spec for one row in the **Action Required** section of the notifications
- * screen. The composable host resolves [type] + [count] into localized strings via Compose
- * `pluralStringResource`.
- *
- * iOS parity: `ComprehensiveNotificationsView.actionableItems` (lines 338–536).
+ * Locally-rendered row in the **Action Required** or **Account Setup** section. The composable
+ * host resolves [type] + [count] into localized copy via Compose `pluralStringResource` /
+ * `stringResource`. iOS parity:
+ * `ComprehensiveNotificationsView.actionableItems` + `.verificationItems`.
  */
 data class ActionableItemSpec(
     val id: String,
     val type: ActionableItemType,
-    /** Item count for plural resolution. `0` means the item has no count (e.g. UPGRADE). */
+    /** Item count for plural resolution. `0` means the item has no count (e.g. setup cards). */
     val count: Int,
 )
 
 /**
- * Pure aggregator: turns cross-feature state into a list of action specs. The composable host
- * supplies role + the four data sources; this function applies the iOS filtering rules and
- * returns the specs in iOS display order.
+ * Pure mapper from server `BadgeSummary.actionRequired` to the Action Required spec list. Card
+ * visibility is **strictly** server-driven — local match/package/trip state is never consulted
+ * here (it only steers on-tap navigation, which happens in the host).
  *
- * - Carrier-only:
- *   - `BOOKING_REQUEST` — `matches` with status [MatchStatus.SHIPPER_REQUESTED].
- *   - `STATUS_UPDATE` — `matches` with status [MatchStatus.CONFIRMED] or [MatchStatus.PICKED_UP].
- *   - `INACTIVE_TRIPS` — `carrierTrips` with status [TripStatus.PLANNING].
- * - Shipper-only:
- *   - `CARRIER_RESPONSE` — `matches` with status [MatchStatus.SHIPPER_REQUESTED].
- *   - `PICKUP_READY` — `shipperPackages` with status [PackageRequestStatus.MATCHED].
- * - Both:
- *   - `UNREAD_MESSAGES` — when [unreadMessageCount] > 0.
- *   - `UPGRADE` — `VERIFY_NUMBER` if BASIC, `UPGRADE_PREMIUM` if VERIFIED, none if PREMIUM.
+ * Per-role split mirrors iOS:
+ * - Carrier sees `BOOKING_REQUEST`, `STATUS_UPDATE`, `INACTIVE_TRIPS`.
+ * - Shipper sees `CARRIER_RESPONSE`, `PICKUP_READY`.
  */
 fun buildActionableItemSpecs(
+    summary: BadgeSummary?,
     role: UserRole,
-    carrierTrips: List<Trip>,
-    matches: List<DeliveryMatch>,
-    shipperPackages: List<PackageRequest>,
-    unreadMessageCount: Int,
-    verificationLevel: VerificationLevel,
 ): List<ActionableItemSpec> {
+    val counts = summary?.actionRequired ?: return emptyList()
     val items = mutableListOf<ActionableItemSpec>()
 
-    if (role == UserRole.CARRIER) {
-        val bookingRequests = matches.count { it.matchStatus == MatchStatus.SHIPPER_REQUESTED }
-        if (bookingRequests > 0) {
-            items += ActionableItemSpec(
-                id = ActionableItemIds.BOOKING_REQUESTS,
-                type = ActionableItemType.BOOKING_REQUEST,
-                count = bookingRequests,
-            )
+    when (role) {
+        UserRole.CARRIER -> {
+            if (counts.pendingBookingRequests > 0) {
+                items += ActionableItemSpec(
+                    id = ActionableItemIds.BOOKING_REQUESTS,
+                    type = ActionableItemType.BOOKING_REQUEST,
+                    count = counts.pendingBookingRequests,
+                )
+            }
+            if (counts.activeDeliveriesNeedingUpdate > 0) {
+                items += ActionableItemSpec(
+                    id = ActionableItemIds.STATUS_UPDATES,
+                    type = ActionableItemType.STATUS_UPDATE,
+                    count = counts.activeDeliveriesNeedingUpdate,
+                )
+            }
+            if (counts.tripsWithoutActivity > 0) {
+                items += ActionableItemSpec(
+                    id = ActionableItemIds.INACTIVE_TRIPS,
+                    type = ActionableItemType.INACTIVE_TRIPS,
+                    count = counts.tripsWithoutActivity,
+                )
+            }
         }
-
-        val activeDeliveries = matches.count {
-            it.matchStatus == MatchStatus.CONFIRMED || it.matchStatus == MatchStatus.PICKED_UP
-        }
-        if (activeDeliveries > 0) {
-            items += ActionableItemSpec(
-                id = ActionableItemIds.STATUS_UPDATES,
-                type = ActionableItemType.STATUS_UPDATE,
-                count = activeDeliveries,
-            )
-        }
-
-        val inactiveTrips = carrierTrips.count { it.tripStatus == TripStatus.PLANNING }
-        if (inactiveTrips > 0) {
-            items += ActionableItemSpec(
-                id = ActionableItemIds.INACTIVE_TRIPS,
-                type = ActionableItemType.INACTIVE_TRIPS,
-                count = inactiveTrips,
-            )
-        }
-    }
-
-    if (role == UserRole.SHIPPER) {
-        val pendingResponses = matches.count { it.matchStatus == MatchStatus.SHIPPER_REQUESTED }
-        if (pendingResponses > 0) {
-            items += ActionableItemSpec(
-                id = ActionableItemIds.CARRIER_RESPONSES,
-                type = ActionableItemType.CARRIER_RESPONSE,
-                count = pendingResponses,
-            )
-        }
-
-        val pickupReady = shipperPackages.count { it.status == PackageRequestStatus.MATCHED }
-        if (pickupReady > 0) {
-            items += ActionableItemSpec(
-                id = ActionableItemIds.PICKUP_READY,
-                type = ActionableItemType.PICKUP_READY,
-                count = pickupReady,
-            )
+        UserRole.SHIPPER -> {
+            if (counts.pendingBookingRequests > 0) {
+                items += ActionableItemSpec(
+                    id = ActionableItemIds.CARRIER_RESPONSES,
+                    type = ActionableItemType.CARRIER_RESPONSE,
+                    count = counts.pendingBookingRequests,
+                )
+            }
+            if (counts.packagesReadyForPickup > 0) {
+                items += ActionableItemSpec(
+                    id = ActionableItemIds.PICKUP_READY,
+                    type = ActionableItemType.PICKUP_READY,
+                    count = counts.packagesReadyForPickup,
+                )
+            }
         }
     }
 
-    if (unreadMessageCount > 0) {
+    return items
+}
+
+/**
+ * Pure mapper from server `BadgeSummary.verification` to the Account Setup spec list. Returns
+ * an empty list when both flags are false; the host hides the section in that case.
+ *
+ * iOS parity: `ComprehensiveNotificationsView.verificationItems` — verify-phone first, payout
+ * second.
+ */
+fun buildAccountSetupSpecs(summary: BadgeSummary?): List<ActionableItemSpec> {
+    val verification = summary?.verification ?: return emptyList()
+    val items = mutableListOf<ActionableItemSpec>()
+    if (verification.phoneVerificationNeeded) {
         items += ActionableItemSpec(
-            id = ActionableItemIds.UNREAD_MESSAGES,
-            type = ActionableItemType.UNREAD_MESSAGES,
-            count = unreadMessageCount,
-        )
-    }
-
-    when (verificationLevel) {
-        VerificationLevel.BASIC -> items += ActionableItemSpec(
-            id = ActionableItemIds.VERIFY_NUMBER,
-            type = ActionableItemType.UPGRADE,
+            id = ActionableItemIds.VERIFY_PHONE,
+            type = ActionableItemType.VERIFY_PHONE,
             count = 0,
         )
-        VerificationLevel.VERIFIED -> items += ActionableItemSpec(
-            id = ActionableItemIds.UPGRADE_PREMIUM,
-            type = ActionableItemType.UPGRADE,
+    }
+    if (verification.payoutSetupNeeded) {
+        items += ActionableItemSpec(
+            id = ActionableItemIds.SETUP_PAYOUT,
+            type = ActionableItemType.SETUP_PAYOUT,
             count = 0,
         )
-        VerificationLevel.PREMIUM -> Unit
     }
-
     return items
 }

@@ -95,16 +95,10 @@
         <item quantity="one">Vous avez %1$d colis prêt pour la prise en charge par un transporteur</item>
         <item quantity="other">Vous avez %1$d colis prêts pour la prise en charge par les transporteurs</item>
     </plurals>
-    <plurals name="notifications_actionable_unread_messages_title">
-        <item quantity="one">%1$d message non lu</item>
-        <item quantity="other">%1$d messages non lus</item>
-    </plurals>
-    <plurals name="notifications_actionable_unread_messages_description">
-        <item quantity="one">Vous avez %1$d message non lu dans vos conversations</item>
-        <item quantity="other">Vous avez %1$d messages non lus dans vos conversations</item>
-    </plurals>
-    <string name="notifications_actionable_verify_number_title">Vérifier votre numéro de téléphone</string>
-    <string name="notifications_actionable_verify_number_description">Débloquez le badge « Vérifié » en validant votre numéro de contact.</string>
-    <string name="notifications_actionable_upgrade_premium_title">Passer à Premium</string>
-    <string name="notifications_actionable_upgrade_premium_description">Obtenez l’étoile dorée et les fonctionnalités prioritaires.</string>
+    <!-- Section Configuration du compte — parité iOS (verificationItems). -->
+    <string name="notifications_section_account_setup">Configuration du compte</string>
+    <string name="notifications_actionable_verify_phone_title">Vérifier votre téléphone</string>
+    <string name="notifications_actionable_verify_phone_description">Confirmez votre numéro de téléphone pour débloquer les réservations et la messagerie.</string>
+    <string name="notifications_actionable_setup_payout_title">Configurer les virements</string>
+    <string name="notifications_actionable_setup_payout_description">Ajoutez votre compte bancaire pour recevoir vos gains de transporteur.</string>
 </resources>

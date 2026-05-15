@@ -2,7 +2,6 @@ package com.efthemiosprime.pasabayan.features.notifications.ui
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,17 +9,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efthemiosprime.pasabayan.R
@@ -42,8 +38,9 @@ import com.efthemiosprime.pasabayan.features.notifications.viewmodel.Notificatio
 import com.efthemiosprime.pasabayan.features.notifications.viewmodel.NotificationViewModel
 
 /**
- * Locally-computed actionable item shown in Section 2 of the notifications screen. Supplied
- * by the host (cross-feature data — bookings/packages/trips/chat unread/verification level).
+ * A row in the **Action Required** or **Account Setup** section. Supplied by the host so it can
+ * map server counts (`BadgeSummary.actionRequired` / `.verification`) into localized strings and
+ * wire tap routing into the surrounding feature stack.
  */
 data class ActionableItem(
     val id: String,
@@ -54,7 +51,7 @@ data class ActionableItem(
 )
 
 /**
- * Pending review entry shown in Section 3.
+ * Pending review entry shown in the **Pending Reviews** section.
  */
 data class PendingReviewItem(
     val id: Int,
@@ -63,8 +60,15 @@ data class PendingReviewItem(
 )
 
 /**
- * Spec 08 § "ComprehensiveNotificationsView" — three-section sheet. Sections 2 and 3 are
- * supplied by the host because they aggregate cross-feature state.
+ * Four-section attention sheet driven by `BadgeSummary`:
+ * 1. Notifications (server push history; always shown, empty state if zero).
+ * 2. Action Required (`summary.actionRequired.*` mapped to cards; always shown).
+ * 3. Account Setup (`summary.verification.*`; shown only when at least one card exists — this
+ *    is the section iOS recently added to fix the "bell shows 2, drawer empty" bug).
+ * 4. Pending Reviews (`pendingReviews` from the host; always shown).
+ *
+ * The dedicated "No notifications" empty state only renders when **every** section is empty —
+ * matching iOS `ComprehensiveNotificationsView`.
  */
 @androidx.compose.material3.ExperimentalMaterial3Api
 @Composable
@@ -72,6 +76,7 @@ fun ComprehensiveNotificationsScreen(
     onClose: () -> Unit,
     role: String? = null,
     actionableItems: List<ActionableItem> = emptyList(),
+    accountSetupItems: List<ActionableItem> = emptyList(),
     pendingReviews: List<PendingReviewItem> = emptyList(),
     modifier: Modifier = Modifier,
     viewModel: NotificationViewModel = hiltViewModel(),
@@ -84,6 +89,7 @@ fun ComprehensiveNotificationsScreen(
     ComprehensiveNotificationsContent(
         state = state,
         actionableItems = actionableItems,
+        accountSetupItems = accountSetupItems,
         pendingReviews = pendingReviews,
         onClose = onClose,
         onTap = { viewModel.onNotificationTapped(it) },
@@ -100,6 +106,7 @@ fun ComprehensiveNotificationsScreen(
 internal fun ComprehensiveNotificationsContent(
     state: NotificationUiState,
     actionableItems: List<ActionableItem>,
+    accountSetupItems: List<ActionableItem>,
     pendingReviews: List<PendingReviewItem>,
     onClose: () -> Unit,
     onTap: (PushNotification) -> Unit,
@@ -127,8 +134,10 @@ internal fun ComprehensiveNotificationsContent(
     ) { padding ->
         val notificationsEmpty = state.notifications.isEmpty()
         val actionsEmpty = actionableItems.isEmpty()
+        val accountSetupEmpty = accountSetupItems.isEmpty()
         val reviewsEmpty = pendingReviews.isEmpty()
-        val globalEmpty = notificationsEmpty && actionsEmpty && reviewsEmpty && !state.isLoading
+        val globalEmpty =
+            notificationsEmpty && actionsEmpty && accountSetupEmpty && reviewsEmpty && !state.isLoading
 
         if (globalEmpty) {
             NotificationEmptyState(
@@ -217,7 +226,25 @@ internal fun ComprehensiveNotificationsContent(
                 }
             }
 
-            // -- Section 3: Pending Reviews --
+            // -- Section 3: Account Setup — only when non-empty (iOS parity). --
+            if (!accountSetupEmpty) {
+                item {
+                    NotificationSectionHeader(
+                        title = stringResource(R.string.notifications_section_account_setup),
+                        count = accountSetupItems.size,
+                    )
+                }
+                items(accountSetupItems, key = { it.id }) { item ->
+                    ActionableItemCard(
+                        type = item.type,
+                        title = item.title,
+                        description = item.description,
+                        onClick = item.onClick,
+                    )
+                }
+            }
+
+            // -- Section 4: Pending Reviews --
             item {
                 NotificationSectionHeader(
                     title = stringResource(R.string.notifications_section_pending_reviews),
@@ -243,73 +270,150 @@ internal fun ComprehensiveNotificationsContent(
     }
 }
 
+private val verifyPhoneCard = ActionableItem(
+    id = "verification_phone_needed",
+    type = ActionableItemType.VERIFY_PHONE,
+    title = "Verify Your Phone",
+    description = "Confirm your phone number to unlock booking and messaging features.",
+    onClick = {},
+)
+
+private val setupPayoutCard = ActionableItem(
+    id = "verification_payout_needed",
+    type = ActionableItemType.SETUP_PAYOUT,
+    title = "Set Up Payouts",
+    description = "Add your bank account so you can receive carrier earnings.",
+    onClick = {},
+)
+
+private val bookingRequestCard = ActionableItem(
+    id = "pending_requests_consolidated",
+    type = ActionableItemType.BOOKING_REQUEST,
+    title = "2 New Booking Requests",
+    description = "You have 2 new booking requests from shippers",
+    onClick = {},
+)
+
+private val pendingReviewCard = PendingReviewItem(
+    id = 1,
+    subtitle = "Delivery #42 — 2 days ago",
+    onClick = {},
+)
+
+private fun previewState(notifications: List<PushNotification> = emptyList()) = NotificationUiState(
+    notifications = notifications,
+    unreadCount = notifications.count { !it.isRead },
+)
+
+private val sampleNotifications = listOf(
+    PushNotification(
+        id = 1, title = "New Request", body = "Alice wants to ship a package.",
+        type = NotificationType.MATCH_REQUEST, sentAt = "x", createdAt = "x",
+    ),
+)
+
+/** Regression preview for the iOS bug this work fixes: bell=2, drawer used to be empty. */
 @androidx.compose.material3.ExperimentalMaterial3Api
-@Preview(name = "Notifications screen — populated light", showBackground = true)
+@Preview(name = "Drawer — account-setup-only (regression) light", showBackground = true)
 @Preview(
-    name = "Notifications screen — populated dark",
+    name = "Drawer — account-setup-only (regression) dark",
     showBackground = true,
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-private fun ComprehensiveNotificationsPopulatedPreview() {
+private fun DrawerAccountSetupOnlyPreview() {
     PasabayanTheme {
         ComprehensiveNotificationsContent(
-            state = NotificationUiState(
-                notifications = listOf(
-                    PushNotification(
-                        id = 1, title = "New Request", body = "Alice wants to ship a package.",
-                        type = NotificationType.MATCH_REQUEST, sentAt = "x", createdAt = "x",
-                    ),
-                    PushNotification(
-                        id = 2, title = "Payment Received", body = "You received \$25.50",
-                        type = NotificationType.PAYMENT_RECEIVED, sentAt = "x", createdAt = "x",
-                        isRead = true,
-                    ),
-                ),
-                unreadCount = 1,
-            ),
-            actionableItems = listOf(
-                ActionableItem(
-                    id = "boking-1",
-                    type = ActionableItemType.BOOKING_REQUEST,
-                    title = "Pending booking request",
-                    description = "Alice wants to ship a package",
-                    onClick = {},
-                ),
-            ),
-            pendingReviews = listOf(
-                PendingReviewItem(id = 1, subtitle = "Delivery #42 — 2 days ago", onClick = {}),
-            ),
-            onClose = {},
-            onTap = {},
-            onMarkAsRead = {},
-            onMarkAllAsRead = {},
-            onLoadMore = {},
-            onSendTest = {},
+            state = previewState(),
+            actionableItems = emptyList(),
+            accountSetupItems = listOf(verifyPhoneCard, setupPayoutCard),
+            pendingReviews = emptyList(),
+            onClose = {}, onTap = {}, onMarkAsRead = {}, onMarkAllAsRead = {},
+            onLoadMore = {}, onSendTest = {},
         )
     }
 }
 
 @androidx.compose.material3.ExperimentalMaterial3Api
-@Preview(name = "Notifications screen — empty light", showBackground = true)
+@Preview(name = "Drawer — action-required-only light", showBackground = true)
 @Preview(
-    name = "Notifications screen — empty dark",
+    name = "Drawer — action-required-only dark",
     showBackground = true,
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-private fun ComprehensiveNotificationsEmptyPreview() {
+private fun DrawerActionRequiredOnlyPreview() {
+    PasabayanTheme {
+        ComprehensiveNotificationsContent(
+            state = previewState(),
+            actionableItems = listOf(bookingRequestCard),
+            accountSetupItems = emptyList(),
+            pendingReviews = emptyList(),
+            onClose = {}, onTap = {}, onMarkAsRead = {}, onMarkAllAsRead = {},
+            onLoadMore = {}, onSendTest = {},
+        )
+    }
+}
+
+@androidx.compose.material3.ExperimentalMaterial3Api
+@Preview(name = "Drawer — pending-reviews-only light", showBackground = true)
+@Preview(
+    name = "Drawer — pending-reviews-only dark",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun DrawerPendingReviewsOnlyPreview() {
+    PasabayanTheme {
+        ComprehensiveNotificationsContent(
+            state = previewState(),
+            actionableItems = emptyList(),
+            accountSetupItems = emptyList(),
+            pendingReviews = listOf(pendingReviewCard),
+            onClose = {}, onTap = {}, onMarkAsRead = {}, onMarkAllAsRead = {},
+            onLoadMore = {}, onSendTest = {},
+        )
+    }
+}
+
+@androidx.compose.material3.ExperimentalMaterial3Api
+@Preview(name = "Drawer — everything populated light", showBackground = true)
+@Preview(
+    name = "Drawer — everything populated dark",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun DrawerEverythingPopulatedPreview() {
+    PasabayanTheme {
+        ComprehensiveNotificationsContent(
+            state = previewState(notifications = sampleNotifications),
+            actionableItems = listOf(bookingRequestCard),
+            accountSetupItems = listOf(verifyPhoneCard, setupPayoutCard),
+            pendingReviews = listOf(pendingReviewCard),
+            onClose = {}, onTap = {}, onMarkAsRead = {}, onMarkAllAsRead = {},
+            onLoadMore = {}, onSendTest = {},
+        )
+    }
+}
+
+@androidx.compose.material3.ExperimentalMaterial3Api
+@Preview(name = "Drawer — all empty light", showBackground = true)
+@Preview(
+    name = "Drawer — all empty dark",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun DrawerAllEmptyPreview() {
     PasabayanTheme {
         ComprehensiveNotificationsContent(
             state = NotificationUiState(),
             actionableItems = emptyList(),
+            accountSetupItems = emptyList(),
             pendingReviews = emptyList(),
-            onClose = {},
-            onTap = {},
-            onMarkAsRead = {},
-            onMarkAllAsRead = {},
-            onLoadMore = {},
-            onSendTest = {},
+            onClose = {}, onTap = {}, onMarkAsRead = {}, onMarkAllAsRead = {},
+            onLoadMore = {}, onSendTest = {},
         )
     }
 }

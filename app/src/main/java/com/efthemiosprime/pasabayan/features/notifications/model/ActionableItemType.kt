@@ -1,12 +1,14 @@
 package com.efthemiosprime.pasabayan.features.notifications.model
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -29,4 +31,9 @@ enum class ActionableItemType(
     UNREAD_MESSAGES(Icons.Filled.Forum, PasabayanColors.Info),
     INACTIVE_TRIPS(Icons.Filled.Warning, PasabayanColors.BadgeOrange),
     UPGRADE(Icons.Filled.Star, PasabayanColors.BadgeGold),
+
+    /** Account Setup section card. iOS: `phoneVerification` with shield-check icon, red accent. */
+    VERIFY_PHONE(Icons.Filled.VerifiedUser, PasabayanColors.Error),
+    /** Account Setup section card. iOS: `payoutSetup` with credit-card icon, green accent. */
+    SETUP_PAYOUT(Icons.Filled.CreditCard, PasabayanColors.Success),
 }
