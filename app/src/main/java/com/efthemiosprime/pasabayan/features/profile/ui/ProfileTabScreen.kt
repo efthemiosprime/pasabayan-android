@@ -151,6 +151,7 @@ fun ProfileTabScreen(
     }
     ProfileTabContent(
         state = state,
+        phoneVerificationNeeded = summary?.verification?.phoneVerificationNeeded == true,
         payoutSetupNeeded = summary?.verification?.payoutSetupNeeded == true,
         pendingReviewsCount = summary?.pendingReviewsCount ?: 0,
         user = user,
@@ -189,6 +190,7 @@ fun ProfileTabContent(
     onSwitchRole: () -> Unit,
     onLogout: () -> Unit,
     onOpenPaymentsHub: () -> Unit,
+    phoneVerificationNeeded: Boolean = false,
     payoutSetupNeeded: Boolean = false,
     pendingReviewsCount: Int = 0,
     onOpenPaymentMethods: () -> Unit = onOpenPaymentsHub,
@@ -280,6 +282,17 @@ fun ProfileTabContent(
                     onClick = { onOpenPlaceholder("shipping") },
                 )
             }
+            // iOS L92 parity: Verification row carries a "+1" attention badge when
+            // BadgeSummary.verification.phoneVerificationNeeded is true. The
+            // VerificationCallout hero card above pitches the verified/premium upgrade;
+            // this row surfaces the discrete "phone not verified yet" nudge.
+            PMenuRow(
+                title = stringResource(R.string.profile_menu_verification),
+                subtitle = stringResource(R.string.profile_menu_verification_subtitle),
+                leadingIcon = Icons.Filled.VerifiedUser,
+                badgeCount = if (phoneVerificationNeeded) 1 else 0,
+                onClick = onOpenVerification,
+            )
             PMenuRow(
                 title = stringResource(R.string.profile_account_menu_label),
                 subtitle = stringResource(R.string.profile_menu_account_management_subtitle),
