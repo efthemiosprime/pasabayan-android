@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
+import com.efthemiosprime.pasabayan.features.profile.services.BadgeRefreshBus
 import com.efthemiosprime.pasabayan.features.verification.model.PhoneVerificationUiState
 import com.efthemiosprime.pasabayan.features.verification.services.VerificationRepository
 import com.efthemiosprime.pasabayan.shared.error.localizedMessage
@@ -29,6 +30,7 @@ import kotlinx.coroutines.launch
 class PhoneVerificationViewModel @Inject constructor(
     private val repository: VerificationRepository,
     @ApplicationContext private val appContext: Context,
+    private val badgeRefreshBus: BadgeRefreshBus,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PhoneVerificationUiState())
@@ -127,6 +129,9 @@ class PhoneVerificationViewModel @Inject constructor(
                             ),
                         )
                     }
+                    // iOS parity: server `phone_verification_needed` flips to false on success —
+                    // nudge BadgeSummary to re-pull so the bell + drawer + Profile rows update.
+                    badgeRefreshBus.emit()
                 },
                 onFailure = { applyError(it) },
             )

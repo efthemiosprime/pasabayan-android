@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.efthemiosprime.pasabayan.features.payments.model.StripeConnectError
 import com.efthemiosprime.pasabayan.features.payments.model.StripeConnectStatus
 import com.efthemiosprime.pasabayan.features.payments.services.StripeConnectRepository
+import com.efthemiosprime.pasabayan.features.profile.services.BadgeRefreshBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,10 +37,16 @@ data class StripeConnectUiState(
 class StripeConnectViewModel @Inject constructor(
     private val connectRepository: StripeConnectRepository,
     private val clock: Clock,
+    private val badgeRefreshBus: BadgeRefreshBus,
 ) : ViewModel() {
 
-    /** Test-only secondary constructor with a default system clock. */
-    constructor(connectRepository: StripeConnectRepository) : this(connectRepository, SystemClock)
+    /** Test-only secondary constructor with a default system clock + bus. */
+    constructor(connectRepository: StripeConnectRepository) :
+        this(connectRepository, SystemClock, BadgeRefreshBus())
+
+    /** Test-only secondary constructor that pins a clock; bus defaulted. */
+    constructor(connectRepository: StripeConnectRepository, clock: Clock) :
+        this(connectRepository, clock, BadgeRefreshBus())
 
     private val _uiState = MutableStateFlow(StripeConnectUiState())
     val uiState: StateFlow<StripeConnectUiState> = _uiState.asStateFlow()
@@ -116,6 +123,9 @@ class StripeConnectViewModel @Inject constructor(
     fun handleOnboardingReturn() {
         _uiState.update { it.copy(showOnboarding = false, onboardingUrl = null) }
         loadStatus(forceRefresh = true)
+        // iOS parity: server's `payout_setup_needed` flips when onboarding completes —
+        // nudge BadgeSummary to re-pull so the bell + drawer + Profile row update.
+        badgeRefreshBus.emit()
     }
 
     fun handleDashboardDismiss() {

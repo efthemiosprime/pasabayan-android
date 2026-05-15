@@ -7,8 +7,11 @@ import com.efthemiosprime.pasabayan.core.network.verification.PhoneStatusDataJso
 import com.efthemiosprime.pasabayan.core.network.verification.PremiumVerificationStatusDataJson
 import com.efthemiosprime.pasabayan.core.network.verification.PremiumVerificationSubmissionDataJson
 import com.efthemiosprime.pasabayan.core.network.verification.VerifyOtpDataJson
+import com.efthemiosprime.pasabayan.features.profile.services.BadgeRefreshBus
 import com.efthemiosprime.pasabayan.features.verification.model.PhoneVerificationUiState
 import com.efthemiosprime.pasabayan.features.verification.services.VerificationRepository
+import io.mockk.spyk
+import io.mockk.verify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -33,10 +36,12 @@ class PhoneVerificationViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
     private val context: Context = mockk(relaxed = true)
+    private lateinit var bus: BadgeRefreshBus
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
+        bus = spyk(BadgeRefreshBus())
         every { context.getString(R.string.verification_phone_error_invalid) } returns
             "Enter a valid 10-digit phone number"
         every { context.getString(R.string.verification_phone_error_otp_invalid) } returns
@@ -54,7 +59,7 @@ class PhoneVerificationViewModelTest {
     @Test
     fun `sendOtp rejects invalid phone number`() = runTest(dispatcher) {
         val repo = FakeRepo()
-        val vm = PhoneVerificationViewModel(repo, context)
+        val vm = PhoneVerificationViewModel(repo, context, bus)
         vm.onPhoneNumberChange("123")
         vm.sendOtp()
         advanceUntilIdle()
@@ -65,7 +70,7 @@ class PhoneVerificationViewModelTest {
     @Test
     fun `sendOtp normalizes to E_164 and starts resend timer`() = runTest(dispatcher) {
         val repo = FakeRepo()
-        val vm = PhoneVerificationViewModel(repo, context)
+        val vm = PhoneVerificationViewModel(repo, context, bus)
         vm.onPhoneNumberChange("(514) 555-1234")
         vm.sendOtp()
         // Let the network call and timer kickoff settle but not the entire 60s cooldown.
@@ -79,7 +84,7 @@ class PhoneVerificationViewModelTest {
     @Test
     fun `verifyOtp success flips isVerified and stops timer`() = runTest(dispatcher) {
         val repo = FakeRepo(verifyResult = Result.success(VerifyOtpDataJson(phone = "+15145551234")))
-        val vm = PhoneVerificationViewModel(repo, context)
+        val vm = PhoneVerificationViewModel(repo, context, bus)
         vm.onPhoneNumberChange("5145551234")
         vm.sendOtp()
         advanceUntilIdle()
@@ -91,9 +96,37 @@ class PhoneVerificationViewModelTest {
     }
 
     @Test
+    fun `verifyOtp success emits to BadgeRefreshBus`() = runTest(dispatcher) {
+        val repo = FakeRepo(verifyResult = Result.success(VerifyOtpDataJson(phone = "+15145551234")))
+        val vm = PhoneVerificationViewModel(repo, context, bus)
+        vm.onPhoneNumberChange("5145551234")
+        vm.sendOtp()
+        advanceUntilIdle()
+        vm.onOtpCodeChange("123456")
+        vm.verifyOtp()
+        advanceUntilIdle()
+
+        verify(exactly = 1) { bus.emit() }
+    }
+
+    @Test
+    fun `verifyOtp failure does not emit to BadgeRefreshBus`() = runTest(dispatcher) {
+        val repo = FakeRepo(verifyResult = Result.failure(IllegalStateException("nope")))
+        val vm = PhoneVerificationViewModel(repo, context, bus)
+        vm.onPhoneNumberChange("5145551234")
+        vm.sendOtp()
+        advanceUntilIdle()
+        vm.onOtpCodeChange("123456")
+        vm.verifyOtp()
+        advanceUntilIdle()
+
+        verify(exactly = 0) { bus.emit() }
+    }
+
+    @Test
     fun `verifyOtp rejects short code without hitting network`() = runTest(dispatcher) {
         val repo = FakeRepo()
-        val vm = PhoneVerificationViewModel(repo, context)
+        val vm = PhoneVerificationViewModel(repo, context, bus)
         vm.onPhoneNumberChange("5145551234")
         vm.sendOtp()
         advanceUntilIdle()
@@ -107,7 +140,7 @@ class PhoneVerificationViewModelTest {
     @Test
     fun `onOtpCodeChange strips non-digits and caps at six chars`() {
         val repo = FakeRepo()
-        val vm = PhoneVerificationViewModel(repo, context)
+        val vm = PhoneVerificationViewModel(repo, context, bus)
         vm.onOtpCodeChange("ab12 34cd56789")
         assertEquals("123456", vm.state.value.otpCode)
     }
@@ -115,7 +148,7 @@ class PhoneVerificationViewModelTest {
     @Test
     fun `resend gated until cooldown elapses, then fires`() = runTest(dispatcher) {
         val repo = FakeRepo()
-        val vm = PhoneVerificationViewModel(repo, context)
+        val vm = PhoneVerificationViewModel(repo, context, bus)
         vm.onPhoneNumberChange("5145551234")
         vm.sendOtp()
         advanceUntilIdle()
@@ -144,7 +177,7 @@ class PhoneVerificationViewModelTest {
                 ),
             ),
         )
-        val vm = PhoneVerificationViewModel(repo, context)
+        val vm = PhoneVerificationViewModel(repo, context, bus)
         vm.bootstrap()
         advanceUntilIdle()
         assertTrue(vm.state.value.isOtpSent)
@@ -162,7 +195,7 @@ class PhoneVerificationViewModelTest {
                 ),
             ),
         )
-        val vm = PhoneVerificationViewModel(repo, context)
+        val vm = PhoneVerificationViewModel(repo, context, bus)
         vm.bootstrap()
         advanceUntilIdle()
         assertTrue(vm.state.value.isVerified)

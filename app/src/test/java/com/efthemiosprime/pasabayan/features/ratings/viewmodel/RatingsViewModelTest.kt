@@ -10,8 +10,11 @@ import com.efthemiosprime.pasabayan.core.network.ratings.RatingWithRatedJson
 import com.efthemiosprime.pasabayan.core.network.ratings.RatingWithRaterJson
 import com.efthemiosprime.pasabayan.core.network.ratings.UserRatingSummaryJson
 import com.efthemiosprime.pasabayan.core.network.ratings.UserReceivedRatingsDataJson
+import com.efthemiosprime.pasabayan.features.profile.services.BadgeRefreshBus
 import com.efthemiosprime.pasabayan.features.ratings.model.RatingsTab
 import com.efthemiosprime.pasabayan.features.ratings.services.RatingsRepository
+import io.mockk.spyk
+import io.mockk.verify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -35,11 +38,13 @@ class RatingsViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
     private val context: Context = mockk(relaxed = true)
+    private lateinit var bus: BadgeRefreshBus
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
         every { context.getString(R.string.ratings_comment_updated) } returns "updated"
+        bus = spyk(BadgeRefreshBus())
     }
 
     @After
@@ -72,7 +77,7 @@ class RatingsViewModelTest {
                 ),
             ),
         )
-        val vm = RatingsViewModel(repo, context)
+        val vm = RatingsViewModel(repo, context, bus)
         vm.load(userId = 1)
         advanceUntilIdle()
         val s = vm.state.value
@@ -86,7 +91,7 @@ class RatingsViewModelTest {
     @Test
     fun `selectTab switches without re-fetching`() = runTest(dispatcher) {
         val repo = FakeRepo(received = Result.success(UserReceivedRatingsDataJson()))
-        val vm = RatingsViewModel(repo, context)
+        val vm = RatingsViewModel(repo, context, bus)
         vm.load(userId = 1)
         advanceUntilIdle()
         vm.selectTab(RatingsTab.GIVEN)
@@ -110,7 +115,7 @@ class RatingsViewModelTest {
                     ),
                 ),
             )
-            val vm = RatingsViewModel(repo, context)
+            val vm = RatingsViewModel(repo, context, bus)
             vm.load(userId = 1)
             advanceUntilIdle()
             vm.startEditing(5, "old")
@@ -125,10 +130,49 @@ class RatingsViewModelTest {
         }
 
     @Test
+    fun `saveComment success emits to BadgeRefreshBus`() = runTest(dispatcher) {
+        val repo = FakeRepo(
+            given = Result.success(
+                listOf(RatingWithRatedJson(id = 5, rating = 4, reviewText = "old")),
+            ),
+        )
+        val vm = RatingsViewModel(repo, context, bus)
+        vm.load(userId = 1)
+        advanceUntilIdle()
+
+        vm.startEditing(5, "old")
+        vm.onCommentDraftChange("new")
+        vm.saveComment()
+        advanceUntilIdle()
+
+        verify(exactly = 1) { bus.emit() }
+    }
+
+    @Test
+    fun `saveComment failure does not emit to BadgeRefreshBus`() = runTest(dispatcher) {
+        val repo = FakeRepo(
+            given = Result.success(
+                listOf(RatingWithRatedJson(id = 5, rating = 4, reviewText = "old")),
+            ),
+            commentResult = Result.failure(IllegalStateException("nope")),
+        )
+        val vm = RatingsViewModel(repo, context, bus)
+        vm.load(userId = 1)
+        advanceUntilIdle()
+
+        vm.startEditing(5, "old")
+        vm.onCommentDraftChange("new")
+        vm.saveComment()
+        advanceUntilIdle()
+
+        verify(exactly = 0) { bus.emit() }
+    }
+
+    @Test
     fun `saveComment with empty draft cancels editing without hitting network`() =
         runTest(dispatcher) {
             val repo = FakeRepo()
-            val vm = RatingsViewModel(repo, context)
+            val vm = RatingsViewModel(repo, context, bus)
             vm.load(userId = 1)
             advanceUntilIdle()
             vm.startEditing(5, "old")
@@ -146,7 +190,7 @@ class RatingsViewModelTest {
             given = Result.failure(IllegalStateException("boom")),
             pending = Result.success(emptyList()),
         )
-        val vm = RatingsViewModel(repo, context)
+        val vm = RatingsViewModel(repo, context, bus)
         vm.load(userId = 1)
         advanceUntilIdle()
         assertNotNull(vm.state.value.errorMessage)

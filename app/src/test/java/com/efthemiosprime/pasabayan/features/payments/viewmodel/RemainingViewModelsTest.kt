@@ -6,6 +6,8 @@ import com.efthemiosprime.pasabayan.features.payments.model.PaymentReceipt
 import com.efthemiosprime.pasabayan.features.payments.model.Transaction
 import com.efthemiosprime.pasabayan.features.payments.services.ReceiptRepository
 import com.efthemiosprime.pasabayan.features.payments.services.StripeConnectRepository
+import io.mockk.spyk
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -310,6 +312,20 @@ class RemainingViewModelsTest {
         assertFalse(vm.uiState.value.showOnboarding)
         assertNull(vm.uiState.value.onboardingUrl)
         assertTrue(vm.uiState.value.status?.onboardingComplete == true)
+    }
+
+    @Test
+    fun `handleOnboardingReturn emits to BadgeRefreshBus`() = runTest {
+        fakeConnectRepo.statusResult = Result.success(
+            StripeConnectStatus(onboardingComplete = true),
+        )
+        val bus = spyk(com.efthemiosprime.pasabayan.features.profile.services.BadgeRefreshBus())
+        val vm = StripeConnectViewModel(fakeConnectRepo, FakeClock(startMs = 1_000L), bus)
+
+        vm.handleOnboardingReturn()
+        advanceUntilIdle()
+
+        verify(exactly = 1) { bus.emit() }
     }
 
     @Test

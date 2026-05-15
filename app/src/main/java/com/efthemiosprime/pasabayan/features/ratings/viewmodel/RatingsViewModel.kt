@@ -7,6 +7,7 @@ import com.efthemiosprime.pasabayan.core.domain.error.DomainError
 import com.efthemiosprime.pasabayan.core.network.DomainErrorMapperException
 import com.efthemiosprime.pasabayan.features.ratings.model.RatingsTab
 import com.efthemiosprime.pasabayan.features.ratings.model.RatingsUiState
+import com.efthemiosprime.pasabayan.features.profile.services.BadgeRefreshBus
 import com.efthemiosprime.pasabayan.features.ratings.services.RatingsRepository
 import com.efthemiosprime.pasabayan.shared.error.localizedMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +28,7 @@ import kotlinx.coroutines.launch
 class RatingsViewModel @Inject constructor(
     private val repository: RatingsRepository,
     @ApplicationContext private val appContext: Context,
+    private val badgeRefreshBus: BadgeRefreshBus,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(RatingsUiState())
@@ -88,6 +90,9 @@ class RatingsViewModel @Inject constructor(
                             ),
                         )
                     }
+                    // iOS parity: server pending_reviews_count can change post-rating —
+                    // nudge BadgeSummary to re-pull.
+                    badgeRefreshBus.emit()
                 },
                 onFailure = { throwable ->
                     _state.update { it.copy(savingCommentForRatingId = null) }
