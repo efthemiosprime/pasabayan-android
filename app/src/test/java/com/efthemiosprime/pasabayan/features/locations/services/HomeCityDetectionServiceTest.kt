@@ -256,7 +256,6 @@ private class FakeProfileApi : ProfileApi {
     override suspend fun postCarrierEnable() = error("not used")
     override suspend fun postCarrierToggleStatus() = error("not used")
     override suspend fun getUserStats() = error("not used")
-    override suspend fun getAttention() = error("not used")
     override suspend fun getBadgeSummary(role: String?) = error("not used")
 }
 

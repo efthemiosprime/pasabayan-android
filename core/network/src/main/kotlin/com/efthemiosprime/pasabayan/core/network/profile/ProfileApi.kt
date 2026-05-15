@@ -89,14 +89,6 @@ interface ProfileApi {
     suspend fun getUserStats(): Response<UserStatsResponseJson>
 
     /**
-     * Profile-tab "needs attention" signals — phone verification needed, payout
-     * setup needed, pending-reviews count, total, degraded flag, server timestamp.
-     * iOS: `GET /api/me/attention` consumed by `ProfileAttentionViewModel`.
-     */
-    @GET("me/attention")
-    suspend fun getAttention(): Response<AttentionSignalsJson>
-
-    /**
      * Single source-of-truth attention payload driving every badge surface
      * (tab-bar Profile badge, dashboard bell, drawer sections, per-row badges).
      * Server caches per (user, role) for ~30 s — do not add a client cache.
