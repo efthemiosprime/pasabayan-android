@@ -2,6 +2,9 @@ package com.efthemiosprime.pasabayan.features.profile.services
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ProcessLifecycleOwner
+import java.time.Clock
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -31,6 +34,12 @@ abstract class ProfileBindingsModule {
 
     @Binds
     @Singleton
+    abstract fun bindBadgeSummaryRepository(
+        impl: BadgeSummaryRepositoryImpl,
+    ): BadgeSummaryRepository
+
+    @Binds
+    @Singleton
     abstract fun bindImageCompressor(impl: BitmapImageCompressor): ImageCompressor
 }
 
@@ -48,4 +57,16 @@ object ProfileProviderModule {
     @Singleton
     fun providePreferredCurrencyStore(@ProfilePrefs prefs: SharedPreferences): PreferredCurrencyStore =
         PreferredCurrencyStore(prefs)
+
+    /**
+     * Process-wide lifecycle for the badge summary observer. Pulled from a
+     * provider so tests can inject a `LifecycleRegistry` directly.
+     */
+    @Provides
+    @Singleton
+    fun provideProcessLifecycle(): Lifecycle = ProcessLifecycleOwner.get().lifecycle
+
+    @Provides
+    @Singleton
+    fun provideSystemClock(): Clock = Clock.systemUTC()
 }

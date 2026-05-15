@@ -2,6 +2,7 @@ package com.efthemiosprime.pasabayan
 
 import android.app.Application
 import com.efthemiosprime.pasabayan.features.notifications.services.NotificationChannelSetup
+import com.efthemiosprime.pasabayan.features.system.services.BadgeSummaryLifecycleObserver
 import com.efthemiosprime.pasabayan.features.system.services.SessionAuthSyncObserver
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -16,6 +17,8 @@ class PasabayanApplication : Application() {
 
     @Inject lateinit var sessionAuthSyncObserver: SessionAuthSyncObserver
 
+    @Inject lateinit var badgeSummaryLifecycleObserver: BadgeSummaryLifecycleObserver
+
     /**
      * App-lifetime scope for singleton observers (auth-sync, etc.). `SupervisorJob`
      * so a single observer crash doesn't tear down the others; `Dispatchers.Default`
@@ -27,5 +30,6 @@ class PasabayanApplication : Application() {
         super.onCreate()
         notificationChannelSetup.ensureChannels()
         sessionAuthSyncObserver.start(appScope)
+        badgeSummaryLifecycleObserver.start(appScope)
     }
 }
