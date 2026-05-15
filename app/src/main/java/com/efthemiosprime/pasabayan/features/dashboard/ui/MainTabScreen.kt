@@ -323,6 +323,10 @@ fun MainTabScreen(
         }
     }
 
+    // Single bell + tab-badge count, gated on hasValidData so a transient
+    // failure keeps the prior value visible instead of flashing zero.
+    val badgeTotal = if (badgeSummaryValid) badgeSummary?.total ?: 0 else 0
+
     PScaffold(
         modifier = modifier,
         topBar = {
@@ -333,7 +337,7 @@ fun MainTabScreen(
                 verificationLevel = VerificationLevel.normalized(
                     profileState.userProfile?.verificationLevel,
                 ),
-                notificationsUnreadCount = notificationState.unreadCount,
+                notificationsUnreadCount = badgeTotal,
                 onOpenNotifications = { notificationsSheetOpen = true },
             )
         },
@@ -344,7 +348,7 @@ fun MainTabScreen(
                 onTabSelected = { viewModel.selectTab(it) },
                 badgeCountByRoute = mapOf(
                     "messages" to conversationsState.allUnreadCount,
-                    "profile" to if (badgeSummaryValid) badgeSummary?.total ?: 0 else 0,
+                    "profile" to badgeTotal,
                 ),
             )
         },
